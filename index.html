@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111827">
+<title>Packing Assistant</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<main id="app">
+<header>
+  <h1>📦 Packing Assistant</h1>
+  <span id="connection">● Online</span>
+</header>
+
+<section id="home" class="screen">
+  <div class="card">
+    <h2>Create Live Order</h2>
+    <input id="fileInput" type="file" accept=".xlsx,.xls,.csv">
+    <p class="hint">Required headers: STORE_NAME, ITEM_CODE, PRODUCT_NAME, Sum of Indents</p>
+    <button id="createOrderBtn" class="primary">Create Live Order</button>
+    <button id="loadDemo" class="secondary">Load Demo</button>
+    <div id="orderLinkBox" class="hidden">
+      <label>Share this link with packing phones</label>
+      <div class="shareRow">
+        <input id="orderLink" readonly>
+        <button id="copyLink">Copy</button>
+      </div>
+      <p class="hint">Open the same link on each phone. An outlet can be locked to only one phone.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Open Existing Live Order</h2>
+    <input id="orderIdInput" placeholder="Order ID">
+    <input id="accessTokenInput" placeholder="Access token">
+    <button id="openOrderBtn">Open Order</button>
+  </div>
+
+  <div id="orderSummary" class="card hidden"></div>
+  <div id="outletList"></div>
+</section>
+
+<section id="packing" class="screen hidden">
+  <div class="topline">
+    <button id="backBtn">← Outlets</button>
+    <b id="outletTitle"></b>
+    <select id="voiceLanguage" aria-label="Voice language"><option value="en">English</option><option value="hi">Hindi</option><option value="gu">Gujarati</option></select>
+  </div>
+  <div class="progress">
+    <span id="progressText"></span>
+    <div><i id="progressBar"></i></div>
+  </div>
+  <div class="product card">
+    <small id="itemCode"></small>
+    <h2 id="productName"></h2>
+    <div class="qtyLabel">REQUIRED</div>
+    <div id="requiredQty" class="qty"></div>
+    <button id="repeatBtn" class="secondary">🔊 Repeat</button>
+    <div class="actions">
+      <button id="packedBtn" class="good">✓ PACKED</button>
+      <button id="partialBtn" class="warn">PARTIAL</button>
+      <button id="missingBtn" class="bad">⚠ MISSING</button>
+    </div>
+    <p id="syncStatus" class="hint"></p>
+  </div>
+</section>
+
+<dialog id="partialDialog">
+<form method="dialog" id="partialForm">
+<h3>Partial quantity</h3>
+<label>Required <input id="partialRequired" disabled></label>
+<label>Packed <input id="packedQty" type="number" min="0" step="any" required></label>
+<label>Reason
+<select id="partialReason"><option>No Stock</option><option>Poor Quality</option><option>Not Received</option><option>Other</option></select>
+</label>
+<menu><button value="cancel">Cancel</button><button id="partialConfirm" value="default">Confirm</button></menu>
+</form>
+</dialog>
+
+<dialog id="missingDialog">
+<form method="dialog" id="missingForm">
+<h3>Mark missing</h3>
+<p id="missingText"></p>
+<label>Reason
+<select id="missingReason"><option>No Stock</option><option>Poor Quality</option><option>Not Received</option><option>Other</option></select>
+</label>
+<menu><button value="cancel">Cancel</button><button id="missingConfirm" value="default">Confirm</button></menu>
+</form>
+</dialog>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
