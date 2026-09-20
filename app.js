@@ -82,16 +82,18 @@ function parseWorkbook(raw){
         // when they have no item code and no product name.
         if (!code && !product && !Number.isNaN(q)) continue;
 
-        if(!store||!code||!product||Number.isNaN(q))
-          throw new Error(`Row ${i+2}: invalid/missing data`);
-        parsed.push({store,code,product,required:q});
+        if(!store||!code||!product||Number.isNaN(q)||!Number.isInteger(rank)||rank<=0)
+          throw new Error(`Row ${i+2}: invalid/missing data or SKU Narration Order`);
+        parsed.push({store,code,product,required:q,rank});
       }
       if(parsed.length)candidates.push({name,rows:parsed});
     }catch(e){ /* invalid sheets are ignored */ }
   }
   if(!candidates.length) throw new Error("No sheet with the required columns was found.");
   if(candidates.length===1) return candidates[0].rows;
-  const choice=prompt("Multiple valid sheets found. Enter sheet name:\n"+candidates.map(x=>x.name).join("\n"),candidates[0].name);
+  const choice=prompt("Multiple valid sheets found. Enter sheet name:
+"+candidates.map(x=>x.name).join("
+"),candidates[0].name);
   return (candidates.find(x=>x.name===choice)||candidates[0]).rows;
 }
 
@@ -225,6 +227,7 @@ function applyServerData(data){
   state.outlets=new Map();
   state.events=data.events||[];
   state.order=data.order||null;
+  state.rankMap={};
   const outlets=data.outlets||[];
   const items=data.items||[];
   for(const o of outlets){
@@ -242,12 +245,14 @@ function applyServerData(data){
     if(!o) continue;
     o.rows.push({
       id:r.id,code:r.item_code,product:r.product_name,
-      voice:r.voice_text||r.product_name,required:Number(r.required_qty),\n      rank:Number(r.narration_rank),
+      voice:r.voice_text||r.product_name,required:Number(r.required_qty),
+      rank:Number(r.narration_rank),
       packed:Number(r.packed_qty||0),missing:Number(r.missing_qty||0),
       status:r.status==="pending"?null:r.status.toUpperCase(),reason:r.reason||"",
       started_at:r.started_at,completed_at:r.completed_at
     });
-    state.rows.push(r);\n    if(Number.isFinite(Number(r.narration_rank))) state.rankMap[String(r.item_code).trim()]=Number(r.narration_rank);
+    state.rows.push(r);
+    if(Number.isFinite(Number(r.narration_rank))) state.rankMap[String(r.item_code).trim()]=Number(r.narration_rank);
   }
   // Narration/packing sequence follows the supplied Rank.
   for(const o of state.outlets.values()){
@@ -328,7 +333,7 @@ function renderHome(){
     '<div class="stat red"><div class="num">'+pending+'</div><div class="label">Pending</div></div>'+
     '<div class="stat progressStat"><div class="label">Overall Progress <b style="float:right">'+pct+'%</b></div><div class="progressLine"><i style="width:'+pct+'%"></i></div><small style="margin-top:7px;color:#64748b">'+packed+' packed · '+missing+' missing · '+totalItems+' products</small></div>';
 
-  renderRankMaster();\n  $("outletList").innerHTML="";
+  $("outletList").innerHTML="";
   all.forEach((o,i)=>{
     const b=document.createElement("button");
     const done=o.rows.filter(r=>r.status).length;
@@ -491,7 +496,8 @@ $("loadDemo").onclick=async()=>{
   try{await createLiveOrder(rows)}catch(e){alert(e.message)}
 };
 
-$("reportBtn").onclick=downloadReport;\n
+$("reportBtn").onclick=downloadReport;
+
 
 $("copyLink").onclick=async()=>{
   try{
@@ -501,17 +507,6 @@ $("copyLink").onclick=async()=>{
   }catch{alert("Copy failed. Select and copy the link manually.")}
 };
 
-$("openOrderBtn").onclick=async()=>{
-  try{
-    state.orderId=$("orderIdInput").value.trim();
-    state.token=$("accessTokenInput").value.trim();
-    if(!state.orderId||!state.token) return alert("Enter both Order ID and access token.");
-    localStorage.setItem("pa_order_id",state.orderId);
-    localStorage.setItem("pa_order_token",state.token);
-    await loadOrder();
-    startPolling();
-  }catch(e){alert(e.message)}
-};
 
 const VOICE_LANG_KEY = "packing_assistant_voice_language";
 function getVoiceLanguage(){ return localStorage.getItem(VOICE_LANG_KEY) || "en"; }
@@ -555,8 +550,22 @@ function numberWordsGujarati(n){
 }
 
 const voiceLanguageEl=$("voiceLanguage");
-voiceLanguageEl.value=getVoiceLanguage();
-voiceLanguageEl.onchange=()=>{setVoiceLanguage(voiceLanguageEl.value); const o=state.outlets.get(state.current); if(o) speakProduct(o.rows[state.index]);};
+const packingVoiceLanguageEl=$("packingVoiceLanguage");
+function syncVoiceSelectors(v){
+  if(voiceLanguageEl) voiceLanguageEl.value=v;
+  if(packingVoiceLanguageEl) packingVoiceLanguageEl.value=v;
+}
+syncVoiceSelectors(getVoiceLanguage());
+if(voiceLanguageEl) voiceLanguageEl.onchange=()=>{
+  setVoiceLanguage(voiceLanguageEl.value);
+  syncVoiceSelectors(voiceLanguageEl.value);
+  const o=state.outlets.get(state.current); if(o) speakProduct(o.rows[state.index]);
+};
+if(packingVoiceLanguageEl) packingVoiceLanguageEl.onchange=()=>{
+  setVoiceLanguage(packingVoiceLanguageEl.value);
+  syncVoiceSelectors(packingVoiceLanguageEl.value);
+  const o=state.outlets.get(state.current); if(o) speakProduct(o.rows[state.index]);
+};
 
 function startPolling(){
   clearInterval(state.poll);
