@@ -1,11 +1,10 @@
 const CACHE="packing-assistant-v2";
 const CORE=[
   "./",
-  "./admin.html",
   "./styles.css",
   "./app.js",
   "./config.js",
-  "./manifest.webmanifest","./admin-manifest.webmanifest",
+  "./manifest.webmanifest",
   "./icon-192.png",
   "./icon-512.png",
   "./icon.svg"
