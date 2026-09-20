@@ -1,8 +1,25 @@
-const CACHE="packing-assistant-admin-v2";
-const CORE=["./","./index.html","./manifest.webmanifest","../styles.css","../app.js","../config.js","../icon-192.png","../icon-512.png","../icon.svg"];
-self.addEventListener("install",e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting())));
-self.addEventListener("activate",e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
-self.addEventListener("fetch",e=>{
- if(e.request.method!=="GET") return;
- e.respondWith(fetch(e.request).then(r=>{const c=r.clone();caches.open(CACHE).then(x=>x.put(e.request,c));return r}).catch(()=>caches.match(e.request)));
+const CACHE="packing-assistant-admin-v3";
+self.addEventListener("install",event=>{
+  event.waitUntil(
+    caches.open(CACHE)
+      .then(cache=>cache.add("./"))
+      .then(()=>self.skipWaiting())
+  );
+});
+self.addEventListener("activate",event=>{
+  event.waitUntil(
+    caches.keys()
+      .then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))))
+      .then(()=>self.clients.claim())
+  );
+});
+self.addEventListener("fetch",event=>{
+  if(event.request.method!=="GET") return;
+  event.respondWith(
+    fetch(event.request).then(response=>{
+      const copy=response.clone();
+      caches.open(CACHE).then(cache=>cache.put(event.request,copy));
+      return response;
+    }).catch(()=>caches.match(event.request))
+  );
 });
