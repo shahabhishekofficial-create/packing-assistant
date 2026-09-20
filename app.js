@@ -80,9 +80,7 @@ function parseWorkbook(raw){
   }
   if(!candidates.length) throw new Error("No sheet with the required columns was found.");
   if(candidates.length===1) return candidates[0].rows;
-  const choice=prompt("Multiple valid sheets found. Enter sheet name:
-"+candidates.map(x=>x.name).join("
-"),candidates[0].name);
+  const choice=prompt("Multiple valid sheets found. Enter sheet name:\\n"+candidates.map(x=>x.name).join("\\n"),candidates[0].name);
   return (candidates.find(x=>x.name===choice)||candidates[0]).rows;
 }
 
