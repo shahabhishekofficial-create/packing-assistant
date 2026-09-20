@@ -9,56 +9,24 @@ const state = {
   orderId: null,
   token: null,
   events: [],
-  poll: null
+  poll: null,
+  rankMap: {}
 };
 
 const $ = id => document.getElementById(id);
-const DEFAULT_ITEM_RANK = {
-  "1025":1,"1095":26,"1133":2,"1137":3,"1292":19,"3797":6,"4079":20,
-  "5449":21,"5456":18,"5913":17,"5933":16,"5936":15,"7386":4,"7459":24,
-  "7463":22,"7474":11,"7475":12,"12474":13,"15049":5,"63716":7,"956524":9,
-  "5931":17,"369634":8
-};
-const RANK_KEY="packing_assistant_sku_rank";
-function getRankMap(){try{return {...DEFAULT_ITEM_RANK,...JSON.parse(localStorage.getItem(RANK_KEY)||"{}")}}catch{return {...DEFAULT_ITEM_RANK}}}
-function saveRankMap(m){localStorage.setItem(RANK_KEY,JSON.stringify(m))}
+function getRankMap(){ return state.rankMap || {}; }
 function renderRankMaster(){
   const el=$("rankList"); if(!el)return;
-  const map=getRankMap();
-  const products=new Map();
-  for(const o of state.outlets.values()) for(const r of o.rows) if(!products.has(String(r.code))) products.set(String(r.code),{code:String(r.code),product:r.product});
-  for(const code in map) if(!products.has(code)){
-    const names={"1025":"Broccoli","1095":"Button Mushroom","1133":"Green Zucchini","1137":"Yellow Zucchini","1292":"Lettuce Iceberg","3797":"Red & Yellow Bell Peppers","4079":"Baby Corn","5449":"Cherry Tomato","5456":"Lettuce Green","5913":"Celery","5933":"Basil","5936":"Parsley","7386":"Lemongrass","7459":"Asparagus","7463":"Romaine Lettuce","7474":"Chinese Cabbage","7475":"Bok Choy","12474":"Rosemary","15049":"Red Cabbage","63716":"Capsicum Tricolour","956524":"Red Bell Pepper","5931":"Thyme","369634":"Yellow Bell Pepper"};
-    if(names[code]) products.set(code,{code,product:names[code]});
-  }
-  const items=[...products.values()].sort((x,y)=>(map[x.code]??999999)-(map[y.code]??999999)||x.product.localeCompare(y.product));
-  el.innerHTML=items.map((x,i)=>'<div class="rankItem" draggable="true" data-code="'+esc(x.code)+'"><div class="rankNum">'+(i+1)+'</div><div class="rankProduct"><b>'+esc(x.product)+'</b><small>Item Code: '+esc(x.code)+'</small></div><div class="dragHandle">☰</div></div>').join("");
-  let drag=null;
-  el.querySelectorAll(".rankItem").forEach(item=>{
-    item.addEventListener("dragstart",()=>{drag=item;item.classList.add("dragging")});
-    item.addEventListener("dragend",()=>{item.classList.remove("dragging");renderRankNumbers()});
-    item.addEventListener("dragover",e=>e.preventDefault());
-    item.addEventListener("drop",e=>{e.preventDefault();if(drag&&drag!==item){const rect=item.getBoundingClientRect();const before=e.clientY<rect.top+rect.height/2;item.parentNode.insertBefore(drag,before?item:item.nextSibling);renderRankNumbers()}});
-  });
+  const products=[];
+  for(const o of state.outlets.values()) for(const r of o.rows)
+    products.push({code:String(r.code),product:r.product,rank:Number(r.rank)});
+  const seen=new Set();
+  const items=products.filter(x=>{if(seen.has(x.code))return false;seen.add(x.code);return true;})
+    .sort((a,b)=>a.rank-b.rank||a.product.localeCompare(b.product));
+  el.innerHTML=items.map((x,i)=>'<div class="rankItem"><div class="rankNum">'+(i+1)+'</div><div class="rankProduct"><b>'+esc(x.product)+'</b><small>Item Code: '+esc(x.code)+' · Excel Rank: '+x.rank+'</small></div><div class="dragHandle">#</div></div>').join("");
 }
-function renderRankNumbers(){document.querySelectorAll(".rankItem").forEach((x,i)=>x.querySelector(".rankNum").textContent=i+1)}
-function applyRankOrder(){
-  const codes=[...document.querySelectorAll("#rankList .rankItem")].map(x=>x.dataset.code);
-  const m={}; codes.forEach((c,i)=>m[c]=i+1); saveRankMap(m);
-  for(const o of state.outlets.values()) o.rows.sort((x,y)=>(m[x.code]??999999)-(m[y.code]??999999));
-}
-const ITEM_RANK = {
-  "1025":1, "1095":26, "1133":2, "1137":3, "1292":19,
-  "3797":6, "4079":20, "5449":21, "5456":18, "5913":17,
-  "5933":16, "5936":15, "7386":4, "7459":24, "7463":22,
-  "7474":11, "7475":12, "12474":13, "15049":5, "63716":7,
-  "956524":9, "5931":17, "369634":8
-};
-
-function rankItem(code){
-  const n=getRankMap()[String(code).trim()];
-  return Number.isFinite(n) ? n : 999999;
-}
+function applyRankOrder(){ return; }
+function rankItem(code){ const n=Number(state.rankMap[String(code).trim()]); return Number.isFinite(n)?n:999999; }
 
 const DEVICE_KEY = "packing_assistant_device_id";
 
@@ -81,7 +49,8 @@ function validateHeaders(headers){
     store:["STORE_NAME","STORE NAME","OUTLET","OUTLET NAME"],
     code:["ITEM_CODE","ITEM CODE","ARTICLE","ARTICLE NUMBER"],
     product:["PRODUCT_NAME","PRODUCT NAME","ITEM NAME","PRODUCT"],
-    indent:["SUM OF INDENTS","SUMOFINDENTS","INDENT","INDENT QTY","INDENT QUANTITY"]
+    indent:["SUM OF INDENTS","SUMOFINDENTS","INDENT","INDENT QTY","INDENT QUANTITY"],
+    rank:["SKU NARRATION ORDER","SKU NARRATION RANK","NARRATION ORDER","NARRATION RANK","SKU RANK","RANK"]
   };
   const map={};
   for(const k in aliases){
@@ -107,6 +76,7 @@ function parseWorkbook(raw){
         const code=String(r[map.code]).trim();
         const product=String(r[map.product]).trim();
         const q=qty(r[map.indent]);
+        const rank=Number(r[map.rank]);
         if(!store&&!code&&!product&&String(r[map.indent]).trim()==="") continue;
         // Ignore summary/total rows such as "Grand Total"
         // when they have no item code and no product name.
@@ -264,12 +234,12 @@ function applyServerData(data){
     if(!o) continue;
     o.rows.push({
       id:r.id,code:r.item_code,product:r.product_name,
-      voice:r.voice_text||r.product_name,required:Number(r.required_qty),
+      voice:r.voice_text||r.product_name,required:Number(r.required_qty),\n      rank:Number(r.narration_rank),
       packed:Number(r.packed_qty||0),missing:Number(r.missing_qty||0),
       status:r.status==="pending"?null:r.status.toUpperCase(),reason:r.reason||"",
       started_at:r.started_at,completed_at:r.completed_at
     });
-    state.rows.push(r);
+    state.rows.push(r);\n    if(Number.isFinite(Number(r.narration_rank))) state.rankMap[String(r.item_code).trim()]=Number(r.narration_rank);
   }
   // Narration/packing sequence follows the supplied Rank.
   for(const o of state.outlets.values()){
@@ -513,7 +483,7 @@ $("loadDemo").onclick=async()=>{
   try{await createLiveOrder(rows)}catch(e){alert(e.message)}
 };
 
-$("reportBtn").onclick=downloadReport;\n$("saveRanksBtn").onclick=()=>{applyRankOrder();renderHome();alert("Narration rank order saved.");};
+$("reportBtn").onclick=downloadReport;\n
 
 $("copyLink").onclick=async()=>{
   try{
