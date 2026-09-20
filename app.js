@@ -195,6 +195,7 @@ function applyServerData(data){
       name:o.store_name,
       status:o.status,
       lockedDeviceId:o.locked_device_id,
+      started_at:o.started_at, completed_at:o.completed_at,
       rows:[]
     });
   }
@@ -205,7 +206,8 @@ function applyServerData(data){
       id:r.id,code:r.item_code,product:r.product_name,
       voice:r.voice_text||r.product_name,required:Number(r.required_qty),
       packed:Number(r.packed_qty||0),missing:Number(r.missing_qty||0),
-      status:r.status==="pending"?null:r.status.toUpperCase(),reason:r.reason||""
+      status:r.status==="pending"?null:r.status.toUpperCase(),reason:r.reason||"",
+      started_at:r.started_at,completed_at:r.completed_at
     });
     state.rows.push(r);
   }
