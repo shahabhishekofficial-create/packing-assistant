@@ -165,6 +165,7 @@ async function createLiveOrder(rows){
 }
 
 function showShareLink(){
+  $("reportBtn").classList.remove("hidden");
   const url=new URL(location.href);
   url.searchParams.set("order",state.orderId);
   url.searchParams.set("token",state.token);
@@ -436,6 +437,8 @@ $("loadDemo").onclick=async()=>{
   ];
   try{await createLiveOrder(rows)}catch(e){alert(e.message)}
 };
+
+$("reportBtn").onclick=downloadReport;
 
 $("copyLink").onclick=async()=>{
   try{
