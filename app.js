@@ -13,7 +13,41 @@ const state = {
 };
 
 const $ = id => document.getElementById(id);
-const ITEM_RANK = {
+const DEFAULT_ITEM_RANK = {
+  "1025":1,"1095":26,"1133":2,"1137":3,"1292":19,"3797":6,"4079":20,
+  "5449":21,"5456":18,"5913":17,"5933":16,"5936":15,"7386":4,"7459":24,
+  "7463":22,"7474":11,"7475":12,"12474":13,"15049":5,"63716":7,"956524":9,
+  "5931":17,"369634":8
+};
+const RANK_KEY="packing_assistant_sku_rank";
+function getRankMap(){try{return {...DEFAULT_ITEM_RANK,...JSON.parse(localStorage.getItem(RANK_KEY)||"{}")}}catch{return {...DEFAULT_ITEM_RANK}}}
+function saveRankMap(m){localStorage.setItem(RANK_KEY,JSON.stringify(m))}
+function renderRankMaster(){
+  const el=$("rankList"); if(!el)return;
+  const map=getRankMap();
+  const products=new Map();
+  for(const o of state.outlets.values()) for(const r of o.rows) if(!products.has(String(r.code))) products.set(String(r.code),{code:String(r.code),product:r.product});
+  for(const code in map) if(!products.has(code)){
+    const names={"1025":"Broccoli","1095":"Button Mushroom","1133":"Green Zucchini","1137":"Yellow Zucchini","1292":"Lettuce Iceberg","3797":"Red & Yellow Bell Peppers","4079":"Baby Corn","5449":"Cherry Tomato","5456":"Lettuce Green","5913":"Celery","5933":"Basil","5936":"Parsley","7386":"Lemongrass","7459":"Asparagus","7463":"Romaine Lettuce","7474":"Chinese Cabbage","7475":"Bok Choy","12474":"Rosemary","15049":"Red Cabbage","63716":"Capsicum Tricolour","956524":"Red Bell Pepper","5931":"Thyme","369634":"Yellow Bell Pepper"};
+    if(names[code]) products.set(code,{code,product:names[code]});
+  }
+  const items=[...products.values()].sort((x,y)=>(map[x.code]??999999)-(map[y.code]??999999)||x.product.localeCompare(y.product));
+  el.innerHTML=items.map((x,i)=>'<div class="rankItem" draggable="true" data-code="'+esc(x.code)+'"><div class="rankNum">'+(i+1)+'</div><div class="rankProduct"><b>'+esc(x.product)+'</b><small>Item Code: '+esc(x.code)+'</small></div><div class="dragHandle">☰</div></div>').join("");
+  let drag=null;
+  el.querySelectorAll(".rankItem").forEach(item=>{
+    item.addEventListener("dragstart",()=>{drag=item;item.classList.add("dragging")});
+    item.addEventListener("dragend",()=>{item.classList.remove("dragging");renderRankNumbers()});
+    item.addEventListener("dragover",e=>e.preventDefault());
+    item.addEventListener("drop",e=>{e.preventDefault();if(drag&&drag!==item){const rect=item.getBoundingClientRect();const before=e.clientY<rect.top+rect.height/2;item.parentNode.insertBefore(drag,before?item:item.nextSibling);renderRankNumbers()}});
+  });
+}
+function renderRankNumbers(){document.querySelectorAll(".rankItem").forEach((x,i)=>x.querySelector(".rankNum").textContent=i+1)}
+function applyRankOrder(){
+  const codes=[...document.querySelectorAll("#rankList .rankItem")].map(x=>x.dataset.code);
+  const m={}; codes.forEach((c,i)=>m[c]=i+1); saveRankMap(m);
+  for(const o of state.outlets.values()) o.rows.sort((x,y)=>(m[x.code]??999999)-(m[y.code]??999999));
+}
+\nconst ITEM_RANK = {
   "1025":1, "1095":26, "1133":2, "1137":3, "1292":19,
   "3797":6, "4079":20, "5449":21, "5456":18, "5913":17,
   "5933":16, "5936":15, "7386":4, "7459":24, "7463":22,
@@ -316,7 +350,7 @@ function renderHome(){
     '<div class="stat red"><div class="num">'+pending+'</div><div class="label">Pending</div></div>'+
     '<div class="stat progressStat"><div class="label">Overall Progress <b style="float:right">'+pct+'%</b></div><div class="progressLine"><i style="width:'+pct+'%"></i></div><small style="margin-top:7px;color:#64748b">'+packed+' packed · '+missing+' missing · '+totalItems+' products</small></div>';
 
-  $("outletList").innerHTML="";
+  renderRankMaster();\n  $("outletList").innerHTML="";
   all.forEach((o,i)=>{
     const b=document.createElement("button");
     const done=o.rows.filter(r=>r.status).length;
@@ -479,7 +513,7 @@ $("loadDemo").onclick=async()=>{
   try{await createLiveOrder(rows)}catch(e){alert(e.message)}
 };
 
-$("reportBtn").onclick=downloadReport;
+$("reportBtn").onclick=downloadReport;\n$("saveRanksBtn").onclick=()=>{applyRankOrder();renderHome();alert("Narration rank order saved.");};
 
 $("copyLink").onclick=async()=>{
   try{
