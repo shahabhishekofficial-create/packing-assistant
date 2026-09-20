@@ -5,7 +5,7 @@ const CORE=[
   "./styles.css",
   "./app.js",
   "./config.js",
-  "./manifest.webmanifest",
+  "./manifest.webmanifest","./admin-manifest.webmanifest",
   "./icon-192.png",
   "./icon-512.png",
   "./icon.svg"
