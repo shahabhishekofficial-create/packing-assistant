@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f6f8fb">
+<title>Packing Assistant — Admin</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body class="adminPage">
+<main id="app">
+
+<header class="appHeader">
+  <div class="brand">
+    <div class="brandIcon">📦</div>
+    <div><h1>Packing Assistant</h1><p>Faster Packing. Fewer Errors. Happier Customers.</p></div>
+  </div>
+  <div class="headerActions">
+    <select id="voiceLanguage" aria-label="Voice language">
+      <option value="en">English</option><option value="hi">Hindi</option><option value="gu">Gujarati</option>
+    </select>
+    <button id="reportBtn" class="reportBtn hidden">⬇ Download Report</button>
+    <span id="connection" class="liveBadge">● Live</span>
+  </div>
+</header>
+
+<section id="home" class="screen">
+  <div class="adminCard">
+    <div>
+      <span class="eyebrow">ORDER CONTROL</span>
+      <h2>Create New Live Order</h2>
+      <p>Upload the latest packing Excel. The same app link will automatically show the active order on every phone.</p>
+    </div>
+    <div class="uploadRow">
+      <input id="fileInput" type="file" accept=".xlsx,.xls,.csv">
+      <button id="createOrderBtn" class="primary">Create Live Order</button>
+      <button id="loadDemo" class="secondary">Demo</button>
+    </div>
+    <p class="hint">Required headers: STORE_NAME, ITEM_CODE, PRODUCT_NAME, Sum of Indents, SKU Narration Order</p>
+    <div id="orderLinkBox" class="shareBox hidden">
+      <span>Permanent app link</span>
+      <div class="shareRow"><input id="orderLink" readonly><button id="copyLink">Copy</button></div>
+    </div>
+  </div>
+
+  <div id="orderSummary" class="dashboardSummary hidden"></div>
+
+  <div class="sectionHead">
+    <div><span class="eyebrow">LIVE WORKSPACE</span><h2>Outlets</h2></div>
+    <span class="syncPill">● Real-time sync</span>
+  </div>
+  <div id="outletList" class="outletGrid"></div>
+</section>
+
+<section id="packing" class="screen hidden">
+  <div class="packingTop">
+    <button id="backBtn" class="secondary">← Outlets</button>
+    <div><span class="eyebrow">NOW PACKING</span><b id="outletTitle"></b></div>
+    <div class="packingVoice"><select id="packingVoiceLanguage" aria-label="Voice language"><option value="en">English</option><option value="hi">Hindi</option><option value="gu">Gujarati</option></select></div>
+  </div>
+  <div class="progressCard">
+    <span id="progressText"></span><div><i id="progressBar"></i></div>
+  </div>
+  <div class="product card">
+    <div class="productMeta"><small id="itemCode"></small><button id="repeatBtn" class="secondary">🔊 Repeat</button></div>
+    <h2 id="productName"></h2>
+    <div class="qtyLabel">REQUIRED QUANTITY</div>
+    <div id="requiredQty" class="qty"></div>
+    <div class="actions">
+      <button id="packedBtn" class="good">✓ PACKED<span>Full Quantity</span></button>
+      <button id="partialBtn" class="warn">✎ PARTIAL<span>Enter Quantity</span></button>
+      <button id="missingBtn" class="bad">× MISSING<span>Select Reason</span></button>
+    </div>
+    <p id="syncStatus" class="hint"></p>
+  </div>
+</section>
+
+<dialog id="partialDialog">
+<form method="dialog" id="partialForm">
+<h3>Partial quantity</h3>
+<label>Required <input id="partialRequired" disabled></label>
+<label>Packed <input id="packedQty" type="number" min="0" step="any" required></label>
+<label>Reason<select id="partialReason"><option>No Stock</option><option>Poor Quality</option><option>Not Received</option><option>Other</option></select></label>
+<menu><button value="cancel">Cancel</button><button id="partialConfirm" value="default">Confirm</button></menu>
+</form>
+</dialog>
+
+<dialog id="missingDialog">
+<form method="dialog" id="missingForm">
+<h3>Mark missing</h3><p id="missingText"></p>
+<label>Reason<select id="missingReason"><option>No Stock</option><option>Poor Quality</option><option>Not Received</option><option>Other</option></select></label>
+<menu><button value="cancel">Cancel</button><button id="missingConfirm" value="default">Confirm</button></menu>
+</form>
+</dialog>
+
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
