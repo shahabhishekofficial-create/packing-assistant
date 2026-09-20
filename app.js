@@ -15,17 +15,6 @@ const state = {
 
 const $ = id => document.getElementById(id);
 function getRankMap(){ return state.rankMap || {}; }
-function renderRankMaster(){
-  const el=$("rankList"); if(!el)return;
-  const products=[];
-  for(const o of state.outlets.values()) for(const r of o.rows)
-    products.push({code:String(r.code),product:r.product,rank:Number(r.rank)});
-  const seen=new Set();
-  const items=products.filter(x=>{if(seen.has(x.code))return false;seen.add(x.code);return true;})
-    .sort((a,b)=>a.rank-b.rank||a.product.localeCompare(b.product));
-  el.innerHTML=items.map((x,i)=>'<div class="rankItem"><div class="rankNum">'+(i+1)+'</div><div class="rankProduct"><b>'+esc(x.product)+'</b><small>Item Code: '+esc(x.code)+' · Excel Rank: '+x.rank+'</small></div><div class="dragHandle">#</div></div>').join("");
-}
-function applyRankOrder(){ return; }
 function rankItem(code){ const n=Number(state.rankMap[String(code).trim()]); return Number.isFinite(n)?n:999999; }
 
 const DEVICE_KEY = "packing_assistant_device_id";
