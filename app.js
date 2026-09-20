@@ -65,7 +65,7 @@ function validateHeaders(headers){
 function parseWorkbook(raw){
   const candidates=[];
   for(const name of raw.SheetNames){
-    const rows=XLSX.utils.sheet_to_json(raw.Sheets[name],{defval:""});
+    const rows=XLSX.utils.sheet_to_json(raw.Sheets[name],{defval:"",raw:false});
     if(!rows.length) continue;
     try{
       const map=validateHeaders(Object.keys(rows[0]));
@@ -475,10 +475,10 @@ $("createOrderBtn").onclick=async()=>{
 
 $("loadDemo").onclick=async()=>{
   const rows=[
-    {store:"Outlet A",code:"1025",product:"Broccoli",required:5},
-    {store:"Outlet A",code:"1095",product:"Button Mushroom",required:12},
-    {store:"Outlet B",code:"1025",product:"Broccoli",required:7},
-    {store:"Outlet B",code:"4079",product:"Baby Corn",required:3}
+    {store:"Outlet A",code:"1025",product:"Broccoli",required:5,rank:1},
+    {store:"Outlet A",code:"1095",product:"Button Mushroom",required:12,rank:2},
+    {store:"Outlet B",code:"1025",product:"Broccoli",required:7,rank:1},
+    {store:"Outlet B",code:"4079",product:"Baby Corn",required:3,rank:3}
   ];
   try{await createLiveOrder(rows)}catch(e){alert(e.message)}
 };
