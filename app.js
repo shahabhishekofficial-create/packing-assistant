@@ -180,8 +180,11 @@ async function createLiveOrder(rows){
 
 function showShareLink(){
   $("reportBtn").classList.remove("hidden");
-  const url=new URL(location.href);
-  $("orderLink").value=location.origin+location.pathname;
+  const isAdmin=location.pathname.endsWith("/admin.html");
+  const staffUrl=new URL("./",location.href).href;
+  $("orderLink").value=isAdmin ? staffUrl : staffUrl;
+  const label=$("orderLinkBox")?.querySelector("span");
+  if(label) label.textContent=isAdmin ? "Packaging Staff Link" : "App Link";
   $("orderLinkBox").classList.remove("hidden");
 }
 
