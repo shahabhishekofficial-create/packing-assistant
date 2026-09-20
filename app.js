@@ -47,7 +47,7 @@ function applyRankOrder(){
   const m={}; codes.forEach((c,i)=>m[c]=i+1); saveRankMap(m);
   for(const o of state.outlets.values()) o.rows.sort((x,y)=>(m[x.code]??999999)-(m[y.code]??999999));
 }
-\nconst ITEM_RANK = {
+const ITEM_RANK = {
   "1025":1, "1095":26, "1133":2, "1137":3, "1292":19,
   "3797":6, "4079":20, "5449":21, "5456":18, "5913":17,
   "5933":16, "5936":15, "7386":4, "7459":24, "7463":22,
@@ -56,7 +56,7 @@ function applyRankOrder(){
 };
 
 function rankItem(code){
-  const n=ITEM_RANK[String(code).trim()];
+  const n=getRankMap()[String(code).trim()];
   return Number.isFinite(n) ? n : 999999;
 }
 
