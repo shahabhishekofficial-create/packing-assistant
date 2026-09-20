@@ -13,6 +13,19 @@ const state = {
 };
 
 const $ = id => document.getElementById(id);
+const ITEM_RANK = {
+  "1025":1, "1095":26, "1133":2, "1137":3, "1292":19,
+  "3797":6, "4079":20, "5449":21, "5456":18, "5913":17,
+  "5933":16, "5936":15, "7386":4, "7459":24, "7463":22,
+  "7474":11, "7475":12, "12474":13, "15049":5, "63716":7,
+  "956524":9, "5931":17, "369634":8
+};
+
+function rankItem(code){
+  const n=ITEM_RANK[String(code).trim()];
+  return Number.isFinite(n) ? n : 999999;
+}
+
 const DEVICE_KEY = "packing_assistant_device_id";
 
 function deviceId() {
@@ -223,6 +236,14 @@ function applyServerData(data){
       started_at:r.started_at,completed_at:r.completed_at
     });
     state.rows.push(r);
+  }
+  // Narration/packing sequence follows the supplied Rank.
+  for(const o of state.outlets.values()){
+    o.rows.sort((a,b)=>{
+      const ar=rankItem(a.code), br=rankItem(b.code);
+      if(ar!==br) return ar-br;
+      return String(a.product).localeCompare(String(b.product));
+    });
   }
 }
 
