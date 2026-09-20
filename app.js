@@ -8,6 +8,7 @@ const state = {
   index: 0,
   orderId: null,
   token: null,
+  events: [],
   poll: null
 };
 
@@ -184,6 +185,8 @@ async function loadOrder(){
 function applyServerData(data){
   state.rows=[];
   state.outlets=new Map();
+  state.events=data.events||[];
+  state.order=data.order||null;
   const outlets=data.outlets||[];
   const items=data.items||[];
   for(const o of outlets){
@@ -208,6 +211,57 @@ function applyServerData(data){
   }
 }
 
+function formatDate(v){ return v ? new Date(v).toLocaleString("en-IN") : ""; }
+function latestEventForItem(itemId){
+  const ev=state.events.filter(e=>e.item_id===itemId);
+  return ev.length ? ev[ev.length-1] : null;
+}
+function downloadReport(){
+  if(!state.orderId) return alert("No live order loaded.");
+  const all=[...state.outlets.values()];
+  const itemRows=[], outletRows=[], exceptionRows=[];
+  for(const o of all){
+    const started=o.rows.map(r=>r.started_at).filter(Boolean).sort()[0]||null;
+    const completed=o.rows.map(r=>r.completed_at).filter(Boolean).sort().slice(-1)[0]||o.completed_at||null;
+    const duration=started&&completed ? Math.round((new Date(completed)-new Date(started))/1000) : "";
+    const mins=duration==="" ? "" : Math.floor(duration/60)+":"+String(duration%60).padStart(2,"0");
+    let packedItems=0, partialItems=0, missingItems=0;
+    o.rows.forEach(r=>{
+      if(r.status==="PACKED") packedItems++;
+      if(r.status==="PARTIAL") partialItems++;
+      if(r.status==="MISSING") missingItems++;
+      const ev=latestEventForItem(r.id);
+      const row={
+        "Outlet":o.name,"Item Code":r.code,"Product":r.product,
+        "Required":r.required,"Packed":r.packed,"Missing":r.missing,
+        "Status":r.status||"PENDING","Reason":r.reason||"",
+        "Item Started":formatDate(r.started_at),"Item Completed":formatDate(r.completed_at),
+        "Packer/Device":ev?.device_id||""
+      };
+      itemRows.push(row);
+      if(r.status==="PARTIAL"||r.status==="MISSING") exceptionRows.push(row);
+    });
+    outletRows.push({
+      "Outlet":o.name,"Total Items":o.rows.length,"Packed Items":packedItems,
+      "Partial Items":partialItems,"Missing Items":missingItems,
+      "Required Qty":o.rows.reduce((s,r)=>s+r.required,0),
+      "Packed Qty":o.rows.reduce((s,r)=>s+r.packed,0),
+      "Missing Qty":o.rows.reduce((s,r)=>s+r.missing,0),
+      "Started At":formatDate(started),"Completed At":formatDate(completed),
+      "Packing Duration":mins,"Packer/Device":o.lockedDeviceId||""
+    });
+  }
+  const orderData=state.rows.length ? [{
+    "Order ID":state.orderId,
+    "Order Status":state.outlets.size && [...state.outlets.values()].every(o=>o.status==="completed")?"COMPLETED":"ACTIVE",
+    "Created At":formatDate(state.order?.created_at),
+    "Completed At":formatDate(state.order?.completed_at)
+  }] : [];
+  const wb=XLSX.utils.book_new();
+  const add=(name,rows)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows),name);
+  add("Item Wise",itemRows); add("Outlet Summary",outletRows); add("Missing & Partial",exceptionRows); add("Order Summary",orderData);
+  XLSX.writeFile(wb,"Packing_Report_"+new Date().toISOString().slice(0,10)+".xlsx");
+}
 function renderHome(){
   $("orderSummary").classList.remove("hidden");
   const all=[...state.outlets.values()];
