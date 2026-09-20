@@ -167,10 +167,21 @@ async function createLiveOrder(rows){
 function showShareLink(){
   $("reportBtn").classList.remove("hidden");
   const url=new URL(location.href);
-  url.searchParams.set("order",state.orderId);
-  url.searchParams.set("token",state.token);
-  $("orderLink").value=url.toString();
+  $("orderLink").value=location.origin+location.pathname;
   $("orderLinkBox").classList.remove("hidden");
+}
+
+async function loadCurrentOrder(){
+  const {data,error}=await db.rpc("get_current_order");
+  if(error) throw error;
+  if(!data) return false;
+  state.orderId=data.id;
+  state.token=data.access_token;
+  localStorage.setItem("pa_order_id",state.orderId);
+  localStorage.setItem("pa_order_token",state.token);
+  await loadOrder();
+  startPolling();
+  return true;
 }
 
 async function loadOrder(){
@@ -531,13 +542,19 @@ updateConnection();
 
 (async function init(){
   const params=new URLSearchParams(location.search);
-  state.orderId=params.get("order")||localStorage.getItem("pa_order_id");
-  state.token=params.get("token")||localStorage.getItem("pa_order_token");
-  if(state.orderId&&state.token){
-    try{
+  const legacyOrder=params.get("order");
+  const legacyToken=params.get("token");
+  try{
+    if(legacyOrder && legacyToken){
+      state.orderId=legacyOrder;
+      state.token=legacyToken;
+      localStorage.setItem("pa_order_id",state.orderId);
+      localStorage.setItem("pa_order_token",state.token);
       await loadOrder();
       startPolling();
-      if(params.get("order")) showShareLink();
-    }catch(e){console.warn("No saved order",e.message)}
-  }
+      history.replaceState({},document.title,location.pathname);
+      return;
+    }
+    await loadCurrentOrder();
+  }catch(e){console.warn("No current order",e.message)}
 })();
