@@ -46,6 +46,22 @@
 
   <div id="orderSummary" class="dashboardSummary hidden"></div>
 
+  <section id="adminDashboard" class="adminDashboard hidden">
+    <div class="sectionHead">
+      <div><span class="eyebrow">MANAGEMENT DASHBOARD</span><h2>Packing Analysis</h2></div>
+      <div class="dashboardFilters">
+        <select id="dashboardOutletFilter"><option value="ALL">All Outlets</option></select>
+        <select id="dashboardStatusFilter"><option value="ALL">All Status</option><option value="MISSING">Missing</option><option value="PARTIAL">Partial</option><option value="PACKED">Packed</option><option value="PENDING">Pending</option></select>
+      </div>
+    </div>
+    <div id="dashboardKpis" class="analysisKpis"></div>
+    <div class="analysisGrid">
+      <div class="analysisCard"><h3>Outlet-wise Summary</h3><div class="tableWrap"><table><thead><tr><th>Outlet</th><th>Required</th><th>Packed</th><th>Missing</th><th>Missing %</th><th>Status</th></tr></thead><tbody id="outletAnalysisBody"></tbody></table></div></div>
+      <div class="analysisCard"><h3>Item-wise Exceptions</h3><p class="tableHint">Items with missing or partial quantity, across outlets.</p><div class="tableWrap"><table><thead><tr><th>Item</th><th>Outlets</th><th>Required</th><th>Packed</th><th>Missing</th><th>Missing %</th></tr></thead><tbody id="itemAnalysisBody"></tbody></table></div></div>
+      <div class="analysisCard wide"><h3>Missing / Partial Detail</h3><div class="tableWrap"><table><thead><tr><th>Outlet</th><th>Item</th><th>Required</th><th>Packed</th><th>Missing</th><th>Status</th><th>Reason</th></tr></thead><tbody id="exceptionAnalysisBody"></tbody></table></div></div>
+    </div>
+  </section>
+
   <div class="sectionHead">
     <div><span class="eyebrow">LIVE WORKSPACE</span><h2>Outlets</h2></div>
     <span class="syncPill">● Real-time sync</span>
@@ -99,5 +115,6 @@
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script src="config.js"></script>
 <script src="app.js"></script>
+<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(console.warn));}</script>
 </body>
 </html>
