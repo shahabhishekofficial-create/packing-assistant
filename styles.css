@@ -14,3 +14,10 @@ button{border:0;border-radius:12px;padding:12px 16px;font-size:15px;font-weight:
 @media(max-width:1000px){#app{padding:16px}.dashboardSummary{grid-template-columns:repeat(2,1fr)}.dashboardSummary .progressStat{grid-column:span 2}.outletGrid{grid-template-columns:1fr}}
 @media(max-width:650px){#app{padding:12px}.appHeader{align-items:flex-start}.brand h1{font-size:22px}.brand p{font-size:12px}.headerActions{gap:5px}.headerActions select{display:none}.reportBtn{font-size:12px;padding:9px}.adminCard{padding:17px}.uploadRow{flex-direction:column}.dashboardSummary{grid-template-columns:1fr 1fr}.dashboardSummary .progressStat{grid-column:span 2}.outletGrid{grid-template-columns:1fr}.actions{grid-template-columns:1fr}.product h2{font-size:32px}.qty{font-size:58px}.packingTop{gap:8px}.packingVoice select{padding:9px}}
 .rankMaster{padding:20px 22px;margin-bottom:24px}.rankMaster .sectionHead{margin:0}.rankList{display:grid;gap:7px;margin-top:12px}.rankItem{display:grid;grid-template-columns:34px 1fr auto;align-items:center;gap:12px;padding:12px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:11px;cursor:grab}.rankItem.dragging{opacity:.45}.rankNum{font-weight:900;color:#155eef}.rankProduct b{display:block}.rankProduct small{color:#64748b}.dragHandle{font-size:18px;color:#94a3b8}@media(max-width:650px){.rankMaster{padding:16px}.rankItem{grid-template-columns:30px 1fr auto}}
+/* Dashboard separation */
+.packerPage .adminCard{display:none!important}
+.packerPage #reportBtn{display:none!important}
+.adminPage #packing{display:none!important}
+.adminPage #voiceLanguage{display:none!important}
+.adminPage .appHeader{margin-bottom:18px}
+.adminPage .brand p:after{content:"  •  Admin Dashboard"}
