@@ -180,9 +180,9 @@ async function createLiveOrder(rows){
 
 function showShareLink(){
   $("reportBtn").classList.remove("hidden");
-  const isAdmin=location.pathname.endsWith("/admin.html");
-  const staffUrl=new URL("./",location.href).href;
-  $("orderLink").value=isAdmin ? staffUrl : staffUrl;
+  const isAdmin=location.pathname.endsWith("/admin.html") || /\/admin\/?$/.test(location.pathname);
+  const staffUrl=isAdmin && /\/admin\/?$/.test(location.pathname) ? new URL("../",location.href).href : new URL("./",location.href).href;
+  $("orderLink").value=staffUrl;
   const label=$("orderLinkBox")?.querySelector("span");
   if(label) label.textContent=isAdmin ? "Packaging Staff Link" : "App Link";
   $("orderLinkBox").classList.remove("hidden");
@@ -306,7 +306,7 @@ function downloadReport(){
   XLSX.writeFile(wb,"Packing_Report_"+new Date().toISOString().slice(0,10)+".xlsx");
 }
 function renderAdminDashboard(){
-  if(!location.pathname.endsWith("/admin.html")) return;
+  if(!(location.pathname.endsWith("/admin.html") || /\/admin\/?$/.test(location.pathname))) return;
   const panel=$("adminDashboard");
   if(!panel) return;
   panel.classList.remove("hidden");
@@ -357,7 +357,7 @@ function renderHome(){
     '<div class="stat red"><div class="num">'+pending+'</div><div class="label">Pending</div></div>'+
     '<div class="stat progressStat"><div class="label">Overall Progress <b style="float:right">'+pct+'%</b></div><div class="progressLine"><i style="width:'+pct+'%"></i></div><small style="margin-top:7px;color:#64748b">'+packed+' packed · '+missing+' missing · '+totalItems+' products</small></div>';
 
-  if(location.pathname.endsWith("/admin.html")){
+  if(location.pathname.endsWith("/admin.html") || /\/admin\/?$/.test(location.pathname)){
     const f=$("dashboardOutletFilter");
     if(f){
       const current=f.value;
