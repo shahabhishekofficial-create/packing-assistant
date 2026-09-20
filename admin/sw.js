@@ -1,4 +1,4 @@
-const CACHE="packing-assistant-admin-v3";
+const CACHE="packing-assistant-admin-v4";
 self.addEventListener("install",event=>{
   event.waitUntil(
     caches.open(CACHE)
@@ -15,6 +15,8 @@ self.addEventListener("activate",event=>{
 });
 self.addEventListener("fetch",event=>{
   if(event.request.method!=="GET") return;
+  const url=new URL(event.request.url);
+  if(url.origin!==self.location.origin) return;
   event.respondWith(
     fetch(event.request).then(response=>{
       const copy=response.clone();
