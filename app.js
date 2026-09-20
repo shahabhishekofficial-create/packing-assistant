@@ -305,6 +305,40 @@ function downloadReport(){
   add("Item Wise",itemRows); add("Outlet Summary",outletRows); add("Missing & Partial",exceptionRows); add("Order Summary",orderData);
   XLSX.writeFile(wb,"Packing_Report_"+new Date().toISOString().slice(0,10)+".xlsx");
 }
+function renderAdminDashboard(){
+  if(!location.pathname.endsWith("/admin.html")) return;
+  const panel=$("adminDashboard");
+  if(!panel) return;
+  panel.classList.remove("hidden");
+  const all=[...state.outlets.values()];
+  const filterOutlet=$("dashboardOutletFilter").value;
+  const filterStatus=$("dashboardStatusFilter").value;
+  const selected=filterOutlet==="ALL"?all:all.filter(o=>o.id===filterOutlet);
+  const rows=selected.flatMap(o=>o.rows.map(r=>({...r,outlet:o.name,outletId:o.id})));
+  const filtered=filterStatus==="ALL"?rows:rows.filter(r=>(r.status||"PENDING")===filterStatus);
+  const required=filtered.reduce((s,r)=>s+r.required,0);
+  const packed=filtered.reduce((s,r)=>s+r.packed,0);
+  const missing=filtered.reduce((s,r)=>s+r.missing,0);
+  const exceptions=filtered.filter(r=>r.status==="MISSING"||r.status==="PARTIAL").length;
+  const pct=required?Math.round((missing/required)*100):0;
+  $("dashboardKpis").innerHTML=[
+    ["Required Qty",required,"blue"],["Packed Qty",packed,"green"],["Missing Qty",missing,"red"],["Exception Items",exceptions,"amber"],["Missing %",pct+"%","red"]
+  ].map(x=>'<div class="analysisKpi '+x[2]+'"><b>'+x[1]+'</b><span>'+x[0]+'</span></div>').join("");
+  $("outletAnalysisBody").innerHTML=selected.map(o=>{
+    const rq=o.rows.reduce((s,r)=>s+r.required,0),pk=o.rows.reduce((s,r)=>s+r.packed,0),ms=o.rows.reduce((s,r)=>s+r.missing,0);
+    const mp=rq?Math.round(ms/rq*100):0;
+    return '<tr><td><b>'+esc(o.name)+'</b></td><td>'+rq+'</td><td>'+pk+'</td><td class="'+(ms?'dangerText':'')+'">'+ms+'</td><td>'+mp+'%</td><td><span class="miniStatus '+o.status+'">'+(o.status||"available").replace("_"," ")+'</span></td></tr>';
+  }).join("")||'<tr><td colspan="6">No data</td></tr>';
+  const byItem=new Map();
+  filtered.forEach(r=>{
+    const k=r.code;
+    if(!byItem.has(k)) byItem.set(k,{code:k,product:r.product,outlets:new Set(),required:0,packed:0,missing:0});
+    const x=byItem.get(k); x.outlets.add(r.outlet); x.required+=r.required; x.packed+=r.packed; x.missing+=r.missing;
+  });
+  $("itemAnalysisBody").innerHTML=[...byItem.values()].filter(x=>x.missing>0).sort((a,b)=>b.missing-a.missing).map(x=>'<tr><td><b>'+esc(x.product)+'</b><small>'+esc(x.code)+'</small></td><td>'+x.outlets.size+'</td><td>'+x.required+'</td><td>'+x.packed+'</td><td class="dangerText">'+x.missing+'</td><td>'+Math.round(x.missing/x.required*100)+'%</td></tr>').join("")||'<tr><td colspan="6">No missing/partial items</td></tr>';
+  $("exceptionAnalysisBody").innerHTML=filtered.filter(r=>r.status==="MISSING"||r.status==="PARTIAL").sort((a,b)=>b.missing-a.missing).map(r=>'<tr><td>'+esc(r.outlet)+'</td><td><b>'+esc(r.product)+'</b><small>'+esc(r.code)+'</small></td><td>'+r.required+'</td><td>'+r.packed+'</td><td class="dangerText">'+r.missing+'</td><td><span class="miniStatus '+String(r.status).toLowerCase()+'">'+r.status+'</span></td><td>'+esc(r.reason||"")+'</td></tr>').join("")||'<tr><td colspan="7">No exceptions</td></tr>';
+}
+
 function renderHome(){
   $("orderSummary").classList.remove("hidden");
   const all=[...state.outlets.values()];
@@ -323,6 +357,15 @@ function renderHome(){
     '<div class="stat red"><div class="num">'+pending+'</div><div class="label">Pending</div></div>'+
     '<div class="stat progressStat"><div class="label">Overall Progress <b style="float:right">'+pct+'%</b></div><div class="progressLine"><i style="width:'+pct+'%"></i></div><small style="margin-top:7px;color:#64748b">'+packed+' packed · '+missing+' missing · '+totalItems+' products</small></div>';
 
+  if(location.pathname.endsWith("/admin.html")){
+    const f=$("dashboardOutletFilter");
+    if(f){
+      const current=f.value;
+      f.innerHTML='<option value="ALL">All Outlets</option>'+all.map(o=>'<option value="'+o.id+'">'+esc(o.name)+'</option>').join("");
+      f.value=[...all].some(o=>o.id===current)?current:"ALL";
+      if(!f.dataset.bound){f.dataset.bound="1";f.onchange=renderAdminDashboard;$("dashboardStatusFilter").onchange=renderAdminDashboard;}
+    }
+  }
   $("outletList").innerHTML="";
   all.forEach((o,i)=>{
     const b=document.createElement("button");
@@ -336,6 +379,7 @@ function renderHome(){
     b.onclick=()=>startOutlet(o.id);
     $("outletList").appendChild(b);
   });
+  renderAdminDashboard();
 }
 async function startOutlet(outletId){
   const o=state.outlets.get(outletId);
