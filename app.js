@@ -96,11 +96,18 @@ function parseWorkbook(raw){
 }
 
 function validateRows(rows){
-  const seen=new Set();
+  const seen=new Set(), rankByCode=new Map(), codeByRank=new Map();
   for(const r of rows){
     const key=r.store+"¦"+r.code;
     if(seen.has(key)) throw new Error(`Duplicate outlet + item code: ${r.store} / ${r.code}`);
     seen.add(key);
+    const code=String(r.code).trim();
+    const oldRank=rankByCode.get(code);
+    if(oldRank!==undefined && oldRank!==r.rank) throw new Error(`SKU ${code} has different narration ranks`);
+    rankByCode.set(code,r.rank);
+    const oldCode=codeByRank.get(r.rank);
+    if(oldCode!==undefined && oldCode!==code) throw new Error(`Duplicate SKU narration rank: ${r.rank} (${oldCode} and ${code})`);
+    codeByRank.set(r.rank,code);
   }
 }
 
@@ -115,7 +122,8 @@ async function createLiveOrder(rows){
     store_name: r.store,
     item_code: r.code,
     product_name: r.product,
-    required_qty: r.required
+    required_qty: r.required,
+    narration_rank: r.rank
   }));
 
   const url = `${window.SUPABASE_CONFIG.url}/rest/v1/rpc/create_order`;
