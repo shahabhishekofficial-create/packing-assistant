@@ -180,6 +180,7 @@ async function loadCurrentOrder(){
   localStorage.setItem("pa_order_id",state.orderId);
   localStorage.setItem("pa_order_token",state.token);
   await loadOrder();
+  showShareLink();
   startPolling();
   return true;
 }
@@ -279,27 +280,35 @@ function downloadReport(){
 function renderHome(){
   $("orderSummary").classList.remove("hidden");
   const all=[...state.outlets.values()];
+  const totalItems=all.reduce((s,o)=>s+o.rows.length,0);
+  const completed=all.filter(o=>o.status==="completed").length;
+  const inProgress=all.filter(o=>o.status==="in_progress").length;
+  const pending=all.length-completed-inProgress;
   const total=all.reduce((s,o)=>s+o.rows.reduce((a,r)=>a+r.required,0),0);
   const packed=all.reduce((s,o)=>s+o.rows.reduce((a,r)=>a+r.packed,0),0);
   const missing=all.reduce((s,o)=>s+o.rows.reduce((a,r)=>a+r.missing,0),0);
+  const pct=total?Math.round(((packed+missing)/total)*100):0;
   $("orderSummary").innerHTML=
-    `<h2>Live Order</h2><b>${all.length} outlets</b> · ${state.rows.length} products
-     <br>Required: ${total} · Packed: ${packed} · Missing: ${missing}`;
+    '<div class="stat blue"><div class="num">'+all.length+'</div><div class="label">Total Outlets</div></div>'+
+    '<div class="stat green"><div class="num">'+completed+'</div><div class="label">Completed</div></div>'+
+    '<div class="stat amber"><div class="num">'+inProgress+'</div><div class="label">In Progress</div></div>'+
+    '<div class="stat red"><div class="num">'+pending+'</div><div class="label">Pending</div></div>'+
+    '<div class="stat progressStat"><div class="label">Overall Progress <b style="float:right">'+pct+'%</b></div><div class="progressLine"><i style="width:'+pct+'%"></i></div><small style="margin-top:7px;color:#64748b">'+packed+' packed · '+missing+' missing · '+totalItems+' products</small></div>';
+
   $("outletList").innerHTML="";
-  all.forEach(o=>{
+  all.forEach((o,i)=>{
     const b=document.createElement("button");
-    b.className="outlet";
     const done=o.rows.filter(r=>r.status).length;
     const mine=o.status==="in_progress"&&o.lockedDeviceId===DEVICE_ID;
     const locked=o.status==="in_progress"&&!mine;
+    b.className="outlet "+(o.status==="completed"?"completed":o.status==="in_progress"?"progressing":"available");
     b.disabled=o.status==="completed"||locked;
-    b.innerHTML=`<b>${esc(o.name)}</b><span>${o.rows.length} products · ${done}/${o.rows.length}
-      ${o.status==="completed"?"· ✓ COMPLETED":mine?"· YOUR OUTLET":locked?"· IN PROGRESS":"· AVAILABLE"}</span>`;
+    const tag=o.status==="completed"?"✓ COMPLETED":mine?"YOUR OUTLET":locked?"IN PROGRESS":"AVAILABLE";
+    b.innerHTML='<div><span style="display:block;text-align:left;color:#94a3b8;font-size:11px;margin-bottom:3px">'+(i+1)+'</span><b>'+esc(o.name)+'</b></div><span><strong class="statusTag">'+tag+'</strong><br>'+done+'/'+o.rows.length+' products</span>';
     b.onclick=()=>startOutlet(o.id);
     $("outletList").appendChild(b);
   });
 }
-
 async function startOutlet(outletId){
   const o=state.outlets.get(outletId);
   if(!o || o.status==="completed") return;
