@@ -192,7 +192,7 @@ async function createLiveOrder(rows){
 }
 
 function showShareLink(){
-  $("reportBtn").classList.remove("hidden");
+  
   const isAdmin=location.pathname.endsWith("/admin.html") || /\/admin\/?$/.test(location.pathname);
   const staffUrl=isAdmin && /\/admin\/?$/.test(location.pathname) ? new URL("../",location.href).href : new URL("./",location.href).href;
   $("orderLink").value=staffUrl;
