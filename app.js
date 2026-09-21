@@ -507,7 +507,7 @@ function renderOutletSettings(all){
       <option value="">Unassigned</option>
       ${drivers.map(d=>`<option value="${esc(d)}"${(o.driver||"")===d?" selected":""}>${esc(d)}</option>`).join("")}
     </select>
-    <input class="deliveryChargeInput" type="number" min="0" step="0.01" value="${Number(o.deliveryCharge||0).toFixed(2)}" aria-label="Delivery charge for ${esc(o.name)}" placeholder="0.00">
+    <div class="chargeField"><span>₹ Delivery</span><input class="deliveryChargeInput" type="number" min="0" step="0.01" value="${Number(o.deliveryCharge||0).toFixed(2)}" aria-label="Delivery charge for ${esc(o.name)}" placeholder="0.00"></div>
   </div>`).join("");
 
   let drag=null;
