@@ -314,52 +314,175 @@ function latestEventForItem(itemId){
   const ev=state.events.filter(e=>e.item_id===itemId);
   return ev.length ? ev[ev.length-1] : null;
 }
-function downloadReport(){
-  if(!state.orderId) return alert("No live order loaded.");
-  const all=[...state.outlets.values()];
-  const itemRows=[], outletRows=[], exceptionRows=[];
-  for(const o of all){
-    const started=o.rows.map(r=>r.started_at).filter(Boolean).sort()[0]||null;
-    const completed=o.rows.map(r=>r.completed_at).filter(Boolean).sort().slice(-1)[0]||o.completed_at||null;
-    const duration=started&&completed ? Math.round((new Date(completed)-new Date(started))/1000) : "";
-    const mins=duration==="" ? "" : Math.floor(duration/60)+":"+String(duration%60).padStart(2,"0");
-    let packedItems=0, partialItems=0, missingItems=0;
-    o.rows.forEach(r=>{
-      if(r.status==="PACKED") packedItems++;
-      if(r.status==="PARTIAL") partialItems++;
-      if(r.status==="MISSING") missingItems++;
-      const ev=latestEventForItem(r.id);
+function reportDateLabel(v){return v?new Date(v).toLocaleDateString("en-IN",{day:"2-digit",month:"2-digit",year:"numeric"}):"";}
+
+async function ensureReportAccess(){
+  if(state.token)return true;
+  const savedToken=localStorage.getItem("pa_order_token");
+  const savedOrder=localStorage.getItem("pa_order_id");
+  if(!savedToken)return false;
+  state.token=savedToken;
+  if(savedOrder)state.orderId=savedOrder;
+  try{
+    if(savedOrder) await loadOrder();
+    return true;
+  }catch(e){
+    state.token=null;
+    return false;
+  }
+}
+
+async function loadReportHistory(){
+  const box=$("reportHistoryList");
+  if(!box)return;
+  box.innerHTML='<div class="hint">Loading saved orders…</div>';
+  if(!(await ensureReportAccess())){
+    box.innerHTML='<div class="hint">No saved order access is available on this device. Create/open an order here first.</div>';
+    return;
+  }
+  const {data,error}=await db.rpc("get_order_history",{p_access_token:state.token});
+  if(error){
+    box.innerHTML='<div class="hint">Historical reporting is not enabled yet. Run <b>supabase/historical_reports.sql</b> once in Supabase SQL Editor.</div>';
+    return;
+  }
+  const orders=data||[];
+  box.innerHTML=orders.length
+    ? orders.map(o=>'<div class="reportHistoryRow"><div><b>'+esc(reportDateLabel(o.created_at))+'</b><span>'+esc(o.order_name||"Packing Order")+'</span></div><small>'+Number(o.outlet_count||0)+' outlets · '+Number(o.item_count||0)+' items · '+esc(o.order_status)+'</small></div>').join("")
+    : '<div class="hint">No saved orders found.</div>';
+}
+
+function openReportDialog(){
+  const dlg=$("reportDialog");
+  if(!dlg)return;
+  const today=new Date();
+  const iso=new Date(today.getTime()-today.getTimezoneOffset()*60000).toISOString().slice(0,10);
+  const from=$("reportFromDate"),to=$("reportToDate");
+  if(from&&!from.value)from.value="";
+  if(to&&!to.value)to.value="";
+  dlg.showModal();
+  loadReportHistory();
+}
+
+async function exportHistoricalReport(){
+  const btn=$("exportReportBtn");
+  const from=String($("reportFromDate")?.value||"").trim()||null;
+  const to=String($("reportToDate")?.value||"").trim()||null;
+  if(from&&to&&from>to)return alert("From date cannot be after To date.");
+  if(!(await ensureReportAccess()))return alert("No order access is available. Open the admin page on the device used to create an order.");
+  btn.disabled=true; btn.textContent="Preparing…";
+  try{
+    const {data,error}=await db.rpc("get_report_data",{
+      p_access_token:state.token,
+      p_from_date:from,
+      p_to_date:to
+    });
+    if(error)throw error;
+    const rows=data||[];
+    if(!rows.length)return alert("No packing data found for the selected date range.");
+
+    const orderMap=new Map(),outletMap=new Map(),itemMap=new Map(),driverMap=new Map();
+    const itemRows=[],exceptionRows=[];
+    for(const r of rows){
+      orderMap.set(r.order_id,{
+        id:r.order_id,name:r.order_name,created:r.order_created_at,completed:r.order_completed_at
+      });
+      const outletKey=r.order_id+"¦"+r.outlet_id;
+      if(!outletMap.has(outletKey))outletMap.set(outletKey,{
+        orderId:r.order_id,orderName:r.order_name,orderDate:r.order_created_at,
+        outlet:r.outlet_name,driver:r.driver||"Unassigned",rank:Number(r.outlet_rank||9999),
+        status:r.outlet_status,required:0,packed:0,missing:0,items:0,
+        started:r.item_started_at||null,completed:r.item_completed_at||null,
+        deliveryStatus:r.delivery_status||"pending",deliveredAt:r.delivered_at||null,
+        invoice:r.invoice_filename||"",invoiceUploaded:r.invoice_uploaded_at||null,
+        deliveryCharge:Number(r.delivery_charge||0)
+      });
+      const o=outletMap.get(outletKey);
+      o.required+=Number(r.required_qty||0);o.packed+=Number(r.packed_qty||0);o.missing+=Number(r.missing_qty||0);o.items++;
+      if(r.item_started_at&&(!o.started||new Date(r.item_started_at)<new Date(o.started)))o.started=r.item_started_at;
+      if(r.item_completed_at&&(!o.completed||new Date(r.item_completed_at)>new Date(o.completed)))o.completed=r.item_completed_at;
+      if(r.delivery_status)o.deliveryStatus=r.delivery_status;
+      if(r.delivered_at)o.deliveredAt=r.delivered_at;
+      if(r.invoice_filename)o.invoice=r.invoice_filename;
+      if(r.invoice_uploaded_at)o.invoiceUploaded=r.invoice_uploaded_at;
+      o.deliveryCharge=Number(r.delivery_charge||o.deliveryCharge||0);
+
+      const evDevice=r.packer_device||"";
       const row={
-        "Outlet":o.name,"Item Code":r.code,"Product":r.product,
-        "Required":r.required,"Packed":r.packed,"Missing":r.missing,
-        "Status":r.status||"PENDING","Reason":r.reason||"",
-        "Item Started":formatDate(r.started_at),"Item Completed":formatDate(r.completed_at),
-        "Packer/Device":ev?.device_id||""
+        "Order Date":reportDateLabel(r.order_created_at),
+        "Order ID":r.order_id,
+        "Order":r.order_name||"",
+        "Outlet":r.outlet_name,
+        "Driver":r.driver||"Unassigned",
+        "Item Code":r.item_code,
+        "Product":r.product_name,
+        "Required":Number(r.required_qty||0),
+        "Packed":Number(r.packed_qty||0),
+        "Missing":Number(r.missing_qty||0),
+        "Status":r.item_status||"PENDING",
+        "Reason":r.reason||"",
+        "Item Started":formatDate(r.item_started_at),
+        "Item Completed":formatDate(r.item_completed_at),
+        "Packer/Device":evDevice,
+        "Delivery Status":r.delivery_status||"Pending",
+        "Delivered At":formatDate(r.delivered_at),
+        "Invoice":r.invoice_filename||"",
+        "Invoice Uploaded":formatDate(r.invoice_uploaded_at),
+        "Delivery Charge":Number(r.delivery_charge||0)
       };
       itemRows.push(row);
-      if(r.status==="PARTIAL"||r.status==="MISSING") exceptionRows.push(row);
+      if(r.item_status==="PARTIAL"||r.item_status==="MISSING")exceptionRows.push(row);
+
+      const ik=r.item_code+"¦"+r.product_name;
+      if(!itemMap.has(ik))itemMap.set(ik,{code:r.item_code,product:r.product_name,outlets:new Set(),required:0,packed:0,missing:0});
+      const im=itemMap.get(ik); im.outlets.add(outletKey); im.required+=Number(r.required_qty||0); im.packed+=Number(r.packed_qty||0); im.missing+=Number(r.missing_qty||0);
+
+      const dk=r.order_id+"¦"+(r.driver||"Unassigned");
+      if(!driverMap.has(dk))driverMap.set(dk,{orderId:r.order_id,orderDate:r.order_created_at,driver:r.driver||"Unassigned",outlets:new Set(),required:0,packed:0,missing:0});
+      const dm=driverMap.get(dk); dm.outlets.add(outletKey); dm.required+=Number(r.required_qty||0); dm.packed+=Number(r.packed_qty||0); dm.missing+=Number(r.missing_qty||0);
+    }
+
+    const outletRows=[...outletMap.values()].sort((a,b)=>new Date(a.orderDate)-new Date(b.orderDate)||a.rank-b.rank).map(o=>{
+      const dur=o.started&&o.completed?Math.max(0,Math.round((new Date(o.completed)-new Date(o.started))/1000)):"";
+      return {
+        "Order Date":reportDateLabel(o.orderDate),"Order":o.orderName||"","Outlet":o.outlet,"Driver":o.driver,
+        "Total Items":o.items,"Required Qty":o.required,"Packed Qty":o.packed,"Missing Qty":o.missing,
+        "Missing %":o.required?Math.round(o.missing/o.required*10000)/100:0,
+        "Packing Status":o.status||"","Started At":formatDate(o.started),"Completed At":formatDate(o.completed),
+        "Packing Duration":dur===""?"":Math.floor(dur/60)+":"+String(dur%60).padStart(2,"0"),
+        "Delivery Status":o.deliveryStatus,"Delivered At":formatDate(o.deliveredAt),
+        "Invoice":o.invoice,"Invoice Uploaded":formatDate(o.invoiceUploaded),"Delivery Charge":o.deliveryCharge
+      };
     });
-    outletRows.push({
-      "Outlet":o.name,"Total Items":o.rows.length,"Packed Items":packedItems,
-      "Partial Items":partialItems,"Missing Items":missingItems,
-      "Required Qty":o.rows.reduce((s,r)=>s+r.required,0),
-      "Packed Qty":o.rows.reduce((s,r)=>s+r.packed,0),
-      "Missing Qty":o.rows.reduce((s,r)=>s+r.missing,0),
-      "Started At":formatDate(started),"Completed At":formatDate(completed),
-      "Packing Duration":mins,"Packer/Device":o.lockedDeviceId||""
+
+    const orderRows=[...orderMap.values()].sort((a,b)=>new Date(a.created)-new Date(b.created)).map(o=>{
+      const ors=[...outletMap.values()].filter(x=>x.orderId===o.id);
+      const req=ors.reduce((s,x)=>s+x.required,0),pack=ors.reduce((s,x)=>s+x.packed,0),miss=ors.reduce((s,x)=>s+x.missing,0);
+      return {"Order Date":reportDateLabel(o.created),"Order ID":o.id,"Order":o.name||"","Status":o.completed?"COMPLETED":"ACTIVE","Outlets":ors.length,"Required Qty":req,"Packed Qty":pack,"Missing Qty":miss,"Missing %":req?Math.round(miss/req*10000)/100:0,"Created At":formatDate(o.created),"Completed At":formatDate(o.completed)};
     });
+
+    const itemSummary=[...itemMap.values()].sort((a,b)=>String(a.product).localeCompare(String(b.product))).map(x=>({"Item Code":x.code,"Product":x.product,"Outlets":x.outlets.size,"Required":x.required,"Packed":x.packed,"Missing":x.missing,"Missing %":x.required?Math.round(x.missing/x.required*10000)/100:0}));
+    const driverSummary=[...driverMap.values()].sort((a,b)=>new Date(a.orderDate)-new Date(b.orderDate)||a.driver.localeCompare(b.driver)).map(x=>({"Order Date":reportDateLabel(x.orderDate),"Driver":x.driver,"Outlets":x.outlets.size,"Required":x.required,"Packed":x.packed,"Missing":x.missing,"Missing %":x.required?Math.round(x.missing/x.required*10000)/100:0}));
+
+    const wb=XLSX.utils.book_new();
+    const add=(name,list)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(list),name);
+    add("Item Wise",itemRows);
+    add("Outlet Summary",outletRows);
+    add("Item Summary",itemSummary);
+    add("Driver Summary",driverSummary);
+    add("Missing & Partial",exceptionRows);
+    add("Order Summary",orderRows);
+    const suffix=from&&to?from+"_to_"+to:from?from+"_onward":to?"up_to_"+to:"All_Dates";
+    XLSX.writeFile(wb,"Packing_Report_"+suffix+".xlsx");
+    $("reportDialog")?.close();
+  }catch(e){
+    console.error("REPORT EXPORT ERROR",e);
+    alert("Report export failed: "+(e.message||e));
+  }finally{
+    btn.disabled=false; btn.textContent="Download Excel";
   }
-  const orderData=state.rows.length ? [{
-    "Order ID":state.orderId,
-    "Order Status":state.outlets.size && [...state.outlets.values()].every(o=>o.status==="completed")?"COMPLETED":"ACTIVE",
-    "Created At":formatDate(state.order?.created_at),
-    "Completed At":formatDate(state.order?.completed_at)
-  }] : [];
-  const wb=XLSX.utils.book_new();
-  const add=(name,rows)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows),name);
-  add("Item Wise",itemRows); add("Outlet Summary",outletRows); add("Missing & Partial",exceptionRows); add("Order Summary",orderData);
-  XLSX.writeFile(wb,"Packing_Report_"+new Date().toISOString().slice(0,10)+".xlsx");
 }
+
+function downloadReport(){openReportDialog();}
 let outletSetupDraft={};
 
 function renderOutletSettings(all){
