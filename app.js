@@ -356,8 +356,24 @@ async function loadReportHistory(){
   }
   const orders=data||[];
   box.innerHTML=orders.length
-    ? orders.map(o=>'<div class="reportHistoryRow"><div><b>'+esc(reportDateLabel(o.created_at))+'</b><span>'+esc(o.order_name||"Packing Order")+'</span></div><small>'+Number(o.outlet_count||0)+' outlets · '+Number(o.item_count||0)+' items · '+esc(o.order_status)+'</small></div>').join("")
+    ? orders.map(o=>'<div class="reportHistoryRow"><div><b>'+esc(reportDateLabel(o.created_at))+'</b><span>'+esc(o.order_name||"Packing Order")+'</span></div><div><small>'+Number(o.outlet_count||0)+' outlets · '+Number(o.item_count||0)+' items · '+esc(o.order_status)+'</small> <button class="secondary invoiceHistoryBtn" data-order-id="'+esc(o.order_id)+'" data-order-name="'+esc(o.order_name||"Packing Order")+'">📄 Invoices</button></div></div>').join("")
     : '<div class="hint">No saved orders found.</div>';
+  box.querySelectorAll(".invoiceHistoryBtn").forEach(b=>b.onclick=()=>openOrderInvoices(b.dataset.orderId,b.dataset.orderName));
+}
+
+async function openOrderInvoices(orderId,orderName){
+  const dlg=$("invoiceDialog"),box=$("invoiceList"); if(!dlg||!box)return;
+  $("invoiceDialogTitle").textContent=orderName+" — Invoices"; box.innerHTML='<div class="hint">Loading invoices…</div>'; dlg.showModal();
+  try{
+    const {data,error}=await db.rpc("get_report_data",{p_access_token:state.token,p_from_date:null,p_to_date:null});
+    if(error)throw error;
+    const rows=(data||[]).filter(r=>r.order_id===orderId&&r.invoice_filename);
+    const seen=new Set(),files=[];
+    for(const r of rows){const key=r.outlet_id+"|"+r.invoice_filename;if(seen.has(key))continue;seen.add(key);files.push(r);}
+    if(!files.length){box.innerHTML='<div class="hint">No invoice has been uploaded for this order.</div>';return;}
+    box.innerHTML=files.map(r=>'<div class="reportHistoryRow"><div><b>'+esc(r.outlet_name)+'</b><span>'+esc(r.invoice_filename)+'</span></div><button class="primary viewInvoiceBtn" data-order-id="'+esc(r.order_id)+'" data-outlet-id="'+esc(r.outlet_id)+'">View Invoice</button></div>').join("");
+    box.querySelectorAll(".viewInvoiceBtn").forEach(b=>b.onclick=async()=>{b.disabled=true;b.textContent="Opening…";try{const resp=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_invoice_url",access_token:state.token,order_id:b.dataset.orderId,outlet_id:b.dataset.outletId})});const d=await resp.json();if(!resp.ok||!d.ok)throw new Error(d.message||"Could not open invoice");window.open(d.url,"_blank","noopener");}catch(e){alert("Could not open invoice: "+e.message)}finally{b.disabled=false;b.textContent="View Invoice";}});
+  }catch(e){box.innerHTML='<div class="hint">Could not load invoices: '+esc(e.message||e)+'</div>';}
 }
 
 function openReportDialog(){
@@ -1095,7 +1111,7 @@ const adminMenu=document.getElementById("adminMenu"),adminMenuBtn=document.getEl
 adminMenuBtn?.addEventListener("click",e=>{e.stopPropagation();adminMenu.classList.toggle("hidden");adminMenuBtn.setAttribute("aria-expanded",String(!adminMenu.classList.contains("hidden")))});
 document.addEventListener("click",e=>{if(adminMenu&&!adminMenu.contains(e.target)&&e.target!==adminMenuBtn)adminMenu.classList.add("hidden")});
 document.getElementById("menuReportBtn")?.addEventListener("click",()=>{adminMenu.classList.add("hidden");openReportDialog()});
-document.getElementById("closeReportDialog")?.addEventListener("click",()=>document.getElementById("reportDialog")?.close());
+document.getElementById("closeReportDialog")?.addEventListener("click",()=>document.getElementById("reportDialog")?.close());\ndocument.getElementById("closeInvoiceDialog")?.addEventListener("click",()=>document.getElementById("invoiceDialog")?.close());
 document.getElementById("exportReportBtn")?.addEventListener("click",exportHistoricalReport);
 document.getElementById("reportAllDatesBtn")?.addEventListener("click",()=>{$("reportFromDate").value="";$("reportToDate").value="";loadReportHistory();});
 document.getElementById("menuOutletSettings")?.addEventListener("click",()=>{adminMenu.classList.add("hidden");renderOutletSettings([...state.outlets.values()].sort((a,b)=>a.rank-b.rank));document.getElementById("outletSettingsDialog").showModal()});
