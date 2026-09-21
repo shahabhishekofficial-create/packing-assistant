@@ -229,8 +229,9 @@ async function loadOrder(){
     p_order_id:state.orderId,
     p_access_token:state.token
   });
-  if(chargeResult.error) throw chargeResult.error;
-  data.delivery_charges=chargeResult.data||[];
+  // Delivery-charge setup is optional until its SQL migration is installed.
+  // Never block the main order from loading if the helper RPC is unavailable.
+  data.delivery_charges=chargeResult.error ? [] : (chargeResult.data||[]);
   applyServerData(data);
   renderHome();
 }
