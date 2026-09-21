@@ -460,36 +460,29 @@ async function saveOutletSettings(){
 }
 function renderAdminDashboard(){
   if(!(location.pathname.endsWith("/admin.html") || /\/admin\/?$/.test(location.pathname))) return;
-  const panel=$("adminDashboard");
-  if(!panel) return;
+  const panel=$("adminDashboard"); if(!panel)return;
   panel.classList.remove("hidden");
   const all=[...state.outlets.values()];
   const filterOutlet=$("dashboardOutletFilter").value;
   const filterStatus=$("dashboardStatusFilter").value;
   const selected=filterOutlet==="ALL"?all:all.filter(o=>o.id===filterOutlet);
-  const rows=selected.flatMap(o=>o.rows.map(r=>({...r,outlet:o.name,outletId:o.id})));
+  const rows=selected.flatMap(o=>o.rows.map(r=>({...r,outlet:o.name,outletId:o.id,driver:o.driver||"Unassigned"})));
   const filtered=filterStatus==="ALL"?rows:rows.filter(r=>(r.status||"PENDING")===filterStatus);
-  const required=filtered.reduce((s,r)=>s+r.required,0);
-  const packed=filtered.reduce((s,r)=>s+r.packed,0);
-  const missing=filtered.reduce((s,r)=>s+r.missing,0);
-  const exceptions=filtered.filter(r=>r.status==="MISSING"||r.status==="PARTIAL").length;
-  const pct=required?Math.round((missing/required)*100):0;
-  $("dashboardKpis").innerHTML=[
-    ["Required Qty",required,"blue"],["Packed Qty",packed,"green"],["Missing Qty",missing,"red"],["Exception Items",exceptions,"amber"],["Missing %",pct+"%","red"]
-  ].map(x=>'<div class="analysisKpi '+x[2]+'"><b>'+x[1]+'</b><span>'+x[0]+'</span></div>').join("");
+  const required=filtered.reduce((s,r)=>s+r.required,0),packed=filtered.reduce((s,r)=>s+r.packed,0),missing=filtered.reduce((s,r)=>s+r.missing,0);
+  const exceptions=filtered.filter(r=>r.status==="MISSING"||r.status==="PARTIAL").length,pct=required?Math.round(missing/required*100):0;
+  $("dashboardKpis").innerHTML=[["Required Qty",required,"blue"],["Packed Qty",packed,"green"],["Missing Qty",missing,"red"],["Exception Items",exceptions,"amber"],["Missing %",pct+"%","red"]].map(x=>'<div class="analysisKpi '+x[2]+'"><b>'+x[1]+'</b><span>'+x[0]+'</span></div>').join("");
   $("outletAnalysisBody").innerHTML=selected.map(o=>{
-    const rq=o.rows.reduce((s,r)=>s+r.required,0),pk=o.rows.reduce((s,r)=>s+r.packed,0),ms=o.rows.reduce((s,r)=>s+r.missing,0);
-    const mp=rq?Math.round(ms/rq*100):0;
-    return '<tr><td><b>'+esc(o.name)+'</b></td><td>'+rq+'</td><td>'+pk+'</td><td class="'+(ms?'dangerText':'')+'">'+ms+'</td><td>'+mp+'%</td><td><span class="miniStatus '+o.status+'">'+(o.status||"available").replace("_"," ")+'</span></td></tr>';
-  }).join("")||'<tr><td colspan="6">No data</td></tr>';
+    const rq=o.rows.reduce((s,r)=>s+r.required,0),pk=o.rows.reduce((s,r)=>s+r.packed,0),ms=o.rows.reduce((s,r)=>s+r.missing,0),mp=rq?Math.round(ms/rq*100):0;
+    return '<tr><td><b>'+esc(o.name)+'</b></td><td>'+esc(o.driver||"Unassigned")+'</td><td>'+rq+'</td><td>'+pk+'</td><td class="'+(ms?'dangerText':'')+'">'+ms+'</td><td>'+mp+'%</td><td><span class="miniStatus '+o.status+'">'+(o.status||"available").replace("_"," ")+'</span></td></tr>';
+  }).join("")||'<tr><td colspan="7">No data</td></tr>';
   const byItem=new Map();
-  filtered.forEach(r=>{
-    const k=r.code;
-    if(!byItem.has(k)) byItem.set(k,{code:k,product:r.product,outlets:new Set(),required:0,packed:0,missing:0});
-    const x=byItem.get(k); x.outlets.add(r.outlet); x.required+=r.required; x.packed+=r.packed; x.missing+=r.missing;
-  });
+  filtered.forEach(r=>{const k=r.code;if(!byItem.has(k))byItem.set(k,{code:k,product:r.product,outlets:new Set(),required:0,packed:0,missing:0});const x=byItem.get(k);x.outlets.add(r.outlet);x.required+=r.required;x.packed+=r.packed;x.missing+=r.missing;});
   $("itemAnalysisBody").innerHTML=[...byItem.values()].filter(x=>x.missing>0).sort((a,b)=>b.missing-a.missing).map(x=>'<tr><td><b>'+esc(x.product)+'</b><small>'+esc(x.code)+'</small></td><td>'+x.outlets.size+'</td><td>'+x.required+'</td><td>'+x.packed+'</td><td class="dangerText">'+x.missing+'</td><td>'+Math.round(x.missing/x.required*100)+'%</td></tr>').join("")||'<tr><td colspan="6">No missing/partial items</td></tr>';
-  $("exceptionAnalysisBody").innerHTML=filtered.filter(r=>r.status==="MISSING"||r.status==="PARTIAL").sort((a,b)=>b.missing-a.missing).map(r=>'<tr><td>'+esc(r.outlet)+'</td><td><b>'+esc(r.product)+'</b><small>'+esc(r.code)+'</small></td><td>'+r.required+'</td><td>'+r.packed+'</td><td class="dangerText">'+r.missing+'</td><td><span class="miniStatus '+String(r.status).toLowerCase()+'">'+r.status+'</span></td><td>'+esc(r.reason||"")+'</td></tr>').join("")||'<tr><td colspan="7">No exceptions</td></tr>';
+  $("exceptionAnalysisBody").innerHTML=filtered.filter(r=>r.status==="MISSING"||r.status==="PARTIAL").sort((a,b)=>b.missing-a.missing).map(r=>'<tr><td>'+esc(r.outlet)+'</td><td>'+esc(r.driver)+'</td><td><b>'+esc(r.product)+'</b><small>'+esc(r.code)+'</small></td><td>'+r.required+'</td><td>'+r.packed+'</td><td class="dangerText">'+r.missing+'</td><td><span class="miniStatus '+String(r.status).toLowerCase()+'">'+r.status+'</span></td><td>'+esc(r.reason||"")+'</td></tr>').join("")||'<tr><td colspan="8">No exceptions</td></tr>';
+  const byDriver=new Map();
+  selected.forEach(o=>{const driver=o.driver||"Unassigned";if(!byDriver.has(driver))byDriver.set(driver,{driver,outlets:0,completed:0,inProgress:0,required:0,packed:0,missing:0});const d=byDriver.get(driver);d.outlets++;if(o.status==="completed")d.completed++;if(o.status==="in_progress")d.inProgress++;o.rows.forEach(r=>{d.required+=r.required;d.packed+=r.packed;d.missing+=r.missing;});});
+  const driverBox=$("driverAnalysisBody");
+  if(driverBox)driverBox.innerHTML=[...byDriver.values()].sort((x,y)=>x.driver.localeCompare(y.driver)).map(d=>'<tr><td><b>'+esc(d.driver)+'</b></td><td>'+d.outlets+'</td><td>'+d.completed+'</td><td>'+d.inProgress+'</td><td>'+d.required+'</td><td>'+d.packed+'</td><td class="'+(d.missing?'dangerText':'')+'">'+d.missing+'</td><td>'+((d.required?Math.round(d.missing/d.required*100):0))+'%</td></tr>').join("")||'<tr><td colspan="8">No driver data</td></tr>';
 }
 
 function renderHome(){
@@ -811,6 +804,16 @@ if(packingVoiceLanguageEl) packingVoiceLanguageEl.onchange=()=>{
   const o=state.outlets.get(state.current); if(o) speakProduct(o.rows[state.index]);
 };
 
+function renderDriverAdminDashboard(){
+  const box=$("driverAdminCards"); if(!box)return;
+  const groups=new Map();
+  [...state.outlets.values()].sort((x,y)=>x.rank-y.rank).forEach(o=>{const d=o.driver||"Unassigned";if(!groups.has(d))groups.set(d,[]);groups.get(d).push(o);});
+  box.innerHTML=[...groups.entries()].sort((a,b)=>a[0].localeCompare(b[0])).map(([driver,outs])=>{
+    const done=outs.filter(o=>o.status==="completed").length;
+    return '<div class="driverAdminCard"><div class="driverAdminHead"><div><span class="eyebrow">DRIVER</span><h3>'+esc(driver)+'</h3></div><strong>'+done+' / '+outs.length+' outlets completed</strong></div><div class="driverOutletGrid">'+outs.map(o=>'<div class="driverOutletRow"><div><b>'+esc(o.name)+'</b><small>Rank '+o.rank+'</small></div><span class="miniStatus '+o.status+'">'+(o.status||"available").replace("_"," ")+'</span></div>').join("")+'</div></div>';
+  }).join("")||'<div class="hint">No driver assignments yet.</div>';
+}
+
 function renderAdminPackingChooser(){
   const box=$("adminOutletList");
   if(!box)return;
@@ -883,6 +886,7 @@ adminMenuBtn?.addEventListener("click",e=>{e.stopPropagation();adminMenu.classLi
 document.addEventListener("click",e=>{if(adminMenu&&!adminMenu.contains(e.target)&&e.target!==adminMenuBtn)adminMenu.classList.add("hidden")});
 document.getElementById("menuReportBtn")?.addEventListener("click",()=>{adminMenu.classList.add("hidden");downloadReport()});
 document.getElementById("menuOutletSettings")?.addEventListener("click",()=>{adminMenu.classList.add("hidden");renderOutletSettings([...state.outlets.values()].sort((a,b)=>a.rank-b.rank));document.getElementById("outletSettingsDialog").showModal()});
+document.getElementById("menuDriverDashboard")?.addEventListener("click",async()=>{adminMenu.classList.add("hidden");try{if(!state.outlets.size){const ok=await loadCurrentOrder();if(!ok)return alert("No active order available.");}renderDriverAdminDashboard();document.getElementById("home")?.classList.add("hidden");document.getElementById("packing")?.classList.add("hidden");document.getElementById("driverDashboard")?.classList.remove("hidden");}catch(e){alert("Could not load driver dashboard: "+e.message);}});
 document.getElementById("menuVoiceSettings")?.addEventListener("click",()=>{adminMenu.classList.add("hidden");document.getElementById("voiceSettingsDialog").showModal()});
 document.getElementById("menuPacking")?.addEventListener("click",async()=>{adminMenu.classList.add("hidden");try{if(!state.outlets.size){const ok=await loadCurrentOrder();if(!ok)return alert("No active order available.");}renderAdminPackingChooser();document.getElementById("home")?.classList.add("hidden");document.getElementById("packing")?.classList.remove("hidden");document.getElementById("adminPackingChooser")?.classList.remove("hidden");document.getElementById("packing")?.querySelector(".packingTop")?.classList.add("hidden");}catch(e){alert("Could not load packing screen: "+e.message);}});
 document.getElementById("closeOutletSettings")?.addEventListener("click",()=>document.getElementById("outletSettingsDialog").close());
