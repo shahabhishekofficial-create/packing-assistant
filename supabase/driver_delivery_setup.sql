@@ -33,6 +33,7 @@ create table if not exists public.delivery_records (
   invoice_uploaded_at timestamptz,
   ocr_status text not null default 'pending' check(ocr_status in ('pending','processing','completed','failed')),
   ocr_result jsonb,
+  delivery_charge numeric(12,2) not null default 0,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   unique(order_id,outlet_id)
@@ -74,3 +75,5 @@ end $$;
 grant execute on function public.get_driver_dashboard(text) to anon,authenticated;
 
 insert into storage.buckets(id,name,public) values('delivery-invoices','delivery-invoices',false) on conflict(id) do update set public=false;
+
+alter table public.delivery_records add column if not exists delivery_charge numeric(12,2) not null default 0;
