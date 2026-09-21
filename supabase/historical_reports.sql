@@ -122,8 +122,8 @@ begin
   join public.order_items item on item.outlet_id = out.id
   left join public.delivery_records dr
     on dr.order_id = ord.id and dr.outlet_id = out.id
-  where (p_from_date is null or ord.created_at >= p_from_date::timestamptz)
-    and (p_to_date is null or ord.created_at < (p_to_date + 1)::timestamptz)
+  where (p_from_date is null or ord.created_at >= (p_from_date::text || ' 00:00:00 Asia/Kolkata')::timestamptz)
+    and (p_to_date is null or ord.created_at < ((p_to_date + 1)::text || ' 00:00:00 Asia/Kolkata')::timestamptz)
   order by ord.created_at desc,
            out.outlet_rank nulls last,
            out.store_name,
