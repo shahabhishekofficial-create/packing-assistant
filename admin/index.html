@@ -56,7 +56,12 @@
     <div class="sectionHead">
       <div><span class="eyebrow">MANAGEMENT DASHBOARD</span><h2>Packing Analysis</h2></div>
       <div class="dashboardFilters">
-        <select id="dashboardOutletFilter"><option value="ALL">All Outlets</option></select>
+        <input id="dashboardOutletFilter" list="dashboardOutletOptions" placeholder="Search outlet…" autocomplete="off">
+        <datalist id="dashboardOutletOptions"></datalist>
+        <input id="dashboardItemFilter" list="dashboardItemOptions" placeholder="Search item / code…" autocomplete="off">
+        <datalist id="dashboardItemOptions"></datalist>
+        <input id="dashboardDriverFilter" list="dashboardDriverOptions" placeholder="Search driver…" autocomplete="off">
+        <datalist id="dashboardDriverOptions"></datalist>
         <select id="dashboardStatusFilter"><option value="ALL">All Status</option><option value="MISSING">Missing</option><option value="PARTIAL">Partial</option><option value="PACKED">Packed</option><option value="PENDING">Pending</option></select>
       </div>
     </div>
