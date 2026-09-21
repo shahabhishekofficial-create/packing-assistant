@@ -1,6 +1,10 @@
 const { createClient } = supabase;
 const db = createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.key);
 
+const DEFAULT_OUTLET_SETUP={"Satellite":{driver:"Vipul",rank:1},"Vasna":{driver:"Vipul",rank:2},"Celebration Mall":{driver:"Lux",rank:3},"Bopal - MP":{driver:"Lux",rank:4},"Shela":{driver:"Lux",rank:5},"Vejalpur":{driver:"Lux",rank:6},"Prahladnagar - MP":{driver:"Lux",rank:7},"Bodakdev":{driver:"Abdul",rank:8},"Motera":{driver:"Abdul",rank:9},"Sargasan Gandhinagar":{driver:"Abdul",rank:10},"Vandematram":{driver:"Abdul",rank:11},"Gujarat University - MP":{driver:"Vipul",rank:12},"Mani Nagar":{driver:"Vipul",rank:13},"Navrangpura":{driver:"Vipul",rank:14},"Nirma University":{driver:"Abdul",rank:15},"Odhav":{driver:"Vipul",rank:16},"Science City":{driver:"Abdul",rank:17},"Shahibag":{driver:"Vipul",rank:18},"Sola Road":{driver:"Vipul",rank:19}};
+const SETUP_KEY="packing_assistant_outlet_setup";
+function outletSetup(){try{return {...DEFAULT_OUTLET_SETUP,...JSON.parse(localStorage.getItem(SETUP_KEY)||"{}")};}catch{return DEFAULT_OUTLET_SETUP;}}
+
 const state = {
   rows: [],
   outlets: new Map(),
@@ -224,10 +228,13 @@ function applyServerData(data){
   state.rankMap={};
   const outlets=data.outlets||[];
   const items=data.items||[];
+  const setup=outletSetup();
   for(const o of outlets){
+    const meta=setup[o.store_name]||{};
     state.outlets.set(o.id,{
       id:o.id,
       name:o.store_name,
+      driver:o.driver||meta.driver||"", rank:Number(o.outlet_rank||meta.rank||9999),
       status:o.status,
       lockedDeviceId:o.locked_device_id,
       started_at:o.started_at, completed_at:o.completed_at,
@@ -248,7 +255,7 @@ function applyServerData(data){
     state.rows.push(r);
     if(Number.isFinite(Number(r.narration_rank))) state.rankMap[String(r.item_code).trim()]=Number(r.narration_rank);
   }
-  // Narration/packing sequence follows the supplied Rank.
+  // Outlet sequence follows Outlet Rank; items inside follow SKU Narration Rank.
   for(const o of state.outlets.values()){
     o.rows.sort((a,b)=>{
       const ar=rankItem(a.code), br=rankItem(b.code);
@@ -344,6 +351,10 @@ function downloadReport(){
   add("Item Wise",itemRows); add("Outlet Summary",outletRows); add("Missing & Partial",exceptionRows); add("Order Summary",orderData);
   XLSX.writeFile(wb,"Packing_Report_"+new Date().toISOString().slice(0,10)+".xlsx");
 }
+function renderOutletSettings(all){const box=$("outletSettingsList");if(!box)return;box.innerHTML=all.map((o,i)=>`<div class="outletSettingRow" draggable="true" data-id="${o.id}"><span class="dragHandle">☷</span><b class="rankNo">${i+1}</b><span class="settingName">${esc(o.name)}</span><select class="driverSelect"><option value="">Unassigned</option><option value="Vipul"${o.driver==="Vipul"?" selected":""}>Vipul</option><option value="Lux"${o.driver==="Lux"?" selected":""}>Lux</option><option value="Abdul"${o.driver==="Abdul"?" selected":""}>Abdul</option></select></div>`).join("");let drag=null;box.querySelectorAll(".outletSettingRow").forEach(row=>{row.addEventListener("dragstart",()=>{drag=row;row.classList.add("dragging")});row.addEventListener("dragend",()=>{row.classList.remove("dragging");drag=null});row.addEventListener("dragover",e=>{e.preventDefault();if(drag&&drag!==row){const r=row.getBoundingClientRect();row.parentNode.insertBefore(drag,e.clientY<r.top+r.height/2?row:row.nextSibling);updateSettingRanks()}})});box.querySelectorAll(".driverSelect").forEach(s=>s.addEventListener("change",()=>{const o=state.outlets.get(s.closest(".outletSettingRow").dataset.id);if(o)o.driver=s.value}))}
+function updateSettingRanks(){$("outletSettingsList")?.querySelectorAll(".outletSettingRow").forEach((r,i)=>r.querySelector(".rankNo").textContent=i+1)}
+async function saveOutletSettings(){const rows=[...($("outletSettingsList")?.querySelectorAll(".outletSettingRow")||[])];rows.forEach((row,i)=>{const o=state.outlets.get(row.dataset.id);if(o){o.rank=i+1;o.driver=row.querySelector(".driverSelect").value}});localStorage.setItem(SETUP_KEY,JSON.stringify(Object.fromEntries([...state.outlets.values()].map(o=>[o.name,{rank:o.rank,driver:o.driver}]))));for(const o of state.outlets.values()){const {error}=await db.rpc("update_outlet_settings",{p_order_id:state.orderId,p_outlet_id:o.id,p_access_token:state.token,p_rank:o.rank,p_driver:o.driver});if(error)console.warn("settings sync",error.message)}renderHome();alert("Outlet rank and driver settings saved.")}
+
 function renderAdminDashboard(){
   if(!(location.pathname.endsWith("/admin.html") || /\/admin\/?$/.test(location.pathname))) return;
   const panel=$("adminDashboard");
@@ -407,6 +418,8 @@ function renderHome(){
       if(!f.dataset.bound){f.dataset.bound="1";f.onchange=renderAdminDashboard;$("dashboardStatusFilter").onchange=renderAdminDashboard;}
     }
   }
+  all.sort((a,b)=>a.rank-b.rank || String(a.name).localeCompare(String(b.name)));
+  renderOutletSettings(all);
   $("outletList").innerHTML="";
   all.forEach((o,i)=>{
     const b=document.createElement("button");
@@ -555,7 +568,7 @@ async function exitOutlet(){
   $("packing").classList.add("hidden");
   $("home").classList.remove("hidden");
 }
-$("backBtn").onclick=exitOutlet;
+$("backBtn").onclick=exitOutlet;if($("saveOutletSettings"))$("saveOutletSettings").onclick=saveOutletSettings;
 
 $("fileInput").onchange=async e=>{
   try{
