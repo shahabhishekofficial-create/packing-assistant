@@ -434,3 +434,67 @@ tbody tr:hover{background:#f8fbff}
 .driverLoadBar{height:9px;margin-top:10px;background:#e8edf3;border-radius:99px;overflow:hidden}
 .driverLoadBar i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#2563eb,#06b6d4,#10b981);background-size:200% 100%;animation:gradientFlow 2.8s linear infinite;transition:width .2s ease}
 .driverLoadText{margin-top:7px;color:#64748b;font-size:11px;font-weight:700}
+
+/* Driver mobile product UI v2 */
+.driverPage{background:#f5f7fb;color:#172033;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.driverPage *{box-sizing:border-box}
+.driverPage #driverApp{max-width:1180px;padding:18px 20px 40px}
+.driverPage .appHeader{height:58px;margin-bottom:18px}
+.driverPage .brand{gap:10px}
+.driverPage .brand h1{font-family:inherit;font-size:18px;letter-spacing:-.3px}
+.driverPage .brand p{font-family:inherit;font-size:11px}
+.driverPage .sectionHead{margin:8px 0 16px;align-items:center}
+.driverPage .sectionHead h2{font-family:inherit;font-size:22px;letter-spacing:-.5px}
+.driverPage .hint,.driverPage p{font-family:inherit}
+.driverPage button,.driverPage input{font-family:inherit}
+.driverPage .secondary,.driverPage .primary{min-height:44px;border-radius:12px;font-weight:750;letter-spacing:-.1px}
+.driverPage .driverEarnings{margin:0 0 16px}
+.driverPage .driverEarnCard{padding:20px 22px;border:1px solid #e3e8f1;border-radius:18px;background:#fff;box-shadow:0 4px 18px rgba(15,23,42,.05)}
+.driverPage .driverEarnCard .eyebrow{font-size:10px;letter-spacing:.11em;color:#667085}
+.driverPage .driverEarnCard h3{font-family:inherit;font-size:30px;font-weight:800;letter-spacing:-1px}
+.driverPage .earnIcon{width:46px;height:46px;border-radius:14px}
+.driverPage .driverOutletCards{gap:10px}
+.driverPage .driverOutletRow{border:1px solid #e2e7ef;border-radius:16px;background:#fff;box-shadow:0 3px 14px rgba(15,23,42,.045)}
+.driverPage .driverOutletSummary{min-height:66px;padding:12px 16px;background:#fff}
+.driverPage .driverOutletSummaryMain{flex:1;display:flex;flex-direction:row;align-items:center;gap:10px}
+.driverPage .driverOutletSummaryMain strong{font-family:inherit;font-size:16px;font-weight:800;letter-spacing:-.25px}
+.driverPage .driverOutletSummary::after{content:"›";font-size:25px;line-height:1;color:#98a2b3;transform:rotate(90deg);transition:transform .18s ease}
+.driverPage .driverOutletRow[open] .driverOutletSummary::after{transform:rotate(-90deg);color:#475467}
+.driverPage .driverOutletCard{border:0;border-top:1px solid #edf0f4;border-radius:0;padding:16px;background:#fff;box-shadow:none}
+.driverPage .driverOutletTop{display:none}
+.driverPage .driverOutletStats{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:0 0 14px}
+.driverPage .driverOutletStats span{padding:10px 6px;border:1px solid #eef1f5;background:#f8fafc;border-radius:11px;color:#667085;font-size:10px}
+.driverPage .driverOutletStats b{font-size:14px;font-weight:800;color:#172033;margin-bottom:2px}
+.driverPage .driverDeliveryMeta{margin:0 0 13px;padding:0;color:#667085;font-size:12px}
+.driverPage .driverExceptionBox{margin:0 0 12px;padding:11px 12px;border-radius:11px;background:#f8fafc;border:1px solid #e7ebf1;color:#475467}
+.driverPage .noException{color:#137a4b;font-weight:750}
+.driverPage .driverPhotoMeta{margin:0 0 14px;color:#667085;font-size:12px}
+.driverPage .driverActions{display:grid;grid-template-columns:1fr 1fr 1.15fr;gap:8px;margin-top:2px}
+.driverPage .driverActions>*{width:100%;min-width:0;min-height:44px}
+.driverPage .driverActions .mapBtn{border:1px solid #d9e0ea;background:#fff;color:#344054;border-radius:11px;font-weight:700}
+.driverPage .driverActions .invoiceBtn{border:1px solid #d9e0ea;background:#f8fafc;color:#172033}
+.driverPage .driverActions .deliverBtn{border-radius:11px}
+.driverPage .driverItems{margin-top:14px;padding-top:12px;border-top:1px solid #edf0f4}
+.driverPage .driverItems summary{padding:4px 0;font-size:12px;color:#344054}
+.driverPage .driverItems summary::marker{color:#98a2b3}
+@media(max-width:650px){
+ .driverPage #driverApp{padding:10px 12px 28px}
+ .driverPage .appHeader{height:52px;margin-bottom:12px}
+ .driverPage .brandIcon{width:34px;height:34px;font-size:18px}
+ .driverPage .brand h1{font-size:16px}
+ .driverPage .brand p{display:none}
+ .driverPage .sectionHead{margin:5px 0 12px}
+ .driverPage .sectionHead h2{font-size:20px}
+ .driverPage .sectionHead .hint{font-size:11px;line-height:1.35;margin-top:3px}
+ .driverPage .driverEarnCard{padding:16px;border-radius:16px}
+ .driverPage .driverEarnCard h3{font-size:28px}
+ .driverPage .driverOutletSummary{min-height:62px;padding:11px 13px}
+ .driverPage .driverOutletSummaryMain{gap:8px}
+ .driverPage .driverOutletSummaryMain strong{font-size:15px}
+ .driverPage .driverOutletCard{padding:13px}
+ .driverPage .driverOutletStats{grid-template-columns:repeat(2,1fr);gap:7px;margin-bottom:12px}
+ .driverPage .driverOutletStats span{padding:9px 6px}
+ .driverPage .driverActions{grid-template-columns:1fr;gap:8px}
+ .driverPage .driverActions>*{min-height:46px}
+ .driverPage .driverDeliveryMeta{font-size:11px}
+}
