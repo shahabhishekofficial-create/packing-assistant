@@ -225,6 +225,12 @@ async function loadOrder(){
     p_access_token:state.token
   });
   if(error) throw error;
+  const chargeResult=await db.rpc("get_outlet_delivery_charges",{
+    p_order_id:state.orderId,
+    p_access_token:state.token
+  });
+  if(chargeResult.error) throw chargeResult.error;
+  data.delivery_charges=chargeResult.data||[];
   applyServerData(data);
   renderHome();
 }
@@ -244,6 +250,7 @@ function applyServerData(data){
       id:o.id,
       name:o.store_name,
       driver:o.driver||meta.driver||"", rank:Number(o.outlet_rank||meta.rank||9999),
+      deliveryCharge:Number(o.delivery_charge||0),
       status:o.status,
       lockedDeviceId:o.locked_device_id,
       started_at:o.started_at, completed_at:o.completed_at,
@@ -489,7 +496,7 @@ function renderOutletSettings(all){
   const box=$("outletSettingsList");
   if(!box)return;
   const drivers=getDrivers();
-  outletSetupDraft=Object.fromEntries(all.map(o=>[o.id,{driver:o.driver||"",rank:o.rank}]));
+  outletSetupDraft=Object.fromEntries(all.map(o=>[o.id,{driver:o.driver||"",rank:o.rank,deliveryCharge:Number(o.deliveryCharge||0)}]));
   box.innerHTML=all.map((o,i)=>`<div class="outletSettingRow" draggable="${window.matchMedia("(pointer:fine)").matches}" data-id="${o.id}">
     <span class="dragHandle" title="Drag to change rank">☷</span>
     <b class="rankNo">${i+1}</b>
@@ -498,6 +505,7 @@ function renderOutletSettings(all){
       <option value="">Unassigned</option>
       ${drivers.map(d=>`<option value="${esc(d)}"${(o.driver||"")===d?" selected":""}>${esc(d)}</option>`).join("")}
     </select>
+    <input class="deliveryChargeInput" type="number" min="0" step="0.01" value="${Number(o.deliveryCharge||0).toFixed(2)}" aria-label="Delivery charge for ${esc(o.name)}" placeholder="0.00">
   </div>`).join("");
 
   let drag=null;
@@ -518,6 +526,18 @@ function renderOutletSettings(all){
         row.parentNode.insertBefore(drag,e.clientY<r.top+r.height/2?row:row.nextSibling);
         updateSettingRanks();
       }
+    });
+  });
+
+  box.querySelectorAll(".deliveryChargeInput").forEach(input=>{
+    input.addEventListener("pointerdown",e=>e.stopPropagation());
+    input.addEventListener("click",e=>e.stopPropagation());
+    input.addEventListener("input",()=>{
+      const row=input.closest(".outletSettingRow");
+      if(!row)return;
+      const id=row.dataset.id;
+      if(!outletSetupDraft[id])outletSetupDraft[id]={};
+      outletSetupDraft[id].deliveryCharge=Math.max(0,Number(input.value)||0);
     });
   });
 
@@ -557,6 +577,7 @@ async function saveOutletSettings(){
     const draft=outletSetupDraft[o.id]||{};
     o.rank=Number(draft.rank)||9999;
     o.driver=String(draft.driver||"");
+    o.deliveryCharge=Math.max(0,Number(draft.deliveryCharge)||0);
     const {error}=await db.rpc("update_outlet_settings",{
       p_order_id:state.orderId,
       p_outlet_id:o.id,
@@ -564,7 +585,14 @@ async function saveOutletSettings(){
       p_rank:o.rank,
       p_driver:o.driver
     });
-    if(error)errors.push(o.name+": "+error.message);
+    if(error){errors.push(o.name+": "+error.message);continue;}
+    const chargeResult=await db.rpc("update_outlet_delivery_charge",{
+      p_order_id:state.orderId,
+      p_outlet_id:o.id,
+      p_access_token:state.token,
+      p_delivery_charge:o.deliveryCharge
+    });
+    if(chargeResult.error)errors.push(o.name+" delivery charge: "+chargeResult.error.message);
   }
 
   btn.disabled=false;
@@ -575,11 +603,11 @@ async function saveOutletSettings(){
   }
 
   localStorage.setItem(SETUP_KEY,JSON.stringify(
-    Object.fromEntries([...state.outlets.values()].map(o=>[o.name,{rank:o.rank,driver:o.driver}]))
+    Object.fromEntries([...state.outlets.values()].map(o=>[o.name,{rank:o.rank,driver:o.driver,deliveryCharge:o.deliveryCharge||0}]))
   ));
   $("outletSettingsDialog")?.close();
   renderAdminDashboard();
-  alert("Outlet rank and driver assignments saved.");
+  alert("Outlet rank, driver assignments and delivery charges saved.");
 }
 function renderAdminDashboard(){
   if(!(location.pathname.endsWith("/admin.html") || /\/admin\/?$/.test(location.pathname))) return;
