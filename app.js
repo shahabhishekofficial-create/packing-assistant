@@ -10,6 +10,8 @@ const state = {
   token: null,
   events: [],
   poll: null,
+  realtime: null,
+  syncBusy: false,
   rankMap: {}
 };
 
@@ -168,6 +170,7 @@ async function createLiveOrder(rows){
 
     applyServerData(result.data);
     renderHome();
+    startRealtime();
     startPolling();
 
     return state.orderId;
@@ -198,6 +201,7 @@ async function loadCurrentOrder(){
   localStorage.setItem("pa_order_token",state.token);
   await loadOrder();
   showShareLink();
+  startRealtime();
   startPolling();
   return true;
 }
@@ -255,6 +259,41 @@ function applyServerData(data){
 }
 
 function formatDate(v){ return v ? new Date(v).toLocaleString("en-IN") : ""; }
+
+function startRealtime(){
+  if(!state.orderId) return;
+  if(state.realtime) db.removeChannel(state.realtime);
+  state.realtime=db.channel("packing-order-"+state.orderId)
+    .on("postgres_changes",{event:"*",schema:"public",table:"outlets",filter:"order_id=eq."+state.orderId},()=>{
+      syncFromServer();
+    })
+    .on("postgres_changes",{event:"*",schema:"public",table:"order_items"},()=>{
+      syncFromServer();
+    })
+    .subscribe();
+}
+
+async function syncFromServer(){
+  if(state.syncBusy || !state.orderId || !state.token) return;
+  state.syncBusy=true;
+  try{
+    await loadOrder();
+    if(state.current){
+      const o=state.outlets.get(state.current);
+      if(o && o.status==="in_progress" && o.lockedDeviceId===DEVICE_ID){
+        const next=o.rows.findIndex(r=>!r.status);
+        if(next>=0 && next!==state.index){
+          state.index=next;
+          showProduct();
+        }
+      }
+    }
+  }catch(e){
+    console.warn("sync",e.message);
+  }finally{
+    state.syncBusy=false;
+  }
+}
 function latestEventForItem(itemId){
   const ev=state.events.filter(e=>e.item_id===itemId);
   return ev.length ? ev[ev.length-1] : null;
@@ -512,6 +551,7 @@ async function exitOutlet(){
   if(!data) return alert("This outlet cannot be released.");
   state.current=null;
   await loadOrder();
+  startRealtime();
   $("packing").classList.add("hidden");
   $("home").classList.remove("hidden");
 }
@@ -627,7 +667,7 @@ function startPolling(){
   state.poll=setInterval(async()=>{
     if(!navigator.onLine||!state.orderId||!state.token)return;
     try{
-      await loadOrder();
+      await syncFromServer();
       if(state.current){
         const o=state.outlets.get(state.current);
         if(o && o.status==="in_progress" && o.lockedDeviceId===DEVICE_ID){
@@ -636,7 +676,7 @@ function startPolling(){
         }
       }
     }catch(e){console.warn("sync",e.message)}
-  },3000);
+  },2000);
 }
 
 function updateConnection(){
