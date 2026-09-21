@@ -316,3 +316,33 @@ tbody tr:hover{background:#f8fbff}
   #adminPasswordDialog menu{flex-direction:column-reverse}
   #adminPasswordDialog menu button{width:100%}
 }
+
+/* Outlet setup delivery charge */
+.settingsDialog .outletSettingRow{
+  grid-template-columns:28px 34px minmax(120px,1fr) 125px 112px!important;
+}
+.deliveryChargeInput{
+  width:112px;
+  min-width:0;
+  height:36px;
+  padding:7px 9px;
+  border:1px solid #dbe3ef;
+  border-radius:9px;
+  background:#fff;
+  color:var(--ink);
+  font-size:13px;
+  font-weight:700;
+}
+.deliveryChargeInput:focus{
+  outline:none;
+  border-color:#4f46e5;
+  box-shadow:0 0 0 3px #4f46e51a;
+}
+@media(max-width:700px){
+  .settingsDialog .outletSettingRow{
+    grid-template-columns:24px 28px minmax(110px,1fr) 105px 96px!important;
+  }
+  .deliveryChargeInput{
+    width:96px;
+  }
+}
