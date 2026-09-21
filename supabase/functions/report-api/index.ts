@@ -34,7 +34,7 @@ Deno.serve(async(req)=>{
       .select("id,order_name,created_at,completed_at")
       .order("created_at",{ascending:true});
     if(fromDate) orderQuery=orderQuery.gte("created_at",fromDate+"T00:00:00");
-    if(toDate) orderQuery=orderQuery.lt("created_at",toDate+"T00:00:00+00:00");
+    if(toDate){ const d=new Date(toDate+"T00:00:00Z"); d.setUTCDate(d.getUTCDate()+1); orderQuery=orderQuery.lt("created_at",d.toISOString()); }
 
     const {data:orders,error:ordersError}=await orderQuery;
     if(ordersError) return json({ok:false,message:ordersError.message},500);
