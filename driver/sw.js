@@ -1,4 +1,4 @@
-const CACHE="pa-driver-v11";
+const CACHE="pa-driver-v12";
 const APP_SHELL=["./","./index.html","./driver.js","../styles.css","../icon-192.png","../icon-512.png"];
 self.addEventListener("install",event=>{self.skipWaiting();event.waitUntil(caches.open(CACHE).then(c=>c.addAll(APP_SHELL)).catch(()=>{}));});
 self.addEventListener("activate",event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith("pa-driver-")&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
