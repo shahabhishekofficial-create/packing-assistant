@@ -5,7 +5,9 @@ const DEFAULT_OUTLET_SETUP={"Satellite":{driver:"Vipul",rank:1},"Vasna":{driver:
 const SETUP_KEY="packing_assistant_outlet_setup";
 const DRIVERS_KEY="packing_assistant_drivers";
 const DEFAULT_DRIVERS=["Vipul","Lux","Abdul"];
-function getDrivers(){try{return [...new Set([...DEFAULT_DRIVERS,...JSON.parse(localStorage.getItem(DRIVERS_KEY)||"[]")].map(x=>String(x).trim()).filter(Boolean))];}catch{return DEFAULT_DRIVERS;}}
+let DB_DRIVERS=[...DEFAULT_DRIVERS];
+async function loadDrivers(){try{const {data,error}=await db.from("drivers").select("id,name,active").eq("active",true).order("name");if(error)throw error;DB_DRIVERS=data?.map(x=>x.name)||DEFAULT_DRIVERS;saveDrivers(DB_DRIVERS);return DB_DRIVERS;}catch(e){console.warn("driver load",e.message);return DB_DRIVERS;}}
+function getDrivers(){return [...new Set([...DB_DRIVERS,...DEFAULT_DRIVERS].map(x=>String(x).trim()).filter(Boolean))];}
 function saveDrivers(a){localStorage.setItem(DRIVERS_KEY,JSON.stringify([...new Set(a.map(x=>String(x).trim()).filter(Boolean))]));}
 function outletSetup(){try{return {...DEFAULT_OUTLET_SETUP,...JSON.parse(localStorage.getItem(SETUP_KEY)||"{}")};}catch{return DEFAULT_OUTLET_SETUP;}}
 
@@ -572,7 +574,7 @@ async function exitOutlet(){
   $("packing").classList.add("hidden");
   $("home").classList.remove("hidden");
 }
-$("backBtn").onclick=exitOutlet;if($("saveOutletSettings"))$("saveOutletSettings").onclick=saveOutletSettings;if($("addDriverBtn"))$("addDriverBtn").onclick=()=>{const el=$("newDriverName"),name=el.value.trim();if(!name)return;saveDrivers([...getDrivers(),name]);el.value="";renderOutletSettings([...state.outlets.values()].sort((a,b)=>a.rank-b.rank));};
+$("backBtn").onclick=exitOutlet;if($("saveOutletSettings"))$("saveOutletSettings").onclick=saveOutletSettings;if($("addDriverBtn"))$("addDriverBtn").onclick=async()=>{const el=$("newDriverName"),name=el.value.trim();if(!name)return;const {error}=await db.from("drivers").insert({name});if(error){if(String(error.code)==="23505")return alert("Driver already exists.");return alert(error.message);}await loadDrivers();el.value="";renderOutletSettings([...state.outlets.values()].sort((a,b)=>a.rank-b.rank));};
 
 $("fileInput").onchange=async e=>{
   try{
@@ -704,6 +706,7 @@ window.addEventListener("offline",updateConnection);
 updateConnection();
 
 (async function init(){
+  await loadDrivers();
   const params=new URLSearchParams(location.search);
   const legacyOrder=params.get("order");
   const legacyToken=params.get("token");
