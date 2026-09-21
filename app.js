@@ -519,7 +519,6 @@ function renderHome(){
     }
   }
   all.sort((a,b)=>a.rank-b.rank || String(a.name).localeCompare(String(b.name)));
-  renderOutletSettings(all);
   const lists=[$("outletList"),$("adminOutletList")].filter(Boolean);
   lists.forEach(list=>{
     list.innerHTML="";
