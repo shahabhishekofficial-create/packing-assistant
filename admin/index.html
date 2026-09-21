@@ -22,7 +22,7 @@
     <button id="adminRefreshBtn" class="menuDots refreshBtn" aria-label="Refresh data" title="Refresh data">↻</button>
     <button id="adminMenuBtn" class="menuDots" aria-label="Options" aria-expanded="false">⋮</button>
     <div id="adminMenu" class="adminMenu hidden">
-      <button id="menuReportBtn">⬇ Download Report</button>
+      <button id="menuReportBtn">⬇ Reports / Export</button>
       <button id="menuOutletSettings">⚙ Outlet Setup</button>
       <button id="menuVoiceSettings">🔊 Voice Language</button>
       <button id="menuPacking">📦 Order Packing Screen</button>
@@ -129,6 +129,22 @@
     <div class="settingsDialogHead"><div><span class="eyebrow">OPTIONS</span><h3>Outlet Setup</h3><p class="hint">Drag to change packing rank and assign delivery driver.</p></div><button id="closeOutletSettings" class="secondary">✕</button></div>
     <div class="driverTools"><input id="newDriverName" placeholder="Add driver name"><button id="addDriverBtn" class="secondary">+ Add Driver</button><button id="saveOutletSettings" class="primary">Submit Changes</button></div>
     <div id="outletSettingsList" class="outletSettingsList"></div>
+  </dialog>
+  <dialog id="reportDialog" class="settingsDialog reportDialog">
+    <div class="settingsDialogHead">
+      <div><span class="eyebrow">REPORT CENTER</span><h3>Historical Reports</h3><p class="hint">Orders are saved permanently. Select any date range to export one or multiple days together.</p></div>
+      <button id="closeReportDialog" class="secondary">✕</button>
+    </div>
+    <div class="reportDateGrid">
+      <label>From date<input id="reportFromDate" type="date"></label>
+      <label>To date<input id="reportToDate" type="date"></label>
+    </div>
+    <div class="reportActions">
+      <button id="reportAllDatesBtn" class="secondary">All Saved Dates</button>
+      <button id="exportReportBtn" class="primary">Download Excel</button>
+    </div>
+    <div class="reportHistoryHead"><b>Saved Orders</b><span>Newest first</span></div>
+    <div id="reportHistoryList" class="reportHistoryList"></div>
   </dialog>
   <dialog id="voiceSettingsDialog" class="settingsDialog">
     <div class="settingsDialogHead"><div><span class="eyebrow">OPTIONS</span><h3>Voice Language</h3></div><button id="closeVoiceSettings" class="secondary">✕</button></div>
