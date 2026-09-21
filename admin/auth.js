@@ -7,6 +7,7 @@
   const ITERATIONS = 200000;
   const SALT_B64 = "F6GJ+7oca9r+51tm3FzSwQ==";
   const HASH_B64 = "hx8/4FHwWBPUr43NnskKji0Y4PW0Tee3HHpiQY4pCO4=";
+  const db = window.supabase && window.SUPABASE_CONFIG ? window.supabase.createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.key) : null;
   let logoutTimer = null;
 
   function b64ToBytes(s){ return Uint8Array.from(atob(s), c => c.charCodeAt(0)); }
@@ -100,7 +101,9 @@
         const button=e.target.querySelector("button");
         button.disabled=true; button.textContent="Checking…"; err.textContent="";
         try{
-          const ok=same(await hashPassword(input.value),HASH_B64);
+          let ok=false;
+          if(db){const r=await db.rpc("verify_admin_password",{p_password:input.value});if(!r.error)ok=!!r.data;}
+          if(!ok)ok=same(await hashPassword(input.value),HASH_B64);
           if(!ok){err.textContent="Incorrect password.";input.select();return;}
           localStorage.setItem(SESSION_KEY,"1");
           localStorage.setItem(LAST_ACTIVITY_KEY,String(Date.now()));
@@ -117,6 +120,23 @@
     if(err)err.textContent=message;
   }
 
+  async function changePassword(){
+    let box=document.getElementById("adminPasswordDialog");
+    if(!box){
+      box=document.createElement("dialog"); box.id="adminPasswordDialog"; box.className="settingsDialog";
+      box.innerHTML=`<form method="dialog" id="changePasswordForm"><div class="settingsDialogHead"><div><span class="eyebrow">SECURITY</span><h3>Change Admin Password</h3><p class="hint">Minimum 8 characters.</p></div><button class="secondary" value="cancel">✕</button></div><label>Current password<input id="currentAdminPassword" type="password" required></label><label>New password<input id="newAdminPassword" type="password" minlength="8" required></label><label>Confirm new password<input id="confirmAdminPassword" type="password" minlength="8" required></label><p id="changePasswordError" class="adminAuthError"></p><menu><button value="cancel">Cancel</button><button id="changePasswordSubmit" class="primary">Change Password</button></menu></form>`;
+      document.body.appendChild(box);
+      document.getElementById("changePasswordForm").addEventListener("submit",async e=>{
+        e.preventDefault(); const cur=document.getElementById("currentAdminPassword").value, n=document.getElementById("newAdminPassword").value, c=document.getElementById("confirmAdminPassword").value, err=document.getElementById("changePasswordError"), b=document.getElementById("changePasswordSubmit"); err.textContent="";
+        if(n!==c){err.textContent="New passwords do not match.";return;} if(n.length<8){err.textContent="Password must be at least 8 characters.";return;}
+        b.disabled=true; b.textContent="Saving…";
+        try{if(!db)throw new Error("Database unavailable."); const r=await db.rpc("change_admin_password",{p_current_password:cur,p_new_password:n}); if(r.error)throw new Error(r.error.message); if(!r.data)throw new Error("Password change failed."); box.close(); alert("Admin password changed successfully. Use the new password next time you log in.");}
+        catch(x){err.textContent=x.message||"Password change failed.";} finally{b.disabled=false;b.textContent="Change Password";}
+      });
+    }
+    box.showModal();
+  }
+
   function addLogoutButton(){
     if(document.getElementById("adminLogoutBtn"))return;
     const actions=document.querySelector(".headerActions");
@@ -125,6 +145,7 @@
     b.id="adminLogoutBtn"; b.className="menuDots adminLogoutBtn"; b.title="Log out"; b.setAttribute("aria-label","Log out"); b.textContent="⇥";
     b.onclick=()=>forceLogout(false);
     actions.insertBefore(b,actions.firstChild);
+    if(!document.getElementById("adminChangePasswordBtn")){const cp=document.createElement("button");cp.id="adminChangePasswordBtn";cp.className="menuDots";cp.title="Change password";cp.textContent="🔑";cp.onclick=changePassword;actions.insertBefore(cp,actions.firstChild);}
   }
 
   function init(){
