@@ -1,0 +1,23 @@
+name: Validate JavaScript
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  syntax-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Check JavaScript syntax
+        run: |
+          node --check app.js
+          node --check driver/driver.js
+          node --check admin/auth.js
+          node --check config.js
+          node --check driver/sw.js
