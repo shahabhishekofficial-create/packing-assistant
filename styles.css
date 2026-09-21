@@ -206,3 +206,16 @@ tbody tr:hover{background:#f8fbff}
 .driverLogin{max-width:520px;margin:50px auto}.driverLoginForm{display:grid;gap:10px;margin-top:18px}.driverLoginForm input{padding:13px;border:1px solid var(--line);border-radius:10px}.driverOutletCards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.driverOutletCard{background:#fff;border:1px solid var(--line);border-radius:16px;padding:17px;box-shadow:0 7px 22px #3341550b}.driverOutletTop{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.driverOutletTop h3{margin:3px 0 0;font-size:18px}.driverDeliveryMeta{display:flex;justify-content:space-between;gap:10px;margin:15px 0;color:#64748b;font-size:12px}.driverActions{display:flex;gap:8px}.deliveredNote{color:#078957;font-weight:900;padding:10px 0}.driverPage #driverApp{max-width:1100px;margin:auto;padding:20px}.driverPage .appHeader{display:flex;justify-content:space-between;align-items:center}@media(max-width:700px){.driverOutletCards{grid-template-columns:1fr}.driverPage #driverApp{padding:12px}.driverOutletTop{flex-direction:column}.driverDeliveryMeta{flex-direction:column}.driverActions{flex-direction:column}.driverActions button{width:100%}}
 
 .dashboardFilters{display:grid;grid-template-columns:1.2fr 1.4fr 1fr 150px;gap:8px;align-items:center}.dashboardFilters input,.dashboardFilters select{border:1px solid var(--line);background:#fff;border-radius:10px;padding:9px 12px;color:var(--ink);min-width:0}.dashboardFilters input::placeholder{color:#94a3b8}@media(max-width:900px){.dashboardFilters{grid-template-columns:1fr 1fr}.dashboardFilters select{width:100%}}@media(max-width:650px){.dashboardFilters{display:flex;flex-direction:column;align-items:stretch}.dashboardFilters input,.dashboardFilters select{width:100%}}
+
+.reportDialog{width:min(720px,calc(100vw - 24px));max-width:720px}
+.reportDateGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+.reportDateGrid label{display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:700;color:var(--muted,#64748b)}
+.reportDateGrid input{border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 12px;color:var(--ink)}
+.reportActions{display:flex;gap:8px;justify-content:flex-end;margin:12px 0 16px}
+.reportHistoryHead{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--line);padding-top:14px;margin-bottom:8px}
+.reportHistoryHead span{font-size:12px;color:#94a3b8}
+.reportHistoryList{max-height:300px;overflow:auto;border:1px solid var(--line);border-radius:12px;background:#fff}
+.reportHistoryRow{display:flex;justify-content:space-between;gap:12px;padding:10px 12px;border-bottom:1px solid var(--line)}
+.reportHistoryRow:last-child{border-bottom:0}
+.reportHistoryRow div{display:flex;flex-direction:column;gap:2px}.reportHistoryRow span,.reportHistoryRow small{color:#64748b;font-size:12px}
+@media(max-width:650px){.reportDateGrid{grid-template-columns:1fr}.reportActions{flex-direction:column}.reportActions button{width:100%}}
