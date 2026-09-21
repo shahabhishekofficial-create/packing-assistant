@@ -144,6 +144,5 @@
     document.addEventListener("visibilitychange",()=>{if(!document.hidden && !sessionValid())forceLogout(true);});
   }
 
-  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);
-  else init();
+  init();
 })();
