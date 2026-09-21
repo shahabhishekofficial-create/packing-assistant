@@ -22,7 +22,7 @@ const DRIVER_API=window.SUPABASE_CONFIG.url+"/functions/v1/driver-api";const DRI
   await Promise.all(offsets.map(async offset=>{
    const data=await loadPage(offset);
    ds.outlets.push(...(data.outlets||[]));
-   ds.outlets.sort((a,b)=>String(a.outlet_name||"").localeCompare(String(b.outlet_name||"")));
+   ds.outlets.sort((a,b)=>(Number(a.outlet_rank)||999999)-(Number(b.outlet_rank)||999999));
    ds.loadedOutlets=ds.outlets.length;
    render();
   }));
