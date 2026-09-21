@@ -1,4 +1,4 @@
-const CACHE="packing-assistant-v2";
+const CACHE="packing-assistant-v3";
 const CORE=[
   "./",
   "./styles.css",
