@@ -426,3 +426,11 @@ tbody tr:hover{background:#f8fbff}
 .photoBtn{display:block;margin-top:6px;padding:6px 8px;border:1px solid #fed7aa;border-radius:7px;background:#fff7ed;color:#9a3412;font-size:10px;font-weight:800;cursor:pointer}
 .photoBtn:hover{background:#ffedd5}
 @media(max-width:650px){.driverExceptionBox{font-size:12px}.exceptionList div{align-items:flex-start}}
+
+/* Driver progressive outlet loading */
+.driverLoadCard{padding:14px 15px;border:1px solid #dbe3ef;border-radius:14px;background:linear-gradient(135deg,#f8fbff,#fff);box-shadow:0 6px 18px #0f172a0a;margin-bottom:8px}
+.driverLoadHead{display:flex;justify-content:space-between;gap:10px;align-items:center;font-size:13px;color:#334155}
+.driverLoadHead span{font-weight:900;color:#2563eb}
+.driverLoadBar{height:9px;margin-top:10px;background:#e8edf3;border-radius:99px;overflow:hidden}
+.driverLoadBar i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#2563eb,#06b6d4,#10b981);background-size:200% 100%;animation:gradientFlow 2.8s linear infinite;transition:width .2s ease}
+.driverLoadText{margin-top:7px;color:#64748b;font-size:11px;font-weight:700}
