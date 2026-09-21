@@ -128,6 +128,7 @@
   }
 
   function init(){
+    document.body.style.visibility="visible";
     injectStyles();
     document.body.classList.add("adminLocked");
     if(sessionValid()){
