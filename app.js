@@ -769,3 +769,13 @@ document.getElementById("menuVoiceSettings")?.addEventListener("click",()=>{admi
 document.getElementById("menuPacking")?.addEventListener("click",()=>{adminMenu.classList.add("hidden");renderHome();document.getElementById("home")?.classList.add("hidden");document.getElementById("packing")?.classList.remove("hidden");document.getElementById("adminPackingChooser")?.classList.remove("hidden");document.getElementById("packing")?.querySelector(".packingTop")?.classList.add("hidden")});
 document.getElementById("closeOutletSettings")?.addEventListener("click",()=>document.getElementById("outletSettingsDialog").close());
 document.getElementById("closeVoiceSettings")?.addEventListener("click",()=>document.getElementById("voiceSettingsDialog").close());
+
+
+const adminRefreshBtn=document.getElementById("adminRefreshBtn");
+adminRefreshBtn?.addEventListener("click",async()=>{
+  if(!navigator.onLine)return alert("You are offline. Please reconnect and try again.");
+  const old=adminRefreshBtn.textContent; adminRefreshBtn.disabled=true; adminRefreshBtn.textContent="↻";
+  try{await syncFromServer();adminRefreshBtn.title="Data refreshed";}
+  catch(e){alert("Refresh failed: "+e.message);}
+  finally{adminRefreshBtn.disabled=false;adminRefreshBtn.textContent=old;}
+});
