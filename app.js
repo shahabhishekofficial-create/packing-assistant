@@ -1,5 +1,6 @@
 const { createClient } = supabase;
 const db = createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.key);
+const IS_ADMIN_PAGE = /\/admin\/?$/.test(location.pathname);
 
 const DEFAULT_OUTLET_SETUP={"Satellite":{driver:"Vipul",rank:1},"Vasna":{driver:"Vipul",rank:2},"Celebration Mall":{driver:"Lux",rank:3},"Bopal - MP":{driver:"Lux",rank:4},"Shela":{driver:"Lux",rank:5},"Vejalpur":{driver:"Lux",rank:6},"Prahladnagar - MP":{driver:"Lux",rank:7},"Bodakdev":{driver:"Abdul",rank:8},"Motera":{driver:"Abdul",rank:9},"Sargasan Gandhinagar":{driver:"Abdul",rank:10},"Vandematram":{driver:"Abdul",rank:11},"Gujarat University - MP":{driver:"Vipul",rank:12},"Mani Nagar":{driver:"Vipul",rank:13},"Navrangpura":{driver:"Vipul",rank:14},"Nirma University":{driver:"Abdul",rank:15},"Odhav":{driver:"Vipul",rank:16},"Science City":{driver:"Abdul",rank:17},"Shahibag":{driver:"Vipul",rank:18},"Sola Road":{driver:"Vipul",rank:19}};
 const SETUP_KEY="packing_assistant_outlet_setup";
@@ -225,13 +226,17 @@ async function loadOrder(){
     p_access_token:state.token
   });
   if(error) throw error;
-  const chargeResult=await db.rpc("get_outlet_delivery_charges",{
-    p_order_id:state.orderId,
-    p_access_token:state.token
-  });
-  // Delivery-charge setup is optional until its SQL migration is installed.
-  // Never block the main order from loading if the helper RPC is unavailable.
-  data.delivery_charges=chargeResult.error ? [] : (chargeResult.data||[]);
+  // Delivery charges are only needed by the admin dashboard/settings. Avoid an extra
+  // RPC on every packing-device refresh/sync.
+  if(IS_ADMIN_PAGE){
+    const chargeResult=await db.rpc("get_outlet_delivery_charges",{
+      p_order_id:state.orderId,
+      p_access_token:state.token
+    });
+    data.delivery_charges=chargeResult.error ? [] : (chargeResult.data||[]);
+  }else{
+    data.delivery_charges=[];
+  }
   applyServerData(data);
   renderHome();
 }
@@ -285,16 +290,17 @@ function applyServerData(data){
 
 function formatDate(v){ return v ? new Date(v).toLocaleString("en-IN") : ""; }
 
+let realtimeSyncTimer=null;
+function scheduleRealtimeSync(){
+  clearTimeout(realtimeSyncTimer);
+  realtimeSyncTimer=setTimeout(()=>syncFromServer(),250);
+}
 function startRealtime(){
   if(!state.orderId) return;
   if(state.realtime) db.removeChannel(state.realtime);
   state.realtime=db.channel("packing-order-"+state.orderId)
-    .on("postgres_changes",{event:"*",schema:"public",table:"outlets",filter:"order_id=eq."+state.orderId},()=>{
-      syncFromServer();
-    })
-    .on("postgres_changes",{event:"*",schema:"public",table:"order_items"},()=>{
-      syncFromServer();
-    })
+    .on("postgres_changes",{event:"*",schema:"public",table:"outlets",filter:"order_id=eq."+state.orderId},scheduleRealtimeSync)
+    .on("postgres_changes",{event:"*",schema:"public",table:"order_items",filter:"order_id=eq."+state.orderId},scheduleRealtimeSync)
     .subscribe();
 }
 
@@ -1078,7 +1084,9 @@ window.addEventListener("offline",updateConnection);
 updateConnection();
 
 (async function init(){
-  await loadDrivers();
+  // Driver names are only required by the admin settings screen. Skipping this
+  // query on packing devices makes first load faster and removes unnecessary traffic.
+  if(IS_ADMIN_PAGE) await loadDrivers();
   const params=new URLSearchParams(location.search);
   const legacyOrder=params.get("order");
   const legacyToken=params.get("token");
