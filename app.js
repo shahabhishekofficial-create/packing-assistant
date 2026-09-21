@@ -426,7 +426,9 @@ function renderHome(){
   }
   all.sort((a,b)=>a.rank-b.rank || String(a.name).localeCompare(String(b.name)));
   renderOutletSettings(all);
-  $("outletList").innerHTML="";
+  const outletList=$("outletList");
+  if(!outletList) return renderAdminDashboard();
+  outletList.innerHTML="";
   all.forEach((o,i)=>{
     const b=document.createElement("button");
     const done=o.rows.filter(r=>r.status).length;
