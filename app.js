@@ -244,13 +244,14 @@ function applyServerData(data){
   const outlets=data.outlets||[];
   const items=data.items||[];
   const setup=outletSetup();
+  const deliveryCharges=new Map((data.delivery_charges||[]).map(x=>[String(x.outlet_id),Number(x.delivery_charge||0)]));
   for(const o of outlets){
     const meta=setup[o.store_name]||{};
     state.outlets.set(o.id,{
       id:o.id,
       name:o.store_name,
       driver:o.driver||meta.driver||"", rank:Number(o.outlet_rank||meta.rank||9999),
-      deliveryCharge:Number(o.delivery_charge||0),
+      deliveryCharge:deliveryCharges.has(String(o.id))?deliveryCharges.get(String(o.id)):Number(meta.deliveryCharge||0),
       status:o.status,
       lockedDeviceId:o.locked_device_id,
       started_at:o.started_at, completed_at:o.completed_at,
