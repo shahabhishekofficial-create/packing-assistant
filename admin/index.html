@@ -71,7 +71,11 @@
 </section>
 
 <section id="packing" class="screen hidden">
-  <div class="packingTop">
+  <div id="adminPackingChooser" class="adminPackingChooser">
+    <div class="sectionHead"><div><span class="eyebrow">ORDER PACKING</span><h2>Select Outlet</h2><p class="hint">Choose an outlet to open its packing screen.</p></div></div>
+    <div id="adminOutletList" class="outletGrid"></div>
+  </div>
+  <div class="packingTop hidden">
     <button id="backBtn" class="secondary">← Outlets</button>
     <div><span class="eyebrow">NOW PACKING</span><b id="outletTitle"></b></div>
     <div class="packingVoice"><select id="packingVoiceLanguage" aria-label="Voice language"><option value="en">English</option><option value="hi">Hindi</option><option value="gu">Gujarati</option></select></div>
