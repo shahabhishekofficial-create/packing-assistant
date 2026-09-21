@@ -8,6 +8,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="../icon-192.png">
 <link rel="stylesheet" href="../styles.css">
+<style>body.adminPage{visibility:hidden}</style>
 </head>
 <body class="adminPage">
 <main id="app">
@@ -155,6 +156,7 @@
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script src="../config.js"></script>
 <script src="../app.js"></script>
+<script src="./auth.js"></script>
 <script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(console.warn));}</script>
 </body>
 </html>
