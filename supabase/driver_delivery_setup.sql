@@ -65,7 +65,7 @@ begin
   select a.* into d from public.driver_accounts a join public.driver_sessions s on s.driver_id=a.id where s.token_hash=v_hash and s.expires_at>now() and a.active=true;
   if not found then return jsonb_build_object('ok',false,'message','Session expired'); end if;
   update public.driver_sessions set last_seen_at=now() where token_hash=v_hash;
-  select * into v_order from public.orders order by created_at desc limit 1;
+  select * into v_order from public.orders where completed_at is null order by created_at desc limit 1;
   if not found then return jsonb_build_object('ok',true,'driver_name',d.driver_name,'outlets',jsonb_build_array()); end if;
   select coalesce(jsonb_agg(jsonb_build_object('outlet_id',o.id,'outlet_name',o.store_name,'rank',o.outlet_rank,'status',o.status,'completed_at',o.completed_at,'delivery',jsonb_build_object('status',coalesce(dr.status,'pending'),'delivered_at',dr.delivered_at,'invoice_path',dr.invoice_path,'invoice_uploaded_at',dr.invoice_uploaded_at,'ocr_status',coalesce(dr.ocr_status,'pending'))) order by o.outlet_rank),'[]'::jsonb) into result
   from public.outlets o left join public.delivery_records dr on dr.order_id=v_order.id and dr.outlet_id=o.id and dr.driver_id=d.id
