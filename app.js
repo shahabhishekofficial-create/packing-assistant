@@ -350,7 +350,9 @@ function renderHome(){
   const packed=all.reduce((s,o)=>s+o.rows.reduce((a,r)=>a+r.packed,0),0);
   const missing=all.reduce((s,o)=>s+o.rows.reduce((a,r)=>a+r.missing,0),0);
   const pct=total?Math.round(((packed+missing)/total)*100):0;
+  const createdAt = formatDate(state.order?.created_at) || "—";
   $("orderSummary").innerHTML=
+    '<div class="orderCreatedMeta"><span>ORDER CREATED</span><b>'+esc(createdAt)+'</b></div>'+
     '<div class="stat blue"><div class="num">'+all.length+'</div><div class="label">Total Outlets</div></div>'+
     '<div class="stat green"><div class="num">'+completed+'</div><div class="label">Completed</div></div>'+
     '<div class="stat amber"><div class="num">'+inProgress+'</div><div class="label">In Progress</div></div>'+
