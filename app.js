@@ -22,7 +22,10 @@ const state = {
   poll: null,
   realtime: null,
   syncBusy: false,
-  rankMap: {}
+  rankMap: {},
+  narrationTimer: null,
+  narrationItemId: null,
+  narrationCount: 0
 };
 
 const $ = id => document.getElementById(id);
@@ -575,6 +578,7 @@ function showProduct(){
 }
 
 async function record(status,packed,missing,reason=""){
+  stopItemNarration();
   const o=state.outlets.get(state.current),r=o.rows[state.index];
   if(!r||r.status)return;
   $("syncStatus").textContent="Saving…";
@@ -726,13 +730,39 @@ const VOICE_LANG_KEY = "packing_assistant_voice_language";
 function getVoiceLanguage(){ return localStorage.getItem(VOICE_LANG_KEY) || "en"; }
 function setVoiceLanguage(v){ localStorage.setItem(VOICE_LANG_KEY,v); }
 
-function speakProduct(r){
-  if(!r)return;
-  const lang=getVoiceLanguage();
-  const qtyText = lang === "hi" ? numberWordsHindi(r.required) : lang === "gu" ? numberWordsGujarati(r.required) : numberWordsEnglish(r.required);
-  speak(`${r.product} - ${qtyText}`, lang);
+function stopItemNarration(){
+  if(state.narrationTimer){clearTimeout(state.narrationTimer);state.narrationTimer=null;}
+  state.narrationItemId=null;
+  state.narrationCount=0;
+  if("speechSynthesis" in window) speechSynthesis.cancel();
 }
-
+function speakProduct(r){
+  stopItemNarration();
+  if(!r || r.status)return;
+  const itemId=r.id;
+  const lang=getVoiceLanguage();
+  const qtyText=lang==="hi"?numberWordsHindi(r.required):lang==="gu"?numberWordsGujarati(r.required):numberWordsEnglish(r.required);
+  const textToSpeak=r.product+" - "+qtyText;
+  state.narrationItemId=itemId;
+  state.narrationCount=0;
+  const speakNext=()=>{
+    if(state.narrationItemId!==itemId||r.status||state.narrationCount>=4)return;
+    state.narrationCount++;
+    if(!("speechSynthesis" in window))return;
+    speechSynthesis.cancel();
+    const voices=speechSynthesis.getVoices();
+    const locale=lang==="hi"?"hi-IN":lang==="gu"?"gu-IN":"en-IN";
+    const candidates=voices.filter(v=>v.lang.toLowerCase().startsWith(locale.toLowerCase()));
+    const voice=candidates.find(v=>/male|man|ravi|hemant|google hindi|google ગુજરાતી/i.test(v.name))||candidates[0]||voices.find(v=>v.lang.toLowerCase().startsWith(lang+"-"));
+    const u=new SpeechSynthesisUtterance(textToSpeak);
+    u.lang=locale;u.rate=.72;u.pitch=.9;u.volume=1;
+    if(voice)u.voice=voice;
+    u.onend=()=>{if(state.narrationItemId===itemId&&state.narrationCount<4)state.narrationTimer=setTimeout(speakNext,350);};
+    u.onerror=()=>{if(state.narrationItemId===itemId&&state.narrationCount<4)state.narrationTimer=setTimeout(speakNext,350);};
+    speechSynthesis.speak(u);
+  };
+  speakNext();
+}
 function speak(text, lang="en"){
   if(!("speechSynthesis" in window))return;
   speechSynthesis.cancel();
