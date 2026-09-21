@@ -1,1 +1,15 @@
-const CACHE="pa-driver-v2";self.addEventListener("install",e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(["./","./index.html","./driver.js","../styles.css","../config.js","../icon-192.png","../icon-512.png"]))));self.addEventListener("fetch",e=>{if(e.request.method!=="GET")return;e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(x=>{const c=x.clone();caches.open(CACHE).then(k=>k.put(e.request,c));return x})).catch(()=>caches.match("./index.html")));});
+const CACHE="pa-driver-v3";
+const APP_SHELL=["./","./index.html","./driver.js","../styles.css","../icon-192.png","../icon-512.png"];
+self.addEventListener("install",event=>{self.skipWaiting();event.waitUntil(caches.open(CACHE).then(c=>c.addAll(APP_SHELL)).catch(()=>{}));});
+self.addEventListener("activate",event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith("pa-driver-")&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
+self.addEventListener("fetch",event=>{
+  const r=event.request;
+  if(r.method!=="GET")return;
+  const u=new URL(r.url);
+  if(u.origin!==location.origin)return;
+  if(u.pathname.endsWith("/config.js")||u.pathname.endsWith("/manifest.webmanifest")) {
+    event.respondWith(fetch(r).then(x=>{const copy=x.clone();caches.open(CACHE).then(c=>c.put(r,copy));return x}).catch(()=>caches.match(r)));
+    return;
+  }
+  event.respondWith(caches.match(r).then(cached=>cached||fetch(r).then(x=>{const copy=x.clone();caches.open(CACHE).then(c=>c.put(r,copy));return x})).catch(()=>caches.match("./index.html")));
+});
