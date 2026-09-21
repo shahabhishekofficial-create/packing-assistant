@@ -491,12 +491,31 @@ $("partialConfirm").onclick=e=>{
   record("PARTIAL",p,r.required-p,reason);
 };
 
-$("backBtn").onclick=async()=>{
+async function exitOutlet(){
   const o=state.outlets.get(state.current);
-  if(o?.rows.some(r=>!r.status))
-    return alert("Finish all products in this outlet before leaving.");
-  completeScreen();
-};
+  if(!o || !state.current) return;
+  const hasPacked = o.rows.some(r => Number(r.packed)>0 || Number(r.missing)>0 || r.status);
+  if(hasPacked){
+    return alert("This outlet has packing activity. Finish the outlet before leaving.");
+  }
+  $("syncStatus").textContent="Releasing outlet…";
+  const {data,error}=await db.rpc("release_outlet",{
+    p_order_id:state.orderId,
+    p_outlet_id:state.current,
+    p_access_token:state.token,
+    p_device_id:DEVICE_ID
+  });
+  if(error){
+    console.error("RELEASE OUTLET ERROR:",error);
+    return alert("Could not release this outlet. Please try again.");
+  }
+  if(!data) return alert("This outlet cannot be released.");
+  state.current=null;
+  await loadOrder();
+  $("packing").classList.add("hidden");
+  $("home").classList.remove("hidden");
+}
+$("backBtn").onclick=exitOutlet;
 
 $("fileInput").onchange=async e=>{
   try{
