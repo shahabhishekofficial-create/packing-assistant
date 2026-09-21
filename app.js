@@ -426,20 +426,21 @@ function renderHome(){
   }
   all.sort((a,b)=>a.rank-b.rank || String(a.name).localeCompare(String(b.name)));
   renderOutletSettings(all);
-  const outletList=$("outletList");
-  if(!outletList) return renderAdminDashboard();
-  outletList.innerHTML="";
-  all.forEach((o,i)=>{
-    const b=document.createElement("button");
-    const done=o.rows.filter(r=>r.status).length;
-    const mine=o.status==="in_progress"&&o.lockedDeviceId===DEVICE_ID;
-    const locked=o.status==="in_progress"&&!mine;
-    b.className="outlet "+(o.status==="completed"?"completed":o.status==="in_progress"?"progressing":"available");
-    b.disabled=o.status==="completed"||locked;
-    const tag=o.status==="completed"?"✓ COMPLETED":mine?"YOUR OUTLET":locked?"IN PROGRESS":"AVAILABLE";
-    b.innerHTML='<div><span style="display:block;text-align:left;color:#94a3b8;font-size:11px;margin-bottom:3px">'+(i+1)+'</span><b>'+esc(o.name)+'</b></div><span><strong class="statusTag">'+tag+'</strong><br>'+done+'/'+o.rows.length+' products</span>';
-    b.onclick=()=>startOutlet(o.id);
-    $("outletList").appendChild(b);
+  const lists=[$("outletList"),$("adminOutletList")].filter(Boolean);
+  lists.forEach(list=>{
+    list.innerHTML="";
+    all.forEach((o,i)=>{
+      const b=document.createElement("button");
+      const done=o.rows.filter(r=>r.status).length;
+      const mine=o.status==="in_progress"&&o.lockedDeviceId===DEVICE_ID;
+      const locked=o.status==="in_progress"&&!mine;
+      b.className="outlet "+(o.status==="completed"?"completed":o.status==="in_progress"?"progressing":"available");
+      b.disabled=o.status==="completed"||locked;
+      const tag=o.status==="completed"?"✓ COMPLETED":mine?"YOUR OUTLET":locked?"IN PROGRESS":"AVAILABLE";
+      b.innerHTML='<div><span style="display:block;text-align:left;color:#94a3b8;font-size:11px;margin-bottom:3px">'+(i+1)+'</span><b>'+esc(o.name)+'</b></div><span><strong class="statusTag">'+tag+'</strong><br>'+done+'/'+o.rows.length+' products</span>';
+      b.onclick=()=>startOutlet(o.id);
+      list.appendChild(b);
+    });
   });
   renderAdminDashboard();
 }
@@ -460,6 +461,8 @@ async function startOutlet(outletId){
   if(state.index<0) state.index=0;
   $("home").classList.add("hidden");
   $("packing").classList.remove("hidden");
+  $("adminPackingChooser")?.classList.add("hidden");
+  $("packing").querySelector(".packingTop")?.classList.remove("hidden");
   showProduct();
 }
 
@@ -503,6 +506,8 @@ async function record(status,packed,missing,reason=""){
 function completeScreen(){
   const name=state.outlets.get(state.current)?.name||"Outlet";
   $("packing").classList.add("hidden");
+  $("adminPackingChooser")?.classList.remove("hidden");
+  $("packing").querySelector(".packingTop")?.classList.add("hidden");
   $("home").classList.remove("hidden");
   state.current=null;
   alert(`${name} completed.`);
@@ -733,6 +738,6 @@ document.addEventListener("click",e=>{if(adminMenu&&!adminMenu.contains(e.target
 document.getElementById("menuReportBtn")?.addEventListener("click",()=>{adminMenu.classList.add("hidden");downloadReport()});
 document.getElementById("menuOutletSettings")?.addEventListener("click",()=>{adminMenu.classList.add("hidden");renderOutletSettings([...state.outlets.values()].sort((a,b)=>a.rank-b.rank));document.getElementById("outletSettingsDialog").showModal()});
 document.getElementById("menuVoiceSettings")?.addEventListener("click",()=>{adminMenu.classList.add("hidden");document.getElementById("voiceSettingsDialog").showModal()});
-document.getElementById("menuPacking")?.addEventListener("click",()=>{adminMenu.classList.add("hidden");document.getElementById("home")?.classList.add("hidden");document.getElementById("packing")?.classList.remove("hidden")});
+document.getElementById("menuPacking")?.addEventListener("click",()=>{adminMenu.classList.add("hidden");renderHome();document.getElementById("home")?.classList.add("hidden");document.getElementById("packing")?.classList.remove("hidden");document.getElementById("adminPackingChooser")?.classList.remove("hidden");document.getElementById("packing")?.querySelector(".packingTop")?.classList.add("hidden")});
 document.getElementById("closeOutletSettings")?.addEventListener("click",()=>document.getElementById("outletSettingsDialog").close());
 document.getElementById("closeVoiceSettings")?.addEventListener("click",()=>document.getElementById("voiceSettingsDialog").close());
