@@ -357,38 +357,104 @@ function downloadReport(){
   add("Item Wise",itemRows); add("Outlet Summary",outletRows); add("Missing & Partial",exceptionRows); add("Order Summary",orderData);
   XLSX.writeFile(wb,"Packing_Report_"+new Date().toISOString().slice(0,10)+".xlsx");
 }
-function renderOutletSettings(all){const box=$("outletSettingsList");if(!box)return;const drivers=getDrivers();box.innerHTML=all.map((o,i)=>`<div class="outletSettingRow" draggable="${window.matchMedia("(pointer:fine)").matches}" data-id="${o.id}"><span class="dragHandle">☷</span><b class="rankNo">${i+1}</b><span class="settingName">${esc(o.name)}</span><select class="driverSelect"><option value="">Unassigned</option>${drivers.map(d=>`<option value="${esc(d)}"${o.driver===d?" selected":""}>${esc(d)}</option>`).join("")}</select></div>`).join("");let drag=null;box.querySelectorAll(".outletSettingRow").forEach(row=>{row.addEventListener("dragstart",()=>{drag=row;row.classList.add("dragging")});row.addEventListener("dragend",()=>{row.classList.remove("dragging");drag=null});row.addEventListener("dragover",e=>{e.preventDefault();if(drag&&drag!==row){const r=row.getBoundingClientRect();row.parentNode.insertBefore(drag,e.clientY<r.top+r.height/2?row:row.nextSibling);updateSettingRanks()}})});box.querySelectorAll(".driverSelect").forEach(s=>s.addEventListener("change",()=>{const o=state.outlets.get(s.closest(".outletSettingRow").dataset.id);if(o)o.driver=s.value}))}
-function updateSettingRanks(){$("outletSettingsList")?.querySelectorAll(".outletSettingRow").forEach((r,i)=>r.querySelector(".rankNo").textContent=i+1)}
+let outletSetupDraft={};
+
+function renderOutletSettings(all){
+  const box=$("outletSettingsList");
+  if(!box)return;
+  const drivers=getDrivers();
+  outletSetupDraft=Object.fromEntries(all.map(o=>[o.id,{driver:o.driver||"",rank:o.rank}]));
+  box.innerHTML=all.map((o,i)=>`<div class="outletSettingRow" draggable="${window.matchMedia("(pointer:fine)").matches}" data-id="${o.id}">
+    <span class="dragHandle" title="Drag to change rank">☷</span>
+    <b class="rankNo">${i+1}</b>
+    <span class="settingName">${esc(o.name)}</span>
+    <select class="driverSelect" aria-label="Driver for ${esc(o.name)}">
+      <option value="">Unassigned</option>
+      ${drivers.map(d=>`<option value="${esc(d)}"${(o.driver||"")===d?" selected":""}>${esc(d)}</option>`).join("")}
+    </select>
+  </div>`).join("");
+
+  let drag=null;
+  box.querySelectorAll(".outletSettingRow").forEach(row=>{
+    row.addEventListener("dragstart",()=>{
+      drag=row;
+      row.classList.add("dragging");
+    });
+    row.addEventListener("dragend",()=>{
+      row.classList.remove("dragging");
+      drag=null;
+      updateSettingRanks();
+    });
+    row.addEventListener("dragover",e=>{
+      e.preventDefault();
+      if(drag&&drag!==row){
+        const r=row.getBoundingClientRect();
+        row.parentNode.insertBefore(drag,e.clientY<r.top+r.height/2?row:row.nextSibling);
+        updateSettingRanks();
+      }
+    });
+  });
+
+  box.querySelectorAll(".driverSelect").forEach(select=>{
+    select.addEventListener("pointerdown",e=>e.stopPropagation());
+    select.addEventListener("click",e=>e.stopPropagation());
+    select.addEventListener("change",()=>{
+      const row=select.closest(".outletSettingRow");
+      if(!row)return;
+      const id=row.dataset.id;
+      if(!outletSetupDraft[id])outletSetupDraft[id]={};
+      outletSetupDraft[id].driver=select.value;
+    });
+  });
+}
+
+function updateSettingRanks(){
+  $("outletSettingsList")?.querySelectorAll(".outletSettingRow").forEach((r,i)=>{
+    r.querySelector(".rankNo").textContent=i+1;
+    const id=r.dataset.id;
+    if(!outletSetupDraft[id])outletSetupDraft[id]={};
+    outletSetupDraft[id].rank=i+1;
+  });
+}
+
 async function saveOutletSettings(){
   const btn=$("saveOutletSettings");
   const rows=[...($("outletSettingsList")?.querySelectorAll(".outletSettingRow")||[])];
   if(!rows.length)return;
-  rows.forEach((row,i)=>{
-    const o=state.outlets.get(row.dataset.id);
-    if(o){o.rank=i+1;o.driver=row.querySelector(".driverSelect").value;}
-  });
-  btn.disabled=true; btn.textContent="Saving…";
+
+  updateSettingRanks();
+  btn.disabled=true;
+  btn.textContent="Saving…";
   const errors=[];
+
   for(const o of state.outlets.values()){
+    const draft=outletSetupDraft[o.id]||{};
+    o.rank=Number(draft.rank)||9999;
+    o.driver=String(draft.driver||"");
     const {error}=await db.rpc("update_outlet_settings",{
-      p_order_id:state.orderId,p_outlet_id:o.id,p_access_token:state.token,
-      p_rank:o.rank,p_driver:o.driver
+      p_order_id:state.orderId,
+      p_outlet_id:o.id,
+      p_access_token:state.token,
+      p_rank:o.rank,
+      p_driver:o.driver
     });
     if(error)errors.push(o.name+": "+error.message);
   }
+
+  btn.disabled=false;
+  btn.textContent="Submit Changes";
+
   if(errors.length){
-    btn.disabled=false; btn.textContent="Submit Changes";
     return alert("Some changes could not be saved:\n\n"+errors.join("\n"));
   }
-  localStorage.setItem(SETUP_KEY,JSON.stringify(Object.fromEntries(
-    [...state.outlets.values()].map(o=>[o.name,{rank:o.rank,driver:o.driver}])
-  )));
-  btn.disabled=false; btn.textContent="Submit Changes";
+
+  localStorage.setItem(SETUP_KEY,JSON.stringify(
+    Object.fromEntries([...state.outlets.values()].map(o=>[o.name,{rank:o.rank,driver:o.driver}]))
+  ));
   $("outletSettingsDialog")?.close();
-  renderHome();
+  renderAdminDashboard();
   alert("Outlet rank and driver assignments saved.");
 }
-
 function renderAdminDashboard(){
   if(!(location.pathname.endsWith("/admin.html") || /\/admin\/?$/.test(location.pathname))) return;
   const panel=$("adminDashboard");
@@ -609,7 +675,7 @@ async function exitOutlet(){
   $("packing").classList.add("hidden");
   $("home").classList.remove("hidden");
 }
-$("backBtn").onclick=exitOutlet;if($("saveOutletSettings"))$("saveOutletSettings").onclick=saveOutletSettings;if($("addDriverBtn"))$("addDriverBtn").onclick=async()=>{const el=$("newDriverName"),name=el.value.trim();if(!name)return;const {error}=await db.from("drivers").insert({name});if(error){if(String(error.code)==="23505")return alert("Driver already exists.");return alert(error.message);}await loadDrivers();el.value="";renderOutletSettings([...state.outlets.values()].sort((a,b)=>a.rank-b.rank));};
+$("backBtn").onclick=exitOutlet;if($("saveOutletSettings"))$("saveOutletSettings").onclick=saveOutletSettings;if($("addDriverBtn"))$("addDriverBtn").onclick=async()=>{const el=$("newDriverName"),name=el.value.trim();if(!name)return;const {error}=await db.from("drivers").insert({name});if(error){if(String(error.code)==="23505")return alert("Driver already exists.");return alert(error.message);}await loadDrivers();el.value="";const drivers=getDrivers();document.querySelectorAll("#outletSettingsList .driverSelect").forEach(select=>{const current=select.value;select.innerHTML=`<option value="">Unassigned</option>${drivers.map(d=>`<option value="${esc(d)}">${esc(d)}</option>`).join("")}`;select.value=current;});};
 
 $("fileInput").onchange=async e=>{
   try{
