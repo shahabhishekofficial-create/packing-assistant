@@ -482,7 +482,9 @@ function renderAdminDashboard(){
   const exceptions=filtered.filter(r=>r.status==="MISSING"||r.status==="PARTIAL").length,pct=required?Math.round(missing/required*100):0;
   $("dashboardKpis").innerHTML=[["Required Qty",required,"blue"],["Packed Qty",packed,"green"],["Missing Qty",missing,"red"],["Exception Items",exceptions,"amber"],["Missing %",pct+"%","red"]].map(x=>'<div class="analysisKpi '+x[2]+'"><b>'+x[1]+'</b><span>'+x[0]+'</span></div>').join("");
   $("outletAnalysisBody").innerHTML=selected.map(o=>{
-    const rq=o.rows.reduce((s,r)=>s+r.required,0),pk=o.rows.reduce((s,r)=>s+r.packed,0),ms=o.rows.reduce((s,r)=>s+r.missing,0),mp=rq?Math.round(ms/rq*100):0;
+    const itemRows=o.rows.filter(r=>!itemQuery||String(r.product).toLowerCase().includes(itemQuery)||String(r.code).toLowerCase().includes(itemQuery));
+    if(!itemRows.length)return "";
+    const rq=itemRows.reduce((s,r)=>s+r.required,0),pk=itemRows.reduce((s,r)=>s+r.packed,0),ms=itemRows.reduce((s,r)=>s+r.missing,0),mp=rq?Math.round(ms/rq*100):0;
     return '<tr><td><b>'+esc(o.name)+'</b></td><td>'+esc(o.driver||"Unassigned")+'</td><td>'+rq+'</td><td>'+pk+'</td><td class="'+(ms?'dangerText':'')+'">'+ms+'</td><td>'+mp+'%</td><td><span class="miniStatus '+o.status+'">'+(o.status||"available").replace("_"," ")+'</span></td></tr>';
   }).join("")||'<tr><td colspan="7">No data</td></tr>';
   const byItem=new Map();
@@ -490,7 +492,16 @@ function renderAdminDashboard(){
   $("itemAnalysisBody").innerHTML=[...byItem.values()].filter(x=>x.missing>0).sort((a,b)=>b.missing-a.missing).map(x=>'<tr><td><b>'+esc(x.product)+'</b><small>'+esc(x.code)+'</small></td><td>'+x.outlets.size+'</td><td>'+x.required+'</td><td>'+x.packed+'</td><td class="dangerText">'+x.missing+'</td><td>'+Math.round(x.missing/x.required*100)+'%</td></tr>').join("")||'<tr><td colspan="6">No missing/partial items</td></tr>';
   $("exceptionAnalysisBody").innerHTML=filtered.filter(r=>r.status==="MISSING"||r.status==="PARTIAL").sort((a,b)=>b.missing-a.missing).map(r=>'<tr><td>'+esc(r.outlet)+'</td><td>'+esc(r.driver)+'</td><td><b>'+esc(r.product)+'</b><small>'+esc(r.code)+'</small></td><td>'+r.required+'</td><td>'+r.packed+'</td><td class="dangerText">'+r.missing+'</td><td><span class="miniStatus '+String(r.status).toLowerCase()+'">'+r.status+'</span></td><td>'+esc(r.reason||"")+'</td></tr>').join("")||'<tr><td colspan="8">No exceptions</td></tr>';
   const byDriver=new Map();
-  selected.forEach(o=>{const driver=o.driver||"Unassigned";if(!byDriver.has(driver))byDriver.set(driver,{driver,outlets:0,completed:0,inProgress:0,required:0,packed:0,missing:0});const d=byDriver.get(driver);d.outlets++;if(o.status==="completed")d.completed++;if(o.status==="in_progress")d.inProgress++;o.rows.forEach(r=>{d.required+=r.required;d.packed+=r.packed;d.missing+=r.missing;});});
+  selected.forEach(o=>{
+    const itemRows=o.rows.filter(r=>!itemQuery||String(r.product).toLowerCase().includes(itemQuery)||String(r.code).toLowerCase().includes(itemQuery));
+    if(!itemRows.length)return;
+    const driver=o.driver||"Unassigned";
+    if(!byDriver.has(driver))byDriver.set(driver,{driver,outlets:0,completed:0,inProgress:0,required:0,packed:0,missing:0});
+    const d=byDriver.get(driver); d.outlets++;
+    if(o.status==="completed")d.completed++;
+    if(o.status==="in_progress")d.inProgress++;
+    itemRows.forEach(r=>{d.required+=r.required;d.packed+=r.packed;d.missing+=r.missing;});
+  });
   const driverBox=$("driverAnalysisBody");
   if(driverBox)driverBox.innerHTML=[...byDriver.values()].sort((x,y)=>x.driver.localeCompare(y.driver)).map(d=>'<tr><td><b>'+esc(d.driver)+'</b></td><td>'+d.outlets+'</td><td>'+d.completed+'</td><td>'+d.inProgress+'</td><td>'+d.required+'</td><td>'+d.packed+'</td><td class="'+(d.missing?'dangerText':'')+'">'+d.missing+'</td><td>'+((d.required?Math.round(d.missing/d.required*100):0))+'%</td></tr>').join("")||'<tr><td colspan="8">No driver data</td></tr>';
 }
