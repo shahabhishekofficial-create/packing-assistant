@@ -463,11 +463,21 @@ function renderAdminDashboard(){
   const panel=$("adminDashboard"); if(!panel)return;
   panel.classList.remove("hidden");
   const all=[...state.outlets.values()];
-  const filterOutlet=$("dashboardOutletFilter").value;
-  const filterStatus=$("dashboardStatusFilter").value;
-  const selected=filterOutlet==="ALL"?all:all.filter(o=>o.id===filterOutlet);
+  const outletQuery=String($("dashboardOutletFilter")?.value||"").trim().toLowerCase();
+  const itemQuery=String($("dashboardItemFilter")?.value||"").trim().toLowerCase();
+  const driverQuery=String($("dashboardDriverFilter")?.value||"").trim().toLowerCase();
+  const filterStatus=$("dashboardStatusFilter")?.value||"ALL";
+  const selected=all.filter(o=>{
+    const outletOk=!outletQuery||String(o.name).toLowerCase().includes(outletQuery);
+    const driverOk=!driverQuery||String(o.driver||"Unassigned").toLowerCase().includes(driverQuery);
+    return outletOk&&driverOk;
+  });
   const rows=selected.flatMap(o=>o.rows.map(r=>({...r,outlet:o.name,outletId:o.id,driver:o.driver||"Unassigned"})));
-  const filtered=filterStatus==="ALL"?rows:rows.filter(r=>(r.status||"PENDING")===filterStatus);
+  const filtered=rows.filter(r=>{
+    const itemOk=!itemQuery||String(r.product).toLowerCase().includes(itemQuery)||String(r.code).toLowerCase().includes(itemQuery);
+    const statusOk=filterStatus==="ALL"||(r.status||"PENDING")===filterStatus;
+    return itemOk&&statusOk;
+  });
   const required=filtered.reduce((s,r)=>s+r.required,0),packed=filtered.reduce((s,r)=>s+r.packed,0),missing=filtered.reduce((s,r)=>s+r.missing,0);
   const exceptions=filtered.filter(r=>r.status==="MISSING"||r.status==="PARTIAL").length,pct=required?Math.round(missing/required*100):0;
   $("dashboardKpis").innerHTML=[["Required Qty",required,"blue"],["Packed Qty",packed,"green"],["Missing Qty",missing,"red"],["Exception Items",exceptions,"amber"],["Missing %",pct+"%","red"]].map(x=>'<div class="analysisKpi '+x[2]+'"><b>'+x[1]+'</b><span>'+x[0]+'</span></div>').join("");
@@ -485,6 +495,22 @@ function renderAdminDashboard(){
   if(driverBox)driverBox.innerHTML=[...byDriver.values()].sort((x,y)=>x.driver.localeCompare(y.driver)).map(d=>'<tr><td><b>'+esc(d.driver)+'</b></td><td>'+d.outlets+'</td><td>'+d.completed+'</td><td>'+d.inProgress+'</td><td>'+d.required+'</td><td>'+d.packed+'</td><td class="'+(d.missing?'dangerText':'')+'">'+d.missing+'</td><td>'+((d.required?Math.round(d.missing/d.required*100):0))+'%</td></tr>').join("")||'<tr><td colspan="8">No driver data</td></tr>';
 }
 
+function enableSelectTypeSearch(){
+  document.querySelectorAll("select").forEach(select=>{
+    if(select.dataset.typeSearch)return;
+    select.dataset.typeSearch="1";
+    let buffer="",timer=null;
+    select.addEventListener("keydown",e=>{
+      if(e.key.length!==1||e.ctrlKey||e.altKey||e.metaKey)return;
+      buffer+=e.key.toLowerCase();
+      clearTimeout(timer);
+      timer=setTimeout(()=>buffer="",700);
+      const options=[...select.options];
+      const hit=options.find(o=>o.textContent.trim().toLowerCase().startsWith(buffer));
+      if(hit){select.value=hit.value;select.dispatchEvent(new Event("change",{bubbles:true}));}
+    });
+  });
+}
 function renderHome(){
   $("orderSummary").classList.remove("hidden");
   const all=[...state.outlets.values()];
@@ -506,12 +532,21 @@ function renderHome(){
     '<div class="stat progressStat"><div class="label">Overall Progress <b style="float:right">'+pct+'%</b></div><div class="progressLine"><i style="width:'+pct+'%"></i></div><small style="margin-top:7px;color:#64748b">'+packed+' packed · '+missing+' missing · '+totalItems+' products</small></div>';
 
   if(location.pathname.endsWith("/admin.html") || /\/admin\/?$/.test(location.pathname)){
-    const f=$("dashboardOutletFilter");
-    if(f){
-      const current=f.value;
-      f.innerHTML='<option value="ALL">All Outlets</option>'+all.map(o=>'<option value="'+o.id+'">'+esc(o.name)+'</option>').join("");
-      f.value=[...all].some(o=>o.id===current)?current:"ALL";
-      if(!f.dataset.bound){f.dataset.bound="1";f.onchange=renderAdminDashboard;$("dashboardStatusFilter").onchange=renderAdminDashboard;}
+    const f=$("dashboardOutletFilter"), itemF=$("dashboardItemFilter"), driverF=$("dashboardDriverFilter");
+    if(f&&itemF&&driverF){
+      const oldOutlet=f.value, oldItem=itemF.value, oldDriver=driverF.value;
+      const outlets=[...new Set(all.map(o=>o.name))].sort((x,y)=>x.localeCompare(y));
+      const items=[...new Map(all.flatMap(o=>o.rows.map(r=>[r.code,{code:r.code,product:r.product}]))).values()].sort((x,y)=>x.product.localeCompare(y.product));
+      const drivers=[...new Set(all.map(o=>o.driver||"Unassigned"))].sort((x,y)=>x.localeCompare(y));
+      $("dashboardOutletOptions").innerHTML=outlets.map(x=>'<option value="'+esc(x)+'"></option>').join("");
+      $("dashboardItemOptions").innerHTML=items.map(x=>'<option value="'+esc(x.product)+'"></option>').join("");
+      $("dashboardDriverOptions").innerHTML=drivers.map(x=>'<option value="'+esc(x)+'"></option>').join("");
+      f.value=oldOutlet; itemF.value=oldItem; driverF.value=oldDriver;
+      if(!f.dataset.bound){
+        f.dataset.bound="1";
+        [f,itemF,driverF].forEach(el=>el.addEventListener("input",renderAdminDashboard));
+        $("dashboardStatusFilter").addEventListener("change",renderAdminDashboard);
+      }
     }
   }
   all.sort((a,b)=>a.rank-b.rank || String(a.name).localeCompare(String(b.name)));
@@ -531,6 +566,7 @@ function renderHome(){
       list.appendChild(b);
     });
   });
+  enableSelectTypeSearch();
   renderAdminDashboard();
 }
 async function startOutlet(outletId){
