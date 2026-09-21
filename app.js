@@ -781,6 +781,29 @@ if(packingVoiceLanguageEl) packingVoiceLanguageEl.onchange=()=>{
   const o=state.outlets.get(state.current); if(o) speakProduct(o.rows[state.index]);
 };
 
+function renderAdminPackingChooser(){
+  const box=$("adminOutletList");
+  if(!box)return;
+  const all=[...state.outlets.values()].sort((a,b)=>a.rank-b.rank||String(a.name).localeCompare(String(b.name)));
+  box.innerHTML="";
+  if(!all.length){
+    box.innerHTML='<div class="hint" style="padding:20px">No active order is loaded. Create or refresh the live order first.</div>';
+    return;
+  }
+  all.forEach((o,i)=>{
+    const b=document.createElement("button");
+    const done=o.rows.filter(r=>r.status).length;
+    const mine=o.status==="in_progress"&&o.lockedDeviceId===DEVICE_ID;
+    const locked=o.status==="in_progress"&&!mine;
+    b.className="outlet "+(o.status==="completed"?"completed":o.status==="in_progress"?"progressing":"available");
+    b.disabled=o.status==="completed"||locked;
+    const tag=o.status==="completed"?"✓ COMPLETED":mine?"YOUR OUTLET":locked?"IN PROGRESS":"AVAILABLE";
+    b.innerHTML='<div><span style="display:block;text-align:left;color:#94a3b8;font-size:11px;margin-bottom:3px">'+(i+1)+'</span><b>'+esc(o.name)+'</b></div><span><strong class="statusTag">'+tag+'</strong><br>'+done+'/'+o.rows.length+' products</span>';
+    b.onclick=()=>startOutlet(o.id);
+    box.appendChild(b);
+  });
+}
+
 function startPolling(){
   clearInterval(state.poll);
   state.poll=setInterval(async()=>{
@@ -795,7 +818,7 @@ function startPolling(){
         }
       }
     }catch(e){console.warn("sync",e.message)}
-  },2000);
+  },300000);
 }
 
 function updateConnection(){
@@ -831,7 +854,7 @@ document.addEventListener("click",e=>{if(adminMenu&&!adminMenu.contains(e.target
 document.getElementById("menuReportBtn")?.addEventListener("click",()=>{adminMenu.classList.add("hidden");downloadReport()});
 document.getElementById("menuOutletSettings")?.addEventListener("click",()=>{adminMenu.classList.add("hidden");renderOutletSettings([...state.outlets.values()].sort((a,b)=>a.rank-b.rank));document.getElementById("outletSettingsDialog").showModal()});
 document.getElementById("menuVoiceSettings")?.addEventListener("click",()=>{adminMenu.classList.add("hidden");document.getElementById("voiceSettingsDialog").showModal()});
-document.getElementById("menuPacking")?.addEventListener("click",()=>{adminMenu.classList.add("hidden");renderHome();document.getElementById("home")?.classList.add("hidden");document.getElementById("packing")?.classList.remove("hidden");document.getElementById("adminPackingChooser")?.classList.remove("hidden");document.getElementById("packing")?.querySelector(".packingTop")?.classList.add("hidden")});
+document.getElementById("menuPacking")?.addEventListener("click",async()=>{adminMenu.classList.add("hidden");try{if(!state.outlets.size){const ok=await loadCurrentOrder();if(!ok)return alert("No active order available.");}renderAdminPackingChooser();document.getElementById("home")?.classList.add("hidden");document.getElementById("packing")?.classList.remove("hidden");document.getElementById("adminPackingChooser")?.classList.remove("hidden");document.getElementById("packing")?.querySelector(".packingTop")?.classList.add("hidden");}catch(e){alert("Could not load packing screen: "+e.message);}});
 document.getElementById("closeOutletSettings")?.addEventListener("click",()=>document.getElementById("outletSettingsDialog").close());
 document.getElementById("closeVoiceSettings")?.addEventListener("click",()=>document.getElementById("voiceSettingsDialog").close());
 
