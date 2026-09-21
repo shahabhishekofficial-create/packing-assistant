@@ -1111,7 +1111,8 @@ const adminMenu=document.getElementById("adminMenu"),adminMenuBtn=document.getEl
 adminMenuBtn?.addEventListener("click",e=>{e.stopPropagation();adminMenu.classList.toggle("hidden");adminMenuBtn.setAttribute("aria-expanded",String(!adminMenu.classList.contains("hidden")))});
 document.addEventListener("click",e=>{if(adminMenu&&!adminMenu.contains(e.target)&&e.target!==adminMenuBtn)adminMenu.classList.add("hidden")});
 document.getElementById("menuReportBtn")?.addEventListener("click",()=>{adminMenu.classList.add("hidden");openReportDialog()});
-document.getElementById("closeReportDialog")?.addEventListener("click",()=>document.getElementById("reportDialog")?.close());\ndocument.getElementById("closeInvoiceDialog")?.addEventListener("click",()=>document.getElementById("invoiceDialog")?.close());
+document.getElementById("closeReportDialog")?.addEventListener("click",()=>document.getElementById("reportDialog")?.close());
+document.getElementById("closeInvoiceDialog")?.addEventListener("click",()=>document.getElementById("invoiceDialog")?.close());
 document.getElementById("exportReportBtn")?.addEventListener("click",exportHistoricalReport);
 document.getElementById("reportAllDatesBtn")?.addEventListener("click",()=>{$("reportFromDate").value="";$("reportToDate").value="";loadReportHistory();});
 document.getElementById("menuOutletSettings")?.addEventListener("click",()=>{adminMenu.classList.add("hidden");renderOutletSettings([...state.outlets.values()].sort((a,b)=>a.rank-b.rank));document.getElementById("outletSettingsDialog").showModal()});
