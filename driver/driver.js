@@ -2,23 +2,9 @@ const DRIVER_API=window.SUPABASE_CONFIG.url+"/functions/v1/driver-api";const DRI
  if(!ds.token)return;
  ds.loading=true;ds.loadedOutlets=0;ds.totalOutlets=0;ds.outlets=[];render();
  const loadPage=async offset=>{
-  const controller=new AbortController();
-  const timer=setTimeout(()=>controller.abort(),5000);
-  try{
-   const r=await fetch(window.SUPABASE_CONFIG.url+"/rest/v1/rpc/get_driver_dashboard_page",{
-    method:"POST",
-    headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},
-    body:JSON.stringify({p_session_token:ds.token,p_offset:offset,p_limit:4}),
-    signal:controller.signal
-   });
-   const data=await r.json().catch(()=>null);
-   if(!r.ok)throw new Error(data?.message||"Dashboard request failed ("+r.status+")");
-   if(!data||data.ok===false)throw new Error(data?.message||"Session expired");
-   return data;
-  }catch(e){
-   if(e.name==="AbortError")throw new Error("Dashboard timed out after 5 seconds.");
-   throw e;
-  }finally{clearTimeout(timer);}
+  const d=await api("dashboard_page",{offset,limit:4});
+  if(!d||d.ok===false)throw new Error(d?.message||"Dashboard failed");
+  return d;
  };
  try{
   const first=await loadPage(0);
