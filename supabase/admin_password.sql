@@ -16,7 +16,7 @@ set search_path=public
 as $$
   select exists(
     select 1 from public.admin_settings
-    where id=true and password_hash=crypt(p_password,password_hash)
+    where id=true and password_hash=extensions.crypt(p_password,password_hash)
   );
 $$;
 
@@ -32,12 +32,12 @@ begin
   end if;
   if not exists(
     select 1 from public.admin_settings
-    where id=true and password_hash=crypt(p_current_password,password_hash)
+    where id=true and password_hash=extensions.crypt(p_current_password,password_hash)
   ) then
     raise exception 'Current password is incorrect';
   end if;
   update public.admin_settings
-  set password_hash=crypt(p_new_password,gen_salt('bf',12)),updated_at=now()
+  set password_hash=extensions.crypt(p_new_password,extensions.gen_salt('bf',12)),updated_at=now()
   where id=true;
   return true;
 end;
@@ -49,5 +49,5 @@ grant execute on function public.change_admin_password(text,text) to anon, authe
 
 -- Replace INITIAL_ADMIN_PASSWORD with your current Admin password once, then run:
 insert into public.admin_settings(id,password_hash)
-values(true,crypt('INITIAL_ADMIN_PASSWORD',gen_salt('bf',12)))
+values(true,extensions.crypt('INITIAL_ADMIN_PASSWORD',extensions.gen_salt('bf',12)))
 on conflict(id) do nothing;
