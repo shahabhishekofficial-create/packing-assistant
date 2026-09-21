@@ -18,11 +18,13 @@
     <div><h1>Packing Assistant</h1><p>Faster Packing. Fewer Errors. Happier Customers.</p></div>
   </div>
   <div class="headerActions">
-    <select id="voiceLanguage" aria-label="Voice language">
-      <option value="en">English</option><option value="hi">Hindi</option><option value="gu">Gujarati</option>
-    </select>
-    <button id="reportBtn" class="reportBtn hidden">⬇ Download Report</button>
     <span id="connection" class="liveBadge">● Live</span>
+    <button id="adminMenuBtn" class="menuDots" aria-label="Options" aria-expanded="false">⋮</button>
+    <div id="adminMenu" class="adminMenu hidden">
+      <button id="menuReportBtn">⬇ Download Report</button>
+      <button id="menuOutletSettings">⚙ Outlet Setup</button>
+      <button id="menuVoiceSettings">🔊 Voice Language</button>
+    </div>
   </div>
 </header>
 
@@ -63,13 +65,6 @@
     </div>
   </section>
 
-  <section class="adminOptions">
-    <div class="sectionHead">
-      <div><span class="eyebrow">OPTIONS</span><h2>Outlet Setup</h2><p class="hint">Drag to change packing rank and assign delivery driver.</p></div>
-      <div class="driverTools"><input id="newDriverName" placeholder="Add driver name"><button id="addDriverBtn" class="secondary">+ Add Driver</button><button id="saveOutletSettings" class="primary">Save</button></div>
-    </div>
-    <div id="outletSettingsList" class="outletSettingsList"></div>
-  </section>
 
   <div class="sectionHead">
     <div><span class="eyebrow">LIVE WORKSPACE</span><h2>Outlets</h2></div>
@@ -119,6 +114,15 @@
 </form>
 </dialog>
 
+  <dialog id="outletSettingsDialog" class="settingsDialog">
+    <div class="settingsDialogHead"><div><span class="eyebrow">OPTIONS</span><h3>Outlet Setup</h3><p class="hint">Drag to change packing rank and assign delivery driver.</p></div><button id="closeOutletSettings" class="secondary">✕</button></div>
+    <div class="driverTools"><input id="newDriverName" placeholder="Add driver name"><button id="addDriverBtn" class="secondary">+ Add Driver</button><button id="saveOutletSettings" class="primary">Save</button></div>
+    <div id="outletSettingsList" class="outletSettingsList"></div>
+  </dialog>
+  <dialog id="voiceSettingsDialog" class="settingsDialog">
+    <div class="settingsDialogHead"><div><span class="eyebrow">OPTIONS</span><h3>Voice Language</h3></div><button id="closeVoiceSettings" class="secondary">✕</button></div>
+    <select id="voiceLanguage" aria-label="Voice language"><option value="en">English</option><option value="hi">Hindi</option><option value="gu">Gujarati</option></select>
+  </dialog>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
