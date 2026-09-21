@@ -610,7 +610,7 @@ $("loadDemo").onclick=async()=>{
   try{await createLiveOrder(rows)}catch(e){alert(e.message)}
 };
 
-$("reportBtn").onclick=downloadReport;
+
 
 
 $("copyLink").onclick=async()=>{
@@ -724,3 +724,12 @@ updateConnection();
     await loadCurrentOrder();
   }catch(e){console.warn("No current order",e.message)}
 })();
+
+const adminMenu=document.getElementById("adminMenu"),adminMenuBtn=document.getElementById("adminMenuBtn");
+adminMenuBtn?.addEventListener("click",e=>{e.stopPropagation();adminMenu.classList.toggle("hidden");adminMenuBtn.setAttribute("aria-expanded",String(!adminMenu.classList.contains("hidden")))});
+document.addEventListener("click",e=>{if(adminMenu&&!adminMenu.contains(e.target)&&e.target!==adminMenuBtn)adminMenu.classList.add("hidden")});
+document.getElementById("menuReportBtn")?.addEventListener("click",()=>{adminMenu.classList.add("hidden");downloadReport()});
+document.getElementById("menuOutletSettings")?.addEventListener("click",()=>{adminMenu.classList.add("hidden");renderOutletSettings([...state.outlets.values()].sort((a,b)=>a.rank-b.rank));document.getElementById("outletSettingsDialog").showModal()});
+document.getElementById("menuVoiceSettings")?.addEventListener("click",()=>{adminMenu.classList.add("hidden");document.getElementById("voiceSettingsDialog").showModal()});
+document.getElementById("closeOutletSettings")?.addEventListener("click",()=>document.getElementById("outletSettingsDialog").close());
+document.getElementById("closeVoiceSettings")?.addEventListener("click",()=>document.getElementById("voiceSettingsDialog").close());
