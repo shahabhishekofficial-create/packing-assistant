@@ -1047,7 +1047,17 @@ updateConnection();
       history.replaceState({},document.title,location.pathname);
       return;
     }
-    await loadCurrentOrder();
+    const loaded=await loadCurrentOrder();
+    if(!loaded){
+      const savedOrder=localStorage.getItem("pa_order_id");
+      const savedToken=localStorage.getItem("pa_order_token");
+      if(savedOrder&&savedToken){
+        state.orderId=savedOrder;
+        state.token=savedToken;
+        await loadOrder();
+        startPolling();
+      }
+    }
   }catch(e){console.warn("No current order",e.message)}
 })();
 
