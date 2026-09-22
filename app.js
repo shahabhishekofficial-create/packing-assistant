@@ -706,17 +706,19 @@ async function loadLiveDeliverySummary(){
     const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.message||"Could not load delivery status");
     const l=d.live||{};
     section.classList.remove("hidden");
-    kpis.innerHTML=[
-      ["Delivered",Number(l.delivered||0)],
-      ["Pending Delivery",Number(l.pending_delivery||0)],
-      ["Packing",Number(l.packing_in_progress||0)],
-      ["Unassigned",Number(l.unassigned||0)],
-      ["Delivery Issues",Number(l.rejections||0)+Number(l.missing||0)]
-    ].map(x=>'<div class="deliverySummaryKpi"><small>'+esc(x[0])+'</small><b>'+esc(String(x[1]))+'</b></div>').join("");
-    body.innerHTML=(d.live_outlets||[]).map(x=>{
-      const st=dashboardStatus(x);
-      return '<tr><td><b>'+esc(x.store_name)+'</b></td><td>'+esc(x.driver||"Unassigned")+'</td><td><span class="deliveryStatus '+st[0]+'">'+esc(st[1])+'</span></td><td>'+Number(x.missing||0)+'</td><td>'+Number(x.rejections||0)+'</td><td>'+esc(x.delivered?dashboardDate(x.delivered_at):x.packing_done?(x.invoice_uploaded?"Invoice uploaded":"Invoice pending"):"Packing in progress")+'</td></tr>';
-    }).join("")||'<tr><td colspan="6" class="hint">No live delivery data.</td></tr>';
+    const deliveryKpis=[["Delivered",Number(l.delivered||0)],["Pending Delivery",Number(l.pending_delivery||0)],["Packing",Number(l.packing_in_progress||0)],["Unassigned",Number(l.unassigned||0)],["Delivery Issues",Number(l.rejections||0)+Number(l.missing||0)]];
+    kpis.innerHTML=deliveryKpis.map(x=>'<div class="deliverySummaryKpi"><small>'+esc(x[0])+'</small><b>'+esc(String(x[1]))+'</b></div>').join("");
+    body.innerHTML=(d.live_outlets||[]).map(x=>{const st=dashboardStatus(x);return '<tr><td><b>'+esc(x.store_name)+'</b></td><td>'+esc(x.driver||"Unassigned")+'</td><td><span class="deliveryStatus '+st[0]+'">'+esc(st[1])+'</span></td><td>'+Number(x.missing||0)+'</td><td>'+Number(x.rejections||0)+'</td><td>'+esc(x.delivered?dashboardDate(x.delivered_at):x.packing_done?(x.invoice_uploaded?"Invoice uploaded":"Invoice pending"):"Packing in progress")+'</td></tr>';}).join("")||'<tr><td colspan="6" class="hint">No live delivery data.</td></tr>';
+    const delivered=deliveryKpis[0][1],pendingDelivery=deliveryKpis[1][1],packing=deliveryKpis[2][1],unassigned=deliveryKpis[3][1],issues=deliveryKpis[4][1];
+    if($("dashPendingDelivery"))$("dashPendingDelivery").textContent=String(pendingDelivery);
+    if($("dashDeliveryIssues"))$("dashDeliveryIssues").textContent=String(issues);
+    if($("dashDeliveryDetail"))$("dashDeliveryDetail").textContent=delivered+" delivered · "+pendingDelivery+" pending · "+packing+" packing";
+    const alerts=[];
+    if(issues)alerts.push('<div class="baAlert issue"><b>'+issues+'</b> delivery issue'+(issues===1?"":"s")+" need attention.</div>");
+    if(unassigned)alerts.push('<div class="baAlert warn"><b>'+unassigned+'</b> outlet'+(unassigned===1?"":"s")+" have no driver assigned.</div>");
+    if(pendingDelivery)alerts.push('<div class="baAlert"><b>'+pendingDelivery+'</b> outlet'+(pendingDelivery===1?"":"s")+" waiting for delivery.</div>");
+    if(!alerts.length)alerts.push('<div class="baAlert empty">No active delivery alerts.</div>');
+    if($("dashAlerts"))$("dashAlerts").innerHTML=alerts.join("");
   }catch(e){
     console.warn("Live delivery summary:",e.message);
     section.classList.remove("hidden");
@@ -745,6 +747,18 @@ function renderHome(){
   const missing=all.reduce((s,o)=>s+o.rows.reduce((a,r)=>a+r.missing,0),0);
   const pct=total?Math.round(((packed+missing)/total)*100):0;
   const createdAt = formatDate(state.order?.created_at) || "—";
+  if($("dashTotalOutlets"))$("dashTotalOutlets").textContent=String(all.length);
+  if($("dashPackingProgress"))$("dashPackingProgress").textContent=pct+"%";
+  if($("dashPackingProgressText"))$("dashPackingProgressText").textContent=pct+"%";
+  if($("dashPackingProgressBar"))$("dashPackingProgressBar").style.width=pct+"%";
+  if($("dashOrderDate"))$("dashOrderDate").textContent=createdAt;
+  if($("dashOrderOutlets"))$("dashOrderOutlets").textContent=String(all.length);
+  if($("dashOrderProducts"))$("dashOrderProducts").textContent=String(totalItems);
+  if($("dashPackingDetail"))$("dashPackingDetail").textContent=packed+" packed · "+missing+" missing";
+  if($("dashOrderName"))$("dashOrderName").textContent=state.order?.order_name||"Current packing order";
+  if($("dashOrderStatus")){
+    $("dashOrderStatus").textContent=state.order?.status==="completed"||pct>=100?"Completed":inProgress?"Packing in progress":"Pending";
+  }
   $("orderSummary").innerHTML=
     '<div class="orderCreatedMeta"><span>ORDER CREATED</span><b>'+esc(createdAt)+'</b></div>'+
     '<div class="stat blue"><div class="num">'+all.length+'</div><div class="label">Total Outlets</div></div>'+
@@ -1207,7 +1221,7 @@ function showAdminDashboard(){
 const adminMenu=document.getElementById("adminMenu"),adminMenuBtn=document.getElementById("adminMenuBtn");
 adminMenuBtn?.addEventListener("click",e=>{e.stopPropagation();adminMenu.classList.toggle("hidden");adminMenuBtn.setAttribute("aria-expanded",String(!adminMenu.classList.contains("hidden")))});
 document.addEventListener("click",e=>{if(adminMenu&&!adminMenu.contains(e.target)&&e.target!==adminMenuBtn)adminMenu.classList.add("hidden")});
-document.getElementById("menuReportBtn")?.addEventListener("click",()=>{adminMenu.classList.add("hidden");openReportDialog()});
+document.getElementById("menuReportBtn")?.addEventListener("click",()=>{adminMenu.classList.add("hidden");setBAActive("sideReports");openReportDialog()});
 document.getElementById("menuChangePassword")?.addEventListener("click",()=>{adminMenu.classList.add("hidden");window.PA_ADMIN_CHANGE_PASSWORD?.();});
 document.getElementById("menuLogout")?.addEventListener("click",()=>{adminMenu.classList.add("hidden");window.PA_ADMIN_LOGOUT?.();});
 document.getElementById("closeReportDialog")?.addEventListener("click",()=>document.getElementById("reportDialog")?.close());
@@ -1222,7 +1236,7 @@ document.getElementById("driverPaymentDashboardBack")?.addEventListener("click",
 document.getElementById("closeInvoiceDialog")?.addEventListener("click",()=>document.getElementById("invoiceDialog")?.close());
 document.getElementById("exportReportBtn")?.addEventListener("click",exportHistoricalReport);
 document.getElementById("reportAllDatesBtn")?.addEventListener("click",()=>{$("reportFromDate").value="";$("reportToDate").value="";loadReportHistory();});
-document.getElementById("menuOutletSettings")?.addEventListener("click",()=>{adminMenu.classList.add("hidden");renderOutletSettings([...state.outlets.values()].sort((a,b)=>a.rank-b.rank));document.getElementById("outletSettingsDialog").showModal()});
+document.getElementById("menuOutletSettings")?.addEventListener("click",()=>{adminMenu.classList.add("hidden");setBAActive("sideSettings");renderOutletSettings([...state.outlets.values()].sort((a,b)=>a.rank-b.rank));document.getElementById("outletSettingsDialog").showModal()});
 
 async function ensureFleetAdminPassword(){if(window.PA_ADMIN_PASSWORD)return true;if(window.PA_REAUTH_ADMIN){return await window.PA_REAUTH_ADMIN();}const p=prompt("Enter Admin password to manage driver payments:");if(!p)return false;const r=await db.rpc("verify_admin_password",{p_password:p});if(r.error||!r.data)return false;window.PA_ADMIN_PASSWORD=p;return true;}
 async function loadFleetManagement(){
@@ -1258,12 +1272,26 @@ async function saveDriverPayment(){
   }catch(e){$("paymentMsg").textContent=e.message;}finally{btn.disabled=false;btn.textContent="Save Payment";}
 }
 document.getElementById("menuFleetManagement")?.addEventListener("click",async()=>{adminMenu.classList.add("hidden");document.getElementById("home")?.classList.add("hidden");document.getElementById("packing")?.classList.add("hidden");document.getElementById("driverDashboard")?.classList.add("hidden");document.getElementById("fleetManagement")?.classList.remove("hidden");await loadFleetManagement();});document.getElementById("fleetRefreshBtn")?.addEventListener("click",loadFleetManagement);document.getElementById("closeDriverPayment")?.addEventListener("click",()=>document.getElementById("driverPaymentDialog").close());document.getElementById("saveDriverPayment")?.addEventListener("click",saveDriverPayment);
-document.getElementById("menuDriverDashboard")?.addEventListener("click",async()=>{adminMenu.classList.add("hidden");document.getElementById("home")?.classList.add("hidden");document.getElementById("packing")?.classList.add("hidden");document.getElementById("fleetManagement")?.classList.add("hidden");document.getElementById("driverDashboard")?.classList.remove("hidden");await loadDriverAdminDashboard();});let driverDashboardTimer=null;function refreshDriverDashboardSoon(){clearInterval(driverDashboardTimer);driverDashboardTimer=setInterval(()=>{if(!document.getElementById("driverDashboard")?.classList.contains("hidden"))loadDriverAdminDashboard();},30000);}document.getElementById("driverDashboardApply")?.addEventListener("click",()=>loadDriverAdminDashboard());document.getElementById("driverDashboardRefresh")?.addEventListener("click",()=>loadDriverAdminDashboard());document.getElementById("driverDashboardPreset")?.addEventListener("change",e=>{const v=e.target.value;const custom=v==="custom";$("driverDashboardFrom").disabled=!custom;$("driverDashboardTo").disabled=!custom;if(!custom)loadDriverAdminDashboard();});$("driverDashboardFrom")?.addEventListener("change",()=>{if($("driverDashboardPreset")?.value==="custom")$("driverDashboardApply").disabled=!($("driverDashboardFrom").value&&$("driverDashboardTo").value);});$("driverDashboardTo")?.addEventListener("change",()=>{if($("driverDashboardPreset")?.value==="custom")$("driverDashboardApply").disabled=!($("driverDashboardFrom").value&&$("driverDashboardTo").value);});
+document.getElementById("menuDriverDashboard")?.addEventListener("click",async()=>{adminMenu.classList.add("hidden");setBAActive("sideDelivery");document.querySelector(".baSidebar")?.classList.remove("open");document.getElementById("home")?.classList.add("hidden");document.getElementById("packing")?.classList.add("hidden");document.getElementById("fleetManagement")?.classList.add("hidden");document.getElementById("driverDashboard")?.classList.remove("hidden");await loadDriverAdminDashboard();});let driverDashboardTimer=null;function refreshDriverDashboardSoon(){clearInterval(driverDashboardTimer);driverDashboardTimer=setInterval(()=>{if(!document.getElementById("driverDashboard")?.classList.contains("hidden"))loadDriverAdminDashboard();},30000);}document.getElementById("driverDashboardApply")?.addEventListener("click",()=>loadDriverAdminDashboard());document.getElementById("driverDashboardRefresh")?.addEventListener("click",()=>loadDriverAdminDashboard());document.getElementById("driverDashboardPreset")?.addEventListener("change",e=>{const v=e.target.value;const custom=v==="custom";$("driverDashboardFrom").disabled=!custom;$("driverDashboardTo").disabled=!custom;if(!custom)loadDriverAdminDashboard();});$("driverDashboardFrom")?.addEventListener("change",()=>{if($("driverDashboardPreset")?.value==="custom")$("driverDashboardApply").disabled=!($("driverDashboardFrom").value&&$("driverDashboardTo").value);});$("driverDashboardTo")?.addEventListener("change",()=>{if($("driverDashboardPreset")?.value==="custom")$("driverDashboardApply").disabled=!($("driverDashboardFrom").value&&$("driverDashboardTo").value);});
 refreshDriverDashboardSoon();
 if($("driverDashboardPreset")){ $("driverDashboardFrom").disabled=true; $("driverDashboardTo").disabled=true; $("driverDashboardApply").disabled=true; }
-document.getElementById("menuPacking")?.addEventListener("click",async()=>{adminMenu.classList.add("hidden");try{if(!state.outlets.size){const ok=await loadCurrentOrder();if(!ok)return alert("No active order available.");}renderAdminPackingChooser();document.getElementById("home")?.classList.add("hidden");document.getElementById("driverDashboard")?.classList.add("hidden");document.getElementById("packing")?.classList.remove("hidden");document.getElementById("adminPackingChooser")?.classList.remove("hidden");document.getElementById("packing")?.querySelector(".packingTop")?.classList.add("hidden");}catch(e){alert("Could not load packing screen: "+e.message);}});
+document.getElementById("menuPacking")?.addEventListener("click",async()=>{adminMenu.classList.add("hidden");setBAActive("sidePacking");document.querySelector(".baSidebar")?.classList.remove("open");try{if(!state.outlets.size){const ok=await loadCurrentOrder();if(!ok)return alert("No active order available.");}renderAdminPackingChooser();document.getElementById("home")?.classList.add("hidden");document.getElementById("driverDashboard")?.classList.add("hidden");document.getElementById("packing")?.classList.remove("hidden");document.getElementById("adminPackingChooser")?.classList.remove("hidden");document.getElementById("packing")?.querySelector(".packingTop")?.classList.add("hidden");}catch(e){alert("Could not load packing screen: "+e.message);}});
 document.getElementById("closeOutletSettings")?.addEventListener("click",()=>document.getElementById("outletSettingsDialog").close());
 
+
+function setBAActive(id){document.querySelectorAll(".baSideItem").forEach(x=>x.classList.toggle("active",x.id===id));}
+function bindBAAction(id,targetId){document.getElementById(id)?.addEventListener("click",()=>document.getElementById(targetId)?.click());}
+document.getElementById("baSidebarToggle")?.addEventListener("click",()=>document.querySelector(".baSidebar")?.classList.toggle("open"));
+document.getElementById("sideDashboard")?.addEventListener("click",()=>{document.querySelector(".baSidebar")?.classList.remove("open");showAdminDashboard();setBAActive("sideDashboard")});
+bindBAAction("sidePacking","menuPacking");bindBAAction("sideDelivery","menuDriverDashboard");bindBAAction("sideReports","menuReportBtn");bindBAAction("sideSettings","menuOutletSettings");
+bindBAAction("modulePacking","menuPacking");bindBAAction("moduleDelivery","menuDriverDashboard");bindBAAction("moduleReports","menuReportBtn");
+["moduleInventory","modulePurchase","moduleEmployees","sideInventory","sidePurchase","sideEmployees"].forEach(id=>document.getElementById(id)?.addEventListener("click",e=>alert((e.currentTarget.dataset.comingSoon||({"moduleInventory":"Inventory","modulePurchase":"Purchase & Suppliers","moduleEmployees":"Employees & HR","sideInventory":"Inventory","sidePurchase":"Purchase & Suppliers","sideEmployees":"Employees & HR"}[id]))+" is coming soon.")));
+document.getElementById("dashOpenPacking")?.addEventListener("click",()=>document.getElementById("menuPacking")?.click());
+document.getElementById("dashOpenDelivery")?.addEventListener("click",()=>document.getElementById("menuDriverDashboard")?.click());
+document.getElementById("dashOpenReports")?.addEventListener("click",()=>document.getElementById("menuReportBtn")?.click());
+document.getElementById("dashCreateOrder")?.addEventListener("click",()=>document.getElementById("dashCreateOrderTools")?.classList.toggle("hidden"));
+document.getElementById("baHeaderDate")?.replaceChildren(document.createTextNode(new Date().toLocaleString("en-IN",{weekday:"short",day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"})));
+setInterval(()=>{const el=document.getElementById("baHeaderDate");if(el)el.textContent=new Date().toLocaleString("en-IN",{weekday:"short",day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"});},60000);
 
 const adminRefreshBtn=document.getElementById("adminRefreshBtn");
 adminRefreshBtn?.addEventListener("click",async()=>{
