@@ -686,3 +686,6 @@ tbody tr:hover{background:#f8fbff}
   .driverPasswordActions{padding:16px 17px 18px}
   .driverPasswordActions button{flex:1}
 }
+
+.sectionHeadActions,.dialogHeadActions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+@media (max-width:640px){.sectionHeadActions,.dialogHeadActions{width:100%}.sectionHeadActions button,.dialogHeadActions button{flex:1}.sectionHeadActions{justify-content:flex-start}}
