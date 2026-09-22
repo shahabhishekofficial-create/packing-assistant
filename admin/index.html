@@ -25,7 +25,6 @@
     <div id="adminMenu" class="adminMenu hidden">
       <button id="menuReportBtn">Reports / Export</button>
       <button id="menuOutletSettings">Outlet Setup</button>
-      <button id="menuVoiceSettings">Voice Language</button>
       <button id="menuPacking">Order Packing Screen</button>
       <button id="menuDriverDashboard">Driver Dashboard</button>
       <button id="menuFleetManagement">Delivery Fleet Management</button>
@@ -191,10 +190,6 @@
     <div id="reportHistoryList" class="reportHistoryList"></div>
   </dialog>
   <dialog id="invoiceDialog" class="settingsDialog reportDialog"><div class="settingsDialogHead"><div><span class="eyebrow">DELIVERY INVOICES</span><h3 id="invoiceDialogTitle">Invoices</h3><p class="hint">Invoices remain available from previous orders as well as the current order.</p></div><div class="dialogHeadActions"><button id="invoiceDashboardBack" class="secondary">← Dashboard</button><button id="closeInvoiceDialog" class="secondary">✕</button></div></div><div id="invoiceList" class="reportHistoryList"></div></dialog>
-  <dialog id="voiceSettingsDialog" class="settingsDialog">
-    <div class="settingsDialogHead"><div><span class="eyebrow">OPTIONS</span><h3>Voice Language</h3></div><div class="dialogHeadActions"><button id="voiceSettingsDashboardBack" class="secondary">← Dashboard</button><button id="closeVoiceSettings" class="secondary">✕</button></div></div>
-    <select id="voiceLanguage" aria-label="Voice language"><option value="en">English</option><option value="hi">Hindi</option><option value="gu">Gujarati</option></select>
-  </dialog>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
