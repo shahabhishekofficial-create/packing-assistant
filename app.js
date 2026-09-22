@@ -1140,7 +1140,7 @@ async function loadFleetManagement(){
 }
 function openDriverPayment(driverId,name){
   $("paymentDriverId").value=driverId;$("paymentDriverTitle").textContent=name+" — Record Payment";$("paymentAmount").value="";$("paymentNote").value="";$("paymentScreenshot").value="";$("paymentMsg").textContent="";
-  const d=new Date(Date.now()-d.getTimezoneOffset()*60000);$("paymentDate").value=d.toISOString().slice(0,16);
+  const now=new Date();const d=new Date(now.getTime()-now.getTimezoneOffset()*60000);$("paymentDate").value=d.toISOString().slice(0,16);
   $("driverPaymentDialog").showModal();
 }
 async function saveDriverPayment(){
