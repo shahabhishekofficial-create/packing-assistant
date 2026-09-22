@@ -9,6 +9,7 @@
   const HASH_B64 = "hx8/4FHwWBPUr43NnskKji0Y4PW0Tee3HHpiQY4pCO4=";
   const db = window.supabase && window.SUPABASE_CONFIG ? window.supabase.createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.key) : null;
   let logoutTimer = null;
+  let reauthResolver = null;
 
   function b64ToBytes(s){ return Uint8Array.from(atob(s), c => c.charCodeAt(0)); }
 
@@ -78,6 +79,8 @@
     document.head.appendChild(s);
   }
 
+  window.PA_REAUTH_ADMIN = function(){ return new Promise(resolve=>{ reauthResolver=resolve; showLoginBox("Admin password required for this action."); }); };
+
   function showLoginBox(message=""){
     let box=document.getElementById("adminAuthOverlay");
     if(!box){
@@ -105,7 +108,7 @@
           if(db){const r=await db.rpc("verify_admin_password",{p_password:input.value});if(!r.error)ok=!!r.data;}
           if(!ok)ok=same(await hashPassword(input.value),HASH_B64);
           if(!ok){err.textContent="Incorrect password.";input.select();return;}
-          window.PA_ADMIN_PASSWORD=input.value;localStorage.setItem(SESSION_KEY,"1");
+          window.PA_ADMIN_PASSWORD=input.value;localStorage.setItem(SESSION_KEY,"1");if(reauthResolver){const resolve=reauthResolver;reauthResolver=null;resolve(true);}
           localStorage.setItem(LAST_ACTIVITY_KEY,String(Date.now()));
           box.remove();
           document.body.classList.remove("adminLocked");
