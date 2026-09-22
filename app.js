@@ -1044,18 +1044,11 @@ function numberWordsGujarati(n){
   if(n<=100)return a[n]; return String(n);
 }
 
-const voiceLanguageEl=$("voiceLanguage");
 const packingVoiceLanguageEl=$("packingVoiceLanguage");
 function syncVoiceSelectors(v){
-  if(voiceLanguageEl) voiceLanguageEl.value=v;
   if(packingVoiceLanguageEl) packingVoiceLanguageEl.value=v;
 }
 syncVoiceSelectors(getVoiceLanguage());
-if(voiceLanguageEl) voiceLanguageEl.onchange=()=>{
-  setVoiceLanguage(voiceLanguageEl.value);
-  syncVoiceSelectors(voiceLanguageEl.value);
-  const o=state.outlets.get(state.current); if(o) speakProduct(o.rows[state.index]);
-};
 if(packingVoiceLanguageEl) packingVoiceLanguageEl.onchange=()=>{
   setVoiceLanguage(packingVoiceLanguageEl.value);
   syncVoiceSelectors(packingVoiceLanguageEl.value);
@@ -1208,7 +1201,7 @@ function showAdminDashboard(){
   if(typeof stopItemNarration==="function")stopItemNarration();
   ["packing","driverDashboard","fleetManagement"].forEach(id=>document.getElementById(id)?.classList.add("hidden"));
   document.getElementById("home")?.classList.remove("hidden");
-  ["reportDialog","invoiceDialog","outletSettingsDialog","voiceSettingsDialog","driverPaymentDialog"].forEach(id=>document.getElementById(id)?.open&&document.getElementById(id).close());
+  ["reportDialog","invoiceDialog","outletSettingsDialog","driverPaymentDialog"].forEach(id=>document.getElementById(id)?.open&&document.getElementById(id).close());
   window.scrollTo({top:0,behavior:"smooth"});
 }
 const adminMenu=document.getElementById("adminMenu"),adminMenuBtn=document.getElementById("adminMenuBtn");
@@ -1225,7 +1218,6 @@ document.getElementById("packingDashboardBackBtn")?.addEventListener("click",sho
 document.getElementById("reportDashboardBack")?.addEventListener("click",showAdminDashboard);
 document.getElementById("invoiceDashboardBack")?.addEventListener("click",showAdminDashboard);
 document.getElementById("outletSettingsDashboardBack")?.addEventListener("click",showAdminDashboard);
-document.getElementById("voiceSettingsDashboardBack")?.addEventListener("click",showAdminDashboard);
 document.getElementById("driverPaymentDashboardBack")?.addEventListener("click",showAdminDashboard);
 document.getElementById("closeInvoiceDialog")?.addEventListener("click",()=>document.getElementById("invoiceDialog")?.close());
 document.getElementById("exportReportBtn")?.addEventListener("click",exportHistoricalReport);
@@ -1269,10 +1261,8 @@ document.getElementById("menuFleetManagement")?.addEventListener("click",async()
 document.getElementById("menuDriverDashboard")?.addEventListener("click",async()=>{adminMenu.classList.add("hidden");document.getElementById("home")?.classList.add("hidden");document.getElementById("packing")?.classList.add("hidden");document.getElementById("fleetManagement")?.classList.add("hidden");document.getElementById("driverDashboard")?.classList.remove("hidden");await loadDriverAdminDashboard();});let driverDashboardTimer=null;function refreshDriverDashboardSoon(){clearInterval(driverDashboardTimer);driverDashboardTimer=setInterval(()=>{if(!document.getElementById("driverDashboard")?.classList.contains("hidden"))loadDriverAdminDashboard();},30000);}document.getElementById("driverDashboardApply")?.addEventListener("click",()=>loadDriverAdminDashboard());document.getElementById("driverDashboardRefresh")?.addEventListener("click",()=>loadDriverAdminDashboard());document.getElementById("driverDashboardPreset")?.addEventListener("change",e=>{const v=e.target.value;const custom=v==="custom";$("driverDashboardFrom").disabled=!custom;$("driverDashboardTo").disabled=!custom;if(!custom)loadDriverAdminDashboard();});$("driverDashboardFrom")?.addEventListener("change",()=>{if($("driverDashboardPreset")?.value==="custom")$("driverDashboardApply").disabled=!($("driverDashboardFrom").value&&$("driverDashboardTo").value);});$("driverDashboardTo")?.addEventListener("change",()=>{if($("driverDashboardPreset")?.value==="custom")$("driverDashboardApply").disabled=!($("driverDashboardFrom").value&&$("driverDashboardTo").value);});
 refreshDriverDashboardSoon();
 if($("driverDashboardPreset")){ $("driverDashboardFrom").disabled=true; $("driverDashboardTo").disabled=true; $("driverDashboardApply").disabled=true; }
-document.getElementById("menuVoiceSettings")?.addEventListener("click",()=>{adminMenu.classList.add("hidden");document.getElementById("voiceSettingsDialog").showModal()});
 document.getElementById("menuPacking")?.addEventListener("click",async()=>{adminMenu.classList.add("hidden");try{if(!state.outlets.size){const ok=await loadCurrentOrder();if(!ok)return alert("No active order available.");}renderAdminPackingChooser();document.getElementById("home")?.classList.add("hidden");document.getElementById("driverDashboard")?.classList.add("hidden");document.getElementById("packing")?.classList.remove("hidden");document.getElementById("adminPackingChooser")?.classList.remove("hidden");document.getElementById("packing")?.querySelector(".packingTop")?.classList.add("hidden");}catch(e){alert("Could not load packing screen: "+e.message);}});
 document.getElementById("closeOutletSettings")?.addEventListener("click",()=>document.getElementById("outletSettingsDialog").close());
-document.getElementById("closeVoiceSettings")?.addEventListener("click",()=>document.getElementById("voiceSettingsDialog").close());
 
 
 const adminRefreshBtn=document.getElementById("adminRefreshBtn");
