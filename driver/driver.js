@@ -83,7 +83,53 @@ function render(){$("driverLogin").classList.toggle("hidden",!!ds.token);$("driv
  }
 }async function login(){const name=$("driverLoginName").value.trim(),pin=$("driverPin").value.trim();if(!name||!pin)return;const btn=$("driverLoginBtn"),msg=$("driverLoginMsg");btn.disabled=true;btn.textContent="Signing in…";msg.textContent="Checking credentials…";try{const d=await api("login",{login_name:name,pin:pin});if(!d||d.ok===false||!d.token)throw new Error(d?.message||"Invalid driver ID or PIN");ds.token=d.token;ds.name=d.driver_name||name;localStorage.setItem("pa_driver_session",ds.token);localStorage.setItem("pa_driver_name",ds.name);msg.textContent="Login successful.";render();await refresh();}catch(e){ds.token="";ds.name="";localStorage.removeItem("pa_driver_session");localStorage.removeItem("pa_driver_name");render();msg.textContent=e.message||"Login failed";}finally{btn.disabled=false;btn.textContent="Login";}}function logout(){ds.token="";ds.name="";ds.orderId=null;ds.outlets=[];ds.earned=0;localStorage.removeItem("pa_driver_session");localStorage.removeItem("pa_driver_name");render();}async function chooseRejectedPhoto(outletId,itemId){$("invoiceInput").value="";$("invoiceInput").dataset.outletId=outletId;$("invoiceInput").dataset.itemId=itemId;$("invoiceInput").dataset.mode="rejected";$("invoiceInput").click();}async function chooseInvoice(outletId){$("invoiceInput").value="";$("invoiceInput").dataset.outletId=outletId;$("invoiceInput").dataset.mode="invoice";$("invoiceInput").dataset.itemId="";$("invoiceInput").click();}$("driverMenuBtn").onclick=openDriverMenu;
 $("driverMenuClose").onclick=()=>$("driverMenuDialog").close();
-$("driverPaymentPasswordBtn").onclick=()=>{ $("driverPaymentPassword").value=""; $("driverPaymentPasswordConfirm").value=""; $("driverPasswordMsg").textContent=""; $("driverPasswordDialog").showModal(); };
+function resetPaymentPasswordForm(){
+ $("driverPaymentPassword").value="";
+ $("driverPaymentPasswordConfirm").value="";
+ $("driverPasswordMsg").textContent="";
+ $("driverPasswordMatch").textContent="";
+ $("driverPasswordMatch").className="driverPasswordMatch";
+ $("driverPasswordStrength").className="passwordStrength";
+ $("driverPasswordStrength").querySelector("small").textContent="Use 8+ characters";
+ document.querySelectorAll(".passwordToggle").forEach(b=>{
+   const input=$(b.dataset.target);
+   if(input)input.type="password";
+   b.textContent="Show";
+ });
+}
+function updatePasswordStrength(){
+ const v=$("driverPaymentPassword").value||"",box=$("driverPasswordStrength"),label=box.querySelector("small");
+ box.className="passwordStrength";
+ if(!v){label.textContent="Use 8+ characters";return;}
+ let score=0;
+ if(v.length>=8)score++;
+ if(v.length>=12)score++;
+ if(/[A-Z]/.test(v)&&/[a-z]/.test(v))score++;
+ if(/\d/.test(v))score++;
+ if(/[^A-Za-z0-9]/.test(v))score++;
+ if(score<=2){box.classList.add("weak");label.textContent="Weak — add length or more character types";}
+ else if(score<=3){box.classList.add("medium");label.textContent="Good — a little stronger is better";}
+ else{box.classList.add("strong");label.textContent="Strong password";}
+}
+function updatePasswordMatch(){
+ const a=$("driverPaymentPassword").value,b=$("driverPaymentPasswordConfirm").value,msg=$("driverPasswordMatch");
+ msg.className="driverPasswordMatch";
+ if(!b){msg.textContent="";return;}
+ if(a===b){msg.textContent="✓ Passwords match";msg.classList.add("ok");}
+ else{msg.textContent="Passwords do not match";msg.classList.add("bad");}
+}
+$("driverPaymentPasswordBtn").onclick=()=>{resetPaymentPasswordForm();$("driverPasswordDialog").showModal();};
+$("driverPasswordClose").onclick=()=>$("driverPasswordDialog").close();
+$("driverPasswordCancel").onclick=()=>$("driverPasswordDialog").close();
+$("driverPaymentPassword").addEventListener("input",()=>{updatePasswordStrength();updatePasswordMatch();});
+$("driverPaymentPasswordConfirm").addEventListener("input",updatePasswordMatch);
+document.querySelectorAll(".passwordToggle").forEach(b=>b.onclick=()=>{
+ const input=$(b.dataset.target); if(!input)return;
+ const show=input.type==="password";
+ input.type=show?"text":"password";
+ b.textContent=show?"Hide":"Show";
+ b.setAttribute("aria-label",show?"Hide password":"Show password");
+});
 $("driverPasswordForm").addEventListener("submit",e=>{e.preventDefault();savePaymentPassword();});
 $("invoiceInput").onchange=async e=>{const input=e.target,file=input.files[0],outletId=input.dataset.outletId,mode=input.dataset.mode||"invoice",itemId=input.dataset.itemId||"";input.value="";if(!file||!outletId)return;if(!file.type.startsWith("image/"))return toast("Please select an image.","error");if(file.size>15*1024*1024)return toast("Image must be under 15 MB.","error");const key=String(outletId);ds.busy[key]=true;render();try{const liveOutlet=ds.outlets.find(o=>String(o.outlet_id)===key);if(!liveOutlet)throw new Error("Outlet is no longer assigned to this driver. Refresh and try again.");const prepared=await compressImage(file);const action=mode==="rejected"?"rejection_photo_url":"upload_url";const d=await api(action,{order_id:ds.orderId,outlet_id:outletId,outlet_name:(liveOutlet.outlet_name||""),item_id:itemId,filename:prepared.name,mime_type:prepared.type,extension:"jpg"});const {error}=await getSB().storage.from(mode==="rejected"?"delivery-evidence":"delivery-invoices").uploadToSignedUrl(d.path,d.token,prepared);if(error)throw error;if(mode==="rejected"){await api("save_rejection_photo",{order_id:ds.orderId,outlet_id:outletId,item_id:itemId,path:d.path,filename:prepared.name,mime_type:prepared.type});toast("Rejected-item photo uploaded.","success");}else{const current=ds.outlets.find(o=>String(o.outlet_id)===String(d.outlet_id||outletId));if(current){current.delivery=current.delivery||{};current.delivery.invoice_path=d.path;current.delivery.status="pending";}toast("Invoice uploaded successfully.","success");}}catch(err){toast("Upload failed: "+err.message,"error");}finally{delete ds.busy[key];render();}};async function saveRejections(outletId){
  const outlet=ds.outlets.find(o=>String(o.outlet_id)===String(outletId)); if(!outlet)return;
