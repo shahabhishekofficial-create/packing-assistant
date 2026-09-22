@@ -1332,7 +1332,13 @@ const adminRefreshBtn=document.getElementById("adminRefreshBtn");
 adminRefreshBtn?.addEventListener("click",async()=>{
   if(!navigator.onLine)return alert("You are offline. Please reconnect and try again.");
   const old=adminRefreshBtn.textContent; adminRefreshBtn.disabled=true; adminRefreshBtn.textContent="↻";
-  try{await syncFromServer();adminRefreshBtn.title="Data refreshed";}
-  catch(e){alert("Refresh failed: "+e.message);}
+  try{
+    await syncFromServer();
+    await loadLiveDeliverySummary();
+    if(!document.getElementById("driverDashboard")?.classList.contains("hidden")) await loadDriverAdminDashboard();
+    if(!document.getElementById("fleetManagement")?.classList.contains("hidden")) await loadFleetManagement();
+    if(!document.getElementById("packingOverview")?.classList.contains("hidden")) renderPackingOverview();
+    adminRefreshBtn.title="Data refreshed";
+  }catch(e){alert("Refresh failed: "+e.message);}
   finally{adminRefreshBtn.disabled=false;adminRefreshBtn.textContent=old;}
 });
