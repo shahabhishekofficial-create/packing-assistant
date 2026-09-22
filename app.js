@@ -1213,6 +1213,8 @@ updateConnection();
 
 function showAdminDashboard(){
   if(typeof stopItemNarration==="function")stopItemNarration();
+  if(typeof setBAActive==="function")setBAActive("sideDashboard");
+  document.querySelector(".baSidebar")?.classList.remove("open");
   ["packing","driverDashboard","fleetManagement"].forEach(id=>document.getElementById(id)?.classList.add("hidden"));
   document.getElementById("home")?.classList.remove("hidden");
   ["reportDialog","invoiceDialog","outletSettingsDialog","driverPaymentDialog"].forEach(id=>document.getElementById(id)?.open&&document.getElementById(id).close());
