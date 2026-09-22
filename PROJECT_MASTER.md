@@ -1106,6 +1106,53 @@ These rules define the product even if implementation technology changes.
 # 22. CHANGE LOG — 2026-09-23
 
 
+## 2026-09-23 — Remove Repeated Password Prompts from Delivery & Fleet
+**Status:** DEPLOYED
+
+**Why**
+- Delivery & Fleet are Admin modules. Once the user has authenticated to the Admin Dashboard, those modules should use the same active Admin session instead of asking for the password again.
+
+**Changed**
+- Added server-backed Admin sessions in `public.admin_sessions`.
+- Main Admin login now creates a one-hour rolling Admin session token after password verification.
+- Session token is stored hashed in the database; the browser stores only the session token.
+- Session is revalidated when an existing Admin PWA session is restored.
+- Logout revokes the server-side Admin session.
+- Delivery Dashboard no longer sends the Admin password to `driver-api`.
+- Fleet Management, payment proof viewing, payment upload and payment recording now use the same Admin session.
+- Removed the Fleet/Delivery frontend password re-entry path.
+- Added session-based database RPCs for Fleet payment ledger and payment recording.
+- Edge Function `driver-api` deployed as version 30 with session-based Admin authorization.
+- Admin PWA cache bumped to v20.
+- Existing one-hour Admin inactivity timeout remains in place; this change removes duplicate prompts, not Admin authentication itself.
+
+**Security**
+- Admin password is no longer sent to the Delivery/Fleet Edge Function after login.
+- Server stores only a SHA-256 hash of the session token.
+- Admin session table has RLS enabled and direct anon/authenticated table access revoked.
+- Privileged Edge Function operations validate the server-side Admin session before accessing payment/delivery data.
+
+**Verification**
+- Production database contains all five new Admin session/payment RPCs.
+- No active test Admin sessions were created during verification.
+- Production `driver-api` version 30 is ACTIVE.
+- Frontend Delivery/Fleet operations use `admin_session` rather than `admin_password`.
+- Physical browser/PWA validation should confirm that navigating Dashboard → Delivery & Fleet and Dashboard → Fleet Management no longer opens a password prompt.
+
+**Commits**
+- `a67e2945aa7d30053f57f00ac05cef985d74f0b5` — Add persistent admin session authentication
+- `637fd3eaf2acb4f54e120f32c789902d10095437` — Use persistent admin session for privileged dashboard actions
+- `a4f93f8c971c0288efe2807487240713a3d32a20` — Use main admin session for Delivery/Fleet APIs
+- `ee02dbc95efdccb51760857f2821ae8bd114b503` — Use shared admin session for Delivery/Fleet access
+- `a5c5a7ff7835b0a0496ee7327b7561a105e4f182` — Finish migration from password prompts to admin session
+- `183486d0da5b4a77b94be718738bfca3c5dc8298` — Revoke admin session on logout
+- `a67e2945aa7d30053f57f00ac05cef985d74f0b5` — Add Admin session migration
+- Admin PWA cache commit: latest v20 cache update
+- Edge Function deployment version: **30**
+
+**Database migration**
+- `supabase/migrations/20260923000300_admin_session_auth.sql`
+
 ## 2026-09-23 — Separate Admin Packing Overview from Staff Packing Controls
 **Status:** DEPLOYED
 
