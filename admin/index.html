@@ -15,7 +15,7 @@
 
 <header class="appHeader baHeader">
   <div class="baBrand"><button id="baSidebarToggle" class="baMobileMenu" aria-label="Open menu">☰</button><div class="baLogo">BA</div><div><h1>Bigly Agro Private Limited</h1><p>Fresh Produce. Stronger Partnerships.</p></div></div>
-  <div class="baHeaderSearch">⌕ <span>Search outlets, items, drivers, employees...</span><kbd>Ctrl K</kbd></div>
+  <div class="baHeaderSearch" role="search"><span aria-hidden="true">⌕</span><input id="globalSearch" type="search" placeholder="Search outlets, items, drivers..." autocomplete="off" aria-label="Search dashboard"><kbd>Ctrl K</kbd></div>
   <div class="headerActions"><span id="connection" class="liveBadge">● Online</span><span class="baHeaderDate" id="baHeaderDate"></span><button id="adminRefreshBtn" class="menuDots refreshBtn" aria-label="Refresh data" title="Refresh data">↻</button><button id="adminMenuBtn" class="menuDots" aria-label="Options" aria-expanded="false">⋮</button><div id="adminMenu" class="adminMenu hidden">
       <button id="menuReportBtn">Reports / Export</button><button id="menuOutletSettings">Outlet Setup</button><button id="menuPacking">Staff Packing Screen</button><button id="menuDriverDashboard">Driver Dashboard</button><button id="menuFleetManagement">Delivery Fleet Management</button><button id="menuChangePassword">Change Password</button><button id="menuLogout">Log Out</button>
     </div></div>
