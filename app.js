@@ -1026,14 +1026,50 @@ if(packingVoiceLanguageEl) packingVoiceLanguageEl.onchange=()=>{
   const o=state.outlets.get(state.current); if(o) speakProduct(o.rows[state.index]);
 };
 
-function renderDriverAdminDashboard(){
-  const box=$("driverAdminCards"); if(!box)return;
-  const groups=new Map();
-  [...state.outlets.values()].sort((x,y)=>x.rank-y.rank).forEach(o=>{const d=o.driver||"Unassigned";if(!groups.has(d))groups.set(d,[]);groups.get(d).push(o);});
-  box.innerHTML=[...groups.entries()].sort((a,b)=>a[0].localeCompare(b[0])).map(([driver,outs])=>{
-    const done=outs.filter(o=>o.status==="completed").length;
-    return '<div class="driverAdminCard"><div class="driverAdminHead"><div><span class="eyebrow">DRIVER</span><h3>'+esc(driver)+'</h3></div><strong>'+done+' / '+outs.length+' outlets completed</strong></div><div class="driverOutletGrid">'+outs.map(o=>'<div class="driverOutletRow"><div><b>'+esc(o.name)+'</b><small>Rank '+o.rank+'</small></div><span class="miniStatus '+o.status+'">'+(o.status||"available").replace("_"," ")+'</span></div>').join("")+'</div></div>';
-  }).join("")||'<div class="hint">No driver assignments yet.</div>';
+function dashboardMoney(n){return "₹"+Number(n||0).toLocaleString("en-IN",{minimumFractionDigits:0,maximumFractionDigits:2});}
+function dashboardDate(v,withTime=true){if(!v)return "—";return new Date(v).toLocaleString("en-IN",withTime?{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}:{day:"2-digit",month:"short",year:"numeric"});}
+function dashboardDuration(m){if(m==null||!Number.isFinite(Number(m)))return "—";const n=Math.round(Number(m));if(n<60)return n+" min";const h=Math.floor(n/60),mm=n%60;return h+"h "+String(mm).padStart(2,"0")+"m";}
+function dashboardStatus(x){if(x.delivered)return ["delivered","✓ Delivered"];if(x.packing_done)return ["pending","Ready • Pending delivery"];return ["packing","Packing "+String(x.status||"available").replace("_"," ")];}
+function renderDriverDashboard(data){
+  const k=$("driverDashboardKpis"),drows=$("driverPerformanceBody"),live=$("liveRouteBody"),ex=$("driverExceptionsBody"),recent=$("recentDeliveriesBody");
+  if(!k||!drows||!live||!ex||!recent)return;
+  const p=data.period||{},l=data.live||{},drivers=data.drivers||[];
+  const pendingExceptions=Number(p.invoice_pending||0)+Number(p.rejection_confirmation_pending||0);
+  k.innerHTML=[
+    ["Live route",Number(l.delivered||0)+" / "+Number(l.outlets||0),"delivered now"],
+    ["Delivered",Number(p.delivered||0),"selected period"],
+    ["Pending delivery",Number(p.pending_delivery||0),"packing completed"],
+    ["Missing qty",Number(p.missing||0),"packing exceptions"],
+    ["Rejected qty",Number(p.rejections||0),"driver-reported"],
+    ["Partial items",Number(p.partial_items||0),"outlet items"],
+    ["Delivery checks",pendingExceptions,pendingExceptions?"needs attention":"clear"],
+    ["Earnings",dashboardMoney(p.earnings),"selected period"]
+  ].map(x=>'<div class="deliveryKpi"><small>'+esc(x[0])+'</small><b>'+esc(x[1])+'</b><span>'+esc(x[2])+'</span></div>').join("");
+  drows.innerHTML=drivers.map(dr=>{
+    const x=dr.period||{},lv=dr.live||{};
+    return '<tr><td><b>'+esc(dr.driver_name)+'</b><small>Live '+Number(lv.delivered||0)+'/'+Number(lv.outlets||0)+'</small></td><td>'+Number(x.delivered||0)+'</td><td>'+Number(x.pending_delivery||0)+'</td><td>'+Number(x.missing||0)+'</td><td>'+Number(x.rejections||0)+'</td><td>'+Number(x.completion_pct||0).toFixed(1)+'%</td><td>'+dashboardDuration(x.avg_delivery_minutes)+'</td><td>'+dashboardMoney(x.earnings)+'</td><td>'+dashboardMoney(dr.balance)+'</td></tr>';
+  }).join("")||'<tr><td colspan="9" class="hint">No active driver data.</td></tr>';
+  live.innerHTML=(data.live_outlets||[]).map(x=>{
+    const st=dashboardStatus(x);
+    return '<tr><td><b>'+esc(x.store_name)+'</b><small>Rank '+Number(x.outlet_rank||0)+'</small></td><td>'+esc(x.driver)+'</td><td><span class="deliveryStatus '+st[0]+'">'+esc(st[1])+'</span></td><td>'+Number(x.missing||0)+'</td><td>'+Number(x.rejections||0)+'</td><td>'+(x.delivered?dashboardDate(x.delivered_at):x.packing_done?(x.invoice_uploaded?"Invoice uploaded":"Invoice pending"):"Packing in progress")+'</td></tr>';
+  }).join("")||'<tr><td colspan="6" class="hint">No active live order.</td></tr>';
+  ex.innerHTML=(data.exceptions||[]).map(x=>'<tr><td>'+dashboardDate(x.order_created_at,false)+'</td><td>'+esc(x.driver)+'</td><td><b>'+esc(x.store_name)+'</b><small>'+esc(x.order_name)+'</small></td><td>'+Number(x.missing||0)+'</td><td>'+Number(x.rejections||0)+'</td><td>'+(x.invoice_pending?'<span class="deliveryFlag bad">Invoice pending</span>':"✓")+'</td><td>'+(x.rejection_confirmation_pending?'<span class="deliveryFlag warn">Rejection confirmation pending</span>':"✓")+'</td></tr>').join("")||'<tr><td colspan="7" class="hint">No delivery exceptions in selected period.</td></tr>';
+  recent.innerHTML=(data.recent||[]).map(x=>'<tr><td>'+dashboardDate(x.delivered_at)+'</td><td>'+esc(x.driver)+'</td><td><b>'+esc(x.store_name)+'</b></td><td>'+dashboardDuration(x.delivery_minutes)+'</td><td>'+dashboardMoney(x.delivery_charge)+'</td><td>'+(x.missing?Number(x.missing):"—")+'</td><td>'+(x.rejections?Number(x.rejections):"—")+'</td></tr>').join("")||'<tr><td colspan="7" class="hint">No deliveries in selected period.</td></tr>';
+  const lo=data.live_order;
+  $("liveOrderLabel").textContent=lo?(lo.order_name+" · "+dashboardDate(lo.created_at,false)):"No active order";
+  $("driverDashboardPeriodLabel").textContent=(data.period?.from_date&&data.period?.to_date)?(data.period.from_date+" → "+data.period.to_date):"All saved dates";
+}
+async function loadDriverAdminDashboard(){
+  const box=$("driverDashboardKpis");if(!box)return;
+  if(!(await ensureFleetAdminPassword()))return;
+  const preset=$("driverDashboardPreset")?.value||"30d";
+  const from=$("driverDashboardFrom")?.value||"",to=$("driverDashboardTo")?.value||"";
+  box.innerHTML='<div class="hint">Loading delivery analytics…</div>';
+  try{
+    const r=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_driver_dashboard",admin_password:window.PA_ADMIN_PASSWORD,preset,from_date:from,to_date:to})});
+    const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.message||"Could not load delivery dashboard");
+    renderDriverDashboard(d);
+  }catch(e){box.innerHTML='<div class="hint">Could not load delivery dashboard: '+esc(e.message)+'</div>';}
 }
 
 function renderAdminPackingChooser(){
@@ -1159,7 +1195,7 @@ async function saveDriverPayment(){
   }catch(e){$("paymentMsg").textContent=e.message;}finally{btn.disabled=false;btn.textContent="Save Payment";}
 }
 document.getElementById("menuFleetManagement")?.addEventListener("click",async()=>{adminMenu.classList.add("hidden");document.getElementById("home")?.classList.add("hidden");document.getElementById("packing")?.classList.add("hidden");document.getElementById("driverDashboard")?.classList.add("hidden");document.getElementById("fleetManagement")?.classList.remove("hidden");await loadFleetManagement();});document.getElementById("fleetRefreshBtn")?.addEventListener("click",loadFleetManagement);document.getElementById("closeDriverPayment")?.addEventListener("click",()=>document.getElementById("driverPaymentDialog").close());document.getElementById("saveDriverPayment")?.addEventListener("click",saveDriverPayment);
-document.getElementById("menuDriverDashboard")?.addEventListener("click",async()=>{adminMenu.classList.add("hidden");try{if(!state.outlets.size){const ok=await loadCurrentOrder();if(!ok)return alert("No active order available.");}renderDriverAdminDashboard();document.getElementById("home")?.classList.add("hidden");document.getElementById("packing")?.classList.add("hidden");document.getElementById("driverDashboard")?.classList.remove("hidden");}catch(e){alert("Could not load driver dashboard: "+e.message);}});
+document.getElementById("menuDriverDashboard")?.addEventListener("click",async()=>{adminMenu.classList.add("hidden");document.getElementById("home")?.classList.add("hidden");document.getElementById("packing")?.classList.add("hidden");document.getElementById("fleetManagement")?.classList.add("hidden");document.getElementById("driverDashboard")?.classList.remove("hidden");await loadDriverAdminDashboard();});
 document.getElementById("menuVoiceSettings")?.addEventListener("click",()=>{adminMenu.classList.add("hidden");document.getElementById("voiceSettingsDialog").showModal()});
 document.getElementById("menuPacking")?.addEventListener("click",async()=>{adminMenu.classList.add("hidden");try{if(!state.outlets.size){const ok=await loadCurrentOrder();if(!ok)return alert("No active order available.");}renderAdminPackingChooser();document.getElementById("home")?.classList.add("hidden");document.getElementById("driverDashboard")?.classList.add("hidden");document.getElementById("packing")?.classList.remove("hidden");document.getElementById("adminPackingChooser")?.classList.remove("hidden");document.getElementById("packing")?.querySelector(".packingTop")?.classList.add("hidden");}catch(e){alert("Could not load packing screen: "+e.message);}});
 document.getElementById("closeOutletSettings")?.addEventListener("click",()=>document.getElementById("outletSettingsDialog").close());
