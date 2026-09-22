@@ -1,6 +1,6 @@
 {
-  "name": "Packing Assistant Admin",
-  "short_name": "Packing Admin",
+  "name": "Bigly Agro Operations",
+  "short_name": "Bigly Agro",
   "id": "/packing-assistant/admin/",
   "start_url": "/packing-assistant/admin/",
   "scope": "/packing-assistant/admin/",
@@ -11,7 +11,7 @@
   "prefer_related_applications": false,
   "background_color": "#f3f4f6",
   "theme_color": "#155eef",
-  "description": "Packing Assistant management dashboard",
+  "description": "Bigly Agro Private Limited operations dashboard",
   "icons": [
     {
       "src": "/packing-assistant/icon-192.png",
