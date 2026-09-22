@@ -86,11 +86,11 @@
       </div>
     </div>
 
-    <section id="deliverySummary" class="baPanel baDeliveryPanel">
+    <section id="deliverySummary" class="baPanel baDeliveryPanel" aria-live="polite">
       <div class="baPanelHead"><div><span class="eyebrow">LIVE DELIVERY STATUS</span><h3>Today's delivery route</h3></div><button id="deliverySummaryRefresh" class="baTextButton">Refresh</button></div>
       <div id="deliverySummaryKpis" class="baDeliveryKpis"></div>
       <div class="baDeliveryFooter"><span id="dashDeliveryDetail">Live outlet status updates every 30 seconds.</span><button id="dashOpenDelivery" class="baTextButton">View Deliveries →</button></div>
-      <div class="tableWrap baHiddenDeliveryTable"><table><thead><tr><th>Outlet</th><th>Driver</th><th>Status</th><th>Missing</th><th>Rejected</th><th>Last Update</th></tr></thead><tbody id="deliverySummaryBody"></tbody></table></div>
+      <div class="tableWrap baDeliveryTable"><table><thead><tr><th>Outlet</th><th>Driver</th><th>Status</th><th>Missing</th><th>Rejected</th><th>Last Update</th></tr></thead><tbody id="deliverySummaryBody"></tbody></table></div>
     </section>
 
     <div class="baPanel baAttentionPanel">
