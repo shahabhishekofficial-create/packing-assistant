@@ -739,3 +739,55 @@ button:focus-visible,input:focus-visible,select:focus-visible,dialog:focus-visib
 .baHeaderSearch input::placeholder{color:#94a3b8}
 @media(max-width:850px){.baHeaderSearch{display:flex;max-width:none;margin:0 8px;flex:1}.baHeaderSearch kbd{display:none}}
 @media(max-width:520px){.baHeaderSearch{padding:9px 10px}.baHeaderSearch input{font-size:13px}}
+
+
+/* ===== Admin mobile header / table containment fix ===== */
+.adminPage .baHeader{min-width:0}
+.adminPage .baBrand{min-width:0;flex:1 1 auto}
+.adminPage .baBrand>div:last-child{min-width:0;flex:1 1 auto}
+.adminPage .baBrand h1{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.adminPage .baHeaderSearch{min-width:0}
+.adminPage .baHeaderSearch input{min-width:0}
+.adminPage .headerActions{flex:0 0 auto;min-width:0}
+.adminPage .tableWrap{max-width:100%;min-width:0;overflow-x:auto;overflow-y:hidden}
+.adminPage .analysisCard .tableWrap,
+.adminPage .deliveryDashSection .tableWrap,
+.adminPage .baDeliveryTable{max-width:100%;overscroll-behavior-x:contain}
+@media(max-width:850px){
+  .adminPage .baHeader{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto;
+    grid-template-areas:
+      "brand actions"
+      "search search";
+    align-items:center;
+    gap:9px 10px;
+    padding:10px 12px;
+  }
+  .adminPage .baBrand{grid-area:brand;gap:9px}
+  .adminPage .baMobileMenu{display:grid;place-items:center;width:42px;height:42px;padding:0;flex:0 0 42px}
+  .adminPage .baLogo{width:40px;height:40px;border-radius:12px;font-size:14px;flex:0 0 40px}
+  .adminPage .baBrand h1{font-size:15px;letter-spacing:-.2px}
+  .adminPage .baBrand p{display:none}
+  .adminPage .baHeaderSearch{
+    grid-area:search;
+    display:flex;
+    width:100%;
+    max-width:none;
+    margin:0;
+    padding:9px 11px;
+  }
+  .adminPage .baHeaderSearch kbd{display:none}
+  .adminPage .headerActions{grid-area:actions;gap:5px}
+  .adminPage .baHeaderDate{display:none}
+  .adminPage .liveBadge{padding:8px 9px;font-size:10px;white-space:nowrap}
+  .adminPage .menuDots{width:42px;height:42px;padding:0;display:grid;place-items:center}
+  .adminPage .baHome #adminDashboard{margin-top:4px}
+}
+@media(max-width:520px){
+  .adminPage .baHeader{border-radius:16px}
+  .adminPage .baBrand h1{font-size:14px}
+  .adminPage .baHeaderSearch input{font-size:13px}
+  .adminPage .analysisCard{overflow:hidden}
+  .adminPage .analysisCard .tableWrap{margin-right:-2px}
+}
