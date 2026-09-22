@@ -1352,6 +1352,7 @@ These rules define the product even if implementation technology changes.
 - `123f09be218a474dcf5baa96ce95e4a7e1a7a72f` — Add dashboard back button to packing chooser
 - `125328c293f819d56ab35987850a3ed291b4a001` — Add admin dashboard navigation from all screens
 - `67e0b61042110df09132fba5e5f45cc6d0aa051a` — Style admin dashboard navigation buttons
+- `90266936c6a2eb5c345591046d4c139d4004f41b` — Bump admin cache for dashboard navigation
 
 **Database migration**
 - None.
