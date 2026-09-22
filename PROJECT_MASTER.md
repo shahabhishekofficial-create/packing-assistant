@@ -1137,6 +1137,43 @@ These rules define the product even if implementation technology changes.
 **Database migration**
 - None.
 
+## 2026-09-23 — Fix driver rejected-item photo authorization
+**Status:** DEPLOYED
+
+**Problem**
+- Drivers could see an outlet in their dashboard but the rejected-item image upload could return **“Outlet is not assigned to this driver.”**
+- The delivery authorization model was comparing the mutable display-name text stored in `outlets.driver` with the driver's session name.
+- That is fragile because assignment identity was represented by text instead of the driver's stable UUID.
+
+**Root cause**
+- `outlets` had only the legacy `driver` text field.
+- Evidence upload authorization in `driver-api` used name matching.
+- Driver assignment and driver session identity are actually stable UUIDs in `driver_accounts` / `driver_sessions`.
+
+**Permanent fix**
+- Added `outlets.driver_id uuid references driver_accounts(id)`.
+- Backfilled all current assignments.
+- Current production order: **19/19 assigned outlets now have a valid driver_id**.
+- `update_outlet_settings()` now writes both the display name and stable driver UUID.
+- `driver_invoice_target()` now authorizes using `driver_id`.
+- Driver dashboard page loading now uses `driver_id` rather than driver-name matching.
+- Rejected-item evidence authorization in `driver-api` now checks `outlets.driver_id === session.driver_id`.
+- Rejected-photo save authorization uses the same stable-ID check.
+- Deployed `driver-api` version **27**.
+
+**Validation**
+- Production query confirms 19 assigned current-order outlets and 0 missing driver IDs.
+- Confirmed current assignments map exactly to active driver accounts.
+- Confirmed live `driver_invoice_target()` uses `driver_id`.
+- Edge Function deployment verified at version 27.
+
+**Commits**
+- `f65828b9376fb51566ea445de967e31bce55c9c0` — Authorize driver evidence by driver ID
+- `a0e4ca12aa7dd26ee49168c172359be8eb9b5045` — Add stable driver-ID authorization migration
+
+**Database migration**
+- `20260923000200_driver_outlet_id_authorization` — applied directly to production and recorded in repository.
+
 ## 2026-09-23 — Enforce a single current order
 **Status:** DEPLOYED
 
