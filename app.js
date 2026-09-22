@@ -1125,11 +1125,11 @@ document.getElementById("exportReportBtn")?.addEventListener("click",exportHisto
 document.getElementById("reportAllDatesBtn")?.addEventListener("click",()=>{$("reportFromDate").value="";$("reportToDate").value="";loadReportHistory();});
 document.getElementById("menuOutletSettings")?.addEventListener("click",()=>{adminMenu.classList.add("hidden");renderOutletSettings([...state.outlets.values()].sort((a,b)=>a.rank-b.rank));document.getElementById("outletSettingsDialog").showModal()});
 
+async function ensureFleetAdminPassword(){if(window.PA_ADMIN_PASSWORD)return true;const p=prompt("Enter Admin password to manage driver payments:");if(!p)return false;const r=await db.rpc("verify_admin_password",{p_password:p});if(r.error||!r.data)return false;window.PA_ADMIN_PASSWORD=p;return true;}
 async function loadFleetManagement(){
   const box=$("fleetCards"); if(!box)return;
   box.innerHTML='<div class="hint">Loading driver ledger…</div>';
-  const password=window.PA_ADMIN_PASSWORD||"";
-  if(!password){box.innerHTML='<div class="hint">Admin session expired. Please sign in again.</div>';return;}
+  if(!(await ensureFleetAdminPassword())){box.innerHTML='<div class="hint">Admin session expired. Please sign in again.</div>';return;}
   try{
     const r=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_driver_fleet",admin_password:password})});
     const d=await r.json(); if(!r.ok||!d.ok)throw new Error(d.message||"Could not load fleet");
