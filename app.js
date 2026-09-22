@@ -697,6 +697,40 @@ function enableSelectTypeSearch(){
     });
   });
 }
+let liveDeliveryTimer=null;
+async function loadLiveDeliverySummary(){
+  const section=$("deliverySummary"),kpis=$("deliverySummaryKpis"),body=$("deliverySummaryBody");
+  if(!section||!kpis||!body||!window.PA_ADMIN_PASSWORD)return;
+  try{
+    const r=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_driver_dashboard",admin_password:window.PA_ADMIN_PASSWORD,preset:"today"})});
+    const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.message||"Could not load delivery status");
+    const l=d.live||{};
+    section.classList.remove("hidden");
+    kpis.innerHTML=[
+      ["Delivered",Number(l.delivered||0)],
+      ["Pending Delivery",Number(l.pending_delivery||0)],
+      ["Packing",Number(l.packing||0)],
+      ["Unassigned",Number(l.unassigned||0)],
+      ["Delivery Issues",Number(l.rejections||0)+Number(l.missing||0)]
+    ].map(x=>'<div class="deliverySummaryKpi"><small>'+esc(x[0])+'</small><b>'+esc(String(x[1]))+'</b></div>').join("");
+    body.innerHTML=(d.live_outlets||[]).map(x=>{
+      const st=dashboardStatus(x);
+      return '<tr><td><b>'+esc(x.store_name)+'</b></td><td>'+esc(x.driver||"Unassigned")+'</td><td><span class="deliveryStatus '+st[0]+'">'+esc(st[1])+'</span></td><td>'+Number(x.missing||0)+'</td><td>'+Number(x.rejections||0)+'</td><td>'+esc(x.delivered?dashboardDate(x.delivered_at):x.packing_done?(x.invoice_uploaded?"Invoice uploaded":"Invoice pending"):"Packing in progress")+'</td></tr>';
+    }).join("")||'<tr><td colspan="6" class="hint">No live delivery data.</td></tr>';
+  }catch(e){
+    console.warn("Live delivery summary:",e.message);
+    section.classList.remove("hidden");
+    kpis.innerHTML='<div class="hint">Live delivery status could not be loaded. Use Refresh to retry.</div>';
+    body.innerHTML='<tr><td colspan="6" class="hint">Delivery status unavailable.</td></tr>';
+  }
+}
+function startLiveDeliverySummary(){
+  clearInterval(liveDeliveryTimer);
+  loadLiveDeliverySummary();
+  liveDeliveryTimer=setInterval(()=>{if(!document.getElementById("home")?.classList.contains("hidden"))loadLiveDeliverySummary();},30000);
+}
+window.addEventListener("pa-admin-authenticated",()=>{loadLiveDeliverySummary();startLiveDeliverySummary();});
+document.getElementById("deliverySummaryRefresh")?.addEventListener("click",loadLiveDeliverySummary);
 function renderHome(){
   const orderLoadStatus=$("orderLoadStatus");
   if(orderLoadStatus) orderLoadStatus.classList.add("hidden");
@@ -1181,6 +1215,8 @@ const adminMenu=document.getElementById("adminMenu"),adminMenuBtn=document.getEl
 adminMenuBtn?.addEventListener("click",e=>{e.stopPropagation();adminMenu.classList.toggle("hidden");adminMenuBtn.setAttribute("aria-expanded",String(!adminMenu.classList.contains("hidden")))});
 document.addEventListener("click",e=>{if(adminMenu&&!adminMenu.contains(e.target)&&e.target!==adminMenuBtn)adminMenu.classList.add("hidden")});
 document.getElementById("menuReportBtn")?.addEventListener("click",()=>{adminMenu.classList.add("hidden");openReportDialog()});
+document.getElementById("menuChangePassword")?.addEventListener("click",()=>{adminMenu.classList.add("hidden");window.PA_ADMIN_CHANGE_PASSWORD?.();});
+document.getElementById("menuLogout")?.addEventListener("click",()=>{adminMenu.classList.add("hidden");window.PA_ADMIN_LOGOUT?.();});
 document.getElementById("closeReportDialog")?.addEventListener("click",()=>document.getElementById("reportDialog")?.close());
 document.getElementById("fleetBackBtn")?.addEventListener("click",showAdminDashboard);
 document.getElementById("driverDashboardBackBtn")?.addEventListener("click",showAdminDashboard);
