@@ -1105,6 +1105,41 @@ These rules define the product even if implementation technology changes.
 
 # 22. CHANGE LOG — 2026-09-23
 
+## 2026-09-23 — Enforce a single current order
+**Status:** DEPLOYED
+
+**Why**
+- Production data contained multiple old orders with `status='active'`.
+- “Current order” should be an explicit invariant, not inferred from status or whichever row happens to be newest.
+
+**Changed**
+- Supabase: added `orders.is_current boolean not null default false`.
+- Supabase: added unique partial index `orders_one_current_idx` allowing only one current order.
+- Supabase: `get_current_order()` now returns the explicit current order.
+- Supabase: `create_order()` now serializes creation with an advisory transaction lock, clears the previous current flag, and makes the newly created order current atomically.
+- Existing data: the latest order was set as the single current order; older orders remain available as historical/saved orders.
+- Repository: added `supabase/migrations/20260923000100_single_current_order.sql`.
+
+**Permanent behavior**
+- There can be only one current order.
+- Completing an order does not make the admin lose it; it remains current until the next order is created.
+- Creating a new order explicitly replaces the previous current order.
+- Concurrent order creation cannot leave two current orders.
+
+**Validation**
+- Confirmed exactly 1 current order in production after migration.
+- Confirmed the latest order (22 Sep 2026) is the current order and contains 19 outlets / 177 items.
+- Confirmed the new `get_current_order()` definition uses `is_current=true`.
+
+**Commit**
+- `0d38077996b54297dccbf36a6b094c173bd0f240` — Add single current-order invariant
+
+**Database migration**
+- `20260923000100_single_current_order` — applied directly to production and recorded in repository for rebuild continuity.
+
+**Known follow-up**
+- Physical browser validation of the admin bootstrap and PWA cache is still required on the user's device.
+
 ## 2026-09-23 — Make admin order bootstrap resilient
 **Status:** DEPLOYED
 
