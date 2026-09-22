@@ -4,64 +4,105 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f6f8fb">
-<title>Packing Assistant — Admin</title>
+<title>Bigly Agro — Operations Dashboard</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="../icon-192.png">
 <link rel="stylesheet" href="../styles.css">
 <style>body.adminPage{visibility:hidden}</style>
 </head>
 <body class="adminPage">
-<main id="app">
+<main id="app"><div class="baLayout"><aside class="baSidebar"><button class="baSideItem active" id="sideDashboard">⌂ <span>Dashboard</span></button><button class="baSideItem" id="sidePacking">▣ <span>Packing &amp; Dispatch</span><b>›</b></button><button class="baSideItem" id="sideDelivery">🚚 <span>Delivery &amp; Fleet</span><b>›</b></button><button class="baSideItem coming" id="sideInventory">□ <span>Inventory</span><b>›</b></button><button class="baSideItem coming" id="sidePurchase">🛒 <span>Purchase &amp; Suppliers</span><b>›</b></button><button class="baSideItem coming" id="sideEmployees">♟ <span>Employees &amp; HR</span><b>›</b></button><button class="baSideItem" id="sideReports">▥ <span>Reports &amp; Analytics</span><b>›</b></button><div class="baSideDivider"></div><button class="baSideItem" id="sideSettings">⚙ <span>Settings</span><b>›</b></button><div class="baSideHelp">Need help?<small>Operations support</small></div></aside><div class="baContent">
 
-<header class="appHeader">
-  <div class="brand">
-    <div class="brandIcon">📦</div>
-    <div><h1>Packing Assistant</h1><p>Faster Packing. Fewer Errors. Happier Customers.</p></div>
-  </div>
-  <div class="headerActions">
-    <span id="connection" class="liveBadge">● Live</span>
-    <button id="adminRefreshBtn" class="menuDots refreshBtn" aria-label="Refresh data" title="Refresh data">↻</button>
-    <button id="adminMenuBtn" class="menuDots" aria-label="Options" aria-expanded="false">⋮</button>
-    <div id="adminMenu" class="adminMenu hidden">
-      <button id="menuReportBtn">Reports / Export</button>
-      <button id="menuOutletSettings">Outlet Setup</button>
-      <button id="menuPacking">Order Packing Screen</button>
-      <button id="menuDriverDashboard">Driver Dashboard</button>
-      <button id="menuFleetManagement">Delivery Fleet Management</button>
-      <button id="menuChangePassword">Change Password</button>
-      <button id="menuLogout">Log Out</button>
-    </div>
-  </div>
+<header class="appHeader baHeader">
+  <div class="baBrand"><button id="baSidebarToggle" class="baMobileMenu" aria-label="Open menu">☰</button><div class="baLogo">BA</div><div><h1>Bigly Agro Private Limited</h1><p>Fresh Produce. Stronger Partnerships.</p></div></div>
+  <div class="baHeaderSearch">⌕ <span>Search outlets, items, drivers, employees...</span><kbd>Ctrl K</kbd></div>
+  <div class="headerActions"><span id="connection" class="liveBadge">● Online</span><span class="baHeaderDate" id="baHeaderDate"></span><button id="adminRefreshBtn" class="menuDots refreshBtn" aria-label="Refresh data" title="Refresh data">↻</button><button id="adminMenuBtn" class="menuDots" aria-label="Options" aria-expanded="false">⋮</button><div id="adminMenu" class="adminMenu hidden">
+      <button id="menuReportBtn">Reports / Export</button><button id="menuOutletSettings">Outlet Setup</button><button id="menuPacking">Order Packing Screen</button><button id="menuDriverDashboard">Driver Dashboard</button><button id="menuFleetManagement">Delivery Fleet Management</button><button id="menuChangePassword">Change Password</button><button id="menuLogout">Log Out</button>
+    </div></div>
 </header>
 
-<section id="home" class="screen">
-  <div class="adminCard">
+<section id="home" class="screen baHome">
+  <section class="baWelcome">
     <div>
-      <span class="eyebrow">ORDER CONTROL</span>
-      <h2>Create New Live Order</h2>
-      <p>Upload the latest packing Excel. The same app link will automatically show the active order on every phone.</p>
+      <span class="eyebrow">BIGLY AGRO PRIVATE LIMITED</span>
+      <h2>Welcome to your Operations Dashboard</h2>
+      <p>Monitor packing, deliveries, inventory and people from one place.</p>
     </div>
-    <div class="uploadRow">
-      <input id="fileInput" type="file" accept=".xlsx,.xls,.csv">
-      <button id="createOrderBtn" class="primary">Create Live Order</button>
-      <button id="loadDemo" class="secondary">Demo</button>
-    </div>
-    <p class="hint">Required headers: STORE_NAME, ITEM_CODE, PRODUCT_NAME, Sum of Indents, SKU Narration Order</p>
-    <p id="orderLoadStatus" class="hint hidden" role="status"></p>
-    <div id="orderLinkBox" class="shareBox hidden">
-      <span>Packaging Staff Link</span>
-      <div class="shareRow"><input id="orderLink" readonly><button id="copyLink">Copy</button></div>
-    </div>
-  </div>
-
-  <div id="orderSummary" class="dashboardSummary hidden"></div>
-  <section id="deliverySummary" class="liveDeliverySummary hidden">
-    <div class="sectionHead"><div><span class="eyebrow">LIVE DELIVERY STATUS</span><h2>Order Delivery Status</h2><p class="hint">Live status of every outlet after packing.</p></div><button id="deliverySummaryRefresh" class="secondary">Refresh</button></div>
-    <div id="deliverySummaryKpis" class="deliverySummaryKpis"></div>
-    <div class="tableWrap"><table><thead><tr><th>Outlet</th><th>Driver</th><th>Status</th><th>Missing</th><th>Rejected</th><th>Last Update</th></tr></thead><tbody id="deliverySummaryBody"></tbody></table></div>
+    <div class="baWelcomeArt" aria-hidden="true"><span>🥦</span><span>🥬</span><span>🫑</span><span>🥕</span></div>
   </section>
 
-  <section id="adminDashboard" class="adminDashboard hidden">
+  <section class="baQuickStats">
+    <div class="baQuickStat"><div class="baStatIcon green">▣</div><div><b id="dashTotalOutlets">0</b><span>Active Outlets</span></div></div>
+    <div class="baQuickStat"><div class="baStatIcon blue">✓</div><div><b id="dashPackingProgress">0%</b><span>Packing Progress</span></div></div>
+    <div class="baQuickStat"><div class="baStatIcon purple">▸</div><div><b id="dashPendingDelivery">0</b><span>Pending Deliveries</span></div></div>
+    <div class="baQuickStat"><div class="baStatIcon red">!</div><div><b id="dashDeliveryIssues">0</b><span>Delivery Issues</span></div></div>
+  </section>
+
+  <section class="baSection">
+    <div class="baSectionHead"><div><span class="eyebrow">OPERATIONS</span><h2>Core Modules</h2></div></div>
+    <div class="baModules">
+      <button class="baModule green" id="modulePacking">
+        <span class="baModuleIcon">📦</span><span><b>Packing &amp; Dispatch</b><small>Manage live packing orders and outlet preparation</small></span><strong>→</strong>
+      </button>
+      <button class="baModule blue" id="moduleDelivery">
+        <span class="baModuleIcon">🚚</span><span><b>Delivery &amp; Fleet</b><small>Track deliveries, drivers and live route status</small></span><strong>→</strong>
+      </button>
+      <button class="baModule amber" id="moduleInventory" data-coming-soon="Inventory">
+        <span class="baModuleIcon">📦</span><span><b>Inventory</b><small>Stock, cold room and inventory movement</small></span><strong>→</strong>
+      </button>
+      <button class="baModule purple" id="modulePurchase" data-coming-soon="Purchase &amp; Suppliers">
+        <span class="baModuleIcon">🛒</span><span><b>Purchase &amp; Suppliers</b><small>Suppliers, purchase orders and GRN</small></span><strong>→</strong>
+      </button>
+      <button class="baModule red" id="moduleEmployees" data-coming-soon="Employees &amp; HR">
+        <span class="baModuleIcon">👥</span><span><b>Employees &amp; HR</b><small>Employee records, attendance and leave</small></span><strong>→</strong>
+      </button>
+      <button class="baModule violet" id="moduleReports">
+        <span class="baModuleIcon">▥</span><span><b>Reports &amp; Analytics</b><small>Business reports, packing history and exports</small></span><strong>→</strong>
+      </button>
+    </div>
+  </section>
+
+  <section class="baOperationsGrid">
+    <div class="baPanel baPackingPanel">
+      <div class="baPanelHead"><div><span class="eyebrow">LATEST PACKING ORDER</span><h3 id="dashOrderName">No order loaded</h3></div><span id="dashOrderStatus" class="baStatus">Waiting</span></div>
+      <div class="baOrderMeta">
+        <div><span>Order date</span><b id="dashOrderDate">—</b></div>
+        <div><span>Outlets</span><b id="dashOrderOutlets">0</b></div>
+        <div><span>Products</span><b id="dashOrderProducts">0</b></div>
+      </div>
+      <div class="baProgress"><div><span>Packing progress</span><b id="dashPackingProgressText">0%</b></div><i><em id="dashPackingProgressBar"></em></i></div>
+      <p class="baMuted" id="dashPackingDetail">0 packed · 0 missing</p>
+      <div class="baPanelActions">
+        <button id="dashOpenPacking" class="primary">Open Packing</button>
+        <button id="dashCreateOrder" class="secondary">Create New Order</button>
+      </div>
+      <div class="baCreateOrderTools hidden" id="dashCreateOrderTools">
+        <input id="fileInput" type="file" accept=".xlsx,.xls,.csv">
+        <button id="createOrderBtn" class="primary">Create Live Order</button>
+        <button id="loadDemo" class="secondary">Demo</button>
+        <p class="hint">Required headers: STORE_NAME, ITEM_CODE, PRODUCT_NAME, Sum of Indents, SKU Narration Order</p>
+        <p id="orderLoadStatus" class="hint hidden" role="status"></p>
+        <div id="orderLinkBox" class="shareBox hidden"><span>Packaging Staff Link</span><div class="shareRow"><input id="orderLink" readonly><button id="copyLink">Copy</button></div></div>
+      </div>
+    </div>
+
+    <section id="deliverySummary" class="baPanel baDeliveryPanel">
+      <div class="baPanelHead"><div><span class="eyebrow">LIVE DELIVERY STATUS</span><h3>Today's delivery route</h3></div><button id="deliverySummaryRefresh" class="baTextButton">Refresh</button></div>
+      <div id="deliverySummaryKpis" class="baDeliveryKpis"></div>
+      <div class="baDeliveryFooter"><span id="dashDeliveryDetail">Live outlet status updates every 30 seconds.</span><button id="dashOpenDelivery" class="baTextButton">View Deliveries →</button></div>
+      <div class="tableWrap baHiddenDeliveryTable"><table><thead><tr><th>Outlet</th><th>Driver</th><th>Status</th><th>Missing</th><th>Rejected</th><th>Last Update</th></tr></thead><tbody id="deliverySummaryBody"></tbody></table></div>
+    </section>
+
+    <div class="baPanel baAttentionPanel">
+      <div class="baPanelHead"><div><span class="eyebrow">ATTENTION</span><h3>Operations alerts</h3></div></div>
+      <div class="baAlerts" id="dashAlerts"><div class="baAlert empty">No active alerts.</div></div>
+      <button id="dashOpenReports" class="baTextButton">Open Reports →</button>
+    </div>
+  </section>
+
+  <div id="orderSummary" class="dashboardSummary hidden"></div>
+
+  <section id="adminDashboard" class="adminDashboard">
     <div class="sectionHead">
       <div><span class="eyebrow">MANAGEMENT DASHBOARD</span><h2>Packing Analysis</h2></div>
       <div class="dashboardFilters">
@@ -82,11 +123,7 @@
       <div class="analysisCard wide"><h3>Driver-wise Outlets</h3><p class="tableHint">Driver ownership and delivery progress.</p><div class="tableWrap"><table><thead><tr><th>Driver</th><th>Outlets</th><th>Completed</th><th>In Progress</th><th>Required</th><th>Packed</th><th>Missing</th><th>Missing %</th></tr></thead><tbody id="driverAnalysisBody"></tbody></table></div></div>
     </div>
   </section>
-
-
-
 </section>
-
 <section id="fleetManagement" class="screen hidden">
   <div class="sectionHead"><div><span class="eyebrow">DELIVERY FLEET</span><h2>Delivery Fleet Management</h2><p class="hint">Track driver earnings, payments and outstanding balances.</p></div><div class="sectionHeadActions"><button id="fleetBackBtn" class="secondary">← Dashboard</button><button id="fleetRefreshBtn" class="secondary">↻ Refresh</button></div></div>
   <div id="fleetCards" class="fleetCards"></div>
@@ -190,7 +227,7 @@
     <div id="reportHistoryList" class="reportHistoryList"></div>
   </dialog>
   <dialog id="invoiceDialog" class="settingsDialog reportDialog"><div class="settingsDialogHead"><div><span class="eyebrow">DELIVERY INVOICES</span><h3 id="invoiceDialogTitle">Invoices</h3><p class="hint">Invoices remain available from previous orders as well as the current order.</p></div><div class="dialogHeadActions"><button id="invoiceDashboardBack" class="secondary">← Dashboard</button><button id="closeInvoiceDialog" class="secondary">✕</button></div></div><div id="invoiceList" class="reportHistoryList"></div></dialog>
-</main>
+</div></div></main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script src="../config.js"></script>
