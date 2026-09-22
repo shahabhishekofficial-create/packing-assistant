@@ -1170,11 +1170,27 @@ updateConnection();
   }
 })();
 
+function showAdminDashboard(){
+  if(typeof stopItemNarration==="function")stopItemNarration();
+  ["packing","driverDashboard","fleetManagement"].forEach(id=>document.getElementById(id)?.classList.add("hidden"));
+  document.getElementById("home")?.classList.remove("hidden");
+  ["reportDialog","invoiceDialog","outletSettingsDialog","voiceSettingsDialog","driverPaymentDialog"].forEach(id=>document.getElementById(id)?.open&&document.getElementById(id).close());
+  window.scrollTo({top:0,behavior:"smooth"});
+}
 const adminMenu=document.getElementById("adminMenu"),adminMenuBtn=document.getElementById("adminMenuBtn");
 adminMenuBtn?.addEventListener("click",e=>{e.stopPropagation();adminMenu.classList.toggle("hidden");adminMenuBtn.setAttribute("aria-expanded",String(!adminMenu.classList.contains("hidden")))});
 document.addEventListener("click",e=>{if(adminMenu&&!adminMenu.contains(e.target)&&e.target!==adminMenuBtn)adminMenu.classList.add("hidden")});
 document.getElementById("menuReportBtn")?.addEventListener("click",()=>{adminMenu.classList.add("hidden");openReportDialog()});
 document.getElementById("closeReportDialog")?.addEventListener("click",()=>document.getElementById("reportDialog")?.close());
+document.getElementById("fleetBackBtn")?.addEventListener("click",showAdminDashboard);
+document.getElementById("driverDashboardBackBtn")?.addEventListener("click",showAdminDashboard);
+document.getElementById("packingChooserDashboardBackBtn")?.addEventListener("click",showAdminDashboard);
+document.getElementById("packingDashboardBackBtn")?.addEventListener("click",showAdminDashboard);
+document.getElementById("reportDashboardBack")?.addEventListener("click",showAdminDashboard);
+document.getElementById("invoiceDashboardBack")?.addEventListener("click",showAdminDashboard);
+document.getElementById("outletSettingsDashboardBack")?.addEventListener("click",showAdminDashboard);
+document.getElementById("voiceSettingsDashboardBack")?.addEventListener("click",showAdminDashboard);
+document.getElementById("driverPaymentDashboardBack")?.addEventListener("click",showAdminDashboard);
 document.getElementById("closeInvoiceDialog")?.addEventListener("click",()=>document.getElementById("invoiceDialog")?.close());
 document.getElementById("exportReportBtn")?.addEventListener("click",exportHistoricalReport);
 document.getElementById("reportAllDatesBtn")?.addEventListener("click",()=>{$("reportFromDate").value="";$("reportToDate").value="";loadReportHistory();});
