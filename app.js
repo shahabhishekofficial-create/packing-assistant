@@ -709,7 +709,7 @@ async function loadLiveDeliverySummary(){
     kpis.innerHTML=[
       ["Delivered",Number(l.delivered||0)],
       ["Pending Delivery",Number(l.pending_delivery||0)],
-      ["Packing",Number(l.packing||0)],
+      ["Packing",Number(l.packing_in_progress||0)],
       ["Unassigned",Number(l.unassigned||0)],
       ["Delivery Issues",Number(l.rejections||0)+Number(l.missing||0)]
     ].map(x=>'<div class="deliverySummaryKpi"><small>'+esc(x[0])+'</small><b>'+esc(String(x[1]))+'</b></div>').join("");
