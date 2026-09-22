@@ -140,10 +140,12 @@
     box.showModal();
   }
 
+  window.PA_ADMIN_CHANGE_PASSWORD = changePassword;
+  window.PA_ADMIN_LOGOUT = ()=>forceLogout(false);
+
   function addLogoutButton(){
     if(document.getElementById("adminLogoutBtn"))return;
-    const actions=document.querySelector(".headerActions");
-    if(!actions)return;
+    return;
     const b=document.createElement("button");
     b.id="adminLogoutBtn"; b.className="menuDots adminLogoutBtn"; b.title="Log out"; b.setAttribute("aria-label","Log out"); b.textContent="⇥";
     b.onclick=()=>forceLogout(false);
