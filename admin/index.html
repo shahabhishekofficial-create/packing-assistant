@@ -27,7 +27,7 @@
       <button id="menuOutletSettings">⚙ Outlet Setup</button>
       <button id="menuVoiceSettings">🔊 Voice Language</button>
       <button id="menuPacking">📦 Order Packing Screen</button>
-      <button id="menuDriverDashboard">🚚 Driver Dashboard</button>
+      <button id="menuDriverDashboard">🚚 Driver Dashboard</button><button id="menuFleetManagement">💰 Delivery Fleet Management</button>
     </div>
   </div>
 </header>
@@ -79,6 +79,22 @@
 
 </section>
 
+<section id="fleetManagement" class="screen hidden">
+  <div class="sectionHead"><div><span class="eyebrow">DELIVERY FLEET</span><h2>Delivery Fleet Management</h2><p class="hint">Track driver earnings, payments and outstanding balances.</p></div><button id="fleetRefreshBtn" class="secondary">↻ Refresh</button></div>
+  <div id="fleetCards" class="fleetCards"></div>
+</section>
+<dialog id="driverPaymentDialog" class="settingsDialog">
+ <div class="settingsDialogHead"><div><span class="eyebrow">DRIVER PAYMENT</span><h3 id="paymentDriverTitle">Record Payment</h3><p class="hint">Add the amount paid and payment screenshot.</p></div><button id="closeDriverPayment" class="secondary">✕</button></div>
+ <div class="fleetPaymentForm">
+  <input id="paymentDriverId" type="hidden">
+  <label>Amount paid <input id="paymentAmount" type="number" min="1" step="0.01" placeholder="₹"></label>
+  <label>Payment date <input id="paymentDate" type="datetime-local"></label>
+  <label>Note <input id="paymentNote" placeholder="e.g. Monday payment"></label>
+  <label>Payment screenshot <input id="paymentScreenshot" type="file" accept="image/*" capture="environment"></label>
+  <button id="saveDriverPayment" class="primary">Save Payment</button>
+  <p id="paymentMsg" class="hint"></p>
+ </div>
+</dialog>
 <section id="driverDashboard" class="screen hidden"><div class="sectionHead"><div><span class="eyebrow">DELIVERY MANAGEMENT</span><h2>Driver Dashboard</h2><p class="hint">Driver-wise outlet ownership and future delivery tracking.</p></div></div><div id="driverAdminCards" class="driverAdminCards"></div></section>
 
 <section id="packing" class="screen hidden">
