@@ -59,6 +59,8 @@
   function clearAdminSession(){localStorage.removeItem(SESSION_TOKEN_KEY);window.PA_ADMIN_SESSION="";window.PA_ADMIN_PASSWORD="";}
   function forceLogout(showLogin){
     clearTimeout(logoutTimer);
+    const token=localStorage.getItem(SESSION_TOKEN_KEY)||"";
+    if(token&&db)db.rpc("revoke_admin_session",{p_session_token:token}).catch(()=>{});
     localStorage.removeItem(SESSION_KEY);
     localStorage.removeItem(LAST_ACTIVITY_KEY);
     clearAdminSession();
