@@ -3,6 +3,7 @@
 
   const SESSION_KEY = "packing_assistant_admin_session";
   const LAST_ACTIVITY_KEY = "packing_assistant_admin_last_activity";
+  const SESSION_TOKEN_KEY = "packing_assistant_admin_session_token";
   const SESSION_MS = 60 * 60 * 1000;
   const ITERATIONS = 200000;
   const SALT_B64 = "F6GJ+7oca9r+51tm3FzSwQ==";
@@ -54,10 +55,13 @@
     logoutTimer=setTimeout(()=>forceLogout(true),Math.max(0,SESSION_MS-(Date.now()-last)));
   }
 
-  window.PA_ADMIN_PASSWORD="";function forceLogout(showLogin){
+  window.PA_ADMIN_PASSWORD=""; window.PA_ADMIN_SESSION="";
+  function clearAdminSession(){localStorage.removeItem(SESSION_TOKEN_KEY);window.PA_ADMIN_SESSION="";window.PA_ADMIN_PASSWORD="";}
+  function forceLogout(showLogin){
     clearTimeout(logoutTimer);
     localStorage.removeItem(SESSION_KEY);
     localStorage.removeItem(LAST_ACTIVITY_KEY);
+    clearAdminSession();
     document.body.classList.add("adminLocked");
     if(showLogin)showLoginBox("Session expired. Please sign in again.");
     else showLoginBox();
@@ -108,7 +112,12 @@
           if(db){const r=await db.rpc("verify_admin_password",{p_password:input.value});if(!r.error)ok=!!r.data;}
           if(!ok)ok=same(await hashPassword(input.value),HASH_B64);
           if(!ok){err.textContent="Incorrect password.";input.select();return;}
-          window.PA_ADMIN_PASSWORD=input.value;localStorage.setItem(SESSION_KEY,"1");if(reauthResolver){const resolve=reauthResolver;reauthResolver=null;resolve(true);}
+          const sr=await db.rpc("create_admin_session",{p_password:input.value});
+          if(sr.error||!sr.data)throw new Error("Could not create admin session.");
+          window.PA_ADMIN_SESSION=sr.data;
+          window.PA_ADMIN_PASSWORD="";
+          localStorage.setItem(SESSION_TOKEN_KEY,sr.data);
+          localStorage.setItem(SESSION_KEY,"1");if(reauthResolver){const resolve=reauthResolver;reauthResolver=null;resolve(true);}
           localStorage.setItem(LAST_ACTIVITY_KEY,String(Date.now()));
           box.remove();
           document.body.classList.remove("adminLocked");
@@ -154,14 +163,25 @@
     if(!document.getElementById("adminChangePasswordBtn")){const cp=document.createElement("button");cp.id="adminChangePasswordBtn";cp.className="menuDots";cp.title="Change password";cp.textContent="🔑";cp.onclick=changePassword;actions.insertBefore(cp,actions.firstChild);}
   }
 
-  function init(){
+  async function init(){
     document.body.style.visibility="visible";
     injectStyles();
     document.body.classList.add("adminLocked");
     if(sessionValid()){
-      document.body.classList.remove("adminLocked");
-      addLogoutButton();
-      touch();
+      const token=localStorage.getItem(SESSION_TOKEN_KEY)||"";
+      if(token && db){
+        try{
+          const r=await db.rpc("verify_admin_session",{p_session_token:token});
+          if(r.error||!r.data){forceLogout(false);return;}
+          window.PA_ADMIN_SESSION=token;
+          document.body.classList.remove("adminLocked");
+          addLogoutButton();
+          touch();
+          window.dispatchEvent(new CustomEvent("pa-admin-authenticated"));
+        }catch(e){forceLogout(false);return;}
+      }else{
+        forceLogout(false);
+      }
     }else{
       forceLogout(false);
     }
