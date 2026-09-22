@@ -1916,3 +1916,33 @@ A mobile screenshot exposed a responsive-layout regression in the Admin Dashboar
 - a08d2fa62a61096cc3d09a0ba842f5433216aa33 — Fix admin mobile header and table overflow
 - b29e2038f048c593368d8e47df7a2c770b5c97fb — Bump admin cache for mobile layout fix
 
+
+
+## 2026-09-23 — Admin Mobile Scrolling Correction
+
+**Status: IMPLEMENTED / VALIDATION PENDING**
+
+A second mobile test showed that the earlier header fix did not fully solve touch scrolling.
+
+### Root cause
+- Admin analysis tables inherited nested overflow:auto containers.
+- The later mobile containment rule forced overflow-y:hidden on table wrappers.
+- The combination of nested horizontal scrolling, hidden vertical overflow, and the sticky Admin header could make vertical finger scrolling feel trapped when the gesture started over a table/card.
+- Mobile smooth scrolling was also unnecessary for manual touch scrolling.
+
+### Fix
+- Main Admin content is explicitly allowed to remain overflow-visible.
+- Analysis and Driver Dashboard table wrappers now scroll horizontally without becoming vertical scroll containers.
+- Live delivery table remains a bounded two-axis scroll area where required.
+- Touch scrolling is explicitly enabled for both axes.
+- Mobile Admin analysis cards no longer clip their table content.
+- Mobile manual scrolling uses normal/native scrolling instead of forced smooth scrolling.
+- Admin PWA cache advanced to v26.
+
+### Invariant
+The page itself remains the primary vertical scroll container. Only genuinely bounded data regions, such as the live delivery table, get their own vertical scroll.
+
+### Relevant commits
+- 24376114169897b61252493aa16c9880ac16c638 — Fix admin mobile vertical and table scrolling
+- 12d4ff6f61f1471881c840270315118a07073777 — Bump admin cache for scrolling fix
+
