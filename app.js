@@ -698,6 +698,8 @@ function enableSelectTypeSearch(){
   });
 }
 function renderHome(){
+  const orderLoadStatus=$("orderLoadStatus");
+  if(orderLoadStatus) orderLoadStatus.classList.add("hidden");
   $("orderSummary").classList.remove("hidden");
   const all=[...state.outlets.values()];
   const totalItems=all.reduce((s,o)=>s+o.rows.length,0);
