@@ -1679,3 +1679,43 @@ Production database was updated immediately and the migration source was correct
 
 ### Security
 No password, session token, or secret was stored in source control. Session tokens remain hashed in public.admin_sessions.
+
+
+## 2026-09-23 — Correct Admin Dashboard KPI Refresh
+
+**Status: DEPLOYED**
+
+The Admin screenshot showed the top dashboard KPIs still at their initial values:
+- Current Outlets: 0
+- Packing Progress: 0%
+- Pending Deliveries: 0
+- Delivery Issues: 0
+
+Production data verification for the current order showed:
+- 19 current outlets
+- 19/19 outlets packing-completed
+- 698 required quantity
+- 695 packed
+- 3 missing
+- packing resolution = 100%
+- 1 delivery record exists and is pending
+- remaining current outlets have no delivery record yet, so all 19 outlets are pending delivery
+- 1 rejected quantity exists on Bopal - MP; combined with 3 packing-missing quantity, the existing Delivery Issues definition is 4
+
+### Root cause
+The Admin authentication flow and the main app order bootstrap could complete at different times. The Admin dashboard could therefore become visible while its top KPI elements still contained their HTML defaults.
+
+### Fix
+After the Admin-authenticated event, the Admin page now:
+1. Ensures the current order is loaded when state is empty.
+2. Re-renders the dashboard immediately when state already exists.
+3. Refreshes live delivery status as before.
+
+Also renamed the KPI label from Active Outlets to Current Outlets because the value represents the current order's outlet count, not outlets actively being packed.
+
+Admin service-worker cache was bumped to packing-assistant-admin-v20.
+
+### Relevant commits
+- bf729fa8313be7e0696f1b11f0b6bf186b9d0167 — Refresh admin dashboard data after authentication
+- 23ed7fc85153ce30aa88a3d96aa35f1350386cc4 — Clarify current outlet dashboard metric
+- 4fc6691728261fccd10660b5d1c2029080f50bcf — Bump admin cache for dashboard data refresh
