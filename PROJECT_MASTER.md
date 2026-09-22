@@ -1105,6 +1105,34 @@ These rules define the product even if implementation technology changes.
 
 # 22. CHANGE LOG — 2026-09-23
 
+
+## 2026-09-23 — Remove obsolete Admin Voice Language option
+**Status:** DEPLOYED
+
+**Why**
+- Voice language selection is used inside the packing screen and does not need to be a separate Admin Options destination.
+- The Admin Voice Language option did not provide a meaningful standalone workflow.
+
+**Changed**
+- Admin Options: removed the **Voice Language** menu item.
+- Admin UI: removed the unused standalone Voice Language dialog and its Dashboard/close controls.
+- Frontend: removed obsolete event handlers and standalone voice selector synchronization; the packing-screen voice selector remains available.
+- Admin PWA cache bumped from v15 to v16 so installed PWAs receive the change.
+- No database, RPC, Edge Function, or Storage changes.
+
+**Validation**
+- Packing screen voice-language selector remains intact.
+- No Admin Options Voice Language destination remains.
+- Service-worker cache version incremented to v16.
+
+**Commits**
+- `edc25916e361d6cf0a00a832b250716d7b2e8d7c` — Remove unused admin Voice Language option
+- `ac6e798fcb4a2b4b4e648b05df9f175c527b3b46` — Remove obsolete admin Voice Language controls
+- `18a175a6bdc07fdb890666d95bcce5bcbb23aa21` — Bump admin cache after removing voice option
+
+**Database migration**
+- None.
+
 ## 2026-09-23 — Make bootstrap failure visible and refresh the admin PWA
 **Status:** DEPLOYED
 
