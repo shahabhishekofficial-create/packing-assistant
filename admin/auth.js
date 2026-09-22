@@ -11,6 +11,8 @@
   const db = window.supabase && window.SUPABASE_CONFIG ? window.supabase.createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.key) : null;
   let logoutTimer = null;
   let reauthResolver = null;
+  let serverSessionRefreshAt = 0;
+  let serverSessionRefreshing = false;
 
   function b64ToBytes(s){ return Uint8Array.from(atob(s), c => c.charCodeAt(0)); }
 
@@ -42,9 +44,25 @@
     return last>0 && Date.now()-last<SESSION_MS;
   }
 
+  async function refreshServerSession(){
+    if(serverSessionRefreshing||!window.PA_ADMIN_SESSION||!db)return;
+    serverSessionRefreshing=true;
+    try{
+      const r=await db.rpc("verify_admin_session",{p_session_token:window.PA_ADMIN_SESSION});
+      if(!r.error && r.data===false){forceLogout(true);return;}
+      if(!r.error)serverSessionRefreshAt=Date.now();
+    }catch(e){
+      console.warn("Admin session refresh:",e.message||e);
+    }finally{
+      serverSessionRefreshing=false;
+    }
+  }
+
   function touch(){
     if(localStorage.getItem(SESSION_KEY)!=="1")return;
-    localStorage.setItem(LAST_ACTIVITY_KEY,String(Date.now()));
+    const now=Date.now();
+    localStorage.setItem(LAST_ACTIVITY_KEY,String(now));
+    if(now-serverSessionRefreshAt>10*60*1000)void refreshServerSession();
     scheduleLogout();
   }
 
@@ -118,6 +136,7 @@
           if(sr.error||!sr.data)throw new Error("Could not create admin session.");
           window.PA_ADMIN_SESSION=sr.data;
           window.PA_ADMIN_PASSWORD="";
+          serverSessionRefreshAt=Date.now();
           localStorage.setItem(SESSION_TOKEN_KEY,sr.data);
           localStorage.setItem(SESSION_KEY,"1");if(reauthResolver){const resolve=reauthResolver;reauthResolver=null;resolve(true);}
           localStorage.setItem(LAST_ACTIVITY_KEY,String(Date.now()));
@@ -176,6 +195,7 @@
           const r=await db.rpc("verify_admin_session",{p_session_token:token});
           if(r.error||!r.data){forceLogout(false);return;}
           window.PA_ADMIN_SESSION=token;
+          serverSessionRefreshAt=Date.now();
           document.body.classList.remove("adminLocked");
           addLogoutButton();
           touch();
