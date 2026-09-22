@@ -112,6 +112,7 @@
           localStorage.setItem(LAST_ACTIVITY_KEY,String(Date.now()));
           box.remove();
           document.body.classList.remove("adminLocked");
+          window.dispatchEvent(new CustomEvent("pa-admin-authenticated"));
           addLogoutButton();
           scheduleLogout();
         }catch(x){err.textContent="Could not verify password. Please retry.";}
