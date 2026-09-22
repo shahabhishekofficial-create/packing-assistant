@@ -17,8 +17,8 @@ as $$
 declare v_token text; v_hash text;
 begin
   if not public.verify_admin_password(p_password) then return null; end if;
-  v_token := encode(gen_random_bytes(32), 'base64');
-  v_hash := encode(digest(v_token, 'sha256'), 'hex');
+  v_token := encode(extensions.gen_random_bytes(32), 'base64');
+  v_hash := encode(extensions.digest(v_token, 'sha256'), 'hex');
   delete from public.admin_sessions where expires_at < now();
   insert into public.admin_sessions(token_hash, expires_at) values(v_hash, now() + interval '1 hour');
   return v_token;
@@ -34,7 +34,7 @@ as $$
 declare v_hash text; v_ok boolean;
 begin
   if coalesce(length(trim(p_session_token)),0) < 20 then return false; end if;
-  v_hash := encode(digest(p_session_token, 'sha256'), 'hex');
+  v_hash := encode(extensions.digest(p_session_token, 'sha256'), 'hex');
   select exists(select 1 from public.admin_sessions where token_hash=v_hash and expires_at > now()) into v_ok;
   if v_ok then update public.admin_sessions set last_seen_at=now(), expires_at=now()+interval '1 hour' where token_hash=v_hash; end if;
   return v_ok;
