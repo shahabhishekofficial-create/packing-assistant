@@ -1,5 +1,5 @@
 # PACKING ASSISTANT — MASTER SYSTEM BLUEPRINT
-_Last verified against GitHub main at commit `c0a1794f612dd25f4c0d5a8868780051c13bd02d` on 2026-09-22._
+_Last verified against GitHub main after the 2026-09-23 damage-evidence fix._
 
 > **Purpose:** This is the single recovery and continuity document for the Packing Assistant project.
 > Every meaningful future feature, bug fix, database change, deployment change, test result, and architectural decision MUST be recorded here.
@@ -30,8 +30,8 @@ _Last verified against GitHub main at commit `c0a1794f612dd25f4c0d5a8868780051c1
 The current GitHub `main` branch is the source of truth for application code.
 
 Current HEAD:
-`c0a1794f612dd25f4c0d5a8868780051c13bd02d`
-Commit: **Improve driver password form interactions**
+`98301ef0e162aef0295e5ba73b13c62201ad19d9`
+Commit: **Bump driver cache for damage-photo fix**
 
 Never rebuild an old version from memory when current repository code is available.
 
@@ -1815,3 +1815,71 @@ Current production order:
 - Pages deployment for commit bc024c3ddcdbc6fd8d1422d159319983aa2c418b completed successfully before the final syntax/cache corrections.
 - Latest commits trigger fresh Pages deployment and JavaScript validation.
 - Final code/cache commit: 4eb350ab5df3827405e964689546ec93cf94ccc4.
+
+
+## 2026-09-23 — Permanent Damaged-Item Photo Fix / Driver Evidence Audit
+
+**Status: DEPLOYED / VERIFIED**
+
+The damaged-item photo workflow was re-audited end-to-end after the driver continued showing the misleading "Outlet is not assigned to this driver" error.
+
+### Root cause found
+
+The live production rejection record was inspected directly.
+
+Affected production record:
+- Outlet: Bopal - MP
+- Driver: Lux
+- Driver account ID and outlet assignment ID match
+- Rejected item: Capsicum Tricolour
+- Rejected quantity: 1
+- Rejection reason: DAMAGE
+- Packing state: PACKED
+- Rejection photo list: empty
+
+The previous Edge Function required the underlying packing item to have status MISSING or PARTIAL before generating a damage-photo upload target. A legitimately damaged delivered item can be PACKED (for example, 7 packed and 1 of those 7 later rejected as DAMAGE). This made the evidence workflow inconsistent with the rejection workflow.
+
+The driver-to-outlet assignment itself was verified in production and is correct. The error text therefore obscured the actual evidence-state validation problem and made diagnosis difficult.
+
+### Permanent fix
+
+1. driver-api damaged-evidence authorization now accepts item states:
+   - PACKED
+   - PARTIAL
+   - MISSING
+2. The server still requires:
+   - valid driver session
+   - stable outlets.driver_id assignment
+   - item belongs to that outlet and resolved current order
+   - a saved DAMAGE rejection with rejected quantity greater than zero
+3. The server continues to derive the authoritative order ID from the assigned outlet instead of trusting the browser's order ID.
+4. The save-photo path uses the same authoritative outlet/order/item validation.
+5. Assignment failures now return a clear refresh/reassignment message instead of silently reusing the old generic wording.
+6. Driver UI no longer shows a generic "Rejected Photo" button for every packing exception. The item list only shows the damage-photo action when a DAMAGE rejection actually exists.
+7. Production Edge Function was deployed as version 31.
+8. Driver PWA cache was bumped from v25 to v26 so the corrected driver code is not trapped behind the previous service-worker cache.
+9. GitHub repository Edge Function source was synchronized with the deployed production version.
+
+### Production verification
+
+- All 19 current outlets have a stable driver account assignment.
+- Bopal - MP is assigned to Lux's stable driver account ID.
+- The exact affected Capsicum Tricolour rejection exists with DAMAGE / quantity 1.
+- The affected item is PACKED with 7 required and 7 packed, confirming that PACKED damage is a valid real production case.
+- delivery-evidence bucket exists and remains private.
+- No rejected-item photo records existed before this fix, so there was no previous successful evidence upload to mask the issue.
+
+### Relevant commits
+
+- c81da830e0e6030aae13e8735ddbb3de40088898 — Fix damaged item evidence authorization and packed damage handling
+- 7509535ad3229cc8022a606edd46c6b34ddd15aa — Fix driver damage-photo UI and evidence error handling
+- 98301ef0e162aef0295e5ba73b13c62201ad19d9 — Bump driver cache for damage-photo fix
+
+### Verification rule for future changes
+
+Any future driver delivery/rejection change must preserve the distinction between:
+- packing status (PACKED/PARTIAL/MISSING)
+- delivery rejection reason (MISSING/DAMAGE)
+
+A DAMAGE rejection must not require the packing item itself to be MISSING or PARTIAL. This is now a documented invariant.
+
