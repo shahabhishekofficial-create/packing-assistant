@@ -81,11 +81,11 @@
 </section>
 
 <section id="fleetManagement" class="screen hidden">
-  <div class="sectionHead"><div><span class="eyebrow">DELIVERY FLEET</span><h2>Delivery Fleet Management</h2><p class="hint">Track driver earnings, payments and outstanding balances.</p></div><button id="fleetRefreshBtn" class="secondary">↻ Refresh</button></div>
+  <div class="sectionHead"><div><span class="eyebrow">DELIVERY FLEET</span><h2>Delivery Fleet Management</h2><p class="hint">Track driver earnings, payments and outstanding balances.</p></div><div class="sectionHeadActions"><button id="fleetBackBtn" class="secondary">← Dashboard</button><button id="fleetRefreshBtn" class="secondary">↻ Refresh</button></div></div>
   <div id="fleetCards" class="fleetCards"></div>
 </section>
 <dialog id="driverPaymentDialog" class="settingsDialog">
- <div class="settingsDialogHead"><div><span class="eyebrow">DRIVER PAYMENT</span><h3 id="paymentDriverTitle">Record Payment</h3><p class="hint">Add the amount paid and payment screenshot.</p></div><button id="closeDriverPayment" class="secondary">✕</button></div>
+ <div class="settingsDialogHead"><div><span class="eyebrow">DRIVER PAYMENT</span><h3 id="paymentDriverTitle">Record Payment</h3><p class="hint">Add the amount paid and payment screenshot.</p></div><div class="dialogHeadActions"><button id="driverPaymentDashboardBack" class="secondary">← Dashboard</button><button id="closeDriverPayment" class="secondary">✕</button></div></div>
  <div class="fleetPaymentForm">
   <input id="paymentDriverId" type="hidden">
   <label>Amount paid <input id="paymentAmount" type="number" min="1" step="0.01" placeholder="₹"></label>
@@ -99,7 +99,7 @@
 <section id="driverDashboard" class="screen hidden">
   <div class="sectionHead driverDashboardHead">
     <div><span class="eyebrow">DELIVERY MANAGEMENT</span><h2>Driver Dashboard</h2><p class="hint">Live route control + historical driver performance. Packing exceptions are shown separately from driver delivery rejections.</p></div>
-    <button id="driverDashboardRefresh" class="secondary">↻ Refresh</button>
+    <div class="sectionHeadActions"><button id="driverDashboardBackBtn" class="secondary">← Dashboard</button><button id="driverDashboardRefresh" class="secondary">↻ Refresh</button></div>
   </div>
   <div class="deliveryDashboardControls">
     <select id="driverDashboardPreset"><option value="today">Today</option><option value="7d">Last 7 days</option><option value="30d" selected>Last 30 days</option><option value="all">All saved dates</option><option value="custom">Custom range</option></select>
@@ -122,7 +122,7 @@
     <div id="adminOutletList" class="outletGrid"></div>
   </div>
   <div class="packingTop hidden">
-    <button id="backBtn" class="secondary">← Outlets</button>
+    <button id="packingDashboardBackBtn" class="secondary">← Dashboard</button><button id="backBtn" class="secondary">← Outlets</button>
     <div><span class="eyebrow">NOW PACKING</span><b id="outletTitle"></b></div>
     <div class="packingVoice"><select id="packingVoiceLanguage" aria-label="Voice language"><option value="en">English</option><option value="hi">Hindi</option><option value="gu">Gujarati</option></select></div>
   </div>
@@ -162,14 +162,14 @@
 </dialog>
 
   <dialog id="outletSettingsDialog" class="settingsDialog">
-    <div class="settingsDialogHead"><div><span class="eyebrow">OPTIONS</span><h3>Outlet Setup</h3><p class="hint">Drag to change packing rank, assign delivery driver and set delivery charge.</p></div><button id="closeOutletSettings" class="secondary">✕</button></div>
+    <div class="settingsDialogHead"><div><span class="eyebrow">OPTIONS</span><h3>Outlet Setup</h3><p class="hint">Drag to change packing rank, assign delivery driver and set delivery charge.</p></div><div class="dialogHeadActions"><button id="outletSettingsDashboardBack" class="secondary">← Dashboard</button><button id="closeOutletSettings" class="secondary">✕</button></div></div>
     <div class="driverTools"><input id="newDriverName" placeholder="Add driver name"><button id="addDriverBtn" class="secondary">+ Add Driver</button><button id="saveOutletSettings" class="primary">Submit Changes</button></div>
     <div id="outletSettingsList" class="outletSettingsList"></div>
   </dialog>
   <dialog id="reportDialog" class="settingsDialog reportDialog">
     <div class="settingsDialogHead">
       <div><span class="eyebrow">REPORT CENTER</span><h3>Historical Reports</h3><p class="hint">Orders are saved permanently. Select any date range to export one or multiple days together.</p></div>
-      <button id="closeReportDialog" class="secondary">✕</button>
+      <div class="dialogHeadActions"><button id="reportDashboardBack" class="secondary">← Dashboard</button><button id="closeReportDialog" class="secondary">✕</button></div>
     </div>
     <div class="reportDateGrid">
       <label>From date<input id="reportFromDate" type="date"></label>
@@ -182,9 +182,9 @@
     <div class="reportHistoryHead"><b>Saved Orders</b><span>Newest first</span></div>
     <div id="reportHistoryList" class="reportHistoryList"></div>
   </dialog>
-  <dialog id="invoiceDialog" class="settingsDialog reportDialog"><div class="settingsDialogHead"><div><span class="eyebrow">DELIVERY INVOICES</span><h3 id="invoiceDialogTitle">Invoices</h3><p class="hint">Invoices remain available from previous orders as well as the current order.</p></div><button id="closeInvoiceDialog" class="secondary">✕</button></div><div id="invoiceList" class="reportHistoryList"></div></dialog>
+  <dialog id="invoiceDialog" class="settingsDialog reportDialog"><div class="settingsDialogHead"><div><span class="eyebrow">DELIVERY INVOICES</span><h3 id="invoiceDialogTitle">Invoices</h3><p class="hint">Invoices remain available from previous orders as well as the current order.</p></div><div class="dialogHeadActions"><button id="invoiceDashboardBack" class="secondary">← Dashboard</button><button id="closeInvoiceDialog" class="secondary">✕</button></div></div><div id="invoiceList" class="reportHistoryList"></div></dialog>
   <dialog id="voiceSettingsDialog" class="settingsDialog">
-    <div class="settingsDialogHead"><div><span class="eyebrow">OPTIONS</span><h3>Voice Language</h3></div><button id="closeVoiceSettings" class="secondary">✕</button></div>
+    <div class="settingsDialogHead"><div><span class="eyebrow">OPTIONS</span><h3>Voice Language</h3></div><div class="dialogHeadActions"><button id="voiceSettingsDashboardBack" class="secondary">← Dashboard</button><button id="closeVoiceSettings" class="secondary">✕</button></div></div>
     <select id="voiceLanguage" aria-label="Voice language"><option value="en">English</option><option value="hi">Hindi</option><option value="gu">Gujarati</option></select>
   </dialog>
 </main>
