@@ -1036,7 +1036,7 @@ function renderDriverDashboard(data){
   const p=data.period||{},l=data.live||{},drivers=data.drivers||[];
   const pendingExceptions=Number(p.invoice_pending||0)+Number(p.rejection_confirmation_pending||0);
   k.innerHTML=[
-    ["Live route",Number(l.delivered||0)+" / "+Number(l.outlets||0),"delivered now"],
+    ["Live route",Number(l.delivered||0)+" / "+Number(l.outlets||0),"delivered now"],["Live unassigned",Number(l.unassigned||0),"current route"],
     ["Delivered",Number(p.delivered||0),"selected period"],
     ["Pending delivery",Number(p.pending_delivery||0),"packing completed"],
     ["Missing qty",Number(p.missing||0),"packing exceptions"],
