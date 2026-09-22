@@ -706,3 +706,31 @@ tbody tr:hover{background:#f8fbff}
 .packingOverviewProgress{display:flex;align-items:center;gap:7px;min-width:90px}.packingOverviewProgress i{display:block;width:55px;height:7px;background:#e8edf3;border-radius:6px;overflow:hidden}.packingOverviewProgress i:after{content:"";display:block;height:100%;width:100%;background:#0b8f68;border-radius:6px}.packingOverviewProgress span{font-size:11px;color:#64748b;font-weight:800}
 @media(max-width:1200px){#packingOverview .analysisKpis{grid-template-columns:repeat(4,1fr)}}
 @media(max-width:700px){#packingOverview .analysisKpis{grid-template-columns:repeat(2,1fr)}#packingOverview .sectionHeadActions{width:100%;justify-content:flex-start;flex-wrap:wrap}}
+
+
+/* ===== Admin dashboard stability + responsive polish ===== */
+html{scroll-behavior:smooth}
+body{overflow-x:hidden}
+button:focus-visible,input:focus-visible,select:focus-visible,dialog:focus-visible{outline:3px solid #93c5fd;outline-offset:2px}
+.baPanel,.analysisCard,.deliveryDashSection{min-width:0}
+.baPanelHead h3,.baWelcome h2,.baBrand h1{overflow-wrap:anywhere}
+.tableWrap{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.baDeliveryTable{display:block;max-height:280px;margin-top:12px;overflow:auto;border:1px solid #edf1f5;border-radius:12px}
+.baDeliveryTable table{min-width:640px}
+.baDeliveryTable thead th{position:sticky;top:0;z-index:2;box-shadow:0 1px 0 #e5eaf2}
+.baDeliveryTable th,.baDeliveryTable td{padding:9px 8px}
+.baSidebarOpen{overflow:hidden}
+.baSidebarOpen:before{content:"";position:fixed;inset:0;z-index:90;background:rgba(15,23,42,.32);backdrop-filter:blur(1px)}
+.baSidebar{will-change:transform}
+@media(max-width:850px){
+  .baSidebar{z-index:100}
+  .baHeader{z-index:80}
+  .baContent{width:100%;min-width:0}
+  .baDeliveryTable{max-height:320px}
+}
+@media(max-width:520px){
+  .baDeliveryTable table{min-width:620px}
+  .baPanel{padding:14px}
+  .baPanelHead{gap:8px}
+  .baDeliveryFooter{align-items:flex-start;flex-direction:column}
+}
