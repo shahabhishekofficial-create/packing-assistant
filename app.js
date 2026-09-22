@@ -700,7 +700,7 @@ function enableSelectTypeSearch(){
 let liveDeliveryTimer=null;
 async function loadLiveDeliverySummary(){
   const section=$("deliverySummary"),kpis=$("deliverySummaryKpis"),body=$("deliverySummaryBody");
-  if(!section||!kpis||!body||!window.PA_ADMIN_PASSWORD)return;
+  if(!section||!kpis||!body||!window.PA_ADMIN_SESSION)return;
   try{
     const r=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_driver_dashboard",admin_session:window.PA_ADMIN_SESSION,preset:"today"})});
     const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.message||"Could not load delivery status");
@@ -1109,7 +1109,7 @@ async function loadDriverAdminDashboard(){
   const from=$("driverDashboardFrom")?.value||"",to=$("driverDashboardTo")?.value||"";
   box.innerHTML='<div class="hint">Loading delivery analytics…</div>';
   try{
-    const r=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_driver_dashboard",admin_password:window.PA_ADMIN_PASSWORD,preset,from_date:from,to_date:to})});
+    const r=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_driver_dashboard",admin_session:window.PA_ADMIN_SESSION,preset,from_date:from,to_date:to})});
     const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.message||"Could not load delivery dashboard");
     renderDriverDashboard(d);
   }catch(e){box.innerHTML='<div class="hint">Could not load delivery dashboard: '+esc(e.message)+'</div>';}
@@ -1276,7 +1276,7 @@ async function loadFleetManagement(){
   box.innerHTML='<div class="hint">Loading driver ledger…</div>';
   if(!(await ensureFleetAdminPassword())){box.innerHTML='<div class="hint">Admin session expired. Please sign in again.</div>';return;}
   try{
-    const r=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_driver_fleet",admin_password:window.PA_ADMIN_PASSWORD})});
+    const r=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_driver_fleet",admin_session:window.PA_ADMIN_SESSION})});
     const d=await r.json(); if(!r.ok||!d.ok)throw new Error(d.message||"Could not load fleet");
     box.innerHTML=(d.drivers||[]).map(dr=>'<div class="fleetCard"><div class="fleetCardHead"><div><span class="eyebrow">DRIVER</span><h3>'+esc(dr.driver_name)+'</h3></div><button class="primary payDriverBtn" data-id="'+esc(dr.driver_id)+'" data-name="'+esc(dr.driver_name)+'">+ Add Payment</button></div><div class="fleetKpis"><div><small>Total earned</small><b>₹'+Number(dr.earned||0).toFixed(2)+'</b></div><div><small>Total paid</small><b>₹'+Number(dr.paid||0).toFixed(2)+'</b></div><div class="'+(Number(dr.balance||0)>0?"due":"clear")+'"><small>Remaining</small><b>₹'+Number(dr.balance||0).toFixed(2)+'</b></div></div><div class="fleetLedger"><div class="fleetLedgerTitle">Payment ledger</div>'+((dr.payments||[]).length?(dr.payments||[]).map(p=>'<div class="fleetLedgerRow"><div><b>₹'+Number(p.amount||0).toFixed(2)+'</b><small>'+new Date(p.paid_at).toLocaleString("en-IN",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"})+(p.note?" · "+esc(p.note):"")+'</small></div>'+(p.screenshot_path?'<button class="secondary fleetProofBtn" data-path="'+esc(p.screenshot_path)+'">View proof</button>':"<span class=\"ledgerNoProof\">No proof</span>")+(p.confirmed_at?'<span class="ledgerConfirmed">✓ Driver confirmed<br><small>'+new Date(p.confirmed_at).toLocaleString("en-IN")+'</small></span>':'<span class="ledgerPending">Awaiting driver confirmation</span>')+'</div>').join(""):'<div class="hint">No payments recorded.</div>')+'</div></div>').join("")||'<div class="hint">No active drivers.</div>';
     box.querySelectorAll(".payDriverBtn").forEach(b=>b.onclick=()=>openDriverPayment(b.dataset.id,b.dataset.name));
@@ -1298,7 +1298,7 @@ async function saveDriverPayment(){
     const up=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_payment_upload_url",admin_session:session,driver_id:driverId,filename:file.name,mime_type:file.type,extension:"jpg"})});
     const ud=await up.json();if(!up.ok||!ud.ok)throw new Error(ud.message||"Could not prepare upload.");
     const {error}=await db.storage.from("driver-payments").uploadToSignedUrl(ud.path,ud.token,file);if(error)throw error;
-    const rec=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_record_payment",admin_password:password,driver_id:driverId,amount,paid_at:new Date(paidAt).toISOString(),note,screenshot_path:ud.path})});
+    const rec=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_record_payment",admin_session:session,driver_id:driverId,amount,paid_at:new Date(paidAt).toISOString(),note,screenshot_path:ud.path})});
     const rd=await rec.json();if(!rec.ok||!rd.ok)throw new Error(rd.message||"Could not save payment.");
     $("driverPaymentDialog").close();await loadFleetManagement();
   }catch(e){$("paymentMsg").textContent=e.message;}finally{btn.disabled=false;btn.textContent="Save Payment";}
