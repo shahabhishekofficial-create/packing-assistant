@@ -1312,6 +1312,55 @@ These rules define the product even if implementation technology changes.
 
 ---
 
+# 22. CHANGE LOG
+
+## 2026-09-23 — Add dashboard back navigation across Admin screens
+**Status:** DEPLOYED
+
+**Why**
+- Admin menu options opened separate screens/dialogs, but there was no consistent one-click way to return directly to the main admin dashboard.
+
+**Changed**
+- Admin UI: added `← Dashboard` navigation to:
+  - Delivery Fleet Management
+  - Driver Dashboard
+  - Order Packing outlet chooser
+  - Active outlet packing screen
+  - Historical Reports dialog
+  - Delivery Invoices dialog
+  - Outlet Setup dialog
+  - Voice Language dialog
+  - Driver Payment dialog
+- Frontend: added a shared `showAdminDashboard()` navigation handler that:
+  - stops active packing narration
+  - hides Fleet, Driver Dashboard, and Packing screens
+  - restores the main admin dashboard/home
+  - closes open admin dialogs
+  - scrolls to the top
+- CSS: added responsive layout for screen/dialog header action groups.
+
+**Logic**
+- Every secondary admin destination now provides a direct return path to the main dashboard without relying on the three-dot menu.
+- Existing `✕` dialog close behavior remains available.
+
+**Validation**
+- Confirmed navigation is wired to every newly added dashboard-back button.
+- No database, RPC, Edge Function, or Storage changes required.
+
+**Commits**
+- `ec3fa39e4319c26b3cc837a918890450ed2e193b` — Add dashboard back buttons to admin screens
+- `123f09be218a474dcf5baa96ce95e4a7e1a7a72f` — Add dashboard back button to packing chooser
+- `125328c293f819d56ab35987850a3ed291b4a001` — Add admin dashboard navigation from all screens
+- `67e0b61042110df09132fba5e5f45cc6d0aa051a` — Style admin dashboard navigation buttons
+
+**Database migration**
+- None.
+
+**Known follow-up**
+- Physical browser/PWA validation should confirm the buttons render correctly on desktop and mobile after service-worker/browser cache refresh.
+
+---
+
 # 22. FUTURE CHANGE LOG
 
 Every future change goes here in this format:
