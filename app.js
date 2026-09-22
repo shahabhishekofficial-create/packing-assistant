@@ -1211,11 +1211,41 @@ updateConnection();
   }
 })();
 
-function showAdminDashboard(){
+function renderPackingOverview(){
+  const box=$("packingOverviewBody"),kpis=$("packingOverviewKpis");
+  if(!box||!kpis)return;
+  const all=[...state.outlets.values()].sort((a,b)=>(a.rank||999)-(b.rank||999));
+  const total=all.reduce((s,o)=>s+o.rows.reduce((a,r)=>a+r.required,0),0);
+  const packed=all.reduce((s,o)=>s+o.rows.reduce((a,r)=>a+r.packed,0),0);
+  const missing=all.reduce((s,o)=>s+o.rows.reduce((a,r)=>a+r.missing,0),0);
+  const completed=all.filter(o=>o.status==="completed").length;
+  const inProgress=all.filter(o=>o.status==="in_progress").length;
+  const pending=all.length-completed-inProgress;
+  const pct=total?Math.round(((packed+missing)/total)*100):0;
+  const k=[["Outlets",all.length],["Completed",completed],["In Progress",inProgress],["Pending",pending],["Required",total],["Packed",packed],["Missing",missing],["Progress",pct+"%"]];
+  kpis.innerHTML=k.map(x=>'<div class="analysisKpi"><span>'+esc(String(x[0]))+'</span><b>'+esc(String(x[1]))+'</b></div>').join("");
+  if($("packingOverviewOrderName"))$("packingOverviewOrderName").textContent=state.order?.order_name||"No current order";
+  box.innerHTML=all.map(o=>{
+    const req=o.rows.reduce((s,r)=>s+r.required,0),pk=o.rows.reduce((s,r)=>s+r.packed,0),ms=o.rows.reduce((s,r)=>s+r.missing,0),done=req?Math.round(((pk+ms)/req)*100):0;
+    const status=o.status==="completed"?"Completed":o.status==="in_progress"?"Packing":"Pending";
+    const cls=o.status==="completed"?"done":o.status==="in_progress"?"packing":"pending";
+    return '<tr><td>'+esc(String(o.rank??"—"))+'</td><td><b>'+esc(o.name)+'</b></td><td>'+esc(o.driver||"Unassigned")+'</td><td>'+o.rows.length+'</td><td>'+req+'</td><td>'+pk+'</td><td>'+ms+'</td><td><div class="packingOverviewProgress"><i style="width:'+done+'%"></i><span>'+done+'%</span></div></td><td><span class="deliveryStatus '+cls+'">'+status+'</span></td></tr>';
+  }).join("")||'<tr><td colspan="9" class="hint">No current order loaded.</td></tr>';
+}
+function showPackingOverview(){
+  if(typeof stopItemNarration==="function")stopItemNarration();
+  document.querySelector(".baSidebar")?.classList.remove("open");
+  ["home","packing","packingOverview","driverDashboard","fleetManagement"].forEach(id=>document.getElementById(id)?.classList.add("hidden"));
+  document.getElementById("packingOverview")?.classList.remove("hidden");
+  setBAActive("sidePacking");
+  renderPackingOverview();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+\nfunction showAdminDashboard(){
   if(typeof stopItemNarration==="function")stopItemNarration();
   if(typeof setBAActive==="function")setBAActive("sideDashboard");
   document.querySelector(".baSidebar")?.classList.remove("open");
-  ["packing","driverDashboard","fleetManagement"].forEach(id=>document.getElementById(id)?.classList.add("hidden"));
+  ["packing","packingOverview","driverDashboard","fleetManagement"].forEach(id=>document.getElementById(id)?.classList.add("hidden"));
   document.getElementById("home")?.classList.remove("hidden");
   ["reportDialog","invoiceDialog","outletSettingsDialog","driverPaymentDialog"].forEach(id=>document.getElementById(id)?.open&&document.getElementById(id).close());
   window.scrollTo({top:0,behavior:"smooth"});
@@ -1285,13 +1315,16 @@ function setBAActive(id){document.querySelectorAll(".baSideItem").forEach(x=>x.c
 function bindBAAction(id,targetId){document.getElementById(id)?.addEventListener("click",()=>document.getElementById(targetId)?.click());}
 document.getElementById("baSidebarToggle")?.addEventListener("click",()=>document.querySelector(".baSidebar")?.classList.toggle("open"));
 document.getElementById("sideDashboard")?.addEventListener("click",()=>{document.querySelector(".baSidebar")?.classList.remove("open");showAdminDashboard();setBAActive("sideDashboard")});
-bindBAAction("sidePacking","menuPacking");bindBAAction("sideDelivery","menuDriverDashboard");bindBAAction("sideReports","menuReportBtn");bindBAAction("sideSettings","menuOutletSettings");
-bindBAAction("modulePacking","menuPacking");bindBAAction("moduleDelivery","menuDriverDashboard");bindBAAction("moduleReports","menuReportBtn");
+document.getElementById("sidePacking")?.addEventListener("click",showPackingOverview);bindBAAction("sideDelivery","menuDriverDashboard");bindBAAction("sideReports","menuReportBtn");bindBAAction("sideSettings","menuOutletSettings");
+document.getElementById("modulePacking")?.addEventListener("click",showPackingOverview);bindBAAction("moduleDelivery","menuDriverDashboard");bindBAAction("moduleReports","menuReportBtn");
 ["moduleInventory","modulePurchase","moduleEmployees","sideInventory","sidePurchase","sideEmployees"].forEach(id=>document.getElementById(id)?.addEventListener("click",e=>alert((e.currentTarget.dataset.comingSoon||({"moduleInventory":"Inventory","modulePurchase":"Purchase & Suppliers","moduleEmployees":"Employees & HR","sideInventory":"Inventory","sidePurchase":"Purchase & Suppliers","sideEmployees":"Employees & HR"}[id]))+" is coming soon.")));
-document.getElementById("dashOpenPacking")?.addEventListener("click",()=>document.getElementById("menuPacking")?.click());
+document.getElementById("dashOpenPacking")?.addEventListener("click",showPackingOverview);
 document.getElementById("dashOpenDelivery")?.addEventListener("click",()=>document.getElementById("menuDriverDashboard")?.click());
 document.getElementById("dashOpenReports")?.addEventListener("click",()=>document.getElementById("menuReportBtn")?.click());
 document.getElementById("dashCreateOrder")?.addEventListener("click",()=>document.getElementById("dashCreateOrderTools")?.classList.toggle("hidden"));
+document.getElementById("packingOverviewDashboardBack")?.addEventListener("click",showAdminDashboard);
+document.getElementById("packingOverviewRefresh")?.addEventListener("click",async()=>{try{await syncFromServer();renderPackingOverview();}catch(e){alert("Refresh failed: "+e.message);}});
+document.getElementById("packingOverviewStaffBtn")?.addEventListener("click",()=>document.getElementById("menuPacking")?.click());
 document.getElementById("baHeaderDate")?.replaceChildren(document.createTextNode(new Date().toLocaleString("en-IN",{weekday:"short",day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"})));
 setInterval(()=>{const el=document.getElementById("baHeaderDate");if(el)el.textContent=new Date().toLocaleString("en-IN",{weekday:"short",day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"});},60000);
 
