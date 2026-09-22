@@ -1128,7 +1128,7 @@ These rules define the product even if implementation technology changes.
 - Inventory, Purchase & Suppliers, and Employees & HR are visually established as future modules and currently show a simple "coming soon" message rather than pretending to be implemented.
 - Finance/Expenses and Sales are deliberately not included in the current navigation.
 - Existing Packing, Delivery, Reports, Outlet Settings, Driver Dashboard and Fleet functionality remains connected to the new navigation.
-- Admin PWA cache bumped from v16 to v17.
+- Admin PWA cache bumped from v16 to v18 after the dashboard and PWA branding changes.
 
 **Logic**
 - Dashboard overview is populated from the existing live packing state.
@@ -1149,6 +1149,9 @@ These rules define the product even if implementation technology changes.
 - `029ee374308503d83582593e54462b4c2b738685` — Allow redesigned admin navigation to open packing screen
 - `1e6de9239b24d2d02b3304342dd77dbd04010bff` — Keep dashboard navigation state synchronized
 - `02a5595cc4d7f9dc997b5bf7fa19fd360a62dbaf` — Bump admin cache for Bigly Agro dashboard
+- `ed3157ce3f112a56cca888cbeb32606b805d823c` — Rename admin PWA manifest to Bigly Agro
+- `56ef0b1ef8350e47b43d642bf18a60a2dd754f7a` — Rename admin webmanifest to Bigly Agro
+- `8cbf85888c5296c9ef969e63aba6cecc4dcd82ce` — Bump admin cache for Bigly Agro PWA branding
 
 **Database migration**
 - None.
