@@ -1106,6 +1106,41 @@ These rules define the product even if implementation technology changes.
 # 22. CHANGE LOG — 2026-09-23
 
 
+## 2026-09-23 — Separate Admin Packing Overview from Staff Packing Controls
+**Status:** DEPLOYED
+
+**Why**
+- The item-by-item packing screen with large PACKED / PARTIAL / MISSING controls is an operator/staff workflow, not the primary Admin management view.
+- Admin needs visibility and control of packing progress without being forced into the staff execution interface.
+
+**Changed**
+- Added a dedicated Admin **Packing Overview** screen.
+- Packing Overview shows:
+  - current order
+  - outlet count
+  - completed / in-progress / pending outlets
+  - required / packed / missing quantities
+  - overall progress
+  - outlet-wise rank, driver, product count, quantities and status
+- Sidebar **Packing & Dispatch** now opens the Admin Packing Overview.
+- Dashboard **Packing & Dispatch** module and **Open Packing** action now open the Admin Packing Overview.
+- Added **Open Staff Packing Screen** inside the Packing Overview for deliberate access to the operator interface.
+- Existing item-level PACKED / PARTIAL / MISSING controls are retained for the staff packing screen and are no longer the default Admin packing destination.
+- Options menu label changed from **Order Packing Screen** to **Staff Packing Screen** to make the distinction explicit.
+- Admin cache bumped to v19.
+- No database/RPC/Edge Function changes.
+
+**Commits**
+- `fcae1721d0490f01850100e38d6992379147027c` — Separate admin packing overview from staff packing controls
+- `a28b6db41ba765482c8d9ffabec376257cf8dd36` — Add admin packing overview and isolate staff packing controls
+- `31219db67b9f3a536e118e0e9901ab3492587e40` — Prevent admin packing overview from overlapping staff packing screen
+- `9f8146990ef61e26e47b7c121361b25e0b2aacae` — Style admin packing overview
+- `5039c53c830872ab1e1a02f990080a29f3890e9e` — Bump admin cache for packing overview
+
+**Known follow-up**
+- Refresh/reopen the Admin PWA so service-worker v19 takes control.
+- The staff packing screen remains available when intentionally selected from Options.
+
 ## 2026-09-23 — Rebrand Admin into Bigly Agro Operations Dashboard
 **Status:** DEPLOYED
 
