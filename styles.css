@@ -791,3 +791,66 @@ button:focus-visible,input:focus-visible,select:focus-visible,dialog:focus-visib
   .adminPage .analysisCard{overflow:hidden}
   .adminPage .analysisCard .tableWrap{margin-right:-2px}
 }
+
+/* ===== Admin mobile scrolling correction ===== */
+.adminPage,
+.adminPage #app,
+.adminPage .baContent{
+  max-width:100%;
+}
+.adminPage{
+  overscroll-behavior-y:auto;
+}
+.adminPage #app{
+  overflow:visible;
+}
+.adminPage .baContent{
+  overflow:visible;
+}
+.adminPage .analysisCard .tableWrap,
+.adminPage .deliveryDashSection .tableWrap{
+  overflow-x:auto;
+  overflow-y:visible;
+  overscroll-behavior-x:contain;
+  overscroll-behavior-y:auto;
+  touch-action:pan-x pan-y;
+  scrollbar-width:thin;
+}
+.adminPage .baDeliveryTable{
+  overflow-x:auto;
+  overflow-y:auto;
+  touch-action:pan-x pan-y;
+}
+@media(max-width:850px){
+  .adminPage .baHeader{
+    position:sticky;
+    top:5px;
+  }
+  .adminPage .analysisCard{
+    overflow:visible;
+  }
+  .adminPage .analysisCard .tableWrap{
+    max-height:none;
+    overflow-x:auto;
+    overflow-y:visible;
+  }
+  .adminPage .baDeliveryTable{
+    max-height:300px;
+    overflow:auto;
+  }
+  .adminPage .baHome{
+    overflow:visible;
+  }
+}
+@media(max-width:520px){
+  html{
+    scroll-behavior:auto;
+  }
+  .adminPage{
+    -webkit-overflow-scrolling:touch;
+  }
+  .adminPage .analysisCard .tableWrap,
+  .adminPage .deliveryDashSection .tableWrap{
+    margin-bottom:2px;
+  }
+}
