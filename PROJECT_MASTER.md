@@ -1137,6 +1137,32 @@ These rules define the product even if implementation technology changes.
 **Database migration**
 - None.
 
+## 2026-09-23 — Fix rejected-photo false assignment failure caused by stale order ID
+**Status:** DEPLOYED
+
+**Second root cause found**
+- The previous authorization fix correctly switched driver identity to `driver_id`, but rejected-photo authorization still required the client-supplied `order_id` to exactly match the outlet row.
+- The driver dashboard can retain a stale `ds.orderId` during an order transition/refresh while the clicked outlet ID is still valid.
+- That caused the backend lookup to find no outlet and return the misleading **“Outlet is not assigned to this driver”** message even when the driver actually owned the outlet.
+
+**Permanent fix**
+- Rejected-photo authorization now resolves the outlet using:
+  - outlet UUID
+  - authenticated driver's stable UUID
+- The server then derives the authoritative `order_id` from that outlet.
+- Item validation, rejection lookup, storage path, and photo-record save all use the server-resolved order ID.
+- The client-supplied order ID is no longer trusted for outlet authorization.
+- This removes the stale-order-ID failure mode without weakening driver authorization.
+
+**Deployed**
+- `driver-api` version **28**.
+- Commit: `bc4f8e2027c878e2917639b95492a9259f5d1098` — Resolve rejected photo order from assigned outlet.
+
+**Validation**
+- Current production order has 19 assigned outlets.
+- All 19 have valid `driver_id` values.
+- The live Edge Function version is 28.
+
 ## 2026-09-23 — Fix driver rejected-item photo authorization
 **Status:** DEPLOYED
 
