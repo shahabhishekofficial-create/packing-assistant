@@ -689,3 +689,7 @@ tbody tr:hover{background:#f8fbff}
 
 .sectionHeadActions,.dialogHeadActions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 @media (max-width:640px){.sectionHeadActions,.dialogHeadActions{width:100%}.sectionHeadActions button,.dialogHeadActions button{flex:1}.sectionHeadActions{justify-content:flex-start}}
+
+.liveDeliverySummary{margin:16px 0 24px;background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:18px;box-shadow:0 8px 24px rgba(15,23,42,.05)}
+.deliverySummaryKpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:12px 0 16px}.deliverySummaryKpi{padding:12px;border:1px solid #e2e8f0;border-radius:12px;background:#f8fafc}.deliverySummaryKpi small{display:block;color:#64748b;font-size:11px}.deliverySummaryKpi b{display:block;font-size:22px;margin-top:4px}
+@media(max-width:800px){.deliverySummaryKpis{grid-template-columns:repeat(2,minmax(0,1fr))}.liveDeliverySummary .tableWrap{overflow-x:auto}}
