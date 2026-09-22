@@ -1147,6 +1147,7 @@ These rules define the product even if implementation technology changes.
 - `a5c5a7ff7835b0a0496ee7327b7561a105e4f182` — Finish migration from password prompts to admin session
 - `183486d0da5b4a77b94be718738bfca3c5dc8298` — Revoke admin session on logout
 - `a67e2945aa7d30053f57f00ac05cef985d74f0b5` — Add Admin session migration
+- `8cc9ea1f67789613ddf072274bc54b5c691d3fab` — Use admin session for payment proof access
 - Admin PWA cache commit: latest v20 cache update
 - Edge Function deployment version: **30**
 
