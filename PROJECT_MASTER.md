@@ -724,14 +724,12 @@ Current driver service-worker history reached v25 during recent work.
 
 These are important so future work does not accidentally assume the documentation is perfect.
 
-### Polling mismatch
-The README currently says:
-- 3-second live synchronization
-
-The current `app.js` has a polling interval observed at:
-- 300000 ms (5 minutes)
-
-This must be deliberately verified and corrected/documented before relying on README wording.
+### Live synchronization
+- Supabase Realtime subscriptions are used for `outlets` and `order_items`.
+- A 250 ms debounce prevents excessive refreshes after realtime events.
+- A 3-second fallback poll runs while an order is active.
+- `syncBusy` prevents overlapping synchronization requests.
+- The fallback was restored on 2026-09-23 after the interval had drifted to 5 minutes.
 
 ### Core schema source
 The repository contains the later SQL setup/migration files, but not one single complete historical baseline schema file for the original packing tables.
@@ -1099,9 +1097,47 @@ These rules define the product even if implementation technology changes.
 - GitHub Pages deployment
 
 ### Known documentation/technical follow-ups
-- Reconcile README's 3-second sync claim with current app.js polling behavior.
+- Validate the restored 3-second fallback on two physical phones and degraded mobile networks.
 - Consolidate the original core Supabase schema into a clean repository baseline/migration path.
 - Keep this blueprint updated after every future feature/fix.
+
+---
+
+# 22. CHANGE LOG — 2026-09-23
+
+## 2026-09-23 — Restore 3-second live synchronization
+**Status:** DEPLOYED
+
+**Why**
+- The documented 3-second synchronization had drifted to a 5-minute fallback poll.
+- Realtime subscriptions already existed, but the fallback was too slow when a realtime event was delayed or unavailable.
+
+**Changed**
+- Frontend: `app.js` fallback polling changed from 300,000 ms to 3,000 ms.
+- README: clarified Realtime + 3-second fallback polling.
+- Supabase: no schema change.
+- Edge Function: no change.
+- Storage: no change.
+
+**Logic**
+- Realtime event → 250 ms debounce → `syncFromServer()`.
+- Fallback poll → every 3 seconds while an order/token exists.
+- `syncBusy` prevents overlapping sync calls.
+
+**Validation**
+- Confirmed the old 300,000 ms interval in the repository.
+- Changed it to 3,000 ms.
+- Existing Realtime subscription path remains intact.
+
+**Commits**
+- `f0e16925b1db4ba9cbe2743924e4818101783519` — Restore 3-second live sync fallback
+- `865e23684658244f8e086efdb140a792bb649bfc` — Document realtime and fallback sync
+
+**Database migration**
+- None.
+
+**Known follow-up**
+- Physical two-phone validation remains required.
 
 ---
 
