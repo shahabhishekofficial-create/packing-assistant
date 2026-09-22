@@ -1120,12 +1120,22 @@ window.addEventListener("offline",updateConnection);
 updateConnection();
 
 (async function init(){
-  // Driver names are only required by the admin settings screen. Skipping this
-  // query on packing devices makes first load faster and removes unnecessary traffic.
-  if(IS_ADMIN_PAGE) await loadDrivers();
+  // Do not block the dashboard on the optional driver-name query. A slow/failed
+  // settings query must never prevent the main order from loading.
+  if(IS_ADMIN_PAGE) loadDrivers().catch(e=>console.warn("driver load",e.message));
   const params=new URLSearchParams(location.search);
   const legacyOrder=params.get("order");
   const legacyToken=params.get("token");
+  const restoreSavedOrder=async()=>{
+    const savedOrder=localStorage.getItem("pa_order_id");
+    const savedToken=localStorage.getItem("pa_order_token");
+    if(!savedOrder||!savedToken)return false;
+    state.orderId=savedOrder;
+    state.token=savedToken;
+    await loadOrder();
+    startPolling();
+    return true;
+  };
   try{
     if(legacyOrder && legacyToken){
       state.orderId=legacyOrder;
@@ -1137,18 +1147,25 @@ updateConnection();
       history.replaceState({},document.title,location.pathname);
       return;
     }
-    const loaded=await loadCurrentOrder();
-    if(!loaded){
-      const savedOrder=localStorage.getItem("pa_order_id");
-      const savedToken=localStorage.getItem("pa_order_token");
-      if(savedOrder&&savedToken){
-        state.orderId=savedOrder;
-        state.token=savedToken;
-        await loadOrder();
-        startPolling();
-      }
+
+    // Prefer the server's latest order, but never leave the admin screen blank
+    // when that discovery call has a transient/network/API failure. Restore the
+    // last known valid order token from this browser as a deterministic fallback.
+    let loaded=false;
+    try{
+      loaded=await loadCurrentOrder();
+    }catch(e){
+      console.warn("Current order discovery failed; trying saved order",e.message);
     }
-  }catch(e){console.warn("No current order",e.message)}
+    if(!loaded) await restoreSavedOrder();
+  }catch(e){
+    console.warn("Order bootstrap failed",e.message);
+    const status=$("orderLoadStatus");
+    if(status){
+      status.textContent="Could not load the saved order. Click Refresh to retry.";
+      status.classList.remove("hidden");
+    }
+  }
 })();
 
 const adminMenu=document.getElementById("adminMenu"),adminMenuBtn=document.getElementById("adminMenuBtn");
