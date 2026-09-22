@@ -1719,3 +1719,99 @@ Admin service-worker cache was bumped to packing-assistant-admin-v20.
 - bf729fa8313be7e0696f1b11f0b6bf186b9d0167 — Refresh admin dashboard data after authentication
 - 23ed7fc85153ce30aa88a3d96aa35f1350386cc4 — Clarify current outlet dashboard metric
 - 4fc6691728261fccd10660b5d1c2029080f50bcf — Bump admin cache for dashboard data refresh
+
+
+## 2026-09-23 — Full Admin Dashboard Stability / UX Optimization Audit
+
+**Status: IMPLEMENTED / DEPLOYMENT VALIDATION IN PROGRESS**
+
+A full static and production-data audit was performed across the Admin Dashboard, including navigation, dashboard refresh, live delivery, packing analysis, fleet/driver screens, mobile sidebar behavior, scrolling, visual overflow, search, session continuity, caching, and JavaScript validation.
+
+### Issues found and solutions
+
+1. **Admin order polling was unnecessarily aggressive**
+   - Problem: the shared packing fallback poll ran every 3 seconds on Admin too.
+   - Impact: repeated get_order calls and repeated Admin rendering while the operator was not on a live packing screen.
+   - Fix: Admin fallback polling is now 10 seconds; staff packing remains 3 seconds.
+   - Admin polling pauses while Fleet/Driver Dashboard screens are open and resumes for Dashboard/Packing screens.
+   - Supabase Realtime remains the fast update path.
+
+2. **Admin delivery-charge RPC was being called on every Admin order refresh**
+   - Problem: every fallback order sync also requested outlet delivery charges.
+   - Fix: delivery charges are cached for 30 seconds and reused between refreshes.
+   - This reduces redundant database traffic without making settings stale for longer than the normal dashboard refresh window.
+
+3. **Realtime subscription errors were silent**
+   - Problem: subscribe had no status/error callback.
+   - Fix: CHANNEL_ERROR and TIMED_OUT are now logged so live-sync failures can be diagnosed while the fallback poll continues to protect data freshness.
+   - Production verification confirmed outlets and order_items are both in the supabase_realtime publication.
+
+4. **Live delivery requests could overlap**
+   - Problem: a slow 30-second delivery request could overlap the next refresh.
+   - Fix: added a request-in-progress guard.
+   - Driver Dashboard analytics received the same protection.
+
+5. **Header Refresh did not refresh every visible module**
+   - Problem: it only refreshed the packing order.
+   - Fix: Header Refresh now refreshes the live delivery summary and whichever Fleet, Driver Dashboard, or Packing Overview screen is currently visible.
+
+6. **Mobile sidebar had incomplete dismissal behavior**
+   - Problem: sidebar could remain open after tapping outside it; no Escape handling.
+   - Fix: outside-tap dismissal, Escape-to-close, aria-expanded state, body scroll locking, and a mobile backdrop were added.
+
+7. **Main dashboard live delivery table was hidden**
+   - Problem: the live delivery summary existed, but the actual outlet-by-outlet status table used display:none.
+   - Fix: table is now visible directly on the main dashboard with a bounded scroll area and sticky table headers.
+   - It shows outlet, driver, status, missing, rejected, and last-update information.
+
+8. **Dashboard search was only visual**
+   - Problem: the header search looked interactive but was not an input.
+   - Fix: it is now a real search field with Ctrl/Cmd+K focus.
+   - It can locate outlets, products/item codes, and drivers and scrolls directly to the relevant Packing Analysis filter.
+   - Common terms for Packing, Delivery/Fleet, and Reports navigate directly to those modules.
+
+9. **Fleet navigation did not update the active sidebar state**
+   - Fix: opening Delivery Fleet Management now highlights Delivery & Fleet and closes the mobile sidebar.
+
+10. **Active Admin session could expire server-side during long active use**
+    - Problem: the browser local inactivity timer could remain active while the server-backed session reached its one-hour expiry.
+    - Fix: while the Admin is actively used, the browser refreshes the server-backed Admin session approximately every 10 minutes.
+    - Network errors are logged without immediately forcing logout; an explicit invalid/expired session still logs the Admin out.
+
+11. **Dashboard scrolling / mobile visual polish**
+    - Added horizontal-overflow protection, touch-friendly table scrolling, sticky delivery-table headers, focus-visible states, mobile panel sizing, and safe text wrapping.
+    - Mobile sidebar backdrop prevents accidental interaction with the dashboard behind the open menu.
+
+12. **JavaScript validation regression discovered during audit**
+    - GitHub Actions exposed a pre-existing literal backslash-n before function showAdminDashboard in app.js, which caused Node syntax validation to fail.
+    - Fixed the invalid token.
+    - This was caught and corrected before final deployment validation.
+
+13. **Admin PWA cache**
+    - Cache version was advanced through v24 so the optimized HTML/CSS/JS is not trapped behind the previous service-worker cache.
+
+### Production data verification
+
+Current production order:
+- 19 current outlets
+- 19/19 outlets completed packing
+- 698 required quantity
+- 695 packed quantity
+- 3 missing quantity
+- Packing completion calculation = 100%
+- 1 delivery record exists and is currently pending
+- The live delivery model therefore reports all 19 packed outlets as pending delivery until each is marked delivered.
+- Existing Delivery Issues KPI combines current packing missing quantity and driver rejection quantity; production currently has 3 missing + 1 rejected = 4 issues.
+
+### Supabase / production verification
+
+- driver-api production Edge Function remains ACTIVE at version 30.
+- outlets and order_items are confirmed in the supabase_realtime publication.
+- No database schema changes were required for this dashboard optimization.
+- Supabase current guidance was checked for Realtime subscription status/error handling and PostgREST retry behavior.
+
+### Validation / deployment
+
+- Pages deployment for commit bc024c3ddcdbc6fd8d1422d159319983aa2c418b completed successfully before the final syntax/cache corrections.
+- Latest commits trigger fresh Pages deployment and JavaScript validation.
+- Final code/cache commit: 4eb350ab5df3827405e964689546ec93cf94ccc4.
