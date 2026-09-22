@@ -1106,6 +1106,57 @@ These rules define the product even if implementation technology changes.
 # 22. CHANGE LOG — 2026-09-23
 
 
+## 2026-09-23 — Rebrand Admin into Bigly Agro Operations Dashboard
+**Status:** DEPLOYED
+
+**Why**
+- The Admin PWA is no longer only a Packing Assistant. It is becoming the company's central operations dashboard for Bigly Agro Private Limited.
+- Finance/Expenses and Sales are intentionally kept outside the current dashboard scope while the operations foundation is built.
+
+**Changed**
+- Admin branding changed from **Packing Assistant** to **Bigly Agro Private Limited**.
+- Replaced the packing-centric home screen with an operations dashboard layout:
+  - Welcome / company operations banner
+  - Active outlets, packing progress, pending deliveries and delivery issues quick stats
+  - Core modules: Packing & Dispatch, Delivery & Fleet, Inventory, Purchase & Suppliers, Employees & HR, Reports & Analytics
+  - Latest Packing Order panel
+  - Live Delivery Status panel
+  - Operations Alerts panel
+  - Existing detailed Packing Analysis retained below the new overview
+- Added persistent desktop sidebar and mobile slide-out navigation.
+- Added company-level header/search/date area and responsive layout.
+- Inventory, Purchase & Suppliers, and Employees & HR are visually established as future modules and currently show a simple "coming soon" message rather than pretending to be implemented.
+- Finance/Expenses and Sales are deliberately not included in the current navigation.
+- Existing Packing, Delivery, Reports, Outlet Settings, Driver Dashboard and Fleet functionality remains connected to the new navigation.
+- Admin PWA cache bumped from v16 to v17.
+
+**Logic**
+- Dashboard overview is populated from the existing live packing state.
+- Live delivery API data updates pending-delivery, issue and alert cards.
+- Existing order creation remains available from the Latest Packing Order panel.
+- Existing detailed packing analysis remains available on the dashboard for operational monitoring.
+
+**Validation**
+- Existing element IDs required by order creation, packing, reports and delivery status were preserved.
+- New sidebar/module navigation is wired to the existing handlers.
+- Packing screen visibility is explicitly restored for the redesigned Admin PWA.
+- Finance and Sales are absent from the current dashboard navigation.
+
+**Commits**
+- `f84e42c8c2d5b92f93b567bbd8c86eec9e415e48` — Implement Bigly Agro operations dashboard layout
+- `66ec783e948e2ac90a2e7d3c1cd3714bb9227087` — Style Bigly Agro operations dashboard
+- `05654301f2843ef51e7d8e1634c82957acc3a4ec` — Wire Bigly Agro dashboard modules and live overview
+- `029ee374308503d83582593e54462b4c2b738685` — Allow redesigned admin navigation to open packing screen
+- `1e6de9239b24d2d02b3304342dd77dbd04010bff` — Keep dashboard navigation state synchronized
+- `02a5595cc4d7f9dc997b5bf7fa19fd360a62dbaf` — Bump admin cache for Bigly Agro dashboard
+
+**Database migration**
+- None.
+
+**Known follow-up**
+- Physical browser/PWA validation is required to confirm the new layout after service-worker v17 refresh.
+- Future modules can be added behind the established sidebar without redesigning the dashboard shell.
+
 ## 2026-09-23 — Remove obsolete Admin Voice Language option
 **Status:** DEPLOYED
 
