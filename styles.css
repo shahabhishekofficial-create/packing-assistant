@@ -527,3 +527,28 @@ tbody tr:hover{background:#f8fbff}
  .driverPage .driverRejectionRow .photoBtn{grid-column:1/-1;width:max-content}
  .driverPage .driverRejectionSection{padding:12px}
 }
+
+/* Driver earnings menu */
+.driverPage .driverHeaderActions{display:flex;align-items:center;gap:8px}
+.driverPage .driverHeaderActions .menuDots{width:40px;height:40px;border:1px solid #dfe5ed;background:#fff;border-radius:11px;font-size:22px;line-height:1;color:#344054}
+.driverMenuDialog{width:min(620px,calc(100% - 24px));border:1px solid #e2e7ef;border-radius:18px;padding:0;background:#fff;box-shadow:0 24px 70px rgba(15,23,42,.2)}
+.driverMenuDialog::backdrop{background:rgba(15,23,42,.35)}
+.driverMenuHead{display:flex;justify-content:space-between;align-items:flex-start;padding:18px;border-bottom:1px solid #edf0f4}
+.driverMenuHead h3{margin:3px 0 0;font-size:18px}
+.driverLedgerSummary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:14px 18px}
+.driverLedgerSummary>div{padding:12px;border:1px solid #edf0f4;border-radius:12px;background:#f8fafc}
+.driverLedgerSummary small,.fleetKpis small{display:block;color:#667085;font-size:10px}
+.driverLedgerSummary b,.fleetKpis b{display:block;margin-top:4px;font-size:18px;color:#172033}
+.driverLedgerSummary .balance{background:#fff8eb;border-color:#f2d39b}
+.driverLedgerTableWrap{padding:0 18px 18px}.driverLedgerTitle,.fleetLedgerTitle{font-size:12px;font-weight:800;color:#344054;margin-bottom:8px}
+.driverLedgerRow,.fleetLedgerRow{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:11px 0;border-top:1px solid #edf0f4}
+.driverLedgerRow b,.fleetLedgerRow b{font-size:13px}.driverLedgerRow small,.fleetLedgerRow small{display:block;color:#667085;font-size:10px;margin-top:2px}
+.ledgerNoProof{font-size:10px;color:#98a2b3}
+@media(max-width:650px){.driverLedgerSummary{grid-template-columns:1fr 1fr}.driverLedgerSummary .balance{grid-column:1/-1}}
+/* Fleet management */
+.fleetCards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.fleetCard{background:#fff;border:1px solid #e2e7ef;border-radius:16px;padding:16px;box-shadow:0 4px 18px rgba(15,23,42,.045)}
+.fleetCardHead{display:flex;justify-content:space-between;gap:12px;align-items:center}.fleetCardHead h3{margin:3px 0 0;font-size:18px}.fleetCardHead button{min-height:40px}
+.fleetKpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0}.fleetKpis>div{padding:11px;border:1px solid #edf0f4;border-radius:11px;background:#f8fafc}.fleetKpis .due{background:#fff8eb;border-color:#f2d39b}.fleetKpis .clear{background:#ecfdf3;border-color:#b7ebcc}
+.fleetLedger{border-top:1px solid #edf0f4;padding-top:12px}.fleetPaymentForm{display:grid;gap:12px;padding:0 18px 18px}.fleetPaymentForm label{display:grid;gap:6px;font-size:11px;font-weight:750;color:#475467}.fleetPaymentForm input{padding:11px;border:1px solid #d9e0ea;border-radius:10px;font:inherit}
+@media(max-width:760px){.fleetCards{grid-template-columns:1fr}.fleetKpis b{font-size:16px}}
