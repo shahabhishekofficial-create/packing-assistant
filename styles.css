@@ -557,3 +557,132 @@ tbody tr:hover{background:#f8fbff}
 
 /* Delivery management dashboard */
 .deliveryDashboardControls{display:grid;grid-template-columns:180px 150px 150px auto 1fr;gap:8px;align-items:center;margin:0 0 14px}.deliveryDashboardControls select,.deliveryDashboardControls input{border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 12px;color:var(--ink);min-width:0}.deliveryDashboardControls input:disabled{background:#f1f5f9;color:#94a3b8}.dashboardPeriodLabel{font-size:12px;color:#64748b;text-align:right}.liveRouteBanner{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px 15px;margin-bottom:14px;border:1px solid #dbe5f0;border-radius:14px;background:#f8fafc}.liveRouteBanner b{display:block;margin-top:3px}.liveRouteBanner>span{font-size:11px;color:#64748b}.deliveryKpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:18px}.deliveryKpi{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;box-shadow:0 5px 18px #3341550a;min-width:0}.deliveryKpi small{display:block;color:#667085;font-size:11px;font-weight:700}.deliveryKpi b{display:block;font-size:22px;margin:5px 0 2px;color:#172033}.deliveryKpi span{display:block;color:#98a2b3;font-size:10px}.deliveryDashSection{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:14px;box-shadow:0 5px 18px #33415508}.deliveryDashSection .sectionHead{margin-bottom:10px}.deliveryDashSection h3{margin:2px 0 0;font-size:16px}.deliveryDashTable{width:100%;border-collapse:collapse;min-width:780px}.deliveryDashTable th{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:#667085;text-align:left;background:#f8fafc;padding:9px;border-bottom:1px solid #e8edf3;white-space:nowrap}.deliveryDashTable td{padding:10px 9px;border-bottom:1px solid #edf1f5;font-size:12px;vertical-align:middle}.deliveryDashTable tr:last-child td{border-bottom:0}.deliveryDashTable td small{display:block;color:#98a2b3;font-size:9px;margin-top:2px}.deliveryStatus,.deliveryFlag{display:inline-block;border-radius:999px;padding:4px 7px;font-size:9px;font-weight:800;white-space:nowrap}.deliveryStatus.delivered{background:#e8f8ef;color:#087443}.deliveryStatus.pending{background:#fff4d9;color:#8a5a00}.deliveryStatus.packing{background:#eef2ff;color:#4f46a5}.deliveryFlag.bad{background:#feeceb;color:#b42318}.deliveryFlag.warn{background:#fff4d9;color:#8a5a00}.driverDashboardHead{align-items:flex-start}@media(max-width:900px){.deliveryDashboardControls{grid-template-columns:1fr 1fr}.dashboardPeriodLabel{grid-column:1/-1;text-align:left}.deliveryKpis{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:600px){.deliveryDashboardControls{display:flex;flex-direction:column;align-items:stretch}.deliveryDashboardControls>*{width:100%}.liveRouteBanner{align-items:flex-start;flex-direction:column}.deliveryKpis{grid-template-columns:1fr 1fr}.deliveryKpi b{font-size:19px}.deliveryDashSection{padding:10px}.deliveryDashTable{min-width:720px}}
+
+/* Driver payment password modal v2 */
+.driverPage .driverPasswordDialog{
+  width:min(520px,calc(100vw - 24px));
+  max-width:520px;
+  padding:0;
+  border:1px solid #e1e7ef;
+  border-radius:22px;
+  background:#fff;
+  color:#172033;
+  box-shadow:0 28px 90px rgba(15,23,42,.24);
+  overflow:hidden;
+}
+.driverPage .driverPasswordDialog::backdrop{background:rgba(15,23,42,.48);backdrop-filter:blur(3px)}
+.driverPasswordForm{margin:0}
+.driverPasswordHeader{
+  position:relative;
+  display:flex;
+  gap:13px;
+  align-items:flex-start;
+  padding:22px 22px 18px;
+  border-bottom:1px solid #edf0f4;
+}
+.driverSecurityIcon{
+  width:44px;height:44px;flex:0 0 44px;
+  display:grid;place-items:center;
+  border-radius:13px;
+  background:#eef2ff;
+  font-size:21px;
+}
+.driverPasswordTitle{padding-right:34px}
+.driverPasswordTitle .eyebrow{display:block;margin-bottom:3px}
+.driverPasswordTitle h3{margin:0;font-size:20px;letter-spacing:-.35px}
+.driverPasswordTitle p{margin:5px 0 0;color:#667085;font-size:12px;line-height:1.45}
+.driverModalClose{
+  position:absolute;right:16px;top:16px;
+  width:38px;height:38px;
+  border:1px solid #dfe5ed;
+  border-radius:11px;
+  background:#f8fafc;
+  color:#344054;
+  font-size:25px;line-height:1;
+  cursor:pointer;
+}
+.driverModalClose:hover{background:#eef2f6}
+.driverPrivacyNote{
+  display:flex;gap:10px;align-items:flex-start;
+  margin:18px 22px 16px;
+  padding:12px 13px;
+  border:1px solid #dbeafe;
+  border-radius:12px;
+  background:#f5f9ff;
+  color:#344054;
+}
+.driverPrivacyNote>span{font-size:17px;line-height:1.1}
+.driverPrivacyNote b{display:block;font-size:12px;color:#172033}
+.driverPrivacyNote small{display:block;margin-top:2px;font-size:10px;line-height:1.4;color:#667085}
+.driverPasswordFields{padding:0 22px}
+.driverField{display:grid;gap:6px;margin:0;font-size:11px;font-weight:800;color:#344054}
+.driverInputWrap{position:relative}
+.driverInputWrap input{
+  width:100%;
+  height:46px;
+  padding:0 70px 0 13px;
+  border:1px solid #d9e0ea;
+  border-radius:11px;
+  background:#fff;
+  color:#172033;
+  font:600 14px Inter,ui-sans-serif,system-ui,sans-serif;
+  outline:none;
+}
+.driverInputWrap input:focus{
+  border-color:#4f46e5;
+  box-shadow:0 0 0 3px rgba(79,70,229,.10);
+}
+.driverInputWrap input::placeholder{color:#98a2b3;font-weight:500}
+.passwordToggle{
+  position:absolute;right:6px;top:6px;
+  height:34px;min-width:54px;
+  padding:0 9px;
+  border:0;border-radius:8px;
+  background:#f1f4f8;color:#475467;
+  font-size:11px;font-weight:800;
+  cursor:pointer;
+}
+.passwordToggle:hover{background:#e8edf3}
+.passwordStrength{
+  display:flex;align-items:center;gap:8px;
+  min-height:22px;margin:4px 0 8px;
+}
+.passwordStrength span{
+  width:74px;height:5px;border-radius:99px;background:#e5e7eb;
+  transition:background .15s,width .15s;
+}
+.passwordStrength small{font-size:10px;color:#98a2b3}
+.passwordStrength.weak span{background:#ef4444;width:25px}
+.passwordStrength.medium span{background:#f59e0b;width:50px}
+.passwordStrength.strong span{background:#10b981;width:74px}
+.driverPasswordMatch{
+  min-height:17px;margin:5px 0 0;
+  font-size:10px;font-weight:750;
+  color:#667085;
+}
+.driverPasswordMatch.ok{color:#137a4b}
+.driverPasswordMatch.bad{color:#b42318}
+.driverPasswordMsg{
+  min-height:18px;margin:3px 0 0;
+  font-size:11px;font-weight:700;color:#b42318;
+}
+.driverPasswordActions{
+  display:flex;justify-content:flex-end;gap:9px;
+  padding:18px 22px 22px;
+  margin-top:2px;
+}
+.driverPasswordActions button{
+  min-height:44px;
+  padding:0 18px;
+  border-radius:11px;
+  font-weight:800;
+}
+.driverPasswordActions .primary{min-width:145px}
+@media(max-width:560px){
+  .driverPage .driverPasswordDialog{width:calc(100vw - 20px);border-radius:19px}
+  .driverPasswordHeader{padding:18px 17px 16px}
+  .driverPrivacyNote{margin:14px 17px;padding:11px}
+  .driverPasswordFields{padding:0 17px}
+  .driverPasswordActions{padding:16px 17px 18px}
+  .driverPasswordActions button{flex:1}
+}
