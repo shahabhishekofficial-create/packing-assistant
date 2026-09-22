@@ -1109,7 +1109,7 @@ function startPolling(){
         }
       }
     }catch(e){console.warn("sync",e.message)}
-  },300000);
+  },3000);
 }
 
 function updateConnection(){
