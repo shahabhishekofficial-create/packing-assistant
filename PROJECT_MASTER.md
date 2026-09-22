@@ -1634,3 +1634,48 @@ Do not start coding before completing this context recovery.
 **The code implements the system. This file explains the system. Git history explains how it evolved. Supabase contains the live state/schema. All four must stay aligned.**
 
 Whenever we make a change, update this document so that a future session can continue without reconstructing the project from memory.
+
+
+## 2026-09-23 — Fix Admin Dashboard Login Session Creation
+
+**Status: DEPLOYED**
+
+### Problem
+After the Admin password was entered, the dashboard displayed:
+**“Could not verify password. Please retry.”**
+
+The password verification RPC itself was working. The failure occurred immediately afterward while creating the new server-backed Admin session.
+
+### Root cause
+The Admin session functions use pgcrypto functions. In production, gen_random_bytes() and digest() are installed in the extensions schema, while the security-definer session functions use search_path = 'public'.
+
+Therefore the valid-password path in create_admin_session() could not resolve:
+- gen_random_bytes()
+- digest()
+
+The browser caught that RPC exception and displayed the generic login error.
+
+### Fix
+Qualified the pgcrypto calls explicitly:
+- extensions.gen_random_bytes(32)
+- extensions.digest(..., 'sha256')
+
+Updated functions:
+- create_admin_session(text)
+- verify_admin_session(text)
+- revoke_admin_session(text)
+
+Production database was updated immediately and the migration source was corrected so future reconstruction does not reintroduce the bug.
+
+### Verification
+- Confirmed production pgcrypto functions are in schema extensions.
+- Confirmed verify_admin_password(text) uses the existing qualified extensions.crypt().
+- Confirmed the corrected session functions compile successfully.
+- Confirmed invalid-password session creation returns no session rather than raising the previous missing-function error.
+- No Admin session test token was left active.
+
+### Relevant commit
+- e9de54d69cf0da67d2086bdf8597a149306ed08e — Fix admin session crypto function resolution
+
+### Security
+No password, session token, or secret was stored in source control. Session tokens remain hashed in public.admin_sessions.
