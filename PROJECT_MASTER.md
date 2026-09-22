@@ -1135,6 +1135,7 @@ These rules define the product even if implementation technology changes.
 - `a28b6db41ba765482c8d9ffabec376257cf8dd36` — Add admin packing overview and isolate staff packing controls
 - `31219db67b9f3a536e118e0e9901ab3492587e40` — Prevent admin packing overview from overlapping staff packing screen
 - `9f8146990ef61e26e47b7c121361b25e0b2aacae` — Style admin packing overview
+- `c8a49fec41fc68eddd7cf6518dff8d1a6045f9a2` — Hide packing overview when opening fleet management
 - `5039c53c830872ab1e1a02f990080a29f3890e9e` — Bump admin cache for packing overview
 
 **Known follow-up**
