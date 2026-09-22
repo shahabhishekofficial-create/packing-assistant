@@ -53,7 +53,7 @@
     logoutTimer=setTimeout(()=>forceLogout(true),Math.max(0,SESSION_MS-(Date.now()-last)));
   }
 
-  function forceLogout(showLogin){
+  window.PA_ADMIN_PASSWORD="";function forceLogout(showLogin){
     clearTimeout(logoutTimer);
     localStorage.removeItem(SESSION_KEY);
     localStorage.removeItem(LAST_ACTIVITY_KEY);
@@ -105,7 +105,7 @@
           if(db){const r=await db.rpc("verify_admin_password",{p_password:input.value});if(!r.error)ok=!!r.data;}
           if(!ok)ok=same(await hashPassword(input.value),HASH_B64);
           if(!ok){err.textContent="Incorrect password.";input.select();return;}
-          localStorage.setItem(SESSION_KEY,"1");
+          window.PA_ADMIN_PASSWORD=input.value;localStorage.setItem(SESSION_KEY,"1");
           localStorage.setItem(LAST_ACTIVITY_KEY,String(Date.now()));
           box.remove();
           document.body.classList.remove("adminLocked");
