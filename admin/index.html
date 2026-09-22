@@ -23,11 +23,14 @@
     <button id="adminRefreshBtn" class="menuDots refreshBtn" aria-label="Refresh data" title="Refresh data">↻</button>
     <button id="adminMenuBtn" class="menuDots" aria-label="Options" aria-expanded="false">⋮</button>
     <div id="adminMenu" class="adminMenu hidden">
-      <button id="menuReportBtn">⬇ Reports / Export</button>
-      <button id="menuOutletSettings">⚙ Outlet Setup</button>
-      <button id="menuVoiceSettings">🔊 Voice Language</button>
-      <button id="menuPacking">📦 Order Packing Screen</button>
-      <button id="menuDriverDashboard">🚚 Driver Dashboard</button><button id="menuFleetManagement">💰 Delivery Fleet Management</button>
+      <button id="menuReportBtn">Reports / Export</button>
+      <button id="menuOutletSettings">Outlet Setup</button>
+      <button id="menuVoiceSettings">Voice Language</button>
+      <button id="menuPacking">Order Packing Screen</button>
+      <button id="menuDriverDashboard">Driver Dashboard</button>
+      <button id="menuFleetManagement">Delivery Fleet Management</button>
+      <button id="menuChangePassword">Change Password</button>
+      <button id="menuLogout">Log Out</button>
     </div>
   </div>
 </header>
@@ -53,6 +56,11 @@
   </div>
 
   <div id="orderSummary" class="dashboardSummary hidden"></div>
+  <section id="deliverySummary" class="liveDeliverySummary hidden">
+    <div class="sectionHead"><div><span class="eyebrow">LIVE DELIVERY STATUS</span><h2>Order Delivery Status</h2><p class="hint">Live status of every outlet after packing.</p></div><button id="deliverySummaryRefresh" class="secondary">Refresh</button></div>
+    <div id="deliverySummaryKpis" class="deliverySummaryKpis"></div>
+    <div class="tableWrap"><table><thead><tr><th>Outlet</th><th>Driver</th><th>Status</th><th>Missing</th><th>Rejected</th><th>Last Update</th></tr></thead><tbody id="deliverySummaryBody"></tbody></table></div>
+  </section>
 
   <section id="adminDashboard" class="adminDashboard hidden">
     <div class="sectionHead">
