@@ -1124,6 +1124,41 @@ document.getElementById("closeInvoiceDialog")?.addEventListener("click",()=>docu
 document.getElementById("exportReportBtn")?.addEventListener("click",exportHistoricalReport);
 document.getElementById("reportAllDatesBtn")?.addEventListener("click",()=>{$("reportFromDate").value="";$("reportToDate").value="";loadReportHistory();});
 document.getElementById("menuOutletSettings")?.addEventListener("click",()=>{adminMenu.classList.add("hidden");renderOutletSettings([...state.outlets.values()].sort((a,b)=>a.rank-b.rank));document.getElementById("outletSettingsDialog").showModal()});
+
+async function loadFleetManagement(){
+  const box=$("fleetCards"); if(!box)return;
+  box.innerHTML='<div class="hint">Loading driver ledger…</div>';
+  const password=window.PA_ADMIN_PASSWORD||"";
+  if(!password){box.innerHTML='<div class="hint">Admin session expired. Please sign in again.</div>';return;}
+  try{
+    const r=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_driver_fleet",admin_password:password})});
+    const d=await r.json(); if(!r.ok||!d.ok)throw new Error(d.message||"Could not load fleet");
+    box.innerHTML=(d.drivers||[]).map(dr=>'<div class="fleetCard"><div class="fleetCardHead"><div><span class="eyebrow">DRIVER</span><h3>'+esc(dr.driver_name)+'</h3></div><button class="primary payDriverBtn" data-id="'+esc(dr.driver_id)+'" data-name="'+esc(dr.driver_name)+'">+ Add Payment</button></div><div class="fleetKpis"><div><small>Total earned</small><b>₹'+Number(dr.earned||0).toFixed(2)+'</b></div><div><small>Total paid</small><b>₹'+Number(dr.paid||0).toFixed(2)+'</b></div><div class="'+(Number(dr.balance||0)>0?"due":"clear")+'"><small>Remaining</small><b>₹'+Number(dr.balance||0).toFixed(2)+'</b></div></div><div class="fleetLedger"><div class="fleetLedgerTitle">Payment ledger</div>'+((dr.payments||[]).length?(dr.payments||[]).map(p=>'<div class="fleetLedgerRow"><div><b>₹'+Number(p.amount||0).toFixed(2)+'</b><small>'+new Date(p.paid_at).toLocaleString("en-IN",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"})+(p.note?" · "+esc(p.note):"")+'</small></div>'+(p.screenshot_path?'<button class="secondary fleetProofBtn" data-path="'+esc(p.screenshot_path)+'">View proof</button>':"<span class=\"ledgerNoProof\">No proof</span>")+'</div>').join(""):'<div class="hint">No payments recorded.</div>')+'</div></div>').join("")||'<div class="hint">No active drivers.</div>';
+    box.querySelectorAll(".payDriverBtn").forEach(b=>b.onclick=()=>openDriverPayment(b.dataset.id,b.dataset.name));
+    box.querySelectorAll(".fleetProofBtn").forEach(b=>b.onclick=async()=>{try{const x=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_payment_screenshot_url",admin_password:window.PA_ADMIN_PASSWORD,path:b.dataset.path})});const d=await x.json();if(!x.ok||!d.ok)throw new Error(d.message||"Could not open proof");window.open(d.url,"_blank","noopener")}catch(e){alert(e.message)}});
+  }catch(e){box.innerHTML='<div class="hint">Could not load fleet ledger: '+esc(e.message)+'</div>';}
+}
+function openDriverPayment(driverId,name){
+  $("paymentDriverId").value=driverId;$("paymentDriverTitle").textContent=name+" — Record Payment";$("paymentAmount").value="";$("paymentNote").value="";$("paymentScreenshot").value="";$("paymentMsg").textContent="";
+  const d=new Date(Date.now()-d.getTimezoneOffset()*60000);$("paymentDate").value=d.toISOString().slice(0,16);
+  $("driverPaymentDialog").showModal();
+}
+async function saveDriverPayment(){
+  const driverId=$("paymentDriverId").value,amount=Number($("paymentAmount").value||0),paidAt=$("paymentDate").value,note=$("paymentNote").value.trim(),file=$("paymentScreenshot").files[0];
+  if(!driverId||amount<=0)return $("paymentMsg").textContent="Enter a valid payment amount.";
+  if(!file)return $("paymentMsg").textContent="Add the payment screenshot.";
+  const btn=$("saveDriverPayment");btn.disabled=true;btn.textContent="Saving…";$("paymentMsg").textContent="Uploading payment proof…";
+  try{
+    const password=window.PA_ADMIN_PASSWORD||"";if(!password)throw new Error("Admin session expired.");
+    const up=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_payment_upload_url",admin_password:password,driver_id:driverId,filename:file.name,mime_type:file.type,extension:"jpg"})});
+    const ud=await up.json();if(!up.ok||!ud.ok)throw new Error(ud.message||"Could not prepare upload.");
+    const {error}=await db.storage.from("driver-payments").uploadToSignedUrl(ud.path,ud.token,file);if(error)throw error;
+    const rec=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_record_payment",admin_password:password,driver_id:driverId,amount,paid_at:new Date(paidAt).toISOString(),note,screenshot_path:ud.path})});
+    const rd=await rec.json();if(!rec.ok||!rd.ok)throw new Error(rd.message||"Could not save payment.");
+    $("driverPaymentDialog").close();await loadFleetManagement();
+  }catch(e){$("paymentMsg").textContent=e.message;}finally{btn.disabled=false;btn.textContent="Save Payment";}
+}
+document.getElementById("menuFleetManagement")?.addEventListener("click",async()=>{adminMenu.classList.add("hidden");document.getElementById("home")?.classList.add("hidden");document.getElementById("packing")?.classList.add("hidden");document.getElementById("driverDashboard")?.classList.add("hidden");document.getElementById("fleetManagement")?.classList.remove("hidden");await loadFleetManagement();});document.getElementById("fleetRefreshBtn")?.addEventListener("click",loadFleetManagement);document.getElementById("closeDriverPayment")?.addEventListener("click",()=>document.getElementById("driverPaymentDialog").close());document.getElementById("saveDriverPayment")?.addEventListener("click",saveDriverPayment);
 document.getElementById("menuDriverDashboard")?.addEventListener("click",async()=>{adminMenu.classList.add("hidden");try{if(!state.outlets.size){const ok=await loadCurrentOrder();if(!ok)return alert("No active order available.");}renderDriverAdminDashboard();document.getElementById("home")?.classList.add("hidden");document.getElementById("packing")?.classList.add("hidden");document.getElementById("driverDashboard")?.classList.remove("hidden");}catch(e){alert("Could not load driver dashboard: "+e.message);}});
 document.getElementById("menuVoiceSettings")?.addEventListener("click",()=>{adminMenu.classList.add("hidden");document.getElementById("voiceSettingsDialog").showModal()});
 document.getElementById("menuPacking")?.addEventListener("click",async()=>{adminMenu.classList.add("hidden");try{if(!state.outlets.size){const ok=await loadCurrentOrder();if(!ok)return alert("No active order available.");}renderAdminPackingChooser();document.getElementById("home")?.classList.add("hidden");document.getElementById("driverDashboard")?.classList.add("hidden");document.getElementById("packing")?.classList.remove("hidden");document.getElementById("adminPackingChooser")?.classList.remove("hidden");document.getElementById("packing")?.querySelector(".packingTop")?.classList.add("hidden");}catch(e){alert("Could not load packing screen: "+e.message);}});
