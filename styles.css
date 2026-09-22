@@ -734,3 +734,8 @@ button:focus-visible,input:focus-visible,select:focus-visible,dialog:focus-visib
   .baPanelHead{gap:8px}
   .baDeliveryFooter{align-items:flex-start;flex-direction:column}
 }
+
+.baHeaderSearch input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:var(--ink);font:inherit;padding:0}
+.baHeaderSearch input::placeholder{color:#94a3b8}
+@media(max-width:850px){.baHeaderSearch{display:flex;max-width:none;margin:0 8px;flex:1}.baHeaderSearch kbd{display:none}}
+@media(max-width:520px){.baHeaderSearch{padding:9px 10px}.baHeaderSearch input{font-size:13px}}
