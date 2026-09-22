@@ -1362,6 +1362,47 @@ These rules define the product even if implementation technology changes.
 
 ---
 
+## 2026-09-23 — Add simple security options and live delivery status to Admin home
+**Status:** DEPLOYED
+
+**Why**
+- Admin security actions should be easy to find under Options rather than as extra header icons.
+- The main Admin screen should show live delivery progress alongside packing progress so delivery status does not require opening the Driver Dashboard.
+
+**Changed**
+- Admin Options now contains plain-language buttons: Reports / Export, Outlet Setup, Voice Language, Order Packing Screen, Driver Dashboard, Delivery Fleet Management, Change Password, Log Out.
+- Removed the separate injected Change Password / Log Out header controls.
+- Added a Live Delivery Status section directly below the packing/order summary with Delivered, Pending Delivery, Packing, Unassigned and Delivery Issues counts plus outlet-level status.
+- Live delivery status refreshes on authentication, manually via Refresh, and automatically every 30 seconds while the main dashboard is visible.
+- Edge Function `driver-api` now uses the database `is_current=true` order as the authoritative live order, with the previous active-order lookup retained as fallback.
+- Admin PWA cache bumped to v15.
+
+**Validation**
+- `driver-api` deployed successfully as version 29.
+- Frontend uses the existing authenticated admin password only for the privileged dashboard endpoint; no new secret is exposed.
+- No database migration required.
+
+**Commits**
+- `a7feb3bae15d15d009e23ded221ed0fa5e54a396` — Expose admin security actions in options menu
+- `dcee33354f60244b07f2c0b0ee55a6e26a3f0e0b` — Notify admin dashboard after authentication
+- `646360206fdd65085e9f5e3519075d94cda38325` — Add simple admin security options and live delivery status
+- `31d49c3a07b405e74aac522d9614206a39399f3a` — Use current order for live delivery status
+- `64c2a7dea1e2a2e692d6f85cc3390f26aeb72c65` — Show live delivery status on admin dashboard
+- `9785ef8aa22fb01991121fe3cdab9779ed746980` — Use live packing count in delivery summary
+- `7e536d54170a1ccecf49a0549fa7350e6cab054f` — Style live delivery summary on admin dashboard
+- `e77792ee342a040f585856a80069e600b94d4c1e` — Bump admin cache for live delivery status
+
+**Edge Function**
+- `driver-api` version 29 is active in production.
+
+**Database migration**
+- None.
+
+**Known follow-up**
+- Physical browser/PWA validation should confirm the new home summary appears after the service-worker update.
+
+---
+
 # 22. FUTURE CHANGE LOG
 
 Every future change goes here in this format:
