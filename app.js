@@ -731,7 +731,7 @@ function startLiveDeliverySummary(){
   loadLiveDeliverySummary();
   liveDeliveryTimer=setInterval(()=>{if(!document.getElementById("home")?.classList.contains("hidden"))loadLiveDeliverySummary();},30000);
 }
-window.addEventListener("pa-admin-authenticated",()=>{loadLiveDeliverySummary();startLiveDeliverySummary();});
+window.addEventListener("pa-admin-authenticated",async()=>{try{if(IS_ADMIN_PAGE && (!state.orderId || !state.outlets.size)){await loadCurrentOrder();}else if(IS_ADMIN_PAGE){renderHome();}}catch(e){console.warn("Admin dashboard order refresh:",e.message);}loadLiveDeliverySummary();startLiveDeliverySummary();});
 document.getElementById("deliverySummaryRefresh")?.addEventListener("click",loadLiveDeliverySummary);
 function renderHome(){
   const orderLoadStatus=$("orderLoadStatus");
