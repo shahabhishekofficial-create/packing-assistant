@@ -16,7 +16,7 @@ Connected to Supabase.
 - Automatic whole-order completion
 - Audit events
 - Device ID persisted in browser
-- 3-second live synchronization
+- 3-second live synchronization (Realtime events + 3-second fallback polling)
 - Browser speech with separate voice_text support
 
 ## Deploy
