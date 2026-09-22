@@ -1110,16 +1110,18 @@ These rules define the product even if implementation technology changes.
 
 **Why**
 - A failed bootstrap previously looked identical to “no order exists.”
+- The root frontend blocker was then traced to a literal `\\n` token between two JavaScript statements in `app.js`, which made the entire file fail parsing.
 - Installed admin PWAs could continue serving cached frontend files after the fix.
 
 **Changed**
 - Admin UI: added `orderLoadStatus` status text below the import requirements.
 - Frontend: successful `renderHome()` clears the bootstrap error status.
-- Admin service worker: bumped cache v11 → v12.
+- Admin service worker: bumped cache v12 → v13.
 - The resilient saved-order fallback remains in place.
 
 **Validation**
 - The failure path now has an explicit user-visible status.
+- `app.js` was parsed with a JavaScript parser after the fix: syntax OK.
 - Successful order load hides the status.
 - Admin PWA cache version is incremented.
 
@@ -1129,6 +1131,8 @@ These rules define the product even if implementation technology changes.
 - `4a818ebf361127ca0549d43cfce3fa3a15a4e2c5` — Bump admin cache for order bootstrap UI
 - `0c8880102960a961ec258f2a828607d6498ca334` — Fix admin status markup formatting
 - `ff554ab892bf6630bb92bb63a9571e4e1f7f2ef0` — Bump admin cache after markup fix
+- `90c304220e565c9290623c805ead7c0a56d4afda` — Fix admin dashboard JavaScript syntax error
+- `d4e7196353cd53f2634c0817a06d6e8c65852ade` — Bump admin cache for syntax fix
 
 **Database migration**
 - None.
