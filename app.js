@@ -702,7 +702,7 @@ async function loadLiveDeliverySummary(){
   const section=$("deliverySummary"),kpis=$("deliverySummaryKpis"),body=$("deliverySummaryBody");
   if(!section||!kpis||!body||!window.PA_ADMIN_PASSWORD)return;
   try{
-    const r=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_driver_dashboard",admin_password:window.PA_ADMIN_PASSWORD,preset:"today"})});
+    const r=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_driver_dashboard",admin_session:window.PA_ADMIN_SESSION,preset:"today"})});
     const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.message||"Could not load delivery status");
     const l=d.live||{};
     section.classList.remove("hidden");
@@ -1270,7 +1270,7 @@ document.getElementById("exportReportBtn")?.addEventListener("click",exportHisto
 document.getElementById("reportAllDatesBtn")?.addEventListener("click",()=>{$("reportFromDate").value="";$("reportToDate").value="";loadReportHistory();});
 document.getElementById("menuOutletSettings")?.addEventListener("click",()=>{adminMenu.classList.add("hidden");setBAActive("sideSettings");renderOutletSettings([...state.outlets.values()].sort((a,b)=>a.rank-b.rank));document.getElementById("outletSettingsDialog").showModal()});
 
-async function ensureFleetAdminPassword(){if(window.PA_ADMIN_PASSWORD)return true;if(window.PA_REAUTH_ADMIN){return await window.PA_REAUTH_ADMIN();}const p=prompt("Enter Admin password to manage driver payments:");if(!p)return false;const r=await db.rpc("verify_admin_password",{p_password:p});if(r.error||!r.data)return false;window.PA_ADMIN_PASSWORD=p;return true;}
+async function ensureFleetAdminPassword(){if(window.PA_ADMIN_SESSION)return true;if(window.PA_REAUTH_ADMIN)return await window.PA_REAUTH_ADMIN();return false;}
 async function loadFleetManagement(){
   const box=$("fleetCards"); if(!box)return;
   box.innerHTML='<div class="hint">Loading driver ledger…</div>';
@@ -1294,8 +1294,8 @@ async function saveDriverPayment(){
   if(!file)return $("paymentMsg").textContent="Add the payment screenshot.";
   const btn=$("saveDriverPayment");btn.disabled=true;btn.textContent="Saving…";$("paymentMsg").textContent="Uploading payment proof…";
   try{
-    const password=window.PA_ADMIN_PASSWORD||"";if(!password)throw new Error("Admin session expired.");
-    const up=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_payment_upload_url",admin_password:password,driver_id:driverId,filename:file.name,mime_type:file.type,extension:"jpg"})});
+    const session=window.PA_ADMIN_SESSION||"";if(!session)throw new Error("Admin session expired.");
+    const up=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_payment_upload_url",admin_session:session,driver_id:driverId,filename:file.name,mime_type:file.type,extension:"jpg"})});
     const ud=await up.json();if(!up.ok||!ud.ok)throw new Error(ud.message||"Could not prepare upload.");
     const {error}=await db.storage.from("driver-payments").uploadToSignedUrl(ud.path,ud.token,file);if(error)throw error;
     const rec=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_record_payment",admin_password:password,driver_id:driverId,amount,paid_at:new Date(paidAt).toISOString(),note,screenshot_path:ud.path})});
