@@ -552,3 +552,5 @@ tbody tr:hover{background:#f8fbff}
 .fleetKpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0}.fleetKpis>div{padding:11px;border:1px solid #edf0f4;border-radius:11px;background:#f8fafc}.fleetKpis .due{background:#fff8eb;border-color:#f2d39b}.fleetKpis .clear{background:#ecfdf3;border-color:#b7ebcc}
 .fleetLedger{border-top:1px solid #edf0f4;padding-top:12px}.fleetPaymentForm{display:grid;gap:12px;padding:0 18px 18px}.fleetPaymentForm label{display:grid;gap:6px;font-size:11px;font-weight:750;color:#475467}.fleetPaymentForm input{padding:11px;border:1px solid #d9e0ea;border-radius:10px;font:inherit}
 @media(max-width:760px){.fleetCards{grid-template-columns:1fr}.fleetKpis b{font-size:16px}}
+
+.driverLedgerActions{display:flex;gap:8px;align-items:center;justify-content:flex-end;flex-wrap:wrap}.ledgerConfirmed{font-size:12px;text-align:right}.driverLedgerRow{gap:12px}.driverPasswordDialog{}@media(max-width:640px){.driverLedgerActions{justify-content:flex-start}.driverLedgerActions button{min-height:40px}}
