@@ -20,7 +20,9 @@ const endExclusive=toDate?new Date(new Date(toDate+"T00:00:00+05:30").getTime()+
 async function allRows(table:string,select:string,apply?:(q:any)=>any){const out:any[]=[];let offset=0;while(true){let q:any=db.from(table).select(select).range(offset,offset+999);if(apply)q=apply(q);const {data,error}=await q;if(error)throw error;out.push(...(data||[]));if(!data||data.length<1000)break;offset+=1000;}return out;}
 async function byOrderIds(table:string,select:string,ids:string[]){if(!ids.length)return [];const out:any[]=[];for(let n=0;n<ids.length;n+=100){out.push(...await allRows(table,select,q=>q.in("order_id",ids.slice(n,n+100))));}return out;}
 const orders=await allRows("orders","id,order_name,status,created_at,completed_at",q=>{let x=q.order("created_at",{ascending:false});if(startIso)x=x.gte("created_at",startIso);if(endExclusive)x=x.lt("created_at",endExclusive);return x;});
-const {data:liveRows}=await db.from("orders").select("id,order_name,status,created_at,completed_at").eq("status","active").order("created_at",{ascending:false}).limit(1);
+const {data:currentRows}=await db.from("orders").select("id,order_name,status,created_at,completed_at,is_current").eq("is_current",true).limit(1);
+const currentOrder=currentRows?.[0]||null;
+const {data:liveRows}=currentOrder?{data:[currentOrder]}:await db.from("orders").select("id,order_name,status,created_at,completed_at,is_current").eq("status","active").order("created_at",{ascending:false}).limit(1);
 const liveOrder=liveRows?.[0]||null;
 const orderIds=[...new Set([...(orders||[]).map((x:any)=>String(x.id)),...(liveOrder?[String(liveOrder.id)]:[])])];
 const drivers=await allRows("driver_accounts","id,driver_name,active",q=>q.eq("active",true).order("driver_name"));
