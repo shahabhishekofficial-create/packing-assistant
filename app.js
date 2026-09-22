@@ -26,7 +26,8 @@ const state = {
   rankMap: {},
   narrationTimer: null,
   narrationItemId: null,
-  narrationCount: 0
+  narrationCount: 0,
+  deliveryChargesLoadedAt: 0
 };
 
 const $ = id => document.getElementById(id);
@@ -226,14 +227,24 @@ async function loadOrder(){
     p_access_token:state.token
   });
   if(error) throw error;
-  // Delivery charges are only needed by the admin dashboard/settings. Avoid an extra
-  // RPC on every packing-device refresh/sync.
+  // Delivery charges are only needed by Admin settings. Cache them briefly so
+  // the Admin fallback poll does not make an extra RPC on every order refresh.
   if(IS_ADMIN_PAGE){
-    const chargeResult=await db.rpc("get_outlet_delivery_charges",{
-      p_order_id:state.orderId,
-      p_access_token:state.token
-    });
-    data.delivery_charges=chargeResult.error ? [] : (chargeResult.data||[]);
+    const chargesStale=!state.deliveryChargesLoadedAt || Date.now()-state.deliveryChargesLoadedAt>30000;
+    if(chargesStale){
+      const chargeResult=await db.rpc("get_outlet_delivery_charges",{
+        p_order_id:state.orderId,
+        p_access_token:state.token
+      });
+      if(!chargeResult.error){
+        data.delivery_charges=chargeResult.data||[];
+        state.deliveryChargesLoadedAt=Date.now();
+      }else{
+        data.delivery_charges=[];
+      }
+    }else{
+      data.delivery_charges=[...state.outlets.values()].map(o=>({outlet_id:o.id,delivery_charge:Number(o.deliveryCharge||0)}));
+    }
   }else{
     data.delivery_charges=[];
   }
@@ -301,7 +312,9 @@ function startRealtime(){
   state.realtime=db.channel("packing-order-"+state.orderId)
     .on("postgres_changes",{event:"*",schema:"public",table:"outlets",filter:"order_id=eq."+state.orderId},scheduleRealtimeSync)
     .on("postgres_changes",{event:"*",schema:"public",table:"order_items",filter:"order_id=eq."+state.orderId},scheduleRealtimeSync)
-    .subscribe();
+    .subscribe((status,error)=>{
+      if(status==="CHANNEL_ERROR"||status==="TIMED_OUT") console.warn("Realtime subscription:",status,error||"");
+    });
 }
 
 async function syncFromServer(){
@@ -698,9 +711,11 @@ function enableSelectTypeSearch(){
   });
 }
 let liveDeliveryTimer=null;
+let liveDeliveryBusy=false;
 async function loadLiveDeliverySummary(){
   const section=$("deliverySummary"),kpis=$("deliverySummaryKpis"),body=$("deliverySummaryBody");
-  if(!section||!kpis||!body||!window.PA_ADMIN_SESSION)return;
+  if(!section||!kpis||!body||!window.PA_ADMIN_SESSION||liveDeliveryBusy)return;
+  liveDeliveryBusy=true;
   try{
     const r=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_driver_dashboard",admin_session:window.PA_ADMIN_SESSION,preset:"today"})});
     const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.message||"Could not load delivery status");
@@ -724,6 +739,8 @@ async function loadLiveDeliverySummary(){
     section.classList.remove("hidden");
     kpis.innerHTML='<div class="hint">Live delivery status could not be loaded. Use Refresh to retry.</div>';
     body.innerHTML='<tr><td colspan="6" class="hint">Delivery status unavailable.</td></tr>';
+  }finally{
+    liveDeliveryBusy=false;
   }
 }
 function startLiveDeliverySummary(){
@@ -1102,9 +1119,11 @@ function renderDriverDashboard(data){
   $("liveOrderLabel").textContent=lo?(lo.order_name+" · "+dashboardDate(lo.created_at,false)):"No active order";
   $("driverDashboardPeriodLabel").textContent=(data.period?.from_date&&data.period?.to_date)?(data.period.from_date+" → "+data.period.to_date):"All saved dates";
 }
+let driverDashboardBusy=false;
 async function loadDriverAdminDashboard(){
-  const box=$("driverDashboardKpis");if(!box)return;
-  if(!(await ensureFleetAdminPassword()))return;
+  const box=$("driverDashboardKpis");if(!box||driverDashboardBusy)return;
+  driverDashboardBusy=true;
+  if(!(await ensureFleetAdminPassword())){driverDashboardBusy=false;return;}
   const preset=$("driverDashboardPreset")?.value||"30d";
   const from=$("driverDashboardFrom")?.value||"",to=$("driverDashboardTo")?.value||"";
   box.innerHTML='<div class="hint">Loading delivery analytics…</div>';
@@ -1113,6 +1132,7 @@ async function loadDriverAdminDashboard(){
     const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.message||"Could not load delivery dashboard");
     renderDriverDashboard(d);
   }catch(e){box.innerHTML='<div class="hint">Could not load delivery dashboard: '+esc(e.message)+'</div>';}
+  finally{driverDashboardBusy=false;}
 }
 
 function renderAdminPackingChooser(){
@@ -1140,8 +1160,13 @@ function renderAdminPackingChooser(){
 
 function startPolling(){
   clearInterval(state.poll);
+  const interval=IS_ADMIN_PAGE?10000:3000;
   state.poll=setInterval(async()=>{
     if(!navigator.onLine||!state.orderId||!state.token)return;
+    if(IS_ADMIN_PAGE){
+      const visible=["home","packingOverview","packing"].some(id=>!document.getElementById(id)?.classList.contains("hidden"));
+      if(!visible)return;
+    }
     try{
       await syncFromServer();
       if(state.current){
@@ -1152,7 +1177,7 @@ function startPolling(){
         }
       }
     }catch(e){console.warn("sync",e.message)}
-  },3000);
+  },interval);
 }
 
 function updateConnection(){
@@ -1313,7 +1338,29 @@ document.getElementById("closeOutletSettings")?.addEventListener("click",()=>doc
 
 function setBAActive(id){document.querySelectorAll(".baSideItem").forEach(x=>x.classList.toggle("active",x.id===id));}
 function bindBAAction(id,targetId){document.getElementById(id)?.addEventListener("click",()=>document.getElementById(targetId)?.click());}
-document.getElementById("baSidebarToggle")?.addEventListener("click",()=>document.querySelector(".baSidebar")?.classList.toggle("open"));
+document.getElementById("baSidebarToggle")?.addEventListener("click",()=>{
+  const sidebar=document.querySelector(".baSidebar"),open=sidebar?.classList.toggle("open");
+  document.body.classList.toggle("baSidebarOpen",!!open);
+  document.getElementById("baSidebarToggle")?.setAttribute("aria-expanded",String(!!open));
+});
+document.addEventListener("click",e=>{
+  const sidebar=document.querySelector(".baSidebar"),toggle=document.getElementById("baSidebarToggle");
+  if(!sidebar||!sidebar.classList.contains("open")||!window.matchMedia("(max-width:850px)").matches)return;
+  if(!sidebar.contains(e.target)&&e.target!==toggle){
+    sidebar.classList.remove("open");
+    document.body.classList.remove("baSidebarOpen");
+    toggle?.setAttribute("aria-expanded","false");
+  }
+});
+document.addEventListener("keydown",e=>{
+  if(e.key!=="Escape")return;
+  const sidebar=document.querySelector(".baSidebar");
+  if(sidebar?.classList.contains("open")){
+    sidebar.classList.remove("open");
+    document.body.classList.remove("baSidebarOpen");
+    document.getElementById("baSidebarToggle")?.setAttribute("aria-expanded","false");
+  }
+});
 document.getElementById("sideDashboard")?.addEventListener("click",()=>{document.querySelector(".baSidebar")?.classList.remove("open");showAdminDashboard();setBAActive("sideDashboard")});
 document.getElementById("sidePacking")?.addEventListener("click",showPackingOverview);bindBAAction("sideDelivery","menuDriverDashboard");bindBAAction("sideReports","menuReportBtn");bindBAAction("sideSettings","menuOutletSettings");
 document.getElementById("modulePacking")?.addEventListener("click",showPackingOverview);bindBAAction("moduleDelivery","menuDriverDashboard");bindBAAction("moduleReports","menuReportBtn");
