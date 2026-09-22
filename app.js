@@ -1266,7 +1266,7 @@ function showPackingOverview(){
   renderPackingOverview();
   window.scrollTo({top:0,behavior:"smooth"});
 }
-\nfunction showAdminDashboard(){
+function showAdminDashboard(){
   if(typeof stopItemNarration==="function")stopItemNarration();
   if(typeof setBAActive==="function")setBAActive("sideDashboard");
   document.querySelector(".baSidebar")?.classList.remove("open");
