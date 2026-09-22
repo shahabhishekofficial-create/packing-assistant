@@ -17,7 +17,7 @@
   <div class="baBrand"><button id="baSidebarToggle" class="baMobileMenu" aria-label="Open menu">☰</button><div class="baLogo">BA</div><div><h1>Bigly Agro Private Limited</h1><p>Fresh Produce. Stronger Partnerships.</p></div></div>
   <div class="baHeaderSearch">⌕ <span>Search outlets, items, drivers, employees...</span><kbd>Ctrl K</kbd></div>
   <div class="headerActions"><span id="connection" class="liveBadge">● Online</span><span class="baHeaderDate" id="baHeaderDate"></span><button id="adminRefreshBtn" class="menuDots refreshBtn" aria-label="Refresh data" title="Refresh data">↻</button><button id="adminMenuBtn" class="menuDots" aria-label="Options" aria-expanded="false">⋮</button><div id="adminMenu" class="adminMenu hidden">
-      <button id="menuReportBtn">Reports / Export</button><button id="menuOutletSettings">Outlet Setup</button><button id="menuPacking">Order Packing Screen</button><button id="menuDriverDashboard">Driver Dashboard</button><button id="menuFleetManagement">Delivery Fleet Management</button><button id="menuChangePassword">Change Password</button><button id="menuLogout">Log Out</button>
+      <button id="menuReportBtn">Reports / Export</button><button id="menuOutletSettings">Outlet Setup</button><button id="menuPacking">Staff Packing Screen</button><button id="menuDriverDashboard">Driver Dashboard</button><button id="menuFleetManagement">Delivery Fleet Management</button><button id="menuChangePassword">Change Password</button><button id="menuLogout">Log Out</button>
     </div></div>
 </header>
 
@@ -160,6 +160,22 @@
   <section class="deliveryDashSection"><div class="sectionHead"><div><span class="eyebrow">RECENT DELIVERIES</span><h3>Latest completed outlets</h3></div></div><div class="tableWrap"><table class="deliveryDashTable"><thead><tr><th>Delivered at</th><th>Driver</th><th>Outlet</th><th>Delivery time</th><th>Charge</th><th>Missing</th><th>Rejected</th></tr></thead><tbody id="recentDeliveriesBody"></tbody></table></div></section>
 </section>
 
+<section id="packingOverview" class="screen hidden">
+  <div class="sectionHead">
+    <div><span class="eyebrow">PACKING &amp; DISPATCH</span><h2>Packing Overview</h2><p class="hint">Monitor the current order and packing progress. The item-by-item packing controls remain on the separate staff packing screen.</p></div>
+    <div class="sectionHeadActions"><button id="packingOverviewRefresh" class="secondary">↻ Refresh</button><button id="packingOverviewDashboardBack" class="secondary">← Dashboard</button></div>
+  </div>
+  <div id="packingOverviewKpis" class="analysisKpis"></div>
+  <section class="analysisCard">
+    <div class="sectionHead"><div><span class="eyebrow">CURRENT ORDER</span><h3 id="packingOverviewOrderName">Loading…</h3></div><button id="packingOverviewStaffBtn" class="secondary">Open Staff Packing Screen</button></div>
+    <div class="tableWrap">
+      <table>
+        <thead><tr><th>Rank</th><th>Outlet</th><th>Driver</th><th>Products</th><th>Required</th><th>Packed</th><th>Missing</th><th>Progress</th><th>Status</th></tr></thead>
+        <tbody id="packingOverviewBody"></tbody>
+      </table>
+    </div>
+  </section>
+</section>
 <section id="packing" class="screen hidden">
   <div id="adminPackingChooser" class="adminPackingChooser">
     <div class="sectionHead"><div><span class="eyebrow">ORDER PACKING</span><h2>Select Outlet</h2><p class="hint">Choose an outlet to open its packing screen.</p></div><button id="packingChooserDashboardBackBtn" class="secondary">← Dashboard</button></div>
