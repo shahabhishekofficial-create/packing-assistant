@@ -1105,6 +1105,32 @@ These rules define the product even if implementation technology changes.
 
 # 22. CHANGE LOG — 2026-09-23
 
+## 2026-09-23 — Make bootstrap failure visible and refresh the admin PWA
+**Status:** DEPLOYED
+
+**Why**
+- A failed bootstrap previously looked identical to “no order exists.”
+- Installed admin PWAs could continue serving cached frontend files after the fix.
+
+**Changed**
+- Admin UI: added `orderLoadStatus` status text below the import requirements.
+- Frontend: successful `renderHome()` clears the bootstrap error status.
+- Admin service worker: bumped cache v10 → v11.
+- The resilient saved-order fallback remains in place.
+
+**Validation**
+- The failure path now has an explicit user-visible status.
+- Successful order load hides the status.
+- Admin PWA cache version is incremented.
+
+**Commits**
+- `9fec6865f0d999b17d522e876e2647d64ccc12f6` — Show admin order bootstrap errors
+- `ff65bab21c6752b571d8933ef4e481ee54af8716` — Clear admin bootstrap status after load
+- `4a818ebf361127ca0549d43cfce3fa3a15a4e2c5` — Bump admin cache for order bootstrap UI
+
+**Database migration**
+- None.
+
 ## 2026-09-23 — Enforce a single current order
 **Status:** DEPLOYED
 
