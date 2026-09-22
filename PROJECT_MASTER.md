@@ -1105,6 +1105,47 @@ These rules define the product even if implementation technology changes.
 
 # 22. CHANGE LOG — 2026-09-23
 
+## 2026-09-23 — Make admin order bootstrap resilient
+**Status:** DEPLOYED
+
+**Why**
+- The admin page could remain on the initial “Create New Live Order” screen when the first order-discovery request failed or when the optional driver list request delayed initialization.
+- The bootstrap path silently swallowed the failure, so the user could not distinguish “no order” from “order failed to load.”
+
+**Changed**
+- Frontend: `app.js`
+  - Driver-name loading is now non-blocking.
+  - Server latest-order discovery is attempted first.
+  - If discovery fails, the browser's last valid saved order token is restored automatically.
+  - Bootstrap failures are logged and can surface through `orderLoadStatus` when present.
+- Admin PWA: `admin/sw.js`
+  - cache bumped from v9 to v10 so installed admin PWAs receive the new bootstrap code.
+- Supabase: no schema change.
+
+**Root cause**
+- Admin startup was unnecessarily serialized behind an optional driver query and had a single failure path: any exception from current-order discovery/load jumped to the outer catch and left the original hidden dashboard sections untouched.
+- The database still contains the latest completed order with 19 outlets and 177 items, so the blank initial screen was a frontend bootstrap/recovery problem rather than missing order data.
+
+**Permanent behavior**
+- A transient current-order discovery failure no longer strands the admin UI.
+- A previously loaded order can be restored from the browser's saved order ID/access token.
+- Optional driver configuration cannot block order loading.
+
+**Validation**
+- Verified production database contains the latest order and its 19 outlets / 177 items.
+- Verified `get_current_order()`, `get_order()`, and required RPC execute privileges exist for the browser role.
+- Updated frontend bootstrap and bumped the admin service-worker cache.
+
+**Commits**
+- `bc61878ccc20fd173c8320dbd9af192edf312b86` — Make admin order bootstrap resilient
+- `601a36ff2922cc7ba175a055334e65823bcd2765` — Bump admin cache for bootstrap fix
+
+**Database migration**
+- None.
+
+**Known follow-up**
+- Existing historical data contains multiple old rows with `status='active'`; this should be cleaned up and future order creation should enforce a single live order/current-order policy separately.
+
 ## 2026-09-23 — Restore 3-second live synchronization
 **Status:** DEPLOYED
 
