@@ -27,7 +27,8 @@ const drivers=await allRows("driver_accounts","id,driver_name,active",q=>q.eq("a
 const outlets=await byOrderIds("outlets","id,order_id,store_name,status,started_at,completed_at,outlet_rank,driver,delivery_charge",orderIds);
 const items=await byOrderIds("order_items","id,order_id,outlet_id,product_name,required_qty,packed_qty,missing_qty,status,reason,started_at,completed_at",orderIds);
 const deliveries=await byOrderIds("delivery_records","id,order_id,outlet_id,driver_id,driver,status,delivered_at,invoice_path,invoice_uploaded_at,delivery_charge,item_rejections,rejections_confirmed,created_at,updated_at",orderIds);
-const driverPayments=drivers.length?await allRows("driver_payments","id,driver_id,amount,paid_at,confirmed_at",q=>q.order("paid_at",{ascending:false})):[];\nconst allDelivered=drivers.length?await allRows("delivery_records","driver_id,delivery_charge,delivered_at",q=>q.eq("status","delivered")):[];
+const driverPayments=drivers.length?await allRows("driver_payments","id,driver_id,amount,paid_at,confirmed_at",q=>q.order("paid_at",{ascending:false})):[];
+const allDelivered=drivers.length?await allRows("delivery_records","driver_id,delivery_charge,delivered_at",q=>q.eq("status","delivered")):[];
 const itemByOutlet=new Map<string,any[]>(); for(const it of items){const k=String(it.outlet_id);if(!itemByOutlet.has(k))itemByOutlet.set(k,[]);itemByOutlet.get(k)!.push(it);}
 const deliveryByOutlet=new Map<string,any>(); for(const d of deliveries)deliveryByOutlet.set(String(d.order_id)+"|"+String(d.outlet_id),d);
 const orderMap=new Map((orders||[]).map((o:any)=>[String(o.id),o])); if(liveOrder&&!orderMap.has(String(liveOrder.id)))orderMap.set(String(liveOrder.id),liveOrder);
