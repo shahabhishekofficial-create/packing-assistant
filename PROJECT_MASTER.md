@@ -1883,3 +1883,36 @@ Any future driver delivery/rejection change must preserve the distinction betwee
 
 A DAMAGE rejection must not require the packing item itself to be MISSING or PARTIAL. This is now a documented invariant.
 
+
+
+## 2026-09-23 — Admin Mobile Layout Correction
+
+**Status: IMPLEMENTED / DEPLOYMENT VALIDATION PENDING**
+
+A mobile screenshot exposed a responsive-layout regression in the Admin Dashboard.
+
+### Issues found
+- The mobile header kept the search field in the same flex row as the brand and action buttons. On narrow screens this squeezed the company-name container and caused Bigly Agro Private Limited to wrap vertically one character at a time.
+- The search field was also being re-enabled by a later CSS media rule, defeating the earlier mobile header rule.
+- Long management tables were correctly scrollable in principle, but their containment was not explicit enough on narrow screens and could visually crowd the card boundary.
+
+### Fix
+- Mobile Admin header now uses a two-row grid:
+  - Row 1: menu + Bigly Agro brand + Online/Refresh/Options
+  - Row 2: full-width dashboard search
+- Brand and header children now have explicit min-width:0/flex behavior.
+- Company name is kept on one line with ellipsis instead of vertical character wrapping.
+- Mobile logo/menu/action controls have fixed compact dimensions.
+- Analysis, delivery, and driver-dashboard tables have explicit horizontal-scroll containment so wide data does not expand the page.
+- Admin PWA cache advanced from v24 to v25.
+
+### Verification
+- Source/CSS audit confirmed the previous conflicting mobile search rules.
+- The uploaded mobile screenshot was used to identify the exact failure mode.
+- No database or API changes were required.
+- JavaScript behavior was not changed.
+
+### Relevant commits
+- a08d2fa62a61096cc3d09a0ba842f5433216aa33 — Fix admin mobile header and table overflow
+- b29e2038f048c593368d8e47df7a2c770b5c97fb — Bump admin cache for mobile layout fix
+
