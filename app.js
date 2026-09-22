@@ -1328,7 +1328,7 @@ async function saveDriverPayment(){
     $("driverPaymentDialog").close();await loadFleetManagement();
   }catch(e){$("paymentMsg").textContent=e.message;}finally{btn.disabled=false;btn.textContent="Save Payment";}
 }
-document.getElementById("menuFleetManagement")?.addEventListener("click",async()=>{adminMenu.classList.add("hidden");document.getElementById("home")?.classList.add("hidden");document.getElementById("packing")?.classList.add("hidden");document.getElementById("packingOverview")?.classList.add("hidden");document.getElementById("driverDashboard")?.classList.add("hidden");document.getElementById("fleetManagement")?.classList.remove("hidden");await loadFleetManagement();});document.getElementById("fleetRefreshBtn")?.addEventListener("click",loadFleetManagement);document.getElementById("closeDriverPayment")?.addEventListener("click",()=>document.getElementById("driverPaymentDialog").close());document.getElementById("saveDriverPayment")?.addEventListener("click",saveDriverPayment);
+document.getElementById("menuFleetManagement")?.addEventListener("click",async()=>{adminMenu.classList.add("hidden");setBAActive("sideDelivery");document.querySelector(".baSidebar")?.classList.remove("open");document.body.classList.remove("baSidebarOpen");document.getElementById("home")?.classList.add("hidden");document.getElementById("packing")?.classList.add("hidden");document.getElementById("packingOverview")?.classList.add("hidden");document.getElementById("driverDashboard")?.classList.add("hidden");document.getElementById("fleetManagement")?.classList.remove("hidden");await loadFleetManagement();});document.getElementById("fleetRefreshBtn")?.addEventListener("click",loadFleetManagement);document.getElementById("closeDriverPayment")?.addEventListener("click",()=>document.getElementById("driverPaymentDialog").close());document.getElementById("saveDriverPayment")?.addEventListener("click",saveDriverPayment);
 document.getElementById("menuDriverDashboard")?.addEventListener("click",async()=>{adminMenu.classList.add("hidden");setBAActive("sideDelivery");document.querySelector(".baSidebar")?.classList.remove("open");document.getElementById("home")?.classList.add("hidden");document.getElementById("packing")?.classList.add("hidden");document.getElementById("packingOverview")?.classList.add("hidden");document.getElementById("fleetManagement")?.classList.add("hidden");document.getElementById("driverDashboard")?.classList.remove("hidden");await loadDriverAdminDashboard();});let driverDashboardTimer=null;function refreshDriverDashboardSoon(){clearInterval(driverDashboardTimer);driverDashboardTimer=setInterval(()=>{if(!document.getElementById("driverDashboard")?.classList.contains("hidden"))loadDriverAdminDashboard();},30000);}document.getElementById("driverDashboardApply")?.addEventListener("click",()=>loadDriverAdminDashboard());document.getElementById("driverDashboardRefresh")?.addEventListener("click",()=>loadDriverAdminDashboard());document.getElementById("driverDashboardPreset")?.addEventListener("change",e=>{const v=e.target.value;const custom=v==="custom";$("driverDashboardFrom").disabled=!custom;$("driverDashboardTo").disabled=!custom;if(!custom)loadDriverAdminDashboard();});$("driverDashboardFrom")?.addEventListener("change",()=>{if($("driverDashboardPreset")?.value==="custom")$("driverDashboardApply").disabled=!($("driverDashboardFrom").value&&$("driverDashboardTo").value);});$("driverDashboardTo")?.addEventListener("change",()=>{if($("driverDashboardPreset")?.value==="custom")$("driverDashboardApply").disabled=!($("driverDashboardFrom").value&&$("driverDashboardTo").value);});
 refreshDriverDashboardSoon();
 if($("driverDashboardPreset")){ $("driverDashboardFrom").disabled=true; $("driverDashboardTo").disabled=true; $("driverDashboardApply").disabled=true; }
@@ -1365,6 +1365,41 @@ document.getElementById("sideDashboard")?.addEventListener("click",()=>{document
 document.getElementById("sidePacking")?.addEventListener("click",showPackingOverview);bindBAAction("sideDelivery","menuDriverDashboard");bindBAAction("sideReports","menuReportBtn");bindBAAction("sideSettings","menuOutletSettings");
 document.getElementById("modulePacking")?.addEventListener("click",showPackingOverview);bindBAAction("moduleDelivery","menuDriverDashboard");bindBAAction("moduleReports","menuReportBtn");
 ["moduleInventory","modulePurchase","moduleEmployees","sideInventory","sidePurchase","sideEmployees"].forEach(id=>document.getElementById(id)?.addEventListener("click",e=>alert((e.currentTarget.dataset.comingSoon||({"moduleInventory":"Inventory","modulePurchase":"Purchase & Suppliers","moduleEmployees":"Employees & HR","sideInventory":"Inventory","sidePurchase":"Purchase & Suppliers","sideEmployees":"Employees & HR"}[id]))+" is coming soon.")));
+function runGlobalSearch(raw){
+  const q=String(raw||"").trim().toLowerCase();
+  if(!q)return;
+  if(/^(packing|pack|dispatch)/.test(q)){showPackingOverview();return;}
+  if(/^(delivery|deliveries|fleet|driver)/.test(q)){document.getElementById("menuDriverDashboard")?.click();return;}
+  if(/^(report|reports|analytics)/.test(q)){document.getElementById("menuReportBtn")?.click();return;}
+  const all=[...state.outlets.values()];
+  const outlet=all.find(o=>String(o.name).toLowerCase().includes(q));
+  const driver=all.find(o=>String(o.driver||"Unassigned").toLowerCase().includes(q));
+  const item=all.flatMap(o=>o.rows).find(r=>String(r.product).toLowerCase().includes(q)||String(r.code).toLowerCase().includes(q));
+  if(outlet||driver||item){
+    document.getElementById("home")?.classList.remove("hidden");
+    ["packing","packingOverview","driverDashboard","fleetManagement"].forEach(id=>document.getElementById(id)?.classList.add("hidden"));
+    const target=outlet?$("dashboardOutletFilter"):driver?$("dashboardDriverFilter"):$("dashboardItemFilter");
+    if(target){
+      target.value=outlet?outlet.name:driver?driver.driver:item.product;
+      target.dispatchEvent(new Event("input",{bubbles:true}));
+    }
+    document.getElementById("adminDashboard")?.scrollIntoView({behavior:"smooth",block:"start"});
+    return;
+  }
+  alert("No matching outlet, item, driver, or dashboard section found.");
+}
+const globalSearch=$("globalSearch");
+globalSearch?.addEventListener("keydown",e=>{
+  if(e.key==="Enter"){e.preventDefault();runGlobalSearch(globalSearch.value);}
+  if(e.key==="Escape"){globalSearch.value="";globalSearch.blur();}
+});
+document.addEventListener("keydown",e=>{
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="k"){
+    e.preventDefault();
+    globalSearch?.focus();
+    globalSearch?.select();
+  }
+});
 document.getElementById("dashOpenPacking")?.addEventListener("click",showPackingOverview);
 document.getElementById("dashOpenDelivery")?.addEventListener("click",()=>document.getElementById("menuDriverDashboard")?.click());
 document.getElementById("dashOpenReports")?.addEventListener("click",()=>document.getElementById("menuReportBtn")?.click());
