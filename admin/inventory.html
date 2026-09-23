@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f6f8fb">
+<title>Bigly Agro — Inventory</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="../styles.css?v=20260923-5">
+<link rel="stylesheet" href="./inventory.css?v=20260923-1">
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script defer src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script defer src="../config.js?v=20260923-5"></script>
+<script defer src="./auth.js?v=20260923-5"></script>
+</head>
+<body class="adminPage">
+<div id="adminBootOverlay"><div class="bootCard">Loading Inventory<span class="bootSub">Starting secure session…</span></div></div>
+<main id="app"><div class="baLayout">
+<aside class="baSidebar">
+<button class="baSideItem" id="sideDashboard">⌂ <span>Dashboard</span></button>
+<button class="baSideItem" id="sidePacking">▣ <span>Packing &amp; Dispatch</span><b>›</b></button>
+<button class="baSideItem" id="sideDelivery">🚚 <span>Delivery &amp; Fleet</span><b>›</b></button>
+<button class="baSideItem active" id="sideInventory">□ <span>Inventory</span><b>›</b></button>
+<button class="baSideItem coming" id="sidePurchase">🛒 <span>Purchase &amp; Suppliers</span><b>›</b></button>
+<button class="baSideItem coming" id="sideEmployees">♟ <span>Employees &amp; HR</span><b>›</b></button>
+<button class="baSideItem" id="sideReports">▥ <span>Reports &amp; Analytics</span><b>›</b></button>
+<div class="baSideDivider"></div><button class="baSideItem" id="sideSettings">⚙ <span>Settings</span><b>›</b></button>
+<div class="baSideHelp">Need help?<small>Operations support</small></div>
+</aside>
+<div class="baContent">
+<header class="appHeader baHeader">
+<div class="baBrand"><button id="baSidebarToggle" class="baMobileMenu" aria-label="Open menu">☰</button><div class="baLogo">BA</div><div><h1>Bigly Agro Private Limited</h1><p>Fresh Produce. Stronger Partnerships.</p></div></div>
+<div class="baHeaderSearch"><span>⌕</span><input id="inventorySearch" type="search" placeholder="Search inventory items..." autocomplete="off"></div>
+<div class="headerActions"><span id="connection" class="liveBadge">● Online</span><span class="baHeaderDate" id="baHeaderDate"></span><button id="backDashboard" class="menuDots" title="Dashboard">⌂</button></div>
+</header>
+
+<section class="inventoryPage">
+<div class="inventoryHero">
+<div><span class="eyebrow">INVENTORY</span><h2>Restaurant Inventory</h2><p>Scan, search and count stock. Every recount is preserved.</p></div>
+<div class="inventoryHeroActions"><button id="vegBtn" class="secondary">Vegetables Inventory</button><button id="newCountBtn" class="primary">Start New Count</button></div>
+</div>
+
+<div id="inventoryAlert" class="inventoryAlert hidden" role="status"></div>
+
+<section id="startPanel" class="inventoryCard">
+<div class="inventoryCardHead"><div><span class="eyebrow">COUNT SESSION</span><h3>Start a count</h3></div></div>
+<div class="inventoryFormGrid">
+<label>Date<input id="countDate" type="date"></label>
+<label>Staff name<input id="staffName" placeholder="Enter staff name" autocomplete="name"></label>
+</div>
+<button id="startCountBtn" class="primary">Start Restaurant Count</button>
+</section>
+
+<section id="countPanel" class="inventoryCard hidden">
+<div class="countHeader"><div><span class="eyebrow">ACTIVE COUNT</span><h3 id="sessionTitle">Restaurant Inventory</h3><p id="sessionMeta" class="hint"></p></div><div class="countActions"><span id="queueBadge" class="inventoryBadge">Synced</span><button id="submitSessionBtn" class="primary">Submit Session</button></div></div>
+<div class="scannerGrid">
+<div class="scannerBox">
+<div class="scannerHead"><h3>Scan barcode</h3><button id="stopScannerBtn" class="secondary hidden">Stop camera</button></div>
+<div id="qrReader"></div>
+<div class="scannerControls"><button id="startScannerBtn" class="primary">📷 Scan with Camera</button><input id="barcodeInput" inputmode="numeric" autocomplete="off" placeholder="USB/Bluetooth scanner or barcode"></div>
+<p id="scanStatus" class="hint">USB/Bluetooth scanners work like a keyboard. Press Enter after a scan.</p>
+</div>
+<div class="countEntryBox">
+<h3>Current item</h3><div id="selectedItem" class="selectedItem empty">Scan or search an item.</div>
+<label>Available quantity <input id="countQty" type="number" min="0" step="any" inputmode="decimal" placeholder="0"></label>
+<label>Note (optional)<input id="countNote" placeholder="e.g. damaged / opened pack"></label>
+<div class="entryActions"><button id="saveCountBtn" class="primary" disabled>Save Count</button><button id="clearItemBtn" class="secondary">Clear</button></div>
+</div>
+</div>
+<div class="itemBrowser">
+<div class="browserHead"><div><h3>Items</h3><p class="hint">Search by name/alias or tap a category.</p></div><button id="addItemBtn" class="secondary">+ Add Item</button></div>
+<div id="categoryList" class="categoryList"></div><div id="itemList" class="itemList"></div>
+</div>
+</section>
+
+<section id="itemsPanel" class="inventoryCard">
+<div class="inventoryCardHead"><div><span class="eyebrow">ITEM MASTER</span><h3>Restaurant Items</h3><p class="hint">Add items individually or import a CSV. Existing items are never overwritten.</p></div><div><button id="importBtn" class="secondary">Import CSV</button><input id="csvInput" type="file" accept=".csv,.xlsx,.xls" hidden></div></div>
+<div id="masterItemSummary" class="masterItemSummary"></div>
+</section>
+
+<section id="reportsPanel" class="inventoryCard">
+<div class="inventoryCardHead"><div><span class="eyebrow">REPORTS</span><h3>Inventory Reports</h3></div><button id="refreshReportsBtn" class="secondary">↻ Refresh</button></div>
+<div class="reportFilters"><label>From<input id="reportFrom" type="date"></label><label>To<input id="reportTo" type="date"></label><label>Staff<input id="reportStaff" placeholder="All staff"></label><button id="latestReportBtn" class="primary">Latest Stock</button><button id="historyReportBtn" class="secondary">Count History</button></div>
+<div id="reportResult" class="reportResult"></div>
+</section>
+
+<section id="vegetablePanel" class="inventoryCard hidden">
+<div class="comingSoonBox"><div class="comingIcon">🥬</div><span class="eyebrow">VEGETABLES INVENTORY</span><h2>Coming soon</h2><p>The inventory database already supports the <b>vegetable</b> section. Restaurant Inventory is live now.</p><button id="backRestaurantBtn" class="primary">Restaurant Inventory</button></div>
+</section>
+
+<dialog id="itemDialog" class="inventoryDialog"><form method="dialog" id="itemForm">
+<div class="dialogHead"><div><span class="eyebrow">ITEM MASTER</span><h3>Add Restaurant Item</h3></div><button value="cancel" class="secondary">✕</button></div>
+<label>Item name<input id="itemName" required></label><label>Aliases<input id="itemAliases" placeholder="e.g. tomato, tamatar"></label>
+<div class="inventoryFormGrid"><label>Unit<input id="itemUnit" value="pcs"></label><label>Category<input id="itemCategory" placeholder="Dairy, Grocery, Beverage..."></label></div>
+<label>Optional barcode<input id="itemBarcode" inputmode="numeric" placeholder="Scan or type barcode"></label>
+<menu><button value="cancel" class="secondary">Cancel</button><button id="saveItemBtn" value="default" class="primary">Add Item</button></menu>
+</form></dialog>
+</section>
+</div></div></main>
+<script defer src="./inventory.js?v=20260923-1"></script>
+<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20260923-33",{updateViaCache:"none"}).catch(console.warn));}window.addEventListener("load",()=>{if(typeof window.PA_ADMIN_START==="function")window.PA_ADMIN_START();});</script>
+</body></html>
