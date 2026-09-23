@@ -1,5 +1,5 @@
 (()=>{"use strict";
-const BUILD_ID="20260923-11", VERSION_URL=window.PA_VERSION_URL||"version.json", GUARD="pa_update_reload_guard";
+const BUILD_ID="20260923-12", VERSION_URL=window.PA_VERSION_URL||"version.json", GUARD="pa_update_reload_guard";
 let checking=false;
 function overlay(){let e=document.getElementById("paUpdatingOverlay");if(!e){e=document.createElement("div");e.id="paUpdatingOverlay";e.style.cssText="position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;background:#fff;color:#10203a;font:700 18px system-ui";e.textContent="Updating…";document.documentElement.appendChild(e)}}
 async function check(){if(checking||document.visibilityState==="hidden")return;checking=true;try{const u=new URL(VERSION_URL,document.baseURI);u.searchParams.set("_",Date.now());const r=await fetch(u,{cache:"no-store",headers:{"Cache-Control":"no-cache"}});if(!r.ok)throw Error("version check failed");const v=await r.json(),remote=String(v?.build_id||"");if(!remote||remote===BUILD_ID||sessionStorage.getItem(GUARD)===remote)return;sessionStorage.setItem(GUARD,remote);overlay();if("serviceWorker"in navigator)await Promise.all((await navigator.serviceWorker.getRegistrations()).map(x=>x.update().catch(()=>{})));setTimeout(()=>location.reload(),250)}catch(e){console.warn("Version check:",e)}finally{checking=false}}
