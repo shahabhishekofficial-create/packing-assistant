@@ -22,7 +22,7 @@
 </script><style>body.adminPage{visibility:visible}#adminBootOverlay{position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;background:#f6f8fb;color:#10203a;font:700 16px system-ui,-apple-system,sans-serif}#adminBootOverlay .bootCard{padding:22px 24px;border:1px solid #e2e8f0;border-radius:16px;background:#fff;box-shadow:0 18px 50px rgba(15,23,42,.12);text-align:center}.bootSub{display:block;margin-top:7px;color:#64748b;font-size:12px;font-weight:500}</style>
 </head>
 <body class="adminPage"><div id="adminBootOverlay"><div class="bootCard">Loading Admin Dashboard<span class="bootSub">Starting secure session…</span></div></div>
-<main id="app"><div class="baLayout"><aside class="baSidebar"><button class="baSideItem active" id="sideDashboard">⌂ <span>Dashboard</span></button><button class="baSideItem" id="sidePacking">▣ <span>Packing &amp; Dispatch</span><b>›</b></button><button class="baSideItem" id="sideDelivery">🚚 <span>Delivery &amp; Fleet</span><b>›</b></button><button class="baSideItem coming" id="sideInventory">□ <span>Inventory</span><b>›</b></button><button class="baSideItem coming" id="sidePurchase">🛒 <span>Purchase &amp; Suppliers</span><b>›</b></button><button class="baSideItem coming" id="sideEmployees">♟ <span>Employees &amp; HR</span><b>›</b></button><button class="baSideItem" id="sideReports">▥ <span>Reports &amp; Analytics</span><b>›</b></button><div class="baSideDivider"></div><button class="baSideItem" id="sideSettings">⚙ <span>Settings</span><b>›</b></button><div class="baSideHelp">Need help?<small>Operations support</small></div></aside><div class="baContent">
+<main id="app"><div class="baLayout"><aside class="baSidebar"><button class="baSideItem active" id="sideDashboard">⌂ <span>Dashboard</span></button><button class="baSideItem" id="sidePacking">▣ <span>Packing &amp; Dispatch</span><b>›</b></button><button class="baSideItem" id="sideDelivery">🚚 <span>Delivery &amp; Fleet</span><b>›</b></button><button class="baSideItem" id="sideInventory">□ <span>Inventory</span><b>›</b></button><button class="baSideItem coming" id="sidePurchase">🛒 <span>Purchase &amp; Suppliers</span><b>›</b></button><button class="baSideItem coming" id="sideEmployees">♟ <span>Employees &amp; HR</span><b>›</b></button><button class="baSideItem" id="sideReports">▥ <span>Reports &amp; Analytics</span><b>›</b></button><div class="baSideDivider"></div><button class="baSideItem" id="sideSettings">⚙ <span>Settings</span><b>›</b></button><div class="baSideHelp">Need help?<small>Operations support</small></div></aside><div class="baContent">
 
 <header class="appHeader baHeader">
   <div class="baBrand"><button id="baSidebarToggle" class="baMobileMenu" aria-label="Open menu">☰</button><div class="baLogo">BA</div><div><h1>Bigly Agro Private Limited</h1><p>Fresh Produce. Stronger Partnerships.</p></div></div>
@@ -58,7 +58,7 @@
       <button class="baModule blue" id="moduleDelivery">
         <span class="baModuleIcon">🚚</span><span><b>Delivery &amp; Fleet</b><small>Track deliveries, drivers and live route status</small></span><strong>→</strong>
       </button>
-      <button class="baModule amber" id="moduleInventory" data-coming-soon="Inventory">
+      <button class="baModule amber" id="moduleInventory">
         <span class="baModuleIcon">📦</span><span><b>Inventory</b><small>Stock, cold room and inventory movement</small></span><strong>→</strong>
       </button>
       <button class="baModule purple" id="modulePurchase" data-coming-soon="Purchase &amp; Suppliers">
