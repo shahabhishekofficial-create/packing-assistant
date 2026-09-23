@@ -78,7 +78,6 @@
   function removeBootOverlay(){const el=document.getElementById("adminBootOverlay");if(el)el.remove();}
   function forceLogout(showLogin){
     clearTimeout(logoutTimer);
-    removeBootOverlay();
     const token=localStorage.getItem(SESSION_TOKEN_KEY)||"";
     if(token&&db)db.rpc("revoke_admin_session",{p_session_token:token}).catch(()=>{});
     localStorage.removeItem(SESSION_KEY);
@@ -87,6 +86,7 @@
     document.body.classList.add("adminLocked");
     if(showLogin)showLoginBox("Session expired. Please sign in again.");
     else showLoginBox();
+    removeBootOverlay();
   }
 
   function injectStyles(){
