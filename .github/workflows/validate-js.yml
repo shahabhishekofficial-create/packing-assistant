@@ -22,6 +22,7 @@ jobs:
           node --check admin/inventory.js
           node --check admin/inventory-nav.js
           node --check config.js
+          node --check update.js
           node --check driver/sw.js
           node --check admin/sw.js
           node --check sw.js

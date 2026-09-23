@@ -1,42 +1,5 @@
-const CACHE="packing-assistant-v6";
-const CORE=[
-  "./",
-  "./styles.css",
-  "./app.js",
-  "./config.js",
-  "./manifest.webmanifest",
-  "./icon-192.png",
-  "./icon-512.png",
-  "./icon.svg"
-];
-
-self.addEventListener("install",event=>{
-  event.waitUntil(
-    caches.open(CACHE)
-      .then(cache=>cache.addAll(CORE))
-      .then(()=>self.skipWaiting())
-  );
-});
-
-self.addEventListener("activate",event=>{
-  event.waitUntil(
-    caches.keys()
-      .then(keys=>Promise.all(
-        keys.filter(key=>key!==CACHE).map(key=>caches.delete(key))
-      ))
-      .then(()=>self.clients.claim())
-  );
-});
-
-self.addEventListener("fetch",event=>{
-  if(event.request.method!=="GET") return;
-  event.respondWith(
-    fetch(event.request)
-      .then(response=>{
-        const copy=response.clone();
-        caches.open(CACHE).then(cache=>cache.put(event.request,copy));
-        return response;
-      })
-      .catch(()=>caches.match(event.request))
-  );
-});
+const BUILD_ID="20260923-6",CACHE="packing-assistant-"+BUILD_ID,CORE=["./","./index.html","./styles.css?v=20260923-6","./app.js?v=20260923-6","./config.js?v=20260923-6","./update.js?v=20260923-6","./version.json","./manifest.webmanifest","./icon-192.png","./icon-512.png","./icon.svg"];
+self.addEventListener("install",e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting())));
+self.addEventListener("activate",e=>e.waitUntil((async()=>{if(self.registration.navigationPreload)try{await self.registration.navigationPreload.enable()}catch(_){}await Promise.all((await caches.keys()).filter(k=>k.startsWith("packing-assistant-")&&k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim()})()));
+async function nf(r,e){try{const p=e?.preloadResponse?await e.preloadResponse.catch(()=>null):null,x=p||await fetch(r);if(x.ok)await (await caches.open(CACHE)).put(r,x.clone());return x}catch(_){return caches.match(r)||new Response("Offline",{status:503})}}
+self.addEventListener("fetch",e=>{const r=e.request;if(r.method!=="GET")return;const u=new URL(r.url);if(u.origin!==location.origin)return;if(r.mode==="navigate"||u.pathname.endsWith("/version.json")){e.respondWith(nf(r,e));return}e.respondWith(fetch(r).then(x=>{if(x.ok)e.waitUntil(caches.open(CACHE).then(c=>c.put(r,x.clone())));return x}).catch(()=>caches.match(r)))})

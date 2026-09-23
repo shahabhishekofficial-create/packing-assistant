@@ -1,27 +1,5 @@
-const CACHE="packing-assistant-admin-v33";
-self.addEventListener("install",event=>{
-  event.waitUntil(
-    caches.open(CACHE)
-      .then(cache=>cache.add("./"))
-      .then(()=>self.skipWaiting())
-  );
-});
-self.addEventListener("activate",event=>{
-  event.waitUntil(
-    caches.keys()
-      .then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))))
-      .then(()=>self.clients.claim())
-  );
-});
-self.addEventListener("fetch",event=>{
-  if(event.request.method!=="GET") return;
-  const url=new URL(event.request.url);
-  if(url.origin!==self.location.origin) return;
-  event.respondWith(
-    fetch(event.request).then(response=>{
-      const copy=response.clone();
-      caches.open(CACHE).then(cache=>cache.put(event.request,copy));
-      return response;
-    }).catch(()=>caches.match(event.request))
-  );
-});
+const BUILD_ID="20260923-6",CACHE="packing-assistant-admin-"+BUILD_ID,CORE=["./","./index.html","./inventory.html","../styles.css?v=20260923-6","./inventory.css?v=20260923-6","../config.js?v=20260923-6","./auth.js?v=20260923-6","../app.js?v=20260923-6","./inventory-nav.js?v=20260923-6","./inventory.js?v=20260923-6","../update.js?v=20260923-6","../version.json"];
+self.addEventListener("install",e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting())));
+self.addEventListener("activate",e=>e.waitUntil((async()=>{if(self.registration.navigationPreload)try{await self.registration.navigationPreload.enable()}catch(_){}await Promise.all((await caches.keys()).filter(k=>k.startsWith("packing-assistant-admin-")&&k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim()})()));
+async function nf(r,e){try{const p=e?.preloadResponse?await e.preloadResponse.catch(()=>null):null,x=p||await fetch(r);if(x.ok)await (await caches.open(CACHE)).put(r,x.clone());return x}catch(_){return caches.match(r)||new Response("Offline",{status:503})}}
+self.addEventListener("fetch",e=>{const r=e.request;if(r.method!=="GET")return;const u=new URL(r.url);if(u.origin!==location.origin)return;if(r.mode==="navigate"||u.pathname.endsWith("/version.json")){e.respondWith(nf(r,e));return}e.respondWith(fetch(r).then(x=>{if(x.ok)e.waitUntil(caches.open(CACHE).then(c=>c.put(r,x.clone())));return x}).catch(()=>caches.match(r)))})
