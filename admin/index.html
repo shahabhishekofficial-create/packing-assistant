@@ -8,9 +8,9 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="../icon-192.png">
 <link rel="stylesheet" href="../styles.css">
-<style>body.adminPage{visibility:hidden}</style>
+<style>body.adminPage{visibility:visible}#adminBootOverlay{position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;background:#f6f8fb;color:#10203a;font:700 16px system-ui,-apple-system,sans-serif}#adminBootOverlay .bootCard{padding:22px 24px;border:1px solid #e2e8f0;border-radius:16px;background:#fff;box-shadow:0 18px 50px rgba(15,23,42,.12);text-align:center}.bootSub{display:block;margin-top:7px;color:#64748b;font-size:12px;font-weight:500}</style>
 </head>
-<body class="adminPage">
+<body class="adminPage"><div id="adminBootOverlay"><div class="bootCard">Loading Admin Dashboard<span class="bootSub">Starting secure session…</span></div></div>
 <main id="app"><div class="baLayout"><aside class="baSidebar"><button class="baSideItem active" id="sideDashboard">⌂ <span>Dashboard</span></button><button class="baSideItem" id="sidePacking">▣ <span>Packing &amp; Dispatch</span><b>›</b></button><button class="baSideItem" id="sideDelivery">🚚 <span>Delivery &amp; Fleet</span><b>›</b></button><button class="baSideItem coming" id="sideInventory">□ <span>Inventory</span><b>›</b></button><button class="baSideItem coming" id="sidePurchase">🛒 <span>Purchase &amp; Suppliers</span><b>›</b></button><button class="baSideItem coming" id="sideEmployees">♟ <span>Employees &amp; HR</span><b>›</b></button><button class="baSideItem" id="sideReports">▥ <span>Reports &amp; Analytics</span><b>›</b></button><div class="baSideDivider"></div><button class="baSideItem" id="sideSettings">⚙ <span>Settings</span><b>›</b></button><div class="baSideHelp">Need help?<small>Operations support</small></div></aside><div class="baContent">
 
 <header class="appHeader baHeader">
@@ -246,9 +246,9 @@
 </div></div></main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-<script src="../config.js"></script>
-<script src="./auth.js"></script>
-<script src="../app.js"></script>
+<script src="../config.js?v=20260923-1"></script>
+<script src="./auth.js?v=20260923-1"></script>
+<script src="../app.js?v=20260923-1"></script>
 <script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(console.warn));}</script>
 </body>
 </html>
