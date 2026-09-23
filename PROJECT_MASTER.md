@@ -1977,3 +1977,11 @@ Future scrolling changes must be isolated and validated independently before bei
 - **Security invariant:** The boot overlay does not expose the dashboard to unauthenticated users. `auth.js` applies `adminLocked` before allowing access and the normal login overlay remains authoritative.
 - **Files:** `admin/index.html`, `admin/auth.js`, `admin/sw.js`.
 - **Commits:** `44f83ddda408725aa260760380c9d53c1feb10a5`, `0ad43ccded3cfe493153e8f30b180af710c2f6b4`, `b41e913c8ded68c073d7567325cc2857baa7733c`, `e01de393ea341e8a820b58ad31b8d2b88507bb2f`, `34d6146b77bbda5a5f69ab22b56c7a545cb729a7`.
+
+
+## 2026-09-23 — Admin Blank-Page Auth-Failure Fix
+- Status: IMPLEMENTED
+- Fixed Admin boot/auth failure ordering in `admin/auth.js` so the loading overlay is not removed before the login/session-expired UI is available.
+- Auth failure now clears the boot overlay only after invoking the login UI, preventing a blank Admin page after refresh when session restoration fails.
+- No database, delivery, packing, or driver logic changed.
+- Commit: d38b8a41a9c0abedef5202fea411dc09dde3b44c.
