@@ -75,8 +75,10 @@
 
   window.PA_ADMIN_PASSWORD=""; window.PA_ADMIN_SESSION="";
   function clearAdminSession(){localStorage.removeItem(SESSION_TOKEN_KEY);window.PA_ADMIN_SESSION="";window.PA_ADMIN_PASSWORD="";}
+  function removeBootOverlay(){const el=document.getElementById("adminBootOverlay");if(el)el.remove();}
   function forceLogout(showLogin){
     clearTimeout(logoutTimer);
+    removeBootOverlay();
     const token=localStorage.getItem(SESSION_TOKEN_KEY)||"";
     if(token&&db)db.rpc("revoke_admin_session",{p_session_token:token}).catch(()=>{});
     localStorage.removeItem(SESSION_KEY);
