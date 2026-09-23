@@ -2035,3 +2035,16 @@ Future scrolling changes must be isolated and validated independently before bei
 - Successful authentication removes the overlay and dispatches the existing Admin-authenticated event.
 - Admin cache bumped to v31 and critical assets cache-busted to 20260923-3.
 - No database or delivery logic changed.
+
+
+## 2026-09-23 — Persistent Outlet Delivery Charges
+- **Status:** IMPLEMENTED in production database and source.
+- **Issue:** Admin Outlet Setup displayed delivery charges as `0.00` again when a new packing order was created because `delivery_charge` lived only on the order-specific `outlets` rows, whose database default is 0.
+- **Fix:** Added `public.outlet_delivery_charge_defaults`, keyed by outlet/store name. Admin changes now update both the current order's outlet charge and the persistent outlet default.
+- **New-order behavior:** `create_order()` now copies the saved outlet delivery charge into each new order automatically. Charges therefore remain unchanged until the Admin deliberately edits and submits them.
+- **Security:** The defaults table has RLS enabled and direct anon/authenticated table access revoked. Existing security-definer RPCs remain the application access path.
+- **Existing data:** Existing outlet charges were seeded into the defaults table during the migration. Current production charges were all `0.00`, so no previously non-zero values were overwritten.
+- **Source:** `supabase/outlet_delivery_charges.sql`.
+- **Database migration:** `persistent_outlet_delivery_charges`.
+- **Source commit:** `a498b1db86aa94dc2deb28487ec0a65e1ece92c3`.
+- **Invariant:** Delivery charges must not reset to zero merely because a new packing order is created; they change only when Admin submits a changed value.
