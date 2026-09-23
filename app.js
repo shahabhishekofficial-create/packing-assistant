@@ -803,7 +803,7 @@ function renderHome(){
     }
   }
   all.sort((a,b)=>a.rank-b.rank || String(a.name).localeCompare(String(b.name)));
-  const lists=[$("adminOutletList")].filter(Boolean);
+  const lists=[IS_ADMIN_PAGE ? $("adminOutletList") : $("outletList")].filter(Boolean);
   lists.forEach(list=>{
     list.innerHTML="";
     all.forEach((o,i)=>{
