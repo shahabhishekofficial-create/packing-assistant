@@ -216,6 +216,5 @@
     });
     document.addEventListener("visibilitychange",()=>{if(!document.hidden && !sessionValid())forceLogout(true);});
   }
-
-  init();
+  window.PA_ADMIN_START=init;
 })();
