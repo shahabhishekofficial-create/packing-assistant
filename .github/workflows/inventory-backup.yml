@@ -1,0 +1,35 @@
+name: Inventory weekly backup
+on:
+  schedule:
+    - cron: "30 20 * * 0"
+  workflow_dispatch:
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      INVENTORY_BACKUP_KEY: ${{ secrets.INVENTORY_BACKUP_KEY }}
+    steps:
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Dump inventory tables
+        run: |
+          set -euo pipefail
+          test -n "$SUPABASE_DB_URL"
+          test -n "$INVENTORY_BACKUP_KEY"
+          mkdir -p backup
+          supabase db dump --db-url "$SUPABASE_DB_URL" --schema public --table public.inv_items --table public.inv_item_barcodes --table public.inv_count_sessions --table public.inv_stock_counts -f backup/inventory.sql
+      - name: Encrypt backup
+        run: |
+          set -euo pipefail
+          openssl enc -aes-256-cbc -pbkdf2 -salt -in backup/inventory.sql -out backup/inventory.sql.enc -pass env:INVENTORY_BACKUP_KEY
+          rm backup/inventory.sql
+      - name: Upload encrypted artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: inventory-backup-${{ github.run_id }}
+          path: backup/inventory.sql.enc
+          retention-days: 30
