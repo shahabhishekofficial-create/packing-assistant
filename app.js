@@ -1038,35 +1038,62 @@ function stopItemNarration(){
   if(state.narrationTimer){clearTimeout(state.narrationTimer);state.narrationTimer=null;}
   state.narrationItemId=null;
   state.narrationCount=0;
-  if("speechSynthesis" in window) speechSynthesis.cancel();
+  state.narrationGeneration=(state.narrationGeneration||0)+1;
+  if("speechSynthesis" in window && (speechSynthesis.speaking||speechSynthesis.pending)) speechSynthesis.cancel();
 }
-function speakProduct(r){
+function speakProduct(r,force=false){
+  if(!r || r.status || !("speechSynthesis" in window))return;
+  const itemId=String(r.id||"");
+  // Never restart the same item because of a background sync/render.
+  // This prevents Android Chrome from producing syllable-like repeats
+  // such as "ba-ba-ba Basil".
+  if(!force && state.narrationItemId===itemId &&
+     (speechSynthesis.speaking||speechSynthesis.pending)) return;
+
   stopItemNarration();
-  if(!r || r.status)return;
-  const itemId=r.id;
+  const generation=state.narrationGeneration;
   const lang=getVoiceLanguage();
   const qtyText=lang==="hi"?numberWordsHindi(r.required):lang==="gu"?numberWordsGujarati(r.required):numberWordsEnglish(r.required);
-  const textToSpeak=r.product+" - "+qtyText;
+  const textToSpeak=String(r.product||"").trim()+" - "+qtyText;
   state.narrationItemId=itemId;
-  state.narrationCount=0;
-  const speakNext=()=>{
-    if(state.narrationItemId!==itemId||r.status||state.narrationCount>=4)return;
-    state.narrationCount++;
-    if(!("speechSynthesis" in window))return;
-    speechSynthesis.cancel();
+  state.narrationCount=1;
+
+  // Android speech engines can race a cancel() followed immediately by
+  // speak(). Give the engine a short clean gap before starting the new utterance.
+  state.narrationTimer=setTimeout(()=>{
+    state.narrationTimer=null;
+    if(state.narrationGeneration!==generation || state.narrationItemId!==itemId || r.status)return;
+
     const voices=speechSynthesis.getVoices();
     const locale=lang==="hi"?"hi-IN":lang==="gu"?"gu-IN":"en-IN";
     const candidates=voices.filter(v=>v.lang.toLowerCase().startsWith(locale.toLowerCase()));
-    const voice=candidates.find(v=>/male|man|ravi|hemant|google hindi|google ગુજરાતી/i.test(v.name))||candidates[0]||voices.find(v=>v.lang.toLowerCase().startsWith(lang+"-"));
+    const voice=candidates.find(v=>/male|man|ravi|hemant|google hindi|google ગુજરાતી/i.test(v.name))
+      || candidates[0]
+      || voices.find(v=>v.lang.toLowerCase().startsWith(lang+"-"));
+
     const u=new SpeechSynthesisUtterance(textToSpeak);
-    u.lang=locale;u.rate=.72;u.pitch=.9;u.volume=1;
+    u.lang=locale;
+    u.rate=.72;
+    u.pitch=.9;
+    u.volume=1;
     if(voice)u.voice=voice;
-    u.onend=()=>{if(state.narrationItemId===itemId&&state.narrationCount<4)state.narrationTimer=setTimeout(speakNext,350);};
-    u.onerror=()=>{if(state.narrationItemId===itemId&&state.narrationCount<4)state.narrationTimer=setTimeout(speakNext,350);};
+    u.onend=()=>{
+      if(state.narrationGeneration===generation && state.narrationItemId===itemId){
+        state.narrationTimer=null;
+      }
+    };
+    u.onerror=(e)=>{
+      // Cancellation/interruption is expected when the worker moves to another item.
+      // Do not auto-retry: automatic retries were causing audible stutter/repetition.
+      if(state.narrationGeneration===generation && state.narrationItemId===itemId){
+        state.narrationTimer=null;
+        console.warn("Narration error:",e?.error||"unknown");
+      }
+    };
     speechSynthesis.speak(u);
-  };
-  speakNext();
+  },80);
 }
+
 function speak(text, lang="en"){
   if(!("speechSynthesis" in window))return;
   speechSynthesis.cancel();
