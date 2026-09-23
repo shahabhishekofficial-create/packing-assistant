@@ -2106,3 +2106,21 @@ Future scrolling changes must be isolated and validated independently before bei
 - Voice-language change also explicitly forces one fresh narration.
 - Bumped packer asset versions and service-worker cache so phones receive the new code: `app.js?v=20260923-3`, `config.js?v=20260923-3`, SW cache `packing-assistant-v6`.
 - Commits: `8fae10f`, `5d62133`, `d86a2b6`, `b1f93b8`.
+
+
+## 2026-09-23 — Inventory Module
+- **Status:** Implemented in production schema and GitHub source.
+- **Route:** `/packing-assistant/admin/inventory.html`
+- **Integration:** Admin Inventory navigation now opens the self-contained Inventory route while reusing the existing Admin authentication/session, dashboard layout, sidebar and Supabase project.
+- **Restaurant Inventory:** Start dated count with staff name; barcode scan via phone camera; USB/Bluetooth keyboard scanners; fuzzy item search with Fuse.js across name/aliases; category grouping; add item; CSV/XLSX first-setup import; submit count.
+- **Unknown barcode:** User searches/selects the item and the scanned barcode is permanently linked through `inv_link_barcode`.
+- **Offline:** Count rows are queued in IndexedDB and automatically synchronized when connectivity returns. Pending rows block session submission until synchronized.
+- **No overwrite/delete:** Stock counts are append-only. Recounts create new `inv_stock_counts` rows. Item removal is represented by `active=false` at the data-model level; the current UI does not hard-delete.
+- **Reports:** Latest stock per item, count history, not-counted CSV, date/staff filters, browser-generated CSV.
+- **Vegetables Inventory:** Placeholder only. The same schema supports `section='vegetable'` without schema changes.
+- **Database tables:** `inv_items`, `inv_item_barcodes`, `inv_count_sessions`, `inv_stock_counts`.
+- **Security:** All four inventory tables have RLS enabled and direct `anon`/`authenticated` table privileges revoked. Browser access is through explicitly granted inventory RPCs that validate the existing Admin session token. Security-definer functions use an empty search path and schema-qualified references.
+- **Files:** `admin/inventory.html`, `admin/inventory.css`, `admin/inventory.js`, `admin/inventory-nav.js`, `.github/workflows/inventory-backup.yml`.
+- **Backup:** Weekly GitHub Actions workflow dumps only the `inv_` tables, encrypts the dump with a GitHub secret, and stores the encrypted artifact for 30 days. Configure repository secrets `SUPABASE_DB_URL` and `INVENTORY_BACKUP_KEY`; the workflow never writes plaintext inventory data to the repository.
+- **Dependencies:** html5-qrcode, Fuse.js and SheetJS are loaded from free public CDNs. No paid service/library was added.
+- **Important:** The existing Admin authentication is custom-session based rather than Supabase Auth. Inventory authorization therefore validates the established Admin session RPC rather than inventing a second login system.
