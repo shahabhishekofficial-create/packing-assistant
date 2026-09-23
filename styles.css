@@ -815,3 +815,14 @@ button:focus-visible,input:focus-visible,select:focus-visible,dialog:focus-visib
 }
 /* Vertical finger swipes over a table are routed to the page by app.js;
    the table's native scrollbar remains available for direct dragging. */
+
+
+/* ===== Admin header scroll behavior =====
+   Header must participate in normal document flow and disappear naturally
+   when the page is scrolled. The sidebar/table scroll behavior remains
+   independent. */
+.adminPage .baHeader{
+  position:relative!important;
+  top:auto!important;
+  z-index:60;
+}
