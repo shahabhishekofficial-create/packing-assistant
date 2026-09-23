@@ -2048,3 +2048,12 @@ Future scrolling changes must be isolated and validated independently before bei
 - **Database migration:** `persistent_outlet_delivery_charges`.
 - **Source commit:** `a498b1db86aa94dc2deb28487ec0a65e1ece92c3`.
 - **Invariant:** Delivery charges must not reset to zero merely because a new packing order is created; they change only when Admin submits a changed value.
+
+
+## 2026-09-23 — Admin Table / Page Scrolling Fix
+- **Issue:** On mobile, touching/dragging inside the dashboard's Outlet-wise Summary table could trap vertical scrolling in the table area instead of scrolling the whole Admin webpage.
+- **Fix:** Admin table wrappers now have an independent vertical scrollbar while retaining horizontal overflow for wide tables. Vertical touch gestures that begin on table content are explicitly routed to the page scroll; horizontal gestures remain available for wide tables. The table's native scrollbar remains directly draggable.
+- **CSS:** Removed the previous vertical-scroll suppression/scroll-chain behavior for Admin tables and added a bounded table viewport (`58vh` on small screens) with native vertical scrollbar support.
+- **Cache:** Admin assets bumped to `20260923-4`; service-worker cache bumped to v32.
+- **Commits:** `c523eaca16f78b9476853694fabc9f0981322a71` (CSS), `f392e6c6d752b0015c74d3d0d72715b5c14ccfdb` (touch routing), `b3df9cf34f8651208d7ec9aa34f41e5a6a0a6fa5` (Admin asset cache-bust), `2389ef8425f2a71fcfde01394884b3d9ed188423` (service-worker cache).
+- **Invariant:** Swiping vertically anywhere on the Admin page must move the page; table horizontal scrolling must remain available; table vertical scrollbar is independent and does not lock the whole app.
