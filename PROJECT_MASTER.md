@@ -2057,3 +2057,11 @@ Future scrolling changes must be isolated and validated independently before bei
 - **Cache:** Admin assets bumped to `20260923-4`; service-worker cache bumped to v32.
 - **Commits:** `c523eaca16f78b9476853694fabc9f0981322a71` (CSS), `f392e6c6d752b0015c74d3d0d72715b5c14ccfdb` (touch routing), `b3df9cf34f8651208d7ec9aa34f41e5a6a0a6fa5` (Admin asset cache-bust), `2389ef8425f2a71fcfde01394884b3d9ed188423` (service-worker cache).
 - **Invariant:** Swiping vertically anywhere on the Admin page must move the page; table horizontal scrolling must remain available; table vertical scrollbar is independent and does not lock the whole app.
+
+
+## 2026-09-23 — Admin Header Scroll Behavior
+- **Issue:** The Admin header was sticky/fixed at the top while scrolling, so it remained visible instead of moving away with the page.
+- **Fix:** Admin header now uses normal document flow (`position: relative`) and therefore scrolls upward and disappears naturally. No change was made to the independent table scrollbar behavior or sticky sidebar.
+- **Cache:** Admin assets bumped to `20260923-5`; service-worker cache bumped to v33.
+- **Commit:** `cc5c82ca3e66092248fa57bde920302a7350a849` (CSS), `c7f61e94cdf71929d9572996fffb4258f68549a6` (asset cache-bust), `92b228c76fafc0514032f667bd98bbcc6861a752` (service-worker cache).
+- **Invariant:** The Admin top header must scroll away with the webpage rather than remain fixed.
