@@ -144,6 +144,7 @@
           localStorage.setItem(LAST_ACTIVITY_KEY,String(Date.now()));
           box.remove();
           document.body.classList.remove("adminLocked");
+          removeBootOverlay();
           window.dispatchEvent(new CustomEvent("pa-admin-authenticated"));
           addLogoutButton();
           scheduleLogout();
@@ -199,6 +200,7 @@
           window.PA_ADMIN_SESSION=token;
           serverSessionRefreshAt=Date.now();
           document.body.classList.remove("adminLocked");
+          removeBootOverlay();
           addLogoutButton();
           touch();
           window.dispatchEvent(new CustomEvent("pa-admin-authenticated"));
