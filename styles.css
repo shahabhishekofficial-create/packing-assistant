@@ -791,3 +791,27 @@ button:focus-visible,input:focus-visible,select:focus-visible,dialog:focus-visib
   .adminPage .analysisCard{overflow:hidden}
   .adminPage .analysisCard .tableWrap{margin-right:-2px}
 }
+
+
+/* ===== Table scrolling: page-first vertical gestures, independent table scrollbar ===== */
+.adminPage .tableWrap{
+  max-width:100%;
+  min-width:0;
+  overflow-x:auto;
+  overflow-y:auto;
+  overscroll-behavior-x:contain;
+  overscroll-behavior-y:auto;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:auto;
+}
+.adminPage .analysisCard .tableWrap{
+  max-height:52vh;
+  min-height:0;
+}
+.adminPage .tableWrap table{min-width:max-content}
+@media(max-width:850px){
+  .adminPage .analysisCard .tableWrap{max-height:58vh}
+  .adminPage .tableWrap{overscroll-behavior-y:auto}
+}
+/* Vertical finger swipes over a table are routed to the page by app.js;
+   the table's native scrollbar remains available for direct dragging. */
