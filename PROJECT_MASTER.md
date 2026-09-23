@@ -2074,3 +2074,11 @@ Future scrolling changes must be isolated and validated independently before bei
 - **Deployment:** `driver-api` deployed as Edge Function version **32**. Driver app asset version bumped from `26` to `27`; driver service-worker cache bumped to v27.
 - **Commits:** `6bffbdeae634bfe594c4cfba60b38af8dc64a5ee` (driver-api), `d609b165a351dfa5f77c98f035e1e1fb7ac772cb` (driver UI), `8f7a802297fdec834a04923a178e28a0c7a2b7d4` (driver asset cache-bust), `95fb9b1774bb5c69f4a88d590b5a805e6b77a621` (driver service-worker cache).
 - **Production verification:** Current production data confirms Bopal - MP is assigned to Lux with matching `driver_id`; the historical Bopal damage record contains `DAMAGE` rejection for Capsicum Tricolour (1 rejected out of 7 packed) and currently has zero rejection photos. The new endpoint is deployed specifically to remove the assignment-resolution failure blocking this upload.
+
+
+## 2026-09-23 — Staff packing order visibility fix
+- Production current order was correctly created and loaded: 17 outlets / 153 products.
+- Root cause of packaging staff seeing the order summary but no outlet list: `renderHome()` rendered only `#adminOutletList`, while the staff page uses `#outletList`.
+- Fixed `renderHome()` to render `#adminOutletList` on Admin and `#outletList` on the staff page.
+- Bumped staff service-worker cache from v3 to v4 so the corrected app.js is refreshed.
+- Commits: `3eaf660e1589899e0a7d0f92a43d222d48c8d30f`, `dbb32cd91226564bb04c1893887f9b4b48cc8b9c`.
