@@ -1946,3 +1946,24 @@ The page itself remains the primary vertical scroll container. Only genuinely bo
 - 24376114169897b61252493aa16c9880ac16c638 — Fix admin mobile vertical and table scrolling
 - 12d4ff6f61f1471881c840270315118a07073777 — Bump admin cache for scrolling fix
 
+
+
+## 2026-09-23 — Roll Back Mobile Scrolling Regression
+
+**Status: IMPLEMENTED / DEPLOYMENT PENDING**
+
+A mobile report showed the Admin PWA stopped loading after the latest scrolling CSS change.
+
+### Action
+- Reverted only the newest Admin mobile scrolling CSS block introduced in commit 24376114169897b61252493aa16c9880ac16c638.
+- Preserved the earlier mobile header/layout correction.
+- Admin cache advanced to v27 so installed PWAs receive the rollback instead of retaining v26 assets.
+- No application logic, database, authentication, or delivery functionality was changed.
+
+### Safety rule
+Future scrolling changes must be isolated and validated independently before being combined with header/PWA changes.
+
+### Relevant commits
+- d5af78d06912ebe53e3d8f62b0a37f3e58ddc329 — Revert latest mobile scrolling CSS regression
+- c93ba3f52dde88ee59cfbfe1373ecbba97bbc216 — Bump admin cache after scrolling regression rollback
+
