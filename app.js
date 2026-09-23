@@ -1311,6 +1311,7 @@ function renderPackingOverview(){
 function showPackingOverview(){
   if(typeof stopItemNarration==="function")stopItemNarration();
   document.querySelector(".baSidebar")?.classList.remove("open");
+  document.body.classList.remove("baSidebarOpen");
   ["home","packing","packingOverview","driverDashboard","fleetManagement"].forEach(id=>document.getElementById(id)?.classList.add("hidden"));
   document.getElementById("packingOverview")?.classList.remove("hidden");
   setBAActive("sidePacking");
