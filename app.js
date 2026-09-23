@@ -750,6 +750,27 @@ function startLiveDeliverySummary(){
 }
 window.addEventListener("pa-admin-authenticated",async()=>{try{if(IS_ADMIN_PAGE && (!state.orderId || !state.outlets.size)){await loadCurrentOrder();}else if(IS_ADMIN_PAGE){renderHome();}}catch(e){console.warn("Admin dashboard order refresh:",e.message);}loadLiveDeliverySummary();startLiveDeliverySummary();});
 document.getElementById("deliverySummaryRefresh")?.addEventListener("click",loadLiveDeliverySummary);
+function renderStaffOutletList(){
+  if(IS_ADMIN_PAGE)return;
+  const list=$("outletList");
+  if(!list)return;
+  list.classList.remove("hidden");
+  const all=[...state.outlets.values()].sort((a,b)=>a.rank-b.rank||String(a.name).localeCompare(String(b.name)));
+  list.innerHTML="";
+  all.forEach((o,i)=>{
+    const b=document.createElement("button");
+    const done=o.rows.filter(r=>r.status).length;
+    const mine=o.status==="in_progress"&&o.lockedDeviceId===DEVICE_ID;
+    const locked=o.status==="in_progress"&&!mine;
+    b.className="outlet "+(o.status==="completed"?"completed":o.status==="in_progress"?"progressing":"available");
+    b.disabled=o.status==="completed"||locked;
+    const tag=o.status==="completed"?"✓ COMPLETED":mine?"YOUR OUTLET":locked?"IN PROGRESS":"AVAILABLE";
+    b.innerHTML='<div><span style="display:block;text-align:left;color:#94a3b8;font-size:11px;margin-bottom:3px">'+(i+1)+'</span><b>'+esc(o.name)+'</b></div><span><strong class="statusTag">'+tag+'</strong><br>'+done+'/'+o.rows.length+' products</span>';
+    b.onclick=()=>startOutlet(o.id);
+    list.appendChild(b);
+  });
+}
+
 function renderHome(){
   const orderLoadStatus=$("orderLoadStatus");
   if(orderLoadStatus) orderLoadStatus.classList.add("hidden");
@@ -820,6 +841,7 @@ function renderHome(){
     });
   });
   enableSelectTypeSearch();
+  renderStaffOutletList();
   renderAdminDashboard();
 }
 async function startOutlet(outletId){
