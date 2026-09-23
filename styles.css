@@ -826,3 +826,5 @@ button:focus-visible,input:focus-visible,select:focus-visible,dialog:focus-visib
   top:auto!important;
   z-index:60;
 }
+
+.driverNextStep{display:flex;flex-direction:column;gap:10px;margin-top:10px;padding:14px;border:1px solid #dfe5ef;border-radius:16px;background:#f8fafc}.driverNextStep b{font-size:16px}.driverNextStep span{color:#667085}.driverNextStep small{color:#667085}.driverNextStep button{width:100%}.driverRejectionRow.rejectionNotApplicable{opacity:.55}
