@@ -42,98 +42,23 @@
     <div class="baWelcomeArt" aria-hidden="true"><span>🥦</span><span>🥬</span><span>🫑</span><span>🥕</span></div>
   </section>
 
-  <section class="baQuickStats">
-    <div class="baQuickStat"><div class="baStatIcon green">▣</div><div><b id="dashTotalOutlets">0</b><span>Current Outlets</span></div></div>
-    <div class="baQuickStat"><div class="baStatIcon blue">✓</div><div><b id="dashPackingProgress">0%</b><span>Packing Progress</span></div></div>
-    <div class="baQuickStat"><div class="baStatIcon purple">▸</div><div><b id="dashPendingDelivery">0</b><span>Pending Deliveries</span></div></div>
-    <div class="baQuickStat"><div class="baStatIcon red">!</div><div><b id="dashDeliveryIssues">0</b><span>Delivery Issues</span></div></div>
-  </section>
-
-  <section class="baSection">
-    <div class="baSectionHead"><div><span class="eyebrow">OPERATIONS</span><h2>Core Modules</h2></div></div>
-    <div class="baModules">
-      <button class="baModule green" id="modulePacking">
-        <span class="baModuleIcon">📦</span><span><b>Packing &amp; Dispatch</b><small>Manage live packing orders and outlet preparation</small></span><strong>→</strong>
-      </button>
-      <button class="baModule blue" id="moduleDelivery">
-        <span class="baModuleIcon">🚚</span><span><b>Delivery &amp; Fleet</b><small>Track deliveries, drivers and live route status</small></span><strong>→</strong>
-      </button>
-      <button class="baModule amber" id="moduleInventory">
-        <span class="baModuleIcon">📦</span><span><b>Inventory</b><small>Stock, cold room and inventory movement</small></span><strong>→</strong>
-      </button>
-      <button class="baModule purple" id="modulePurchase" data-coming-soon="Purchase &amp; Suppliers">
-        <span class="baModuleIcon">🛒</span><span><b>Purchase &amp; Suppliers</b><small>Suppliers, purchase orders and GRN</small></span><strong>→</strong>
-      </button>
-      <button class="baModule red" id="moduleEmployees" data-coming-soon="Employees &amp; HR">
-        <span class="baModuleIcon">👥</span><span><b>Employees &amp; HR</b><small>Employee records, attendance and leave</small></span><strong>→</strong>
-      </button>
-      <button class="baModule violet" id="moduleReports">
-        <span class="baModuleIcon">▥</span><span><b>Reports &amp; Analytics</b><small>Business reports, packing history and exports</small></span><strong>→</strong>
-      </button>
-    </div>
-  </section>
-
-  <section class="baOperationsGrid">
-    <div class="baPanel baPackingPanel">
-      <div class="baPanelHead"><div><span class="eyebrow">LATEST PACKING ORDER</span><h3 id="dashOrderName">No order loaded</h3></div><span id="dashOrderStatus" class="baStatus">Waiting</span></div>
-      <div class="baOrderMeta">
-        <div><span>Order date</span><b id="dashOrderDate">—</b></div>
-        <div><span>Outlets</span><b id="dashOrderOutlets">0</b></div>
-        <div><span>Products</span><b id="dashOrderProducts">0</b></div>
-      </div>
-      <div class="baProgress"><div><span>Packing progress</span><b id="dashPackingProgressText">0%</b></div><i><em id="dashPackingProgressBar"></em></i></div>
-      <p class="baMuted" id="dashPackingDetail">0 packed · 0 missing</p>
-      <div class="baPanelActions">
-        <button id="dashOpenPacking" class="primary">Open Packing</button>
-        <button id="dashCreateOrder" class="secondary">Create New Order</button>
-      </div>
-      <div class="baCreateOrderTools hidden" id="dashCreateOrderTools">
-        <input id="fileInput" type="file" accept=".xlsx,.xls,.csv">
-        <button id="createOrderBtn" class="primary">Create Live Order</button>
-        <button id="loadDemo" class="secondary">Demo</button>
-        <p class="hint">Required headers: STORE_NAME, ITEM_CODE, PRODUCT_NAME, Sum of Indents, SKU Narration Order</p>
-        <p id="orderLoadStatus" class="hint hidden" role="status"></p>
-        <div id="orderLinkBox" class="shareBox hidden"><span>Packaging Staff Link</span><div class="shareRow"><input id="orderLink" readonly><button id="copyLink">Copy</button></div></div>
+  <section class="baDashboardFocus">
+    <div class="baPanel baDashboardWelcomePanel">
+      <span class="eyebrow">OPERATIONS CONTROL CENTER</span>
+      <h2>Choose a department</h2>
+      <p class="hint">Department-specific data is kept inside its own workspace so the main dashboard stays clean and fast.</p>
+      <div class="baDashboardFocusGrid">
+        <button class="baModule green" id="modulePacking"><span class="baModuleIcon">📦</span><span><b>Packing &amp; Dispatch</b><small>Orders, packing progress, exceptions and dispatch readiness</small></span><strong>→</strong></button>
+        <button class="baModule blue" id="moduleDelivery"><span class="baModuleIcon">🚚</span><span><b>Delivery &amp; Fleet</b><small>Live driver routes, outlet progress, invoices and rejection evidence</small></span><strong>→</strong></button>
+        <button class="baModule amber" id="moduleInventory"><span class="baModuleIcon">📦</span><span><b>Inventory</b><small>Stock, cold room and inventory movement</small></span><strong>→</strong></button>
+        <button class="baModule purple" id="modulePurchase" data-coming-soon="Purchase &amp; Suppliers"><span class="baModuleIcon">🛒</span><span><b>Purchase &amp; Suppliers</b><small>Suppliers, purchase orders and GRN</small></span><strong>→</strong></button>
+        <button class="baModule red" id="moduleEmployees" data-coming-soon="Employees &amp; HR"><span class="baModuleIcon">👥</span><span><b>Employees &amp; HR</b><small>Employee records, attendance and leave</small></span><strong>→</strong></button>
+        <button class="baModule violet" id="moduleReports"><span class="baModuleIcon">▥</span><span><b>Reports &amp; Analytics</b><small>Business reports, history and exports</small></span><strong>→</strong></button>
       </div>
     </div>
-
-    <section id="deliverySummary" class="baPanel baDeliveryPanel" aria-live="polite">
-      <div class="baPanelHead"><div><span class="eyebrow">LIVE DELIVERY STATUS</span><h3>Today's delivery route</h3></div><button id="deliverySummaryRefresh" class="baTextButton">Refresh</button></div>
-      <div id="deliverySummaryKpis" class="baDeliveryKpis"></div>
-      <div class="baDeliveryFooter"><span id="dashDeliveryDetail">Live outlet status updates every 30 seconds.</span><button id="dashOpenDelivery" class="baTextButton">View Deliveries →</button></div>
-      <div class="tableWrap baDeliveryTable"><table><thead><tr><th>Outlet</th><th>Driver</th><th>Status</th><th>Missing</th><th>Rejected</th><th>Last Update</th></tr></thead><tbody id="deliverySummaryBody"></tbody></table></div>
-    </section>
-
-    <div class="baPanel baAttentionPanel">
-      <div class="baPanelHead"><div><span class="eyebrow">ATTENTION</span><h3>Operations alerts</h3></div></div>
-      <div class="baAlerts" id="dashAlerts"><div class="baAlert empty">No active alerts.</div></div>
-      <button id="dashOpenReports" class="baTextButton">Open Reports →</button>
-    </div>
   </section>
-
   <div id="orderSummary" class="dashboardSummary hidden"></div>
-
-  <section id="adminDashboard" class="adminDashboard">
-    <div class="sectionHead">
-      <div><span class="eyebrow">MANAGEMENT DASHBOARD</span><h2>Packing Analysis</h2></div>
-      <div class="dashboardFilters">
-        <input id="dashboardOutletFilter" list="dashboardOutletOptions" placeholder="Search outlet…" autocomplete="off">
-        <datalist id="dashboardOutletOptions"></datalist>
-        <input id="dashboardItemFilter" list="dashboardItemOptions" placeholder="Search item / code…" autocomplete="off">
-        <datalist id="dashboardItemOptions"></datalist>
-        <input id="dashboardDriverFilter" list="dashboardDriverOptions" placeholder="Search driver…" autocomplete="off">
-        <datalist id="dashboardDriverOptions"></datalist>
-        <select id="dashboardStatusFilter"><option value="ALL">All Status</option><option value="MISSING">Missing</option><option value="PARTIAL">Partial</option><option value="PACKED">Packed</option><option value="PENDING">Pending</option></select>
-      </div>
-    </div>
-    <div id="dashboardKpis" class="analysisKpis"></div>
-    <div class="analysisGrid">
-      <div class="analysisCard"><h3>Outlet-wise Summary</h3><div class="tableWrap"><table><thead><tr><th>Outlet</th><th>Driver</th><th>Required</th><th>Packed</th><th>Missing</th><th>Missing %</th><th>Status</th></tr></thead><tbody id="outletAnalysisBody"></tbody></table></div></div>
-      <div class="analysisCard"><h3>Item-wise Exceptions</h3><p class="tableHint">Items with missing or partial quantity, across outlets.</p><div class="tableWrap"><table><thead><tr><th>Item</th><th>Outlets</th><th>Required</th><th>Packed</th><th>Missing</th><th>Missing %</th></tr></thead><tbody id="itemAnalysisBody"></tbody></table></div></div>
-      <div class="analysisCard wide"><h3>Missing / Partial Detail</h3><div class="tableWrap"><table><thead><tr><th>Outlet</th><th>Driver</th><th>Item</th><th>Required</th><th>Packed</th><th>Missing</th><th>Status</th><th>Reason</th></tr></thead><tbody id="exceptionAnalysisBody"></tbody></table></div></div>
-      <div class="analysisCard wide"><h3>Driver-wise Outlets</h3><p class="tableHint">Driver ownership and delivery progress.</p><div class="tableWrap"><table><thead><tr><th>Driver</th><th>Outlets</th><th>Completed</th><th>In Progress</th><th>Required</th><th>Packed</th><th>Missing</th><th>Missing %</th></tr></thead><tbody id="driverAnalysisBody"></tbody></table></div></div>
-    </div>
-  </section>
+</section>
 </section>
 <section id="fleetManagement" class="screen hidden">
   <div class="sectionHead"><div><span class="eyebrow">DELIVERY FLEET</span><h2>Delivery Fleet Management</h2><p class="hint">Track driver earnings, payments and outstanding balances.</p></div><div class="sectionHeadActions"><button id="fleetBackBtn" class="secondary">← Dashboard</button><button id="fleetRefreshBtn" class="secondary">↻ Refresh</button></div></div>
@@ -172,7 +97,16 @@
 </section>
 
 <section id="packingOverview" class="screen hidden">
-  <div class="sectionHead">
+  <div class="sectionHead"><section class="analysisCard packingCreatePanel">
+    <div class="sectionHead"><div><span class="eyebrow">ORDER IMPORT</span><h3>Create / refresh live packing order</h3><p class="hint">Upload the latest Excel/CSV here. Packaging operations remain inside this section.</p></div><button id="dashCreateOrder" class="secondary">Create New Order</button></div>
+    <div class="baCreateOrderTools hidden" id="dashCreateOrderTools">
+      <input id="fileInput" type="file" accept=".xlsx,.xls,.csv"><button id="createOrderBtn" class="primary">Create Live Order</button><button id="loadDemo" class="secondary">Demo</button>
+      <p class="hint">Required headers: STORE_NAME, ITEM_CODE, PRODUCT_NAME, Sum of Indents, SKU Narration Order</p>
+      <p id="orderLoadStatus" class="hint hidden" role="status"></p>
+      <div id="orderLinkBox" class="shareBox hidden"><span>Packaging Staff Link</span><div class="shareRow"><input id="orderLink" readonly><button id="copyLink">Copy</button></div></div>
+    </div>
+  </section>
+
     <div><span class="eyebrow">PACKING &amp; DISPATCH</span><h2>Packing Overview</h2><p class="hint">Monitor the current order and packing progress. The item-by-item packing controls remain on the separate staff packing screen.</p></div>
     <div class="sectionHeadActions"><button id="packingOverviewRefresh" class="secondary">↻ Refresh</button><button id="packingOverviewDashboardBack" class="secondary">← Dashboard</button></div>
   </div>
