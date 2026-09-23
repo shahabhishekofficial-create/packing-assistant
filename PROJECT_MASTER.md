@@ -2025,3 +2025,13 @@ Future scrolling changes must be isolated and validated independently before bei
 
 - Static DOM audit after the boot changes found one obsolete Admin reference to `outletList`; it was removed. Current Admin HTML has no duplicate IDs and no remaining static app.js references to missing Admin DOM IDs.
 - Final cleanup commit: `bb5d1d02a90d113adf9f79f0ec3f8d7431f10eff`.
+
+
+## 2026-09-23 — Admin Blank Background / Login Overlay Hardening
+- Production symptom: after the boot overlay disappeared, only the page background remained on mobile.
+- Root cause identified in the client architecture: the `adminLocked` CSS mechanism hid the entire Admin DOM and relied on a dynamically created login overlay to be exempt. This was fragile during session restoration/cache transitions and could leave only the body background visible.
+- Permanent fix: removed the `adminLocked` DOM-hiding mechanism entirely. Authentication is now enforced by a fixed, z-indexed login overlay. The dashboard DOM remains mounted underneath it until a valid session exists, while the overlay blocks access.
+- Session restoration with no valid server session now directly displays the login overlay.
+- Successful authentication removes the overlay and dispatches the existing Admin-authenticated event.
+- Admin cache bumped to v31 and critical assets cache-busted to 20260923-3.
+- No database or delivery logic changed.
