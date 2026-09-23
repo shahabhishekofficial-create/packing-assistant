@@ -2091,3 +2091,18 @@ Future scrolling changes must be isolated and validated independently before bei
 - Added explicit staff asset cache-busting for `app.js`, `config.js`, and the service-worker registration using `updateViaCache: "none"`.
 - Packer service-worker cache bumped v4 → v5.
 - Commits: `8c72a73b6bac0be7b6a0702f052ff827b2fbb17d`, `4165197b2f0e269d30874c5f4b22136151be1231`, `f56f74363cc7dac108f8b7d49dd5dc706ce5bb54`.
+
+
+## 2026-09-23 — Packing narration stutter fix
+- Staff narration was audibly glitching/restarting, e.g. **“ba-ba-ba Basil”**.
+- Root cause: `speakProduct()` automatically retried each utterance up to 4 times and could call `speechSynthesis.cancel()` immediately before another `speak()`; background renders/syncs could also restart the same item. Browser speech cancellation can generate cancellation/interruption events, so automatic error retries amplified the stutter.
+- Fixed `app.js` narration to:
+  - speak each item once automatically;
+  - ignore duplicate narration requests for the same currently speaking item;
+  - use a generation guard so stale utterances cannot restart;
+  - add a short 80 ms gap after cancellation before a new utterance;
+  - never auto-retry speech errors;
+  - keep **Repeat** as an explicit manual repeat action.
+- Voice-language change also explicitly forces one fresh narration.
+- Bumped packer asset versions and service-worker cache so phones receive the new code: `app.js?v=20260923-3`, `config.js?v=20260923-3`, SW cache `packing-assistant-v6`.
+- Commits: `8fae10f`, `5d62133`, `d86a2b6`, `b1f93b8`.
