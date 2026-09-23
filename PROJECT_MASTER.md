@@ -2082,3 +2082,12 @@ Future scrolling changes must be isolated and validated independently before bei
 - Fixed `renderHome()` to render `#adminOutletList` on Admin and `#outletList` on the staff page.
 - Bumped staff service-worker cache from v3 to v4 so the corrected app.js is refreshed.
 - Commits: `3eaf660e1589899e0a7d0f92a43d222d48c8d30f`, `dbb32cd91226564bb04c1893887f9b4b48cc8b9c`.
+
+
+## 2026-09-23 — Staff outlet rendering/cache hardening
+- User still saw the current order summary (17 outlets / 153 products) but no outlet buttons after clearing site settings.
+- The staff page source uses `#outletList`; Admin uses `#adminOutletList`.
+- Hardened `renderHome()` with a dedicated `renderStaffOutletList()` that explicitly renders the staff outlet buttons and removes any hidden state from `#outletList`.
+- Added explicit staff asset cache-busting for `app.js`, `config.js`, and the service-worker registration using `updateViaCache: "none"`.
+- Packer service-worker cache bumped v4 → v5.
+- Commits: `8c72a73b6bac0be7b6a0702f052ff827b2fbb17d`, `4165197b2f0e269d30874c5f4b22136151be1231`, `f56f74363cc7dac108f8b7d49dd5dc706ce5bb54`.
