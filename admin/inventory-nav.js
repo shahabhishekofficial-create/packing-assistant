@@ -1,0 +1,1 @@
+(()=>{function wire(id){const old=document.getElementById(id);if(!old)return;const n=old.cloneNode(true);n.classList.remove("coming");n.removeAttribute("data-coming-soon");old.replaceWith(n);n.addEventListener("click",()=>{location.href="./inventory.html"});}wire("sideInventory");wire("moduleInventory");})();
