@@ -2065,3 +2065,12 @@ Future scrolling changes must be isolated and validated independently before bei
 - **Cache:** Admin assets bumped to `20260923-5`; service-worker cache bumped to v33.
 - **Commit:** `cc5c82ca3e66092248fa57bde920302a7350a849` (CSS), `c7f61e94cdf71929d9572996fffb4258f68549a6` (asset cache-bust), `92b228c76fafc0514032f667bd98bbcc6861a752` (service-worker cache).
 - **Invariant:** The Admin top header must scroll away with the webpage rather than remain fixed.
+
+
+## 2026-09-23 — Driver Damage Photo / Assignment Resolution Fix
+- **Issue:** Damage-item photo upload could still return an outlet-assignment error even when the driver name matched the outlet assignment. This was especially relevant for valid damage on an item whose packing status was `PACKED`.
+- **Backend fix:** `driver-api` damage-photo endpoints now resolve the outlet first, validate the requested order, accept the authoritative `driver_id` assignment or a normalized driver-name match, and repair a stale/missing `driver_id` when the name match is unambiguous. The endpoint now returns a specific mismatch diagnostic instead of a generic assignment failure.
+- **UI fix:** Driver item tables now show **Add damage photo** whenever a saved `DAMAGE` rejection exists, including fully `PACKED` items. Previously the button was incorrectly limited to `MISSING`/`PARTIAL` item status.
+- **Deployment:** `driver-api` deployed as Edge Function version **32**. Driver app asset version bumped from `26` to `27`; driver service-worker cache bumped to v27.
+- **Commits:** `6bffbdeae634bfe594c4cfba60b38af8dc64a5ee` (driver-api), `d609b165a351dfa5f77c98f035e1e1fb7ac772cb` (driver UI), `8f7a802297fdec834a04923a178e28a0c7a2b7d4` (driver asset cache-bust), `95fb9b1774bb5c69f4a88d590b5a805e6b77a621` (driver service-worker cache).
+- **Production verification:** Current production data confirms Bopal - MP is assigned to Lux with matching `driver_id`; the historical Bopal damage record contains `DAMAGE` rejection for Capsicum Tricolour (1 rejected out of 7 packed) and currently has zero rejection photos. The new endpoint is deployed specifically to remove the assignment-resolution failure blocking this upload.
