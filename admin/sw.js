@@ -1,4 +1,4 @@
-const CACHE="packing-assistant-admin-v29";
+const CACHE="packing-assistant-admin-v30";
 self.addEventListener("install",event=>{
   event.waitUntil(
     caches.open(CACHE)
