@@ -2022,3 +2022,6 @@ Future scrolling changes must be isolated and validated independently before bei
   - `6d51ed2c635d52376cac5274942f25fd3fbc0125` — deterministic deferred script boot and early error capture.
   - `671986a36d9718c1a290d34b036bddc3f0870ac8` — Admin cache v30.
 - Invariant: Admin must never transition from the boot state to an inaccessible blank page. It must either unlock the dashboard or show an actionable authentication/startup error.
+
+- Static DOM audit after the boot changes found one obsolete Admin reference to `outletList`; it was removed. Current Admin HTML has no duplicate IDs and no remaining static app.js references to missing Admin DOM IDs.
+- Final cleanup commit: `bb5d1d02a90d113adf9f79f0ec3f8d7431f10eff`.
