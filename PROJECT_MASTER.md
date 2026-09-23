@@ -1967,3 +1967,13 @@ Future scrolling changes must be isolated and validated independently before bei
 - d5af78d06912ebe53e3d8f62b0a37f3e58ddc329 — Revert latest mobile scrolling CSS regression
 - c93ba3f52dde88ee59cfbfe1373ecbba97bbc216 — Bump admin cache after scrolling regression rollback
 
+
+
+## 2026-09-23 — Admin Mobile Blank-Page Boot Hardening
+- **Status:** DEPLOYED SOURCE / PENDING FINAL Pages verification
+- **Issue:** Admin PWA could still show a completely blank page on mobile after the scrolling rollback, despite successful JavaScript validation. The page used `body.adminPage{visibility:hidden}` until `admin/auth.js` executed, so any stale/cached/missed script boot left the entire application visually blank with no diagnostic state.
+- **Fix:** Replaced the invisible initial state with a secure visible boot overlay. The dashboard remains covered until Admin authentication/lock handling completes; unauthenticated users still receive the normal password overlay. Added explicit removal of the boot overlay on successful session restoration/login and on logout.
+- **Cache resilience:** Added versioned query strings to Admin CSS, `auth.js`, and `app.js`; Admin service-worker registration now uses `updateViaCache: "none"` and requests an update; Admin service-worker cache bumped from v27 to v28.
+- **Security invariant:** The boot overlay does not expose the dashboard to unauthenticated users. `auth.js` applies `adminLocked` before allowing access and the normal login overlay remains authoritative.
+- **Files:** `admin/index.html`, `admin/auth.js`, `admin/sw.js`.
+- **Commits:** `44f83ddda408725aa260760380c9d53c1feb10a5`, `0ad43ccded3cfe493153e8f30b180af710c2f6b4`, `b41e913c8ded68c073d7567325cc2857baa7733c`, `e01de393ea341e8a820b58ad31b8d2b88507bb2f`, `34d6146b77bbda5a5f69ab22b56c7a545cb729a7`.
