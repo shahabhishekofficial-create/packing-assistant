@@ -1985,3 +1985,11 @@ Future scrolling changes must be isolated and validated independently before bei
 - Auth failure now clears the boot overlay only after invoking the login UI, preventing a blank Admin page after refresh when session restoration fails.
 - No database, delivery, packing, or driver logic changed.
 - Commit: d38b8a41a9c0abedef5202fea411dc09dde3b44c.
+
+
+## 2026-09-23 — Admin Blank-Page Auth-Failure Fix
+- Status: IMPLEMENTED
+- Fixed Admin boot/auth failure ordering in `admin/auth.js` so the loading overlay is not removed before the login/session-expired UI is available.
+- Auth failure now clears the boot overlay only after invoking the login UI, preventing a blank Admin page after refresh when session restoration fails.
+- No database, delivery, packing, or driver logic changed.
+- Commit: d38b8a41a9c0abedef5202fea411dc09dde3b44c.
