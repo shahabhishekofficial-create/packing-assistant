@@ -922,7 +922,7 @@ $("packedBtn").onclick=()=>{
 
 $("repeatBtn").onclick=()=>{
   const r=state.outlets.get(state.current).rows[state.index];
-  speakProduct(r);
+  speakProduct(r,true);
 };
 
 $("missingBtn").onclick=()=>{
@@ -1132,7 +1132,7 @@ syncVoiceSelectors(getVoiceLanguage());
 if(packingVoiceLanguageEl) packingVoiceLanguageEl.onchange=()=>{
   setVoiceLanguage(packingVoiceLanguageEl.value);
   syncVoiceSelectors(packingVoiceLanguageEl.value);
-  const o=state.outlets.get(state.current); if(o) speakProduct(o.rows[state.index]);
+  const o=state.outlets.get(state.current); if(o) speakProduct(o.rows[state.index],true);
 };
 
 function dashboardMoney(n){return "₹"+Number(n||0).toLocaleString("en-IN",{minimumFractionDigits:0,maximumFractionDigits:2});}
