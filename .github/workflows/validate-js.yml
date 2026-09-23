@@ -19,6 +19,8 @@ jobs:
           node --check app.js
           node --check driver/driver.js
           node --check admin/auth.js
+          node --check admin/inventory.js
+          node --check admin/inventory-nav.js
           node --check config.js
           node --check driver/sw.js
           node --check admin/sw.js
