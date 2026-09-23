@@ -83,7 +83,6 @@
     localStorage.removeItem(SESSION_KEY);
     localStorage.removeItem(LAST_ACTIVITY_KEY);
     clearAdminSession();
-    document.body.classList.add("adminLocked");
     if(showLogin)showLoginBox("Session expired. Please sign in again.");
     else showLoginBox();
     removeBootOverlay();
@@ -92,7 +91,6 @@
   function injectStyles(){
     const s=document.createElement("style");
     s.textContent=`
-      body.adminPage.adminLocked > *:not(#adminAuthOverlay){display:none!important}
       #adminAuthOverlay{position:fixed;inset:0;z-index:99999;background:#f6f8fb;display:flex;align-items:center;justify-content:center;padding:20px}
       .adminAuthCard{width:min(400px,100%);background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:28px;box-shadow:0 18px 50px rgba(15,23,42,.12)}
       .adminAuthCard h2{margin:0 0 6px}.adminAuthCard p{color:#64748b;font-size:13px;margin:0 0 20px}
@@ -143,7 +141,6 @@
           localStorage.setItem(SESSION_KEY,"1");if(reauthResolver){const resolve=reauthResolver;reauthResolver=null;resolve(true);}
           localStorage.setItem(LAST_ACTIVITY_KEY,String(Date.now()));
           box.remove();
-          document.body.classList.remove("adminLocked");
           removeBootOverlay();
           window.dispatchEvent(new CustomEvent("pa-admin-authenticated"));
           addLogoutButton();
@@ -190,7 +187,6 @@
   async function init(){
     document.body.style.visibility="visible";
     injectStyles();
-    document.body.classList.add("adminLocked");
     if(sessionValid()){
       const token=localStorage.getItem(SESSION_TOKEN_KEY)||"";
       if(token && db){
@@ -199,7 +195,6 @@
           if(r.error||!r.data){forceLogout(false);return;}
           window.PA_ADMIN_SESSION=token;
           serverSessionRefreshAt=Date.now();
-          document.body.classList.remove("adminLocked");
           removeBootOverlay();
           addLogoutButton();
           touch();
@@ -212,7 +207,7 @@
       forceLogout(false);
     }
     ["click","keydown","pointerdown","touchstart","mousemove","scroll"].forEach(ev=>{
-      window.addEventListener(ev,()=>{ if(!document.body.classList.contains("adminLocked"))touch(); },{passive:true});
+      window.addEventListener(ev,()=>{ if(window.PA_ADMIN_SESSION)touch(); },{passive:true});
     });
     document.addEventListener("visibilitychange",()=>{if(!document.hidden && !sessionValid())forceLogout(true);});
   }
