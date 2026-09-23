@@ -1993,3 +1993,32 @@ Future scrolling changes must be isolated and validated independently before bei
 - Auth failure now clears the boot overlay only after invoking the login UI, preventing a blank Admin page after refresh when session restoration fails.
 - No database, delivery, packing, or driver logic changed.
 - Commit: d38b8a41a9c0abedef5202fea411dc09dde3b44c.
+
+
+## 2026-09-23 — Full Admin Mobile Boot Audit and Deterministic Startup Fix
+- Status: IMPLEMENTED
+- User-reported failure: Admin showed “Loading Admin Dashboard” briefly after refresh and then became blank on mobile.
+- Audit covered Admin HTML boot order, authentication/session restoration, service-worker cache/versioning, script loading order, dashboard visibility CSS, navigation visibility rules, mobile header/table CSS, realtime/data initialization, and existing dashboard auth handoff.
+- Root reliability issue: Admin authentication was initialized independently while dashboard scripts were still loading. A failure or stale/mismatched cached script could leave the page in an inconsistent boot state. Critical scripts also loaded without a deterministic deferred startup contract.
+- Fix:
+  - `admin/auth.js` no longer auto-starts immediately; it exposes `PA_ADMIN_START`.
+  - `admin/index.html` starts authentication only after the complete Admin script stack has loaded.
+  - Supabase, SheetJS, config, auth, and app scripts now load with `defer` in dependency order.
+  - Early boot error/unhandled-rejection handlers are registered before external scripts.
+  - Boot overlay remains until authentication successfully unlocks the dashboard.
+  - Authentication failure still produces the login screen rather than a blank page.
+  - Critical Admin assets use versioned query strings.
+  - Admin service-worker cache bumped to v30.
+  - Service-worker registration uses cache-bypass update behavior.
+  - Existing secure server-backed Admin session remains unchanged.
+- Preserved:
+  - Dashboard data loading and current-order logic.
+  - Delivery/Fleet session authentication.
+  - Packing, driver, payment, and database functionality.
+  - Earlier mobile header correction.
+- Commits:
+  - `58838c3d1a86839d5f790f15617f230b049503aa` — defer Admin authentication startup until scripts are ready.
+  - `904d21c11b1614a582f14537163e38ecaadc037b` / `a057cdb8bf48bf65e49180067640f40c7a120aa6` — Admin boot/cache hardening.
+  - `6d51ed2c635d52376cac5274942f25fd3fbc0125` — deterministic deferred script boot and early error capture.
+  - `671986a36d9718c1a290d34b036bddc3f0870ac8` — Admin cache v30.
+- Invariant: Admin must never transition from the boot state to an inaccessible blank page. It must either unlock the dashboard or show an actionable authentication/startup error.
