@@ -7,6 +7,7 @@ async function repair(){overlay();try{if("serviceWorker"in navigator)await Promi
 window.PA_REPAIR_APP=repair;
 async function bootRecovery(){
   if(!/\/admin\/?$/.test(location.pathname))return;
+  if(new URLSearchParams(location.search).has("emergency"))return;
   const overlay=document.getElementById("adminBootOverlay");
   if(!overlay)return;
   const recovered=sessionStorage.getItem("pa_boot_recovered")==="1";
