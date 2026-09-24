@@ -89,4 +89,5 @@ window.SUPABASE_CONFIG = {
   window.PA_CONFIG_REFRESH=refresh;
   window.PA_CONFIG_READY=Promise.resolve(values).then(()=>refresh());
   window.addEventListener("pa-config-loaded",applyMaintenance);
+  setInterval(()=>refresh().catch(()=>{}),300000);
 })();
