@@ -98,7 +98,7 @@ function render(){$("driverLogin").classList.toggle("hidden",!!ds.token);$("driv
  $("invoiceDialog").showModal(); $("invoiceNumber").focus();
 }$("driverMenuBtn").onclick=openDriverMenu;
 $("driverMenuClose").onclick=()=>$("driverMenuDialog").close();
-$("invoiceCancelBtn").onclick=()=>$("invoiceDialog").close();
+$("invoiceCancelBtn").onclick=()=>$("invoiceDialog").close();$("invoiceCancelBtn2").onclick=()=>$("invoiceDialog").close();
 $("invoiceNumberForm").addEventListener("submit",e=>{
  e.preventDefault();
  const outletId=$("invoiceNumber").dataset.outletId,n=$("invoiceNumber").value.trim();
