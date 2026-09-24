@@ -1290,24 +1290,33 @@ updateConnection();
 function renderPackingOverview(){
   const box=$("packingOverviewBody"),kpis=$("packingOverviewKpis");
   if(!box||!kpis)return;
-  const all=[...state.outlets.values()].sort((a,b)=>(a.rank||999)-(b.rank||999));
-  const total=all.reduce((s,o)=>s+o.rows.reduce((a,r)=>a+r.required,0),0);
-  const packed=all.reduce((s,o)=>s+o.rows.reduce((a,r)=>a+r.packed,0),0);
-  const missing=all.reduce((s,o)=>s+o.rows.reduce((a,r)=>a+r.missing,0),0);
-  const completed=all.filter(o=>o.status==="completed").length;
-  const inProgress=all.filter(o=>o.status==="in_progress").length;
-  const pending=all.length-completed-inProgress;
-  const pct=total?Math.round(((packed+missing)/total)*100):0;
-  const k=[["Outlets",all.length],["Completed",completed],["In Progress",inProgress],["Pending",pending],["Required",total],["Packed",packed],["Missing",missing],["Progress",pct+"%"]];
-  kpis.innerHTML=k.map(x=>'<div class="analysisKpi"><span>'+esc(String(x[0]))+'</span><b>'+esc(String(x[1]))+'</b></div>').join("");
+  const all=[...state.outlets.values()].sort((a,b)=>(a.rank||999)-(b.rank||999)||String(a.name).localeCompare(String(b.name)));
+  const outletSel=$("packingOutletFilter"),driverSel=$("packingDriverFilter"),statusSel=$("packingStatusFilter"),itemInput=$("packingItemFilter");
+  if(outletSel&&!outletSel.dataset.ready){
+    const outlets=all.map(o=>'<option value="'+esc(String(o.id))+'">'+esc(o.name)+'</option>').join("");
+    outletSel.innerHTML='<option value="">All outlets</option>'+outlets;outletSel.dataset.ready="1";
+    const drivers=[...new Set(all.map(o=>o.driver||"Unassigned"))].sort((a,b)=>a.localeCompare(b));
+    if(driverSel)driverSel.innerHTML='<option value="">All drivers</option>'+drivers.map(d=>'<option value="'+esc(d)+'">'+esc(d)+'</option>').join("");
+    const rerender=()=>renderPackingOverview();
+    outletSel.onchange=rerender;driverSel.onchange=rerender;statusSel.onchange=rerender;itemInput.oninput=rerender;
+    $("packingFiltersClear")?.addEventListener("click",()=>{outletSel.value="";driverSel.value="";statusSel.value="";itemInput.value="";renderPackingOverview();});
+  }
+  const oq=String(outletSel?.value||""),dq=String(driverSel?.value||""),sq=String(statusSel?.value||""),iq=String(itemInput?.value||"").trim().toLowerCase();
+  const selected=all.filter(o=>(!oq||String(o.id)===oq)&&(!dq||String(o.driver||"Unassigned")===dq)&&(!sq||String(o.status||"pending")===sq));
+  const rows=selected.flatMap(o=>o.rows.map(r=>({...r,outlet:o.name,outletId:o.id,driver:o.driver||"Unassigned",outletStatus:o.status||"pending"}))).filter(r=>!iq||String(r.product||"").toLowerCase().includes(iq)||String(r.code||"").toLowerCase().includes(iq));
+  const total=rows.reduce((s,r)=>s+Number(r.required||0),0),packed=rows.reduce((s,r)=>s+Number(r.packed||0),0),missing=rows.reduce((s,r)=>s+Number(r.missing||0),0),completed=selected.filter(o=>o.status==="completed").length,inProgress=selected.filter(o=>o.status==="in_progress").length,pending=selected.length-completed-inProgress,pct=total?Math.round(((packed+missing)/total)*100):0;
+  kpis.innerHTML=[["Outlets",selected.length],["Completed",completed],["In Progress",inProgress],["Pending",pending],["Required",total],["Packed",packed],["Missing",missing],["Progress",pct+"%"]].map(x=>'<div class="analysisKpi"><span>'+esc(String(x[0]))+'</span><b>'+esc(String(x[1]))+'</b></div>').join("");
   if($("packingOverviewOrderName"))$("packingOverviewOrderName").textContent=state.order?.order_name||"No current order";
-  box.innerHTML=all.map(o=>{
-    const req=o.rows.reduce((s,r)=>s+r.required,0),pk=o.rows.reduce((s,r)=>s+r.packed,0),ms=o.rows.reduce((s,r)=>s+r.missing,0),done=req?Math.round(((pk+ms)/req)*100):0;
-    const status=o.status==="completed"?"Completed":o.status==="in_progress"?"Packing":"Pending";
-    const cls=o.status==="completed"?"done":o.status==="in_progress"?"packing":"pending";
-    return '<tr><td>'+esc(String(o.rank??"—"))+'</td><td><b>'+esc(o.name)+'</b></td><td>'+esc(o.driver||"Unassigned")+'</td><td>'+o.rows.length+'</td><td>'+req+'</td><td>'+pk+'</td><td>'+ms+'</td><td><div class="packingOverviewProgress"><i style="width:'+done+'%"></i><span>'+done+'%</span></div></td><td><span class="deliveryStatus '+cls+'">'+status+'</span></td></tr>';
-  }).join("")||'<tr><td colspan="9" class="hint">No current order loaded.</td></tr>';
+  const grouped=selected.map(o=>{
+    const itemRows=o.rows.filter(r=>!iq||String(r.product||"").toLowerCase().includes(iq)||String(r.code||"").toLowerCase().includes(iq));
+    if(!itemRows.length)return "";
+    const req=itemRows.reduce((s,r)=>s+Number(r.required||0),0),pk=itemRows.reduce((s,r)=>s+Number(r.packed||0),0),ms=itemRows.reduce((s,r)=>s+Number(r.missing||0),0),done=req?Math.round(((pk+ms)/req)*100):0;
+    const status=o.status==="completed"?"Completed":o.status==="in_progress"?"In progress":"Pending",cls=o.status==="completed"?"done":o.status==="in_progress"?"packing":"pending";
+    return '<tr><td>'+esc(String(o.rank??"—"))+'</td><td><b>'+esc(o.name)+'</b></td><td>'+esc(o.driver||"Unassigned")+'</td><td>'+itemRows.length+'</td><td>'+req+'</td><td>'+pk+'</td><td class="'+(ms?"dangerText":"")+'">'+ms+'</td><td><div class="packingOverviewProgress"><i style="width:'+done+'%"></i><span>'+done+'%</span></div></td><td><span class="deliveryStatus '+cls+'">'+status+'</span></td></tr>';
+  }).join("");
+  box.innerHTML=grouped||'<tr><td colspan="9" class="hint">No packaging data matches the selected filters.</td></tr>';
 }
+
 function showPackingOverview(){
   if(typeof stopItemNarration==="function")stopItemNarration();
   document.querySelector(".baSidebar")?.classList.remove("open");
