@@ -249,6 +249,7 @@ async function loadOrder(){
     data.delivery_charges=[];
   }
   applyServerData(data);
+  await syncLocalOutletAssignmentsToServer().catch(e=>console.warn('Driver assignment sync:',e));
   renderHome();
 }
 
@@ -600,6 +601,22 @@ function updateSettingRanks(){
   });
 }
 
+async function syncLocalOutletAssignmentsToServer(){
+  if(!IS_ADMIN_PAGE||!state.orderId||!state.token)return;
+  const key="pa_driver_sync_"+state.orderId;
+  if(sessionStorage.getItem(key)==="1")return;
+  const rows=[...state.outlets.values()].filter(o=>String(o.driver||"").trim());
+  if(!rows.length)return;
+  let changed=0;
+  for(const o of rows){
+    const {data,error}=await db.rpc("update_outlet_settings_v2",{
+      p_order_id:state.orderId,p_outlet_id:o.id,p_access_token:state.token,
+      p_rank:Number(o.rank)||9999,p_driver:String(o.driver||""),p_delivery_charge:Number(o.deliveryCharge||0)
+    });
+    if(!error&&data)changed++;
+  }
+  if(changed)sessionStorage.setItem(key,"1");
+}
 async function saveOutletSettings(){
   const btn=$("saveOutletSettings");
   const rows=[...($("outletSettingsList")?.querySelectorAll(".outletSettingRow")||[])];
