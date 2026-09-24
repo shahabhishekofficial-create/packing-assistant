@@ -810,7 +810,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,dialog:focus-visib
 }
 .adminPage .tableWrap table{min-width:max-content}
 @media(max-width:850px){
-  .adminPage .analysisCard .tableWrap{max-height:58vh}
+  .adminPage .analysisCard .tableWrap{max-height:none;min-height:0;overflow-x:auto;overflow-y:clip}
   .adminPage .tableWrap{overscroll-behavior-y:auto}
 }
 /* Vertical finger swipes over a table are routed to the page by app.js;
