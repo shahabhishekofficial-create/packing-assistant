@@ -764,10 +764,12 @@ async function loadLiveDeliverySummary(){
 function startLiveDeliverySummary(){
   clearInterval(liveDeliveryTimer);
   loadLiveDeliverySummary();
+  if(window.PA_CONFIG_ENABLED && !window.PA_CONFIG_ENABLED("system.dashboard_auto_refresh"))return;
   liveDeliveryTimer=setInterval(()=>{if(!document.getElementById("home")?.classList.contains("hidden"))loadLiveDeliverySummary();},30000);
 }
 async function handleAdminAuthenticated(){try{if(IS_ADMIN_PAGE && (!state.orderId || !state.outlets.size)){await loadCurrentOrder();}else if(IS_ADMIN_PAGE){renderHome();}}catch(e){console.warn("Admin dashboard order refresh:",e.message);}loadLiveDeliverySummary();startLiveDeliverySummary();}
 window.addEventListener("pa-admin-authenticated",handleAdminAuthenticated);
+window.addEventListener("pa-config-loaded",()=>{applyPackingConfig();renderStaffOutletList();if(IS_ADMIN_PAGE)renderAdminDashboard();});
 if(IS_ADMIN_PAGE && window.PA_ADMIN_SESSION)void handleAdminAuthenticated();
 document.getElementById("deliverySummaryRefresh")?.addEventListener("click",loadLiveDeliverySummary);
 function renderStaffOutletList(){
@@ -775,7 +777,7 @@ function renderStaffOutletList(){
   const list=$("outletList");
   if(!list)return;
   list.classList.remove("hidden");
-  const all=[...state.outlets.values()].sort((a,b)=>a.rank-b.rank||String(a.name).localeCompare(String(b.name)));
+  const all=[...state.outlets.values()].filter(o=>window.PA_CONFIG_ENABLED?window.PA_CONFIG_ENABLED("packing.show_completed_outlets")||o.status!=="completed":o.status!=="completed").sort((a,b)=>a.rank-b.rank||String(a.name).localeCompare(String(b.name)));
   list.innerHTML="";
   all.forEach((o,i)=>{
     const b=document.createElement("button");
@@ -847,7 +849,7 @@ function renderHome(){
   const lists=[IS_ADMIN_PAGE ? $("adminOutletList") : $("outletList")].filter(Boolean);
   lists.forEach(list=>{
     list.innerHTML="";
-    all.forEach((o,i)=>{
+    all.filter(o=>window.PA_CONFIG_ENABLED?window.PA_CONFIG_ENABLED("packing.show_completed_outlets")||o.status!=="completed":o.status!=="completed").forEach((o,i)=>{
       const b=document.createElement("button");
       const done=o.rows.filter(r=>r.status).length;
       const mine=o.status==="in_progress"&&o.lockedDeviceId===DEVICE_ID;
@@ -886,7 +888,17 @@ async function startOutlet(outletId){
   showProduct();
 }
 
+function applyPackingConfig(){
+  const voice=window.PA_CONFIG_ENABLED?window.PA_CONFIG_ENABLED("packing.voice_narration"):true;
+  const partial=window.PA_CONFIG_ENABLED?window.PA_CONFIG_ENABLED("packing.partial_packing"):true;
+  const missing=window.PA_CONFIG_ENABLED?window.PA_CONFIG_ENABLED("packing.missing_marking"):true;
+  $("repeatBtn")?.classList.toggle("hidden",!voice);
+  $("partialBtn")?.classList.toggle("hidden",!partial);
+  $("missingBtn")?.classList.toggle("hidden",!missing);
+}
 function showProduct(){
+  applyPackingConfig();
+  $("nextItemBtn")?.classList.add("hidden");
   const o=state.outlets.get(state.current);
   if(!o)return;
   const r=o.rows[state.index];
@@ -921,7 +933,10 @@ async function record(status,packed,missing,reason=""){
   const nextIndex=updated?.rows.findIndex(x=>!x.status) ?? -1;
   if(nextIndex===-1){completeScreen();return;}
   state.index=nextIndex;
-  showProduct();
+  if(window.PA_CONFIG_ENABLED && !window.PA_CONFIG_ENABLED("packing.auto_advance")){
+    $("nextItemBtn")?.classList.remove("hidden");
+    $("syncStatus").textContent="Saved. Tap Next Item when ready.";
+  }else showProduct();
 }
 
 function completeScreen(){
@@ -935,6 +950,7 @@ function completeScreen(){
   loadOrder().catch(e=>console.error(e));
 }
 
+$("nextItemBtn")?.addEventListener("click",()=>showProduct());
 $("packedBtn").onclick=()=>{
   const r=state.outlets.get(state.current).rows[state.index];
   record("PACKED",r.required,0,"");
@@ -946,6 +962,7 @@ $("repeatBtn").onclick=()=>{
 };
 
 $("missingBtn").onclick=()=>{
+  if(window.PA_CONFIG_ENABLED && !window.PA_CONFIG_ENABLED("packing.missing_marking"))return;
   const r=state.outlets.get(state.current).rows[state.index];
   $("missingText").textContent=`Required: ${r.required}`;
   $("missingDialog").showModal();
@@ -960,6 +977,7 @@ $("missingConfirm").onclick=e=>{
 };
 
 $("partialBtn").onclick=()=>{
+  if(window.PA_CONFIG_ENABLED && !window.PA_CONFIG_ENABLED("packing.partial_packing"))return;
   const r=state.outlets.get(state.current).rows[state.index];
   $("partialRequired").value=r.required;
   $("packedQty").value="";
@@ -1063,6 +1081,7 @@ function stopItemNarration(){
 }
 function speakProduct(r,force=false){
   if(!r || r.status || !("speechSynthesis" in window))return;
+  if(window.PA_CONFIG_ENABLED && !window.PA_CONFIG_ENABLED("packing.voice_narration"))return;
   const itemId=String(r.id||"");
   // Never restart the same item because of a background sync/render.
   // This prevents Android Chrome from producing syllable-like repeats
@@ -1351,6 +1370,54 @@ function renderPackingOverview(){
   }).join("")||'<tr><td colspan="9" class="hint">No packaging data matches the selected filters.</td></tr>';
 }
 
+async function loadAdminConfiguration(){
+  const box=$("configurationSections"),status=$("configurationStatus");
+  if(!box)return;
+  box.innerHTML='<div class="hint">Loading configuration…</div>';
+  if(status){status.className="configStatus";status.textContent="";}
+  try{
+    const d=await window.PA_ADMIN_CONFIG_GET();
+    const groups={driver:{title:"Driver & Delivery",hint:"Controls the delivery workflow used by drivers."},packing:{title:"Packing",hint:"Controls packing staff behaviour and visibility."},inventory:{title:"Inventory",hint:"Controls how restaurant inventory can be counted."},system:{title:"System",hint:"Controls application-wide operational behaviour."}};
+    const configs=d.configs||[];
+    box.innerHTML=Object.keys(groups).map(section=>{
+      const g=groups[section],rows=configs.filter(x=>x.section===section);
+      return '<section class="configSection"><div class="configSectionHead"><div><h3>'+esc(g.title)+'</h3><p>'+esc(g.hint)+'</p></div></div><div class="configRows">'+rows.map(x=>'<div class="configRow"><div class="configRowText"><b>'+esc(x.label)+'</b><span>'+esc(x.description||"")+'</span></div><button type="button" class="configToggle '+(x.enabled?"on":"off")+'" data-config-key="'+esc(x.config_key)+'" data-enabled="'+String(!!x.enabled)+'">'+(x.enabled?"ON":"OFF")+'</button></div>').join("")+'</div></section>';
+    }).join("")||'<div class="hint">No configuration found.</div>';
+    box.querySelectorAll(".configToggle").forEach(btn=>{
+      btn.onclick=async()=>{
+        const key=btn.dataset.configKey,next=btn.dataset.enabled!=="true";
+        btn.disabled=true;
+        try{
+          const d2=await window.PA_ADMIN_CONFIG_SET(key,next);
+          const saved=!!d2.config.enabled;
+          btn.dataset.enabled=String(saved);
+          btn.classList.toggle("on",saved);btn.classList.toggle("off",!saved);btn.textContent=saved?"ON":"OFF";
+          if(status){status.className="configStatus success";status.textContent="Saved: "+(d2.config.label||key);}
+          await window.PA_CONFIG_REFRESH();
+          if(typeof applyPackingConfig==="function")applyPackingConfig();
+          if(typeof renderHome==="function")renderHome();
+          if(typeof renderAdminDashboard==="function")renderAdminDashboard();
+          if(typeof renderStaffOutletList==="function")renderStaffOutletList();
+        }catch(e){
+          if(status){status.className="configStatus error";status.textContent=e.message||"Could not save configuration.";}
+        }finally{btn.disabled=false;}
+      };
+    });
+  }catch(e){
+    box.innerHTML='<div class="hint">Configuration could not be loaded. Please refresh.</div>';
+    if(status){status.className="configStatus error";status.textContent=e.message||"Could not load configuration.";}
+  }
+}
+function showConfiguration(){
+  if(typeof stopItemNarration==="function")stopItemNarration();
+  document.querySelector(".baSidebar")?.classList.remove("open");
+  document.body.classList.remove("baSidebarOpen");
+  ["home","packing","packingOverview","driverDashboard","fleetManagement"].forEach(id=>$(id)?.classList.add("hidden"));
+  $("configuration")?.classList.remove("hidden");
+  setBAActive("sideSettings");
+  void loadAdminConfiguration();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
 function showPackingOverview(){
   if(typeof stopItemNarration==="function")stopItemNarration();
   document.querySelector(".baSidebar")?.classList.remove("open");
@@ -1366,7 +1433,7 @@ function showAdminDashboard(){
   if(typeof setBAActive==="function")setBAActive("sideDashboard");
   document.querySelector(".baSidebar")?.classList.remove("open");
   document.body.classList.remove("baSidebarOpen");
-  ["packing","packingOverview","driverDashboard","fleetManagement"].forEach(id=>document.getElementById(id)?.classList.add("hidden"));
+  ["packing","packingOverview","driverDashboard","fleetManagement","configuration"].forEach(id=>document.getElementById(id)?.classList.add("hidden"));
   document.getElementById("home")?.classList.remove("hidden");
   ["reportDialog","invoiceDialog","outletSettingsDialog","driverPaymentDialog"].forEach(id=>document.getElementById(id)?.open&&document.getElementById(id).close());
   window.scrollTo({top:0,behavior:"smooth"});
@@ -1375,6 +1442,7 @@ const adminMenu=document.getElementById("adminMenu"),adminMenuBtn=document.getEl
 adminMenuBtn?.addEventListener("click",e=>{e.stopPropagation();adminMenu.classList.toggle("hidden");adminMenuBtn.setAttribute("aria-expanded",String(!adminMenu.classList.contains("hidden")))});
 document.addEventListener("click",e=>{if(adminMenu&&!adminMenu.contains(e.target)&&e.target!==adminMenuBtn)adminMenu.classList.add("hidden")});
 document.getElementById("menuReportBtn")?.addEventListener("click",()=>{adminMenu.classList.add("hidden");setBAActive("sideReports");openReportDialog()});
+document.getElementById("menuConfiguration")?.addEventListener("click",showConfiguration);
 document.getElementById("menuChangePassword")?.addEventListener("click",()=>{adminMenu.classList.add("hidden");window.PA_ADMIN_CHANGE_PASSWORD?.();});
 document.getElementById("menuLogout")?.addEventListener("click",()=>{adminMenu.classList.add("hidden");window.PA_ADMIN_LOGOUT?.();});
 document.getElementById("closeReportDialog")?.addEventListener("click",()=>document.getElementById("reportDialog")?.close());
@@ -1458,7 +1526,7 @@ document.addEventListener("keydown",e=>{
   }
 });
 document.getElementById("sideDashboard")?.addEventListener("click",()=>{document.querySelector(".baSidebar")?.classList.remove("open");showAdminDashboard();setBAActive("sideDashboard")});
-document.getElementById("sidePacking")?.addEventListener("click",showPackingOverview);bindBAAction("sideDelivery","menuDriverDashboard");bindBAAction("sideReports","menuReportBtn");bindBAAction("sideSettings","menuOutletSettings");
+document.getElementById("sidePacking")?.addEventListener("click",showPackingOverview);bindBAAction("sideDelivery","menuDriverDashboard");bindBAAction("sideReports","menuReportBtn");document.getElementById("sideSettings")?.addEventListener("click",showConfiguration);
 document.getElementById("modulePacking")?.addEventListener("click",showPackingOverview);bindBAAction("moduleDelivery","menuDriverDashboard");bindBAAction("moduleReports","menuReportBtn");
 ["moduleInventory","modulePurchase","moduleEmployees","sideInventory","sidePurchase","sideEmployees"].forEach(id=>document.getElementById(id)?.addEventListener("click",e=>alert((e.currentTarget.dataset.comingSoon||({"moduleInventory":"Inventory","modulePurchase":"Purchase & Suppliers","moduleEmployees":"Employees & HR","sideInventory":"Inventory","sidePurchase":"Purchase & Suppliers","sideEmployees":"Employees & HR"}[id]))+" is coming soon.")));
 function runGlobalSearch(raw){
