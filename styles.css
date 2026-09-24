@@ -834,3 +834,212 @@ button:focus-visible,input:focus-visible,select:focus-visible,dialog:focus-visib
 .packingFilters{margin:16px 0}.packingFilterGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.packingFilterGrid label{display:flex;flex-direction:column;gap:6px;font-weight:700;font-size:12px;color:#64748b}.packingFilterGrid input,.packingFilterGrid select{width:100%;box-sizing:border-box}@media(max-width:800px){.packingFilterGrid{grid-template-columns:1fr 1fr}}@media(max-width:520px){.packingFilterGrid{grid-template-columns:1fr}}
 
 .packingOverviewHead{margin:18px 0 14px}.packingOverviewHead h2{margin:5px 0}.packingOverviewHead .sectionHeadActions{margin-left:auto}
+
+
+/* ===== Outlet Setup V2 — clean management layout ===== */
+.settingsDialog.outletSetupDialog{
+  width:min(920px,calc(100vw - 24px)) !important;
+  max-width:920px !important;
+  max-height:min(92vh,900px) !important;
+  padding:22px !important;
+  overflow:hidden !important;
+}
+.outletSetupDialog .settingsDialogHead{
+  flex:0 0 auto;
+  margin-bottom:12px !important;
+  padding-bottom:14px;
+  border-bottom:1px solid #edf1f5;
+}
+.outletSetupDialog .settingsDialogHead h3{
+  font-size:24px;
+  letter-spacing:-.4px;
+}
+.outletSetupDialog .settingsDialogHead .hint{
+  margin-top:5px;
+  max-width:620px;
+}
+.outletSetupDialog .dialogHeadActions{
+  flex:0 0 auto;
+  align-items:center;
+}
+.outletSetupDialog .dialogHeadActions button{
+  min-height:44px;
+}
+.outletSetupDialog .driverTools{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  padding:12px;
+  margin-bottom:10px;
+  border:1px solid #e2e8f0;
+  border-radius:14px;
+  background:linear-gradient(135deg,#f8fafc,#f5f8ff);
+}
+.outletSetupDialog .driverTools input{
+  width:190px;
+  height:42px;
+  padding:10px 12px;
+  border:1px solid #dbe3ef;
+  border-radius:10px;
+  background:#fff;
+}
+.outletSetupDialog .driverTools button{
+  height:42px;
+}
+.outletSetupColumns{
+  display:grid;
+  grid-template-columns:28px 44px minmax(220px,1fr) 150px 165px;
+  gap:10px;
+  align-items:center;
+  padding:0 14px 7px;
+  color:#64748b;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.7px;
+  text-transform:uppercase;
+}
+.outletSetupColumns span:nth-child(2){text-align:center}
+.outletSetupColumns span:nth-child(5){text-align:left}
+.outletSetupDialog .outletSettingsList{
+  display:flex !important;
+  flex-direction:column !important;
+  gap:7px !important;
+  max-height:none !important;
+  height:min(57vh,560px) !important;
+  min-height:180px;
+  overflow-y:auto !important;
+  overflow-x:hidden !important;
+  padding:2px 5px 8px 0 !important;
+  overscroll-behavior:contain;
+}
+.outletSetupDialog .outletSettingRow{
+  display:grid !important;
+  grid-template-columns:28px 44px minmax(220px,1fr) 150px 165px !important;
+  align-items:center !important;
+  gap:10px !important;
+  min-height:62px;
+  width:100% !important;
+  padding:10px 14px !important;
+  border:1px solid #e2e8f0 !important;
+  border-radius:14px !important;
+  background:#fff !important;
+  box-shadow:0 2px 8px #0f172a08;
+}
+.outletSetupDialog .outletSettingRow:hover{
+  border-color:#c7d2fe !important;
+  box-shadow:0 6px 16px #0f172a12;
+  transform:translateY(-1px);
+}
+.outletSetupDialog .dragHandle{
+  color:#94a3b8;
+  font-size:19px;
+  text-align:center;
+  cursor:grab;
+}
+.outletSetupDialog .rankNo{
+  display:grid;
+  place-items:center;
+  width:32px;
+  height:32px;
+  border-radius:9px;
+  background:#f1f5f9;
+  color:#475569;
+  font-weight:900;
+}
+.outletSetupDialog .settingName{
+  font-size:14px !important;
+  font-weight:850 !important;
+  color:#10203a !important;
+}
+.outletSetupDialog .driverSelect{
+  width:100% !important;
+  min-width:0 !important;
+  height:40px !important;
+  padding:7px 10px !important;
+  border:1px solid #dbe3ef !important;
+  border-radius:10px !important;
+  background:#fff !important;
+}
+.outletSetupDialog .chargeField{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  min-width:0;
+}
+.outletSetupDialog .chargeField span{
+  font-size:10px !important;
+  font-weight:900 !important;
+  color:#64748b !important;
+  white-space:nowrap;
+}
+.outletSetupDialog .deliveryChargeInput{
+  width:92px !important;
+  height:40px !important;
+  padding:8px 10px !important;
+  border:1px solid #dbe3ef !important;
+  border-radius:10px !important;
+  font-weight:850 !important;
+}
+.outletSetupDialog .outletSetupFooter{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  padding-top:10px;
+  color:#64748b;
+  font-size:11px;
+}
+.outletSetupDialog .outletSetupFooter strong{color:#334155}
+@media(max-width:760px){
+  .settingsDialog.outletSetupDialog{
+    width:calc(100vw - 14px) !important;
+    max-height:94vh !important;
+    padding:14px !important;
+  }
+  .outletSetupDialog .settingsDialogHead{
+    flex-direction:column;
+  }
+  .outletSetupDialog .dialogHeadActions{
+    width:100%;
+  }
+  .outletSetupDialog .dialogHeadActions button{
+    flex:1;
+  }
+  .outletSetupDialog .driverTools{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+  }
+  .outletSetupDialog .driverTools input{
+    grid-column:1/-1;
+    width:100%;
+  }
+  .outletSetupDialog .driverTools button{
+    width:100%;
+  }
+  .outletSetupColumns{
+    grid-template-columns:24px 36px minmax(120px,1fr) 112px 125px;
+    gap:7px;
+    padding-left:9px;
+    padding-right:9px;
+  }
+  .outletSetupDialog .outletSettingRow{
+    grid-template-columns:24px 36px minmax(120px,1fr) 112px 125px !important;
+    gap:7px !important;
+    padding:9px !important;
+  }
+}
+@media(max-width:560px){
+  .outletSetupColumns{
+    grid-template-columns:22px 32px minmax(100px,1fr) 100px 112px;
+    font-size:9px;
+  }
+  .outletSetupDialog .outletSettingRow{
+    grid-template-columns:22px 32px minmax(100px,1fr) 100px 112px !important;
+    min-height:58px;
+  }
+  .outletSetupDialog .settingName{font-size:13px !important}
+  .outletSetupDialog .driverSelect{height:38px !important;padding:6px 5px !important}
+  .outletSetupDialog .chargeField span{display:none}
+  .outletSetupDialog .deliveryChargeInput{width:100% !important}
+  .outletSetupDialog .outletSetupFooter{font-size:10px}
+}
