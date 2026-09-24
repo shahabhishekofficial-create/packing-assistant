@@ -96,7 +96,7 @@
 
 <section id="packingOverview" class="screen hidden">
   <div id="orderSummary" class="dashboardSummary hidden"></div>
-  <div class="sectionHead"><section class="analysisCard packingCreatePanel">
+  <section class="analysisCard packingCreatePanel">
     <div class="sectionHead"><div><span class="eyebrow">ORDER IMPORT</span><h3>Create / refresh live packing order</h3><p class="hint">Upload the latest Excel/CSV here. Packaging operations remain inside this section.</p></div><button id="dashCreateOrder" class="secondary">Create New Order</button></div>
     <div class="baCreateOrderTools hidden" id="dashCreateOrderTools">
       <input id="fileInput" type="file" accept=".xlsx,.xls,.csv"><button id="createOrderBtn" class="primary">Create Live Order</button><button id="loadDemo" class="secondary">Demo</button>
@@ -110,6 +110,15 @@
     <div class="sectionHeadActions"><button id="packingOverviewRefresh" class="secondary">↻ Refresh</button><button id="packingOverviewDashboardBack" class="secondary">← Dashboard</button></div>
   </div>
   <div id="packingOverviewKpis" class="analysisKpis"></div>
+  <section class="analysisCard packingFilters">
+    <div class="sectionHead"><div><span class="eyebrow">FILTERS</span><h3>Packaging data</h3><p class="hint">Filter the current order by outlet, driver, item or packing status.</p></div><button id="packingFiltersClear" class="secondary">Clear</button></div>
+    <div class="packingFilterGrid">
+      <label>Outlet<select id="packingOutletFilter"><option value="">All outlets</option></select></label>
+      <label>Driver<select id="packingDriverFilter"><option value="">All drivers</option></select></label>
+      <label>Item<input id="packingItemFilter" type="search" placeholder="Search item or code"></label>
+      <label>Status<select id="packingStatusFilter"><option value="">All statuses</option><option value="pending">Pending</option><option value="in_progress">In progress</option><option value="completed">Completed</option></select></label>
+    </div>
+  </section>
   <section class="analysisCard">
     <div class="sectionHead"><div><span class="eyebrow">CURRENT ORDER</span><h3 id="packingOverviewOrderName">Loading…</h3></div><button id="packingOverviewStaffBtn" class="secondary">Open Staff Packing Screen</button></div>
     <div class="tableWrap">
