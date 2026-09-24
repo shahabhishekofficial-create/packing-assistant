@@ -132,7 +132,7 @@ async function createLiveOrder(rows){
     narration_rank: r.rank
   }));
 
-  const url = `${window.SUPABASE_CONFIG.url}/rest/v1/rpc/create_order`;
+  const url = `${window.SUPABASE_CONFIG.url}/rest/v1/rpc/create_order_v2`;
 
   try {
     const response = await fetch(url, {
