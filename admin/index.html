@@ -211,7 +211,53 @@
   </dialog>
   <dialog id="invoiceDialog" class="settingsDialog reportDialog"><div class="settingsDialogHead"><div><span class="eyebrow">DELIVERY INVOICES</span><h3 id="invoiceDialogTitle">Invoices</h3><p class="hint">Invoices remain available from previous orders as well as the current order.</p></div><div class="dialogHeadActions"><button id="invoiceDashboardBack" class="secondary">← Dashboard</button><button id="closeInvoiceDialog" class="secondary">✕</button></div></div><div id="invoiceList" class="reportHistoryList"></div></dialog>
 </div></div></main>
-<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+  "use strict";
+  window.__PA_ADMIN_EMERGENCY__=async function(){
+    try{
+      if("serviceWorker" in navigator){
+        const regs=await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map(r=>r.unregister().catch(()=>false)));
+      }
+      if("caches" in window){
+        const keys=await caches.keys();
+        await Promise.all(keys.map(k=>caches.delete(k)));
+      }
+      localStorage.removeItem("pa_boot_recovered");
+      sessionStorage.removeItem("pa_boot_recovered");
+      sessionStorage.removeItem("pa_update_reload_guard");
+    }catch(e){console.warn("Emergency recovery:",e)}
+    location.replace("./?emergency="+Date.now());
+  };
+  window.addEventListener("error",function(e){
+    if(e.target && e.target.tagName==="SCRIPT" && /cdn\.jsdelivr\.net/.test(e.target.src)){
+      if(!window.supabase){
+        const s=document.createElement("script");
+        s.src="https://unpkg.com/@supabase/supabase-js@2";
+        s.async=false;
+        document.head.appendChild(s);
+      }
+    }
+  },true);
+  setTimeout(function(){
+    const o=document.getElementById("adminBootOverlay");
+    if(o && !window.PA_ADMIN_SESSION){
+      const card=o.querySelector(".bootCard");
+      if(card && !card.querySelector(".emergencyRepair")){
+        const b=document.createElement("button");
+        b.className="emergencyRepair";
+        b.type="button";
+        b.textContent="Force Repair & Reload";
+        b.style.cssText="display:block;margin:14px auto 0;padding:12px 18px;border:0;border-radius:10px;background:#b42318;color:#fff;font:800 14px system-ui;cursor:pointer";
+        b.onclick=window.__PA_ADMIN_EMERGENCY__;
+        card.appendChild(b);
+      }
+    }
+  },12000);
+})();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="if(!window.supabase){var s=document.createElement('script');s.src='https://unpkg.com/@supabase/supabase-js@2';document.head.appendChild(s)}"></script>
 <script defer src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script defer src="../config.js?v=20260924-5"></script>
 <script defer src="./auth.js?v=20260924-5"></script>
