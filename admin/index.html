@@ -95,21 +95,28 @@
 </section>
 
 <section id="packingOverview" class="screen hidden">
-  <div id="orderSummary" class="dashboardSummary hidden"></div>
   <section class="analysisCard packingCreatePanel">
-    <div class="sectionHead"><div><span class="eyebrow">ORDER IMPORT</span><h3>Create / refresh live packing order</h3><p class="hint">Upload the latest Excel/CSV here. Packaging operations remain inside this section.</p></div><button id="dashCreateOrder" class="secondary">Create New Order</button></div>
+    <div class="sectionHead">
+      <div><span class="eyebrow">ORDER IMPORT</span><h3>Create / refresh live packing order</h3><p class="hint">Upload the latest Excel/CSV here. Packaging operations remain inside this section.</p></div>
+      <button id="dashCreateOrder" class="secondary">Create New Order</button>
+    </div>
     <div class="baCreateOrderTools hidden" id="dashCreateOrderTools">
-      <input id="fileInput" type="file" accept=".xlsx,.xls,.csv"><button id="createOrderBtn" class="primary">Create Live Order</button><button id="loadDemo" class="secondary">Demo</button>
+      <input id="fileInput" type="file" accept=".xlsx,.xls,.csv">
+      <button id="createOrderBtn" class="primary">Create Live Order</button>
+      <button id="loadDemo" class="secondary">Demo</button>
       <p class="hint">Required headers: STORE_NAME, ITEM_CODE, PRODUCT_NAME, Sum of Indents, SKU Narration Order</p>
       <p id="orderLoadStatus" class="hint hidden" role="status"></p>
       <div id="orderLinkBox" class="shareBox hidden"><span>Packaging Staff Link</span><div class="shareRow"><input id="orderLink" readonly><button id="copyLink">Copy</button></div></div>
     </div>
   </section>
 
-    <div><span class="eyebrow">PACKING &amp; DISPATCH</span><h2>Packing Overview</h2><p class="hint">Monitor the current order and packing progress. The item-by-item packing controls remain on the separate staff packing screen.</p></div>
+  <div class="sectionHead packingOverviewHead">
+    <div><span class="eyebrow">PACKING &amp; DISPATCH</span><h2>Packing Overview</h2><p class="hint">Monitor the current order and packing progress. Item-by-item packing controls remain on the separate staff packing screen.</p></div>
     <div class="sectionHeadActions"><button id="packingOverviewRefresh" class="secondary">↻ Refresh</button><button id="packingOverviewDashboardBack" class="secondary">← Dashboard</button></div>
   </div>
+
   <div id="packingOverviewKpis" class="analysisKpis"></div>
+
   <section class="analysisCard packingFilters">
     <div class="sectionHead"><div><span class="eyebrow">FILTERS</span><h3>Packaging data</h3><p class="hint">Filter the current order by outlet, driver, item or packing status.</p></div><button id="packingFiltersClear" class="secondary">Clear</button></div>
     <div class="packingFilterGrid">
@@ -119,21 +126,15 @@
       <label>Status<select id="packingStatusFilter"><option value="">All statuses</option><option value="pending">Pending</option><option value="in_progress">In progress</option><option value="completed">Completed</option></select></label>
     </div>
   </section>
+
   <section class="analysisCard">
-    <div class="sectionHead"><div><span class="eyebrow">DRIVER SUMMARY</span><h3>Driver-wise packaging totals</h3><p class="hint">Totals follow the filters above. Search “Button Mushroom” to see each driver's required, packed and missing quantity for that item.</p></div></div>
-    <div class="tableWrap"><table>
-      <thead><tr><th>Driver</th><th>Outlets</th><th>Required</th><th>Packed</th><th>Missing</th><th>Progress</th></tr></thead>
-      <tbody id="packingDriverSummaryBody"></tbody>
-    </table></div>
+    <div class="sectionHead"><div><span class="eyebrow">DRIVER SUMMARY</span><h3>Driver-wise packaging totals</h3><p class="hint">Totals follow the filters above. Search an item to see each driver's required, packed and missing quantity.</p></div></div>
+    <div class="tableWrap"><table><thead><tr><th>Driver</th><th>Outlets</th><th>Required</th><th>Packed</th><th>Missing</th><th>Progress</th></tr></thead><tbody id="packingDriverSummaryBody"></tbody></table></div>
   </section>
+
   <section class="analysisCard">
     <div class="sectionHead"><div><span class="eyebrow">CURRENT ORDER</span><h3 id="packingOverviewOrderName">Loading…</h3></div><button id="packingOverviewStaffBtn" class="secondary">Open Staff Packing Screen</button></div>
-    <div class="tableWrap">
-      <table>
-        <thead><tr><th>Rank</th><th>Outlet</th><th>Driver</th><th>Products</th><th>Required</th><th>Packed</th><th>Missing</th><th>Progress</th><th>Status</th></tr></thead>
-        <tbody id="packingOverviewBody"></tbody>
-      </table>
-    </div>
+    <div class="tableWrap"><table><thead><tr><th>Rank</th><th>Outlet</th><th>Driver</th><th>Products</th><th>Required</th><th>Packed</th><th>Missing</th><th>Progress</th><th>Status</th></tr></thead><tbody id="packingOverviewBody"></tbody></table></div>
   </section>
 </section>
 <section id="packing" class="screen hidden">
