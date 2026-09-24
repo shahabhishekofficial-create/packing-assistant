@@ -191,7 +191,7 @@
       const token=localStorage.getItem(SESSION_TOKEN_KEY)||"";
       if(token && db){
         try{
-          const r=await db.rpc("verify_admin_session",{p_session_token:token});
+          const r=await Promise.race([db.rpc("verify_admin_session",{p_session_token:token}),new Promise((_,reject)=>setTimeout(()=>reject(new Error("Admin session verification timed out")),10000))]);
           if(r.error||!r.data){forceLogout(false);return;}
           window.PA_ADMIN_SESSION=token;
           serverSessionRefreshAt=Date.now();
