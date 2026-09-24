@@ -43,7 +43,12 @@ async function repair(){
   location.reload();
 }
 window.PA_REPAIR_APP=repair;
-function boot(){
+let updateBooted=false;
+async function boot(){
+  if(updateBooted)return;
+  try{await (window.PA_CONFIG_READY||Promise.resolve());}catch{}
+  if(window.PA_CONFIG_ENABLED&&!window.PA_CONFIG_ENABLED("system.update_notifications"))return;
+  updateBooted=true;
   const b=document.createElement("button");b.textContent="Repair app";b.hidden=true;
   b.style.cssText="position:fixed;right:14px;bottom:14px;z-index:2147483646;padding:10px 14px;border:1px solid #cbd5e1;border-radius:10px;background:#fff;color:#10203a;font:700 13px system-ui";
   b.onclick=repair;document.body.appendChild(b);
@@ -51,5 +56,6 @@ function boot(){
   check();document.addEventListener("visibilitychange",()=>document.visibilityState==="visible"&&check());
   window.addEventListener("focus",check);setInterval(check,300000);
 }
+window.addEventListener("pa-config-loaded",()=>boot());
 document.readyState==="loading"?document.addEventListener("DOMContentLoaded",boot,{once:true}):boot();
 })();
