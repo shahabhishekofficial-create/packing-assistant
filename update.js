@@ -1,30 +1,55 @@
 (()=>{"use strict";
-const BUILD_ID="20260925-1", VERSION_URL=window.PA_VERSION_URL||"version.json", GUARD="pa_update_reload_guard";
-let checking=false;
-function overlay(){let e=document.getElementById("paUpdatingOverlay");if(!e){e=document.createElement("div");e.id="paUpdatingOverlay";e.style.cssText="position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;background:#fff;color:#10203a;font:700 18px system-ui";e.textContent="Updating…";document.documentElement.appendChild(e)}}
-async function check(){if(checking||document.visibilityState==="hidden")return;checking=true;try{const u=new URL(VERSION_URL,document.baseURI);u.searchParams.set("_",Date.now());const r=await fetch(u,{cache:"no-store",headers:{"Cache-Control":"no-cache"}});if(!r.ok)throw Error("version check failed");const v=await r.json(),remote=String(v?.build_id||"");if(!remote||remote===BUILD_ID||sessionStorage.getItem(GUARD)===remote)return;sessionStorage.setItem(GUARD,remote);overlay();if("serviceWorker"in navigator)await Promise.all((await navigator.serviceWorker.getRegistrations()).map(x=>x.update().catch(()=>{})));setTimeout(()=>location.reload(),250)}catch(e){console.warn("Version check:",e)}finally{checking=false}}
-async function repair(){overlay();try{if("serviceWorker"in navigator)await Promise.all((await navigator.serviceWorker.getRegistrations()).map(r=>r.unregister().catch(()=>false)));if("caches"in window)await Promise.all((await caches.keys()).map(k=>caches.delete(k)))}finally{location.reload()}}
-window.PA_REPAIR_APP=repair;
-async function bootRecovery(){
-  if(!/\/admin\/?$/.test(location.pathname))return;
-  if(new URLSearchParams(location.search).has("emergency"))return;
-  const overlay=document.getElementById("adminBootOverlay");
-  if(!overlay)return;
-  const recovered=sessionStorage.getItem("pa_boot_recovered")==="1";
-  if(recovered){
-    const sub=overlay.querySelector(".bootSub");
-    if(sub)sub.textContent="Startup failed. Use the recovery button below.";
-    const btn=document.createElement("button");
-    btn.textContent="Repair & Reload";btn.style.cssText="display:block;margin:16px auto 0;padding:11px 16px;border:0;border-radius:10px;background:#0f766e;color:#fff;font-weight:800";
-    btn.onclick=repair;overlay.querySelector(".bootCard")?.appendChild(btn);
-    return;
-  }
-  sessionStorage.setItem("pa_boot_recovered","1");
-  const sub=overlay.querySelector(".bootSub");
-  if(sub)sub.textContent="Recovering app cache…";
-  await repair();
+const BUILD_ID="20260925-2",VERSION_URL=window.PA_VERSION_URL||"version.json";
+let checking=false,pendingBuild="";
+function removeNotice(){document.getElementById("paUpdateNotice")?.remove()}
+function showNotice(remote){
+  pendingBuild=remote;
+  let e=document.getElementById("paUpdateNotice");
+  if(e)return;
+  e=document.createElement("div");e.id="paUpdateNotice";
+  e.style.cssText="position:fixed;left:12px;right:12px;bottom:12px;z-index:2147483646;display:flex;align-items:center;gap:10px;justify-content:space-between;padding:12px 14px;border:1px solid #cbd5e1;border-radius:14px;background:#fff;color:#10203a;box-shadow:0 12px 35px rgba(15,23,42,.18);font:600 14px system-ui,-apple-system,sans-serif";
+  e.innerHTML='<span>New app update available. Your current work will not be interrupted.</span><span style="display:flex;gap:8px;flex-shrink:0"><button id="paUpdateLater" type="button" style="padding:8px 11px;border:1px solid #cbd5e1;border-radius:9px;background:#fff;color:#334155;font-weight:700">Later</button><button id="paUpdateNow" type="button" style="padding:8px 11px;border:0;border-radius:9px;background:#0f766e;color:#fff;font-weight:800">Update</button></span>';
+  document.body.appendChild(e);
+  e.querySelector("#paUpdateLater").onclick=removeNotice;
+  e.querySelector("#paUpdateNow").onclick=applyUpdate;
 }
-setTimeout(()=>{if(document.getElementById("adminBootOverlay")){const sub=document.querySelector("#adminBootOverlay .bootSub");if(sub)sub.textContent="Still starting. Please wait…";}else sessionStorage.removeItem("pa_boot_recovered")},18000);
-function boot(){const b=document.createElement("button");b.textContent="Repair app";b.hidden=true;b.style.cssText="position:fixed;right:14px;bottom:14px;z-index:2147483646;padding:10px 14px;border:1px solid #cbd5e1;border-radius:10px;background:#fff;color:#10203a;font:700 13px system-ui";b.onclick=repair;document.body.appendChild(b);document.addEventListener("keydown",e=>{if(e.altKey&&e.shiftKey&&e.key.toLowerCase()==="r"){b.hidden=false;clearTimeout(b._t);b._t=setTimeout(()=>b.hidden=true,15000)}});check();document.addEventListener("visibilitychange",()=>document.visibilityState==="visible"&&check());window.addEventListener("focus",check);setInterval(check,300000)}
+async function check(){
+  if(checking||document.visibilityState==="hidden")return;
+  checking=true;
+  try{
+    const u=new URL(VERSION_URL,document.baseURI);u.searchParams.set("_",Date.now());
+    const r=await fetch(u,{cache:"no-store",headers:{"Cache-Control":"no-cache"}});
+    if(!r.ok)throw Error("version check failed");
+    const remote=String((await r.json())?.build_id||"");
+    if(!remote||remote===BUILD_ID)return;
+    showNotice(remote);
+  }catch(e){console.warn("Version check:",e)}
+  finally{checking=false}
+}
+async function applyUpdate(){
+  const b=document.getElementById("paUpdateNow");
+  if(b){b.disabled=true;b.textContent="Updating…"}
+  try{
+    if("serviceWorker"in navigator)await Promise.all((await navigator.serviceWorker.getRegistrations()).map(x=>x.update().catch(()=>{})));
+  }finally{
+    sessionStorage.setItem("pa_last_update",pendingBuild||"");
+    location.reload();
+  }
+}
+async function repair(){
+  if(!confirm("Repair app cache only? Your login, localStorage and IndexedDB data will NOT be deleted."))return;
+  if("serviceWorker"in navigator)await Promise.all((await navigator.serviceWorker.getRegistrations()).map(r=>r.unregister().catch(()=>false)));
+  if("caches"in window)await Promise.all((await caches.keys()).map(k=>caches.delete(k)));
+  location.reload();
+}
+window.PA_REPAIR_APP=repair;
+function boot(){
+  const b=document.createElement("button");b.textContent="Repair app";b.hidden=true;
+  b.style.cssText="position:fixed;right:14px;bottom:14px;z-index:2147483646;padding:10px 14px;border:1px solid #cbd5e1;border-radius:10px;background:#fff;color:#10203a;font:700 13px system-ui";
+  b.onclick=repair;document.body.appendChild(b);
+  document.addEventListener("keydown",e=>{if(e.altKey&&e.shiftKey&&e.key.toLowerCase()==="r"){b.hidden=false;clearTimeout(b._t);b._t=setTimeout(()=>b.hidden=true,15000)}});
+  check();document.addEventListener("visibilitychange",()=>document.visibilityState==="visible"&&check());
+  window.addEventListener("focus",check);setInterval(check,300000);
+}
 document.readyState==="loading"?document.addEventListener("DOMContentLoaded",boot,{once:true}):boot();
 })();
