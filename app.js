@@ -1443,6 +1443,7 @@ adminMenuBtn?.addEventListener("click",e=>{e.stopPropagation();adminMenu.classLi
 document.addEventListener("click",e=>{if(adminMenu&&!adminMenu.contains(e.target)&&e.target!==adminMenuBtn)adminMenu.classList.add("hidden")});
 document.getElementById("menuReportBtn")?.addEventListener("click",()=>{adminMenu.classList.add("hidden");setBAActive("sideReports");openReportDialog()});
 document.getElementById("menuConfiguration")?.addEventListener("click",showConfiguration);
+document.getElementById("configurationRefresh")?.addEventListener("click",loadAdminConfiguration);document.getElementById("configurationDashboardBack")?.addEventListener("click",showAdminDashboard);
 document.getElementById("menuChangePassword")?.addEventListener("click",()=>{adminMenu.classList.add("hidden");window.PA_ADMIN_CHANGE_PASSWORD?.();});
 document.getElementById("menuLogout")?.addEventListener("click",()=>{adminMenu.classList.add("hidden");window.PA_ADMIN_LOGOUT?.();});
 document.getElementById("closeReportDialog")?.addEventListener("click",()=>document.getElementById("reportDialog")?.close());
