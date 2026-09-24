@@ -1288,13 +1288,13 @@ updateConnection();
 })();
 
 function renderPackingOverview(){
-  const box=$("packingOverviewBody"),kpis=$("packingOverviewKpis");
+  const box=$("packingOverviewBody"),kpis=$("packingOverviewKpis"),driverBox=$("packingDriverSummaryBody");
   if(!box||!kpis)return;
   const all=[...state.outlets.values()].sort((a,b)=>(a.rank||999)-(b.rank||999)||String(a.name).localeCompare(String(b.name)));
   const outletSel=$("packingOutletFilter"),driverSel=$("packingDriverFilter"),statusSel=$("packingStatusFilter"),itemInput=$("packingItemFilter");
   if(outletSel&&(!outletSel.dataset.ready||outletSel.options.length!==all.length+1)){
-    const outlets=all.map(o=>'<option value="'+esc(String(o.id))+'">'+esc(o.name)+'</option>').join("");
-    outletSel.innerHTML='<option value="">All outlets</option>'+outlets;outletSel.dataset.ready="1";
+    outletSel.innerHTML='<option value="">All outlets</option>'+all.map(o=>'<option value="'+esc(String(o.id))+'">'+esc(o.name)+'</option>').join("");
+    outletSel.dataset.ready="1";
     const drivers=[...new Set(all.map(o=>o.driver||"Unassigned"))].sort((a,b)=>a.localeCompare(b));
     if(driverSel)driverSel.innerHTML='<option value="">All drivers</option>'+drivers.map(d=>'<option value="'+esc(d)+'">'+esc(d)+'</option>').join("");
     const rerender=()=>renderPackingOverview();
@@ -1307,14 +1307,28 @@ function renderPackingOverview(){
   const total=rows.reduce((s,r)=>s+Number(r.required||0),0),packed=rows.reduce((s,r)=>s+Number(r.packed||0),0),missing=rows.reduce((s,r)=>s+Number(r.missing||0),0),completed=selected.filter(o=>o.status==="completed").length,inProgress=selected.filter(o=>o.status==="in_progress").length,pending=selected.length-completed-inProgress,pct=total?Math.round(((packed+missing)/total)*100):0;
   kpis.innerHTML=[["Outlets",selected.length],["Completed",completed],["In Progress",inProgress],["Pending",pending],["Required",total],["Packed",packed],["Missing",missing],["Progress",pct+"%"]].map(x=>'<div class="analysisKpi"><span>'+esc(String(x[0]))+'</span><b>'+esc(String(x[1]))+'</b></div>').join("");
   if($("packingOverviewOrderName"))$("packingOverviewOrderName").textContent=state.order?.order_name||"No current order";
-  const grouped=selected.map(o=>{
+
+  const byDriver=new Map();
+  selected.forEach(o=>{
+    const matching=o.rows.filter(r=>!iq||String(r.product||"").toLowerCase().includes(iq)||String(r.code||"").toLowerCase().includes(iq));
+    if(!matching.length)return;
+    const driver=o.driver||"Unassigned";
+    if(!byDriver.has(driver))byDriver.set(driver,{driver,outlets:new Set(),required:0,packed:0,missing:0});
+    const d=byDriver.get(driver);d.outlets.add(o.id);
+    matching.forEach(r=>{d.required+=Number(r.required||0);d.packed+=Number(r.packed||0);d.missing+=Number(r.missing||0);});
+  });
+  if(driverBox)driverBox.innerHTML=[...byDriver.values()].sort((a,b)=>a.driver.localeCompare(b.driver)).map(d=>{
+    const progress=d.required?Math.round(((d.packed+d.missing)/d.required)*100):0;
+    return '<tr><td><b>'+esc(d.driver)+'</b></td><td>'+d.outlets.size+'</td><td>'+d.required+'</td><td>'+d.packed+'</td><td class="'+(d.missing?"dangerText":"")+'">'+d.missing+'</td><td><div class="packingOverviewProgress"><i style="width:'+progress+'%"></i><span>'+progress+'%</span></div></td></tr>';
+  }).join("")||'<tr><td colspan="6" class="hint">No driver data matches the selected filters.</td></tr>';
+
+  box.innerHTML=selected.map(o=>{
     const itemRows=o.rows.filter(r=>!iq||String(r.product||"").toLowerCase().includes(iq)||String(r.code||"").toLowerCase().includes(iq));
     if(!itemRows.length)return "";
     const req=itemRows.reduce((s,r)=>s+Number(r.required||0),0),pk=itemRows.reduce((s,r)=>s+Number(r.packed||0),0),ms=itemRows.reduce((s,r)=>s+Number(r.missing||0),0),done=req?Math.round(((pk+ms)/req)*100):0;
     const status=o.status==="completed"?"Completed":o.status==="in_progress"?"In progress":"Pending",cls=o.status==="completed"?"done":o.status==="in_progress"?"packing":"pending";
     return '<tr><td>'+esc(String(o.rank??"—"))+'</td><td><b>'+esc(o.name)+'</b></td><td>'+esc(o.driver||"Unassigned")+'</td><td>'+itemRows.length+'</td><td>'+req+'</td><td>'+pk+'</td><td class="'+(ms?"dangerText":"")+'">'+ms+'</td><td><div class="packingOverviewProgress"><i style="width:'+done+'%"></i><span>'+done+'%</span></div></td><td><span class="deliveryStatus '+cls+'">'+status+'</span></td></tr>';
-  }).join("");
-  box.innerHTML=grouped||'<tr><td colspan="9" class="hint">No packaging data matches the selected filters.</td></tr>';
+  }).join("")||'<tr><td colspan="9" class="hint">No packaging data matches the selected filters.</td></tr>';
 }
 
 function showPackingOverview(){
