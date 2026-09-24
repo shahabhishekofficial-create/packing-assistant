@@ -1292,7 +1292,7 @@ function renderPackingOverview(){
   if(!box||!kpis)return;
   const all=[...state.outlets.values()].sort((a,b)=>(a.rank||999)-(b.rank||999)||String(a.name).localeCompare(String(b.name)));
   const outletSel=$("packingOutletFilter"),driverSel=$("packingDriverFilter"),statusSel=$("packingStatusFilter"),itemInput=$("packingItemFilter");
-  if(outletSel&&!outletSel.dataset.ready){
+  if(outletSel&&(!outletSel.dataset.ready||outletSel.options.length!==all.length+1)){
     const outlets=all.map(o=>'<option value="'+esc(String(o.id))+'">'+esc(o.name)+'</option>').join("");
     outletSel.innerHTML='<option value="">All outlets</option>'+outlets;outletSel.dataset.ready="1";
     const drivers=[...new Set(all.map(o=>o.driver||"Unassigned"))].sort((a,b)=>a.localeCompare(b));
