@@ -7,7 +7,7 @@
 <title>Bigly Agro — Operations Dashboard</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="../icon-192.png">
-<link rel="stylesheet" href="../styles.css?v=20260924-9">
+<link rel="stylesheet" href="../styles.css?v=20260924-10">
 <script>
 (function(){
   window.addEventListener("error",function(e){
@@ -240,30 +240,15 @@
       }
     }
   },true);
-  setTimeout(function(){
-    const o=document.getElementById("adminBootOverlay");
-    if(o && !window.PA_ADMIN_SESSION){
-      const card=o.querySelector(".bootCard");
-      if(card && !card.querySelector(".emergencyRepair")){
-        const b=document.createElement("button");
-        b.className="emergencyRepair";
-        b.type="button";
-        b.textContent="Force Repair & Reload";
-        b.style.cssText="display:block;margin:14px auto 0;padding:12px 18px;border:0;border-radius:10px;background:#b42318;color:#fff;font:800 14px system-ui;cursor:pointer";
-        b.onclick=window.__PA_ADMIN_EMERGENCY__;
-        card.appendChild(b);
-      }
-    }
-  },12000);
 })();
 </script>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script>if(!window.supabase){document.write('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\\/script>')}</script>
 <script defer src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-<script defer src="../config.js?v=20260924-9"></script>
-<script defer src="./auth.js?v=20260924-9"></script>
-<script defer src="../app.js?v=20260924-9"></script>
-<script defer src="./inventory-nav.js?v=20260924-9"></script>
-<script>window.PA_VERSION_URL="../version.json";</script><script defer src="../update.js?v=20260924-9"></script><script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20260924-9",{updateViaCache:"none"}).then(r=>r.update()).catch(console.warn));}</script>
+<script defer src="../config.js?v=20260924-10"></script>
+<script defer src="./auth.js?v=20260924-10"></script>
+<script defer src="../app.js?v=20260924-10"></script>
+<script defer src="./inventory-nav.js?v=20260924-10"></script>
+<script>window.PA_VERSION_URL="../version.json";</script><script defer src="../update.js?v=20260924-10"></script><script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20260924-10",{updateViaCache:"none"}).then(r=>r.update()).catch(console.warn));}</script>
 </body>
 </html>
