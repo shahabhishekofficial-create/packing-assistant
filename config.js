@@ -75,6 +75,17 @@ window.SUPABASE_CONFIG = {
   window.PA_CONFIG_DEFAULTS=Object.freeze({...DEFAULTS});
   window.PA_CONFIG_ENABLED=enabled;
   window.PA_CONFIG_GET=()=>({...values});
+  async function adminCall(action,extra){
+    if(!db) throw new Error("Supabase client unavailable");
+    const session=window.PA_ADMIN_SESSION||localStorage.getItem("packing_assistant_admin_session_token")||"";
+    const {data,error}=await db.functions.invoke("admin-config",{body:{action,admin_session:session,...(extra||{})}});
+    if(error) throw error;
+    if(!data?.ok) throw new Error(data?.message||"Configuration request failed");
+    return data;
+  }
+
+  window.PA_ADMIN_CONFIG_GET=()=>adminCall("admin_get");
+  window.PA_ADMIN_CONFIG_SET=(config_key,enabled)=>adminCall("admin_set",{config_key,enabled});
   window.PA_CONFIG_REFRESH=refresh;
   window.PA_CONFIG_READY=Promise.resolve(values).then(()=>refresh());
   window.addEventListener("pa-config-loaded",applyMaintenance);
