@@ -7,7 +7,7 @@
 <title>Bigly Agro — Operations Dashboard</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="../icon-192.png">
-<link rel="stylesheet" href="../styles.css?v=20260924-4">
+<link rel="stylesheet" href="../styles.css?v=20260924-5">
 <script>
 (function(){
   window.addEventListener("error",function(e){
@@ -182,10 +182,16 @@
 </form>
 </dialog>
 
-  <dialog id="outletSettingsDialog" class="settingsDialog">
+  <dialog id="outletSettingsDialog" class="settingsDialog outletSetupDialog">
     <div class="settingsDialogHead"><div><span class="eyebrow">OPTIONS</span><h3>Outlet Setup</h3><p class="hint">Drag to change packing rank, assign delivery driver and set delivery charge.</p></div><div class="dialogHeadActions"><button id="outletSettingsDashboardBack" class="secondary">← Dashboard</button><button id="closeOutletSettings" class="secondary">✕</button></div></div>
-    <div class="driverTools"><input id="newDriverName" placeholder="Add driver name"><button id="addDriverBtn" class="secondary">+ Add Driver</button><button id="saveOutletSettings" class="primary">Submit Changes</button></div>
+    <div class="driverTools">
+      <input id="newDriverName" placeholder="Add driver name" aria-label="New driver name">
+      <button id="addDriverBtn" class="secondary">+ Add Driver</button>
+      <button id="saveOutletSettings" class="primary">✓ Save Changes</button>
+    </div>
+    <div class="outletSetupColumns" aria-hidden="true"><span></span><span>Rank</span><span>Outlet</span><span>Driver</span><span>Delivery charge</span></div>
     <div id="outletSettingsList" class="outletSettingsList"></div>
+    <div class="outletSetupFooter"><span>↕ <strong>Drag rows</strong> to change packing rank</span><span>Changes are applied after saving</span></div>
   </dialog>
   <dialog id="reportDialog" class="settingsDialog reportDialog">
     <div class="settingsDialogHead">
@@ -207,10 +213,10 @@
 </div></div></main>
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script defer src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-<script defer src="../config.js?v=20260924-4"></script>
-<script defer src="./auth.js?v=20260924-4"></script>
-<script defer src="../app.js?v=20260924-4"></script>
-<script defer src="./inventory-nav.js?v=20260924-4"></script>
-<script>window.PA_VERSION_URL="../version.json";</script><script defer src="../update.js?v=20260924-4"></script><script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20260924-4",{updateViaCache:"none"}).then(r=>r.update()).catch(console.warn));}</script>
+<script defer src="../config.js?v=20260924-5"></script>
+<script defer src="./auth.js?v=20260924-5"></script>
+<script defer src="../app.js?v=20260924-5"></script>
+<script defer src="./inventory-nav.js?v=20260924-5"></script>
+<script>window.PA_VERSION_URL="../version.json";</script><script defer src="../update.js?v=20260924-5"></script><script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20260924-5",{updateViaCache:"none"}).then(r=>r.update()).catch(console.warn));}</script>
 </body>
 </html>
