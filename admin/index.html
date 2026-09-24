@@ -28,7 +28,7 @@
   <div class="baBrand"><button id="baSidebarToggle" class="baMobileMenu" aria-label="Open menu">☰</button><div class="baLogo">BA</div><div><h1>Bigly Agro Private Limited</h1><p>Fresh Produce. Stronger Partnerships.</p></div></div>
   <div class="baHeaderSearch" role="search"><span aria-hidden="true">⌕</span><input id="globalSearch" type="search" placeholder="Search outlets, items, drivers..." autocomplete="off" aria-label="Search dashboard"><kbd>Ctrl K</kbd></div>
   <div class="headerActions"><span id="connection" class="liveBadge">● Online</span><span class="baHeaderDate" id="baHeaderDate"></span><button id="adminRefreshBtn" class="menuDots refreshBtn" aria-label="Refresh data" title="Refresh data">↻</button><button id="adminMenuBtn" class="menuDots" aria-label="Options" aria-expanded="false">⋮</button><div id="adminMenu" class="adminMenu hidden">
-      <button id="menuReportBtn">Reports / Export</button><button id="menuOutletSettings">Outlet Setup</button><button id="menuPacking">Staff Packing Screen</button><button id="menuDriverDashboard">Driver Dashboard</button><button id="menuFleetManagement">Delivery Fleet Management</button><button id="menuChangePassword">Change Password</button><button id="menuLogout">Log Out</button>
+      <button id="menuReportBtn">Reports / Export</button><button id="menuOutletSettings">Outlet Setup</button><button id="menuPacking">Staff Packing Screen</button><button id="menuDriverDashboard">Driver Dashboard</button><button id="menuFleetManagement">Delivery Fleet Management</button><button id="menuConfiguration">Configuration</button><button id="menuChangePassword">Change Password</button><button id="menuLogout">Log Out</button>
     </div></div>
 </header>
 
@@ -94,6 +94,16 @@
   <section class="deliveryDashSection"><div class="sectionHead"><div><span class="eyebrow">RECENT DELIVERIES</span><h3>Latest completed outlets</h3></div></div><div class="tableWrap"><table class="deliveryDashTable"><thead><tr><th>Delivered at</th><th>Driver</th><th>Outlet</th><th>Delivery time</th><th>Charge</th><th>Missing</th><th>Rejected</th></tr></thead><tbody id="recentDeliveriesBody"></tbody></table></div></section>
 </section>
 
+<section id="configuration" class="screen hidden">
+  <div class="sectionHead configPageHead">
+    <div><span class="eyebrow">SYSTEM CONTROL</span><h2>Configuration</h2><p class="hint">Operational switches only. Green means ON; red means OFF. Changes apply to all users using the app.</p></div>
+    <div class="sectionHeadActions"><button id="configurationRefresh" class="secondary">↻ Refresh</button><button id="configurationDashboardBack" class="secondary">← Dashboard</button></div>
+  </div>
+  <div id="configurationStatus" class="configStatus" role="status"></div>
+  <div id="configurationSections" class="configSections">
+    <div class="hint">Loading configuration…</div>
+  </div>
+</section>
 <section id="packingOverview" class="screen hidden">
   <section class="analysisCard packingCreatePanel">
     <div class="sectionHead">
@@ -160,6 +170,7 @@
       <button id="partialBtn" class="warn">✎ PARTIAL<span>Enter Quantity</span></button>
       <button id="missingBtn" class="bad">× MISSING<span>Select Reason</span></button>
     </div>
+    <button id="nextItemBtn" class="secondary hidden" type="button">Next Item →</button>
     <p id="syncStatus" class="hint"></p>
   </div>
 </section>
