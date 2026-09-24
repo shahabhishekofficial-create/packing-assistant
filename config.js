@@ -22,6 +22,7 @@ window.SUPABASE_CONFIG = {
     "inventory.barcode_scanning": true,
     "inventory.manual_search": true,
     "inventory.offline_mode": true,
+    "inventory.allow_recount": true,
     "system.update_notifications": true,
     "system.dashboard_auto_refresh": true,
     "system.maintenance_mode": false
