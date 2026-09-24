@@ -1049,4 +1049,4 @@ button:focus-visible,input:focus-visible,select:focus-visible,dialog:focus-visib
 
 .routeProgress{min-width:150px}.routeProgressTrack{height:9px;background:#e8edf3;border-radius:999px;overflow:hidden;margin-bottom:5px}.routeProgressTrack i{display:block;height:100%;border-radius:999px;background:#16a34a}.routeProgress>b{font-size:11px;white-space:nowrap}.deliveryDashTable td small{max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}@media(max-width:650px){.routeProgress{min-width:120px}}
 
-.driverPage .driverOutletRow.deliveredRow .driverOutletSummary{cursor:default}.driverPage .driverOutletRow.deliveredRow .driverOutletSummary::after{content:"✓ COMPLETED";font-size:10px;font-weight:800;color:#078957;margin-left:auto}.driverPage .driverOutletRow.deliveredRow .driverOutletSummaryMain{opacity:.82}
+.driverPage .driverOutletRow.deliveredRow .driverOutletSummary{cursor:default;pointer-events:none}.driverPage .driverOutletRow.deliveredRow .driverOutletSummary::after{content:"✓ COMPLETED";font-size:10px;font-weight:800;color:#078957;margin-left:auto}.driverPage .driverOutletRow.deliveredRow .driverOutletSummaryMain{opacity:.82}
