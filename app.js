@@ -615,12 +615,13 @@ async function saveOutletSettings(){
     o.rank=Number(draft.rank)||9999;
     o.driver=String(draft.driver||"");
     o.deliveryCharge=Math.max(0,Number(draft.deliveryCharge)||0);
-    const {error}=await db.rpc("update_outlet_settings",{
+    const {error}=await db.rpc("update_outlet_settings_v2",{
       p_order_id:state.orderId,
       p_outlet_id:o.id,
       p_access_token:state.token,
       p_rank:o.rank,
-      p_driver:o.driver
+      p_driver:o.driver,
+      p_delivery_charge:o.deliveryCharge
     });
     if(error){errors.push(o.name+": "+error.message);continue;}
     const chargeResult=await db.rpc("update_outlet_delivery_charge",{
