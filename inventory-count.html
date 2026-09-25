@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f7f8fc">
 <title>Warehouse Inventory Count</title>
-<link rel="stylesheet" href="styles.css?v=20260925-31">
+<link rel="stylesheet" href="styles.css?v=20260925-32">
 </head>
 <body class="inventoryCountPage">
 <main id="inventoryApp">
@@ -68,13 +68,21 @@
       <p id="savedMsg" class="invMessage"></p>
     </div>
 
+    <div id="exportCard" class="invExportCard hidden">
+      <div><span class="invKicker">COUNT SUBMITTED</span><strong>Export inventory for the team</strong><small>Your submitted count is saved. Download or share the report.</small></div>
+      <div class="invExportActions"><button id="exportExcelBtn" class="invSecondary" type="button">↓ Excel</button><button id="exportPdfBtn" class="invSecondary" type="button">↓ PDF</button><button id="shareExportBtn" class="invPrimary" type="button">Share</button></div>
+      <p id="exportMsg" class="invMessage"></p>
+    </div>
+
     <div id="items" class="invItems hidden"></div>
 
     <button id="submitBtn" class="invSubmit hidden">Submit Count <span>✓</span></button>
   </section>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="config.js?v=20260925-31"></script>
-<script src="inventory-count.js?v=20260925-31"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/4.2.1/jspdf.umd.min.js"></script>
+<script src="config.js?v=20260925-32"></script>
+<script src="inventory-count.js?v=20260925-32"></script>
 </body>
 </html>
