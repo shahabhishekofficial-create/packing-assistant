@@ -30,7 +30,7 @@ create or replace function public.inv_add_item_v2(
  p_shelf_life_days integer default null,p_reorder_level numeric default null,
  p_preferred_supplier text default null,p_is_perishable boolean default false
 ) returns uuid language plpgsql security definer set search_path=''
-as $function$
+as $x$
 declare v_id uuid;
 begin
  if not public.inv_require_admin(p_session_token) then raise exception 'Unauthorized'; end if;
@@ -46,11 +46,11 @@ begin
  coalesce(nullif(trim(p_purchase_unit),''),coalesce(nullif(trim(p_unit),''),'pcs')),p_pack_size,nullif(trim(p_pack_uom),''),p_base_qty_per_pack,
  nullif(trim(p_storage_condition),''),nullif(trim(p_storage_location),''),p_shelf_life_days,p_reorder_level,nullif(trim(p_preferred_supplier),''),coalesce(p_is_perishable,false))
  returning id into v_id; return v_id;
-end;$function$;
+end;$x$;
 
 create or replace function public.inv_bulk_add_items_v2(p_session_token text,p_section text,p_items jsonb)
 returns jsonb language plpgsql security definer set search_path=''
-as $function$
+as $x$
 declare r jsonb; v_id uuid; v_added int:=0; v_skipped int:=0; v_name text;
 begin
  if not public.inv_require_admin(p_session_token) then raise exception 'Unauthorized'; end if;
@@ -70,13 +70,13 @@ begin
   returning id into v_id;
   v_added:=v_added+1;
   if coalesce(trim(r->>'barcode'),'')<>'' then insert into public.inv_item_barcodes(barcode,item_id) values(trim(r->>'barcode'),v_id) on conflict(barcode) do nothing; end if;
- end loop; return jsonb_build_object('added',v_added,'skipped',v_skipped);
-end;$function$;
+ end loop; return jsonb_build_object($q$added$q$,v_added,$q$skipped$q$,v_skipped);
+end;$x$;
 
 create or replace function public.inv_get_items_v2(p_session_token text,p_section text default 'restaurant')
 returns table(id uuid,section text,name text,aliases text[],unit text,category text,active boolean,barcode text,item_code text,brand text,subcategory text,description text,purchase_unit text,pack_size numeric,pack_uom text,base_qty_per_pack numeric,storage_condition text,storage_location text,shelf_life_days integer,reorder_level numeric,preferred_supplier text,is_perishable boolean)
 language plpgsql security definer set search_path=''
-as $function$
+as $x$
 begin
  if not public.inv_require_admin(p_session_token) then raise exception 'Unauthorized'; end if;
  return query select i.id,i.section,i.name,i.aliases,i.unit,i.category,i.active,
@@ -85,7 +85,7 @@ begin
  i.storage_condition,i.storage_location,i.shelf_life_days,i.reorder_level,i.preferred_supplier,i.is_perishable
  from public.inv_items i left join public.inv_item_barcodes b on b.item_id=i.id
  where i.section=p_section and i.active group by i.id order by i.category,i.name;
-end;$function$;
+end;$x$;
 
 grant execute on function public.inv_add_item_v2(text,text,text,text[],text,text,text,text,text,text,text,numeric,text,numeric,text,text,integer,numeric,text,boolean) to anon,authenticated;
 grant execute on function public.inv_bulk_add_items_v2(text,text,jsonb) to anon,authenticated;
