@@ -37,12 +37,22 @@ function renderItems(){
 }
 function resetForm(){S.editId=null;$("dialogTitle").textContent="Add Item";$("itemForm").reset();$("itemSection").value=S.section;$("fieldErrors").innerHTML="";$("dialogFetchStatus").textContent="Data is placed into these fields automatically."}
 function openDialog(id=null){resetForm();if(id){const i=S.items.find(x=>x.id===id);if(!i)return;S.editId=id;$("dialogTitle").textContent="Edit Item";$("itemSection").value=i.section;$("itemCategory").value=i.category;$("itemName").value=i.name;$("itemUom").value=i.base_uom;$("itemMode").value=i.count_mode;$("itemPackSize").value=i.default_pack_size??"";$("itemBarcodes").value=i.barcodes.join(" | ");$("itemNoBarcode").checked=!!i.no_barcode;$("itemAliases").value=(i.aliases||[]).join(" | ");$("itemBrand").value=i.brand||""} $("itemDialog").showModal()}
+async function linkedBarcode(barcode){
+ try{
+  const {data,error}=await db.rpc("inv_v2_lookup_linked",{p_session_token:token(),p_barcode:barcode});
+  if(error)throw error;
+  return Array.isArray(data)&&data.length?data[0]:null;
+ }catch(e){
+  console.warn("Barcode link check:",e.message||e);
+  return null;
+ }
+}
 async function lookup(barcode,button,status){
  barcode=norm(barcode);if(!barcode){status.textContent="Enter a barcode first.";return}
  if(!barcodeValid(barcode)){status.textContent="Invalid barcode check digit.";return}
- const linked=S.items.find(i=>i.barcodes.includes(barcode));
- if(linked){status.textContent="Already linked to: "+linked.name;alertBox("Barcode already linked to "+linked.name+". No fetch performed.","error");return}
- button.disabled=true;status.textContent="Fetching details…";
+ const linked=await linkedBarcode(barcode);
+ if(linked){status.textContent="Already linked to: "+linked.item_name;alertBox("Barcode already linked to "+linked.item_name+". No fetch performed.","error");return}
+ button.disabled=true;status.textContent="Fetching details automatically…";
  try{
   const {data,error}=await db.functions.invoke("admin-item-lookup",{body:{admin_session:token(),barcode}});
   if(error)throw error;if(!data?.ok)throw new Error(data?.message||"Lookup failed.");
@@ -54,7 +64,16 @@ async function lookup(barcode,button,status){
   $("itemDialog").showModal();
  }catch(e){status.textContent=e.message||"Could not fetch product details.";alertBox(status.textContent,"error")}finally{button.disabled=false}
 }
-async function handleLookupTop(){const b=norm($("adminBarcode").value);if(!b)return;const linked=S.items.find(i=>i.barcodes.includes(b));if(linked){$("lookupStatus").textContent="Already linked to: "+linked.name;return}openDialog();$("itemBarcodes").value=b;await lookup(b,$("fetchLookupBtn"),$("lookupStatus"))}
+async function handleLookupTop(){
+ const b=norm($("adminBarcode").value);
+ if(!b)return;
+ if(!barcodeValid(b)){$("lookupStatus").textContent="Invalid barcode check digit.";return}
+ const linked=await linkedBarcode(b);
+ if(linked){$("lookupStatus").textContent="Already linked to: "+linked.item_name;alertBox("Barcode already linked to "+linked.item_name+". No fetch performed.","error");return}
+ openDialog();
+ $("itemBarcodes").value=b;
+ await lookup(b,$("fetchLookupBtn"),$("lookupStatus"));
+}
 async function startCamera(){if(!window.Html5Qrcode)return alertBox("Scanner library is still loading.","error");if(S.scanner)return;S.scanner=new Html5Qrcode("qrReader");$("cameraBox").classList.remove("hidden");try{await S.scanner.start({facingMode:"environment"},{fps:10,qrbox:{width:280,height:140}},async code=>{await stopCamera();$("adminBarcode").value=code;$("fetchLookupBtn").disabled=false;await handleLookupTop()},()=>{})}catch(e){alertBox("Camera could not start. Check browser camera permission.","error");await stopCamera()}}
 async function stopCamera(){if(!S.scanner)return;$("cameraBox").classList.add("hidden");try{await S.scanner.stop()}catch{}try{S.scanner.clear()}catch{}S.scanner=null}
 async function saveItem(e,keepOpen=false){e?.preventDefault();const p=payloadFromForm(),errors=validateItem(p,S.items);$("fieldErrors").innerHTML=errors.length?errors.map(x=>"<div>"+esc(x)+"</div>").join(""):"";if(errors.length)return;const b=$("saveItemBtn");b.disabled=true;b.textContent="Saving…";try{const {data,error}=await db.rpc("inv_v2_save_item",{p_session_token:token(),p_item_id:S.editId,p_payload:p,p_import_id:null});if(error)throw error;if(keepOpen){const section=p.section;resetForm();$("itemSection").value=section;$("itemDialog").showModal();}else $("itemDialog").close();alertBox(S.editId?"Item updated.":"Item saved.","success");await loadItems()}catch(x){alertBox(x.message||"Could not save item.","error")}finally{b.disabled=false;b.textContent="Save Item"}}
