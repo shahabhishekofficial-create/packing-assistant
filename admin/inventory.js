@@ -1,6 +1,6 @@
 (()=>{"use strict";
 const db=window.supabase.createClient(window.SUPABASE_CONFIG.url,window.SUPABASE_CONFIG.key);
-const S={section:"restaurant",items:[],editId:null,scanner:null,importRows:[],importErrors:[],importValid:[],importFile:""};
+const S={section:"restaurant",items:[],editId:null,scanner:null,importRows:[],importErrors:[],importValid:[],importFile:"",stock:[],adjustId:null};
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const token=()=>window.PA_ADMIN_SESSION||localStorage.getItem("packing_assistant_admin_session_token")||"";
@@ -122,11 +122,43 @@ async function previewImport(file){try{const rows=await parseFile(file);if(!rows
 async function confirmImport(){if(S.importErrors.length||!S.importValid.length)return;const importId=crypto.randomUUID();const btn=$("confirmImportBtn");btn.disabled=true;btn.textContent="Importing…";try{const {data,error}=await db.rpc("inv_v2_save_item_v5",{p_session_token:token(),p_item_id:null,p_payload:{operation:"batch_create",items:S.importValid.map(x=>x.payload)},p_import_id:importId});if(error)throw error;alertBox("Import complete: "+data.added+" items added.","success");$("importPreviewCard").classList.add("hidden");S.importRows=[];S.importValid=[];S.importErrors=[];await loadItems()}catch(e){alertBox(e.message||"Import failed. No rows were partially imported.","error")}finally{btn.disabled=false;btn.textContent="Import Valid Rows"}}
 function errorCsv(){const rows=[["row","name","error"],...S.importErrors.map(x=>[x.row,x.raw.name,x.error])];downloadText("inventory-import-errors.csv",rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(",")).join("\n"),"text/csv")}
 function downloadText(name,text,type){const a=document.createElement("a");const u=URL.createObjectURL(new Blob([text],{type}));a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
+async function loadStockDashboard(){
+ const section=$("stockSection")?.value||"restaurant";
+ const {data,error}=await db.rpc("inv_admin_get_inventory",{p_admin_token:token(),p_section:section});
+ if(error)throw error;
+ S.stock=data||[];
+ const total=S.stock.reduce((a,x)=>a+Number(x.available_qty||0),0);
+ const counted=S.stock.filter(x=>x.last_counted_at).length;
+ const adjusted=S.stock.filter(x=>x.updated_by==="admin").length;
+ $("inventoryStockKpis").innerHTML='<div><b>'+S.stock.length+'</b><span>Active items</span></div><div><b>'+total.toLocaleString("en-IN")+'</b><span>Total base quantity</span></div><div><b>'+counted+'</b><span>Counted items</span></div><div><b>'+adjusted+'</b><span>Admin-adjusted</span></div>';
+ $("inventoryStockBody").innerHTML=S.stock.map(x=>'<tr><td><b>'+esc(x.item_name)+'</b></td><td>'+esc(x.category||"")+'</td><td><strong>'+Number(x.available_qty||0)+'</strong> '+esc(x.base_uom)+'</td><td>'+esc(x.base_uom)+'</td><td>'+esc(x.last_count_qty==null?"—":String(x.last_count_qty)+" "+(x.last_count_unit||""))+'</td><td>'+esc(x.last_counted_by||"—")+'</td><td>'+esc(x.updated_at?new Date(x.updated_at).toLocaleString("en-IN"):"—")+'</td><td><button class="secondary adjustStockBtn" data-id="'+x.item_id+'">Change Qty</button></td></tr>').join("")||'<tr><td colspan="8">No inventory items found.</td></tr>';
+ document.querySelectorAll(".adjustStockBtn").forEach(b=>b.onclick=()=>openAdjustment(b.dataset.id));
+}
+async function loadInventoryLog(){
+ const section=$("stockSection")?.value||"restaurant";
+ const {data,error}=await db.rpc("inv_admin_get_inventory_log",{p_admin_token:token(),p_section:section,p_from:null,p_to:null});
+ if(error)throw error;
+ const rows=data||[];
+ $("inventoryLogBody").innerHTML=rows.map(x=>'<tr><td>'+esc(new Date(x.created_at).toLocaleString("en-IN"))+'</td><td>'+esc(x.item_name)+'</td><td><span class="statusPill '+(x.actor_type==="admin"?"on":"skip")+'">'+esc(x.action==="admin_adjustment"?"Admin adjustment":"Staff count")+'</span></td><td>'+esc(x.actor_name)+'</td><td>'+Number(x.old_qty||0)+' '+esc(x.base_uom)+'</td><td>'+Number(x.new_qty||0)+' '+esc(x.base_uom)+'</td><td>'+((Number(x.delta_qty||0)>0?"+":"")+Number(x.delta_qty||0))+'</td><td>'+esc(x.reason||"—")+'</td></tr>').join("")||'<tr><td colspan="8">No changes recorded yet.</td></tr>';
+}
+function openAdjustment(id){
+ const x=S.stock.find(i=>String(i.item_id)===String(id));if(!x)return;
+ S.adjustId=id;$("adjustItemLabel").textContent=x.item_name+" · Current: "+Number(x.available_qty||0)+" "+x.base_uom;
+ $("adjustQty").value=Number(x.available_qty||0);$("adjustReason").value="";$("adjustErrors").textContent="";$("adjustInventoryDialog").showModal();
+}
+async function saveAdjustment(e){
+ e?.preventDefault();const qty=Number($("adjustQty").value),reason=$("adjustReason").value.trim();
+ if(!Number.isFinite(qty)||qty<0||!reason){$("adjustErrors").textContent="Enter a valid quantity and a reason.";return}
+ const b=$("adjustConfirmBtn");b.disabled=true;b.textContent="Saving…";
+ try{const {data,error}=await db.rpc("inv_admin_adjust_available_qty",{p_admin_token:token(),p_item_id:S.adjustId,p_new_qty:qty,p_reason:reason});if(error)throw error;$("adjustInventoryDialog").close();alertBox("Available quantity updated. Change logged.","success");await Promise.all([loadStockDashboard(),loadInventoryLog()]);}
+ catch(x){$("adjustErrors").textContent=x.message||"Could not save adjustment."}
+ finally{b.disabled=false;b.textContent="Save Adjustment"}
+}
 function wire(){
  const go=section=>location.assign("./index.html?section="+encodeURIComponent(section));$("backDashboard").onclick=()=>go("home");$("sideDashboard").onclick=()=>go("home");$("sidePacking").onclick=()=>go("packing");$("sideDelivery").onclick=()=>go("delivery");$("sideReports").onclick=()=>go("reports");$("sideSettings").onclick=()=>go("settings");
  $("baSidebarToggle").onclick=()=>document.querySelector(".baSidebar")?.classList.toggle("open");
  document.querySelectorAll(".sectionTab").forEach(b=>b.onclick=async()=>{document.querySelectorAll(".sectionTab").forEach(x=>x.classList.remove("active"));b.classList.add("active");S.section=b.dataset.section;$("itemSearch").value="";const veg=S.section==="vegetable";$("restaurantTools").classList.toggle("hidden",veg);$("vegetableTools").classList.toggle("hidden",!veg);$("downloadTemplateBtn").classList.toggle("hidden",veg);$("importBtn").classList.toggle("hidden",veg);$("addItemBtn").textContent=veg?"+ Add Vegetable":"+ Add Restaurant Item";await loadItems()});
- $("addCategoryBtn").onclick=addCategory;$("itemSearch").oninput=renderItems;$("itemFilter").onchange=renderItems;$("addItemBtn").onclick=()=>S.section==="vegetable"?openVegetableDialog():openDialog();$("downloadTemplateBtn").onclick=downloadTemplate;
+ $("stockRefreshBtn")?.addEventListener("click",()=>Promise.all([loadStockDashboard(),loadInventoryLog()]).catch(e=>alertBox(e.message||"Could not refresh stock.","error")));$("inventoryLogRefresh")?.addEventListener("click",()=>loadInventoryLog().catch(e=>alertBox(e.message||"Could not refresh log.","error")));$("stockSection")?.addEventListener("change",()=>Promise.all([loadStockDashboard(),loadInventoryLog()]).catch(e=>alertBox(e.message||"Could not refresh stock.","error")));$("adjustConfirmBtn")?.addEventListener("click",saveAdjustment);$("addCategoryBtn").onclick=addCategory;$("itemSearch").oninput=renderItems;$("itemFilter").onchange=renderItems;$("addItemBtn").onclick=()=>S.section==="vegetable"?openVegetableDialog():openDialog();$("downloadTemplateBtn").onclick=downloadTemplate;
  $("importBtn").onclick=()=>$("fileInput").click();$("fileInput").onchange=e=>{const f=e.target.files?.[0];if(f)previewImport(f);e.target.value=""};
  $("cancelImportBtn").onclick=()=>{$("importPreviewCard").classList.add("hidden")};$("confirmImportBtn").onclick=confirmImport;$("downloadErrorsBtn").onclick=errorCsv;
  $("saveItemBtn").onclick=e=>saveItem(e,false);$("saveAnotherBtn").onclick=e=>saveItem(e,true);$("vegetableSaveBtn").onclick=e=>saveVegetable(e,false);$("vegetableSaveAnotherBtn").onclick=e=>saveVegetable(e,true);$("dialogFetchBtn").onclick=()=>lookup($("itemBarcodes").value.split("|")[0],$("dialogFetchBtn"),$("dialogFetchStatus"));
@@ -137,7 +169,7 @@ function wire(){
  $("adminBarcode").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();handleLookupTop()}});
  $("fetchLookupBtn").onclick=handleLookupTop;$("cameraBtn").onclick=startCamera;$("stopCameraBtn").onclick=stopCamera;
 }
-async function init(){wire();await loadCategories();await loadItems();$("connection").textContent=navigator.onLine?"● Online":"● Offline";window.addEventListener("online",()=>{$("connection").textContent="● Online"});window.addEventListener("offline",()=>{$("connection").textContent="● Offline"})}
+async function init(){wire();await loadCategories();await loadItems();await loadStockDashboard();await loadInventoryLog();$("connection").textContent=navigator.onLine?"● Online":"● Offline";window.addEventListener("online",()=>{$("connection").textContent="● Online"});window.addEventListener("offline",()=>{$("connection").textContent="● Offline"})}
 window.addEventListener("pa-admin-authenticated",()=>init().catch(e=>alertBox(e.message||"Inventory startup failed.","error")));
 window.addEventListener("load",()=>{if(window.PA_ADMIN_SESSION&&!S.items.length)init().catch(e=>alertBox(e.message||"Inventory startup failed.","error"))});
 document.getElementById("saveStaffBtn")?.addEventListener("click",async()=>{const name=document.getElementById("staffAdminName").value.trim(),pin=document.getElementById("staffAdminPin").value.trim(),msg=document.getElementById("staffAdminMsg"),b=document.getElementById("saveStaffBtn");if(!name||!/^[0-9]{4,6}$/.test(pin)){msg.textContent="Enter a name and 4–6 digit PIN.";return}b.disabled=true;try{const {error}=await db.rpc("inv_admin_upsert_staff",{p_admin_token:token(),p_name:name,p_pin:pin,p_staff_id:null});if(error)throw error;msg.textContent="Staff access created/updated successfully.";document.getElementById("staffAdminPin").value=""}catch(e){msg.textContent=e.message}finally{b.disabled=false}});
