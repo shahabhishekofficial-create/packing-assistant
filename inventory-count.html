@@ -1,1 +1,80 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f6f8fb"><title>Warehouse Inventory Count</title><link rel="stylesheet" href="styles.css?v=20260925-24"></head><body class="inventoryCountPage"><main id="inventoryApp"><header class="appHeader"><div class="brand"><div class="brandIcon">📦</div><div><h1>Warehouse Inventory</h1><p>Count stock quickly and accurately</p></div></div></header><section id="login" class="screen"><div class="adminCard"><span class="eyebrow">STAFF LOGIN</span><h2>Warehouse Count</h2><label>Staff name<input id="staffName" autocomplete="username"></label><label>PIN<input id="staffPin" type="password" inputmode="numeric" maxlength="6"></label><button id="loginBtn" class="primary">Sign In</button><p id="loginMsg" class="hint"></p></div></section><section id="count" class="screen hidden"><div class="sectionHead"><div><span class="eyebrow">WAREHOUSE COUNT</span><h2 id="staffTitle"></h2></div><button id="logoutBtn" class="secondary">Logout</button></div><div class="adminCard"><label>Inventory section<select id="section"><option value="restaurant">Restaurant Grocery</option><option value="vegetable">Vegetables</option></select></label><button id="startBtn" class="primary">Start Count</button><p id="sessionMsg" class="hint"></p></div><div id="counter" class="adminCard hidden"><div style="display:flex;gap:8px"><input id="search" placeholder="Search item or barcode" style="flex:1"><button id="scanBtn" class="secondary" type="button">📷 Scan</button></div><div id="itemInfo" class="hint">Select an item.</div><label>Count quantity<input id="countQty" type="number" min="0" step="any" inputmode="decimal"></label><div id="conversion" class="hint"></div><button id="saveBtn" class="primary">Save Count</button><button id="nextBtn" class="secondary">Next Item</button><div id="savedMsg" class="hint"></div></div><div id="items" class="adminCard hidden"></div><button id="submitBtn" class="good hidden">Submit Count</button></section></main><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="config.js?v=20260925-24"></script><script src="inventory-count.js?v=20260925-24"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f7f8fc">
+<title>Warehouse Inventory Count</title>
+<link rel="stylesheet" href="styles.css?v=20260925-30">
+</head>
+<body class="inventoryCountPage">
+<main id="inventoryApp">
+  <header class="invTopbar">
+    <div class="invBrand">
+      <div class="invBrandMark">▦</div>
+      <div><strong>Warehouse Inventory</strong><span>Stock counting</span></div>
+    </div>
+    <button id="logoutBtn" class="invIconBtn" type="button" aria-label="Logout">↪</button>
+  </header>
+
+  <section id="login" class="screen invLogin">
+    <div class="invLoginCard">
+      <div class="invLoginIcon">▦</div>
+      <span class="invKicker">WAREHOUSE STAFF</span>
+      <h1>Sign in to count stock</h1>
+      <p>Use your staff name and PIN to continue.</p>
+      <div class="invField"><label for="staffName">Staff name</label><input id="staffName" autocomplete="username" placeholder="Enter your name"></div>
+      <div class="invField"><label for="staffPin">PIN</label><input id="staffPin" type="password" inputmode="numeric" maxlength="6" placeholder="4–6 digit PIN"></div>
+      <button id="loginBtn" class="invPrimary invFull">Sign In</button>
+      <p id="loginMsg" class="invMessage"></p>
+    </div>
+  </section>
+
+  <section id="count" class="screen hidden invWorkspace">
+    <div class="invWelcome">
+      <div><span class="invKicker">WAREHOUSE COUNT</span><h1 id="staffTitle"></h1><p>Count physical stock one item at a time.</p></div>
+      <div class="invLive"><i></i> LIVE</div>
+    </div>
+
+    <div class="invSetup">
+      <div class="invSectionTitle"><span>1</span><div><strong>Choose inventory</strong><small>Select what you are counting today.</small></div></div>
+      <select id="section" class="invSelect">
+        <option value="restaurant">Restaurant Grocery</option>
+        <option value="vegetable">Vegetables</option>
+      </select>
+      <button id="startBtn" class="invPrimary invFull">Start Count <span>→</span></button>
+      <p id="sessionMsg" class="invMessage"></p>
+    </div>
+
+    <div id="counter" class="invCounter hidden">
+      <div class="invSectionTitle"><span>2</span><div><strong>Find an item</strong><small>Search by name or barcode.</small></div></div>
+      <div class="invSearchRow">
+        <div class="invSearchBox"><span>⌕</span><input id="search" placeholder="Search item or barcode" autocomplete="off"></div>
+        <button id="scanBtn" class="invScanBtn" type="button" aria-label="Scan barcode">▦<small>Scan</small></button>
+      </div>
+
+      <div id="itemInfo" class="invSelectedEmpty">Select an item from the list below.</div>
+
+      <div class="invCountBox">
+        <div class="invCountLabel">PHYSICAL COUNT</div>
+        <div class="invQtyRow"><input id="countQty" type="number" min="0" step="any" inputmode="decimal" placeholder="0"><span id="countUnitLabel"></span></div>
+        <div id="conversion" class="invConversion"></div>
+      </div>
+
+      <div class="invActionRow">
+        <button id="saveBtn" class="invPrimary">Save Count</button>
+        <button id="nextBtn" class="invSecondary">Next Item</button>
+      </div>
+      <p id="savedMsg" class="invMessage"></p>
+    </div>
+
+    <div id="items" class="invItems hidden"></div>
+
+    <button id="submitBtn" class="invSubmit hidden">Submit Count <span>✓</span></button>
+  </section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js?v=20260925-30"></script>
+<script src="inventory-count.js?v=20260925-30"></script>
+</body>
+</html>
