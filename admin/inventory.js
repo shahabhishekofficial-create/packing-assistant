@@ -25,6 +25,25 @@ function validateItem(p,existing=[]){
  const oldBars=new Set((existing.find(x=>x.id===S.editId)?.barcodes||[]));p.barcodes.forEach(b=>{if(existing.some(x=>x.id!==S.editId&&(x.barcodes||[]).includes(b)))e.push("Barcode already linked: "+b)});
  return e;
 }
+async function loadCategories(){
+ const {data,error}=await db.rpc("inv_v2_get_categories",{p_session_token:token(),p_section:S.section});
+ if(error)throw error;
+ const sel=$("itemCategory"),current=sel.value;
+ sel.innerHTML='<option value="">Select category</option>'+(data||[]).map(x=>'<option value="'+esc(x.name)+'">'+esc(x.name)+'</option>').join("");
+ if(current)[...sel.options].some(o=>{if(o.value===current){o.selected=true;return true}return false});
+}
+async function addCategory(){
+ const name=prompt("New category name:");
+ if(name===null)return;
+ const nm=norm(name);if(!nm)return;
+ try{
+  const {data,error}=await db.rpc("inv_v2_add_category",{p_session_token:token(),p_section:S.section,p_name:nm});
+  if(error)throw error;
+  await loadCategories();
+  $("itemCategory").value=data.name;
+  alertBox("Category added: "+data.name,"success");
+ }catch(e){alertBox(e.message||"Could not add category.","error")}
+}
 async function loadItems(){const r=await db.rpc("inv_v2_get_items_v3",{p_session_token:token(),p_section:S.section});if(r.error)throw r.error;S.items=(r.data||[]).map(x=>({...x,barcodes:Array.isArray(x.barcodes)?x.barcodes.filter(Boolean):[]}));renderItems()}
 function renderItems(){
  const q=norm($("itemSearch").value).toLowerCase(),filter=$("itemFilter").value;
@@ -35,7 +54,7 @@ function renderItems(){
  $("itemList").querySelectorAll(".editItem").forEach(b=>b.onclick=()=>S.section==="vegetable"?openVegetableDialog(b.dataset.id):openDialog(b.dataset.id));
  $("itemList").querySelectorAll(".deactivateItem").forEach(b=>b.onclick=()=>deactivate(b.dataset.id));
 }
-function resetForm(){S.editId=null;$("dialogTitle").textContent="Add Restaurant Item";$("itemForm").reset();$("fieldErrors").innerHTML="";$("dialogFetchStatus").textContent="Data is placed into these fields automatically."}
+function resetForm(){S.editId=null;loadCategories().catch(e=>alertBox(e.message||"Could not load categories.","error"));$("dialogTitle").textContent="Add Restaurant Item";$("itemForm").reset();$("fieldErrors").innerHTML="";$("dialogFetchStatus").textContent="Data is placed into these fields automatically."}
 function openDialog(id=null){resetForm();if(id){const i=S.items.find(x=>x.id===id);if(!i)return;S.editId=id;$("dialogTitle").textContent="Edit Item";$("itemCategory").value=i.category;$("itemName").value=i.name;$("itemUom").value=i.base_uom;$("itemMode").value=i.count_mode;$("itemPackSize").value=i.default_pack_size??"";$("itemBarcodes").value=i.barcodes.join(" | ");$("itemNoBarcode").checked=!!i.no_barcode;$("itemAliases").value=(i.aliases||[]).join(" | ");$("itemBrand").value=i.brand||"";$("itemShelf").value=i.storage_shelf||"";$("itemRack").value=i.storage_rack||""} $("itemDialog").showModal()}
 function resetVegetableForm(){S.editId=null;$("vegetableDialogTitle").textContent="Add Vegetable";$("vegetableForm").reset();$("vegetableErrors").innerHTML=""}
 function openVegetableDialog(id=null){resetVegetableForm();if(id){const i=S.items.find(x=>x.id===id);if(!i)return;S.editId=id;$("vegetableDialogTitle").textContent="Edit Vegetable";$("vegetableName").value=i.name;$("vegetableCategory").value=i.category;$("vegetableUom").value=i.base_uom}$("vegetableDialog").showModal()}
@@ -106,7 +125,7 @@ function wire(){
  $("backDashboard").onclick=()=>location.href="./";$("sideDashboard").onclick=()=>location.href="./";$("sidePacking").onclick=()=>location.href="./";$("sideDelivery").onclick=()=>location.href="./";$("sideReports").onclick=()=>location.href="./";$("sideSettings").onclick=()=>location.href="./";
  $("baSidebarToggle").onclick=()=>document.querySelector(".baSidebar")?.classList.toggle("open");
  document.querySelectorAll(".sectionTab").forEach(b=>b.onclick=async()=>{document.querySelectorAll(".sectionTab").forEach(x=>x.classList.remove("active"));b.classList.add("active");S.section=b.dataset.section;$("itemSearch").value="";const veg=S.section==="vegetable";$("restaurantTools").classList.toggle("hidden",veg);$("vegetableTools").classList.toggle("hidden",!veg);$("downloadTemplateBtn").classList.toggle("hidden",veg);$("importBtn").classList.toggle("hidden",veg);$("addItemBtn").textContent=veg?"+ Add Vegetable":"+ Add Restaurant Item";await loadItems()});
- $("itemSearch").oninput=renderItems;$("itemFilter").onchange=renderItems;$("addItemBtn").onclick=()=>S.section==="vegetable"?openVegetableDialog():openDialog();$("downloadTemplateBtn").onclick=downloadTemplate;
+ $("addCategoryBtn").onclick=addCategory;$("itemSearch").oninput=renderItems;$("itemFilter").onchange=renderItems;$("addItemBtn").onclick=()=>S.section==="vegetable"?openVegetableDialog():openDialog();$("downloadTemplateBtn").onclick=downloadTemplate;
  $("importBtn").onclick=()=>$("fileInput").click();$("fileInput").onchange=e=>{const f=e.target.files?.[0];if(f)previewImport(f);e.target.value=""};
  $("cancelImportBtn").onclick=()=>{$("importPreviewCard").classList.add("hidden")};$("confirmImportBtn").onclick=confirmImport;$("downloadErrorsBtn").onclick=errorCsv;
  $("saveItemBtn").onclick=e=>saveItem(e,false);$("saveAnotherBtn").onclick=e=>saveItem(e,true);$("vegetableSaveBtn").onclick=e=>saveVegetable(e,false);$("vegetableSaveAnotherBtn").onclick=e=>saveVegetable(e,true);$("dialogFetchBtn").onclick=()=>lookup($("itemBarcodes").value.split("|")[0],$("dialogFetchBtn"),$("dialogFetchStatus"));
@@ -116,7 +135,7 @@ function wire(){
  $("adminBarcode").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();handleLookupTop()}});
  $("fetchLookupBtn").onclick=handleLookupTop;$("cameraBtn").onclick=startCamera;$("stopCameraBtn").onclick=stopCamera;
 }
-async function init(){wire();await loadItems();$("connection").textContent=navigator.onLine?"● Online":"● Offline";window.addEventListener("online",()=>{$("connection").textContent="● Online"});window.addEventListener("offline",()=>{$("connection").textContent="● Offline"})}
+async function init(){wire();await loadCategories();await loadItems();$("connection").textContent=navigator.onLine?"● Online":"● Offline";window.addEventListener("online",()=>{$("connection").textContent="● Online"});window.addEventListener("offline",()=>{$("connection").textContent="● Offline"})}
 window.addEventListener("pa-admin-authenticated",()=>init().catch(e=>alertBox(e.message||"Inventory startup failed.","error")));
 window.addEventListener("load",()=>{if(window.PA_ADMIN_SESSION&&!S.items.length)init().catch(e=>alertBox(e.message||"Inventory startup failed.","error"))});
 })();
