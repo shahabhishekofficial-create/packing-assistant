@@ -796,7 +796,8 @@ function renderStaffOutletList(){
 function renderHome(){
   const orderLoadStatus=$("orderLoadStatus");
   if(orderLoadStatus) orderLoadStatus.classList.add("hidden");
-  $("orderSummary").classList.remove("hidden");
+  const orderSummary=$("orderSummary"); if(!orderSummary)return;
+  orderSummary.classList.remove("hidden");
   const all=[...state.outlets.values()];
   const totalItems=all.reduce((s,o)=>s+o.rows.length,0);
   const completed=all.filter(o=>o.status==="completed").length;
@@ -1395,8 +1396,8 @@ async function loadAdminConfiguration(){
           if(status){status.className="configStatus success";status.textContent="Saved: "+(d2.config.label||key);}
           await window.PA_CONFIG_REFRESH();
           if(typeof applyPackingConfig==="function")applyPackingConfig();
-          if(typeof renderHome==="function")renderHome();
-          if(typeof renderAdminDashboard==="function")renderAdminDashboard();
+          if(!IS_ADMIN_PAGE && typeof renderHome==="function")renderHome();
+          if(IS_ADMIN_PAGE && typeof renderAdminDashboard==="function")renderAdminDashboard();
           if(typeof renderStaffOutletList==="function")renderStaffOutletList();
         }catch(e){
           if(status){status.className="configStatus error";status.textContent=e.message||"Could not save configuration.";}
