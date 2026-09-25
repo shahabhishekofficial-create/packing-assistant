@@ -1,6 +1,6 @@
-name,aliases,unit,category,barcode
-Paneer,"cottage cheese,paneer",kg,Dairy,
-Milk,"doodh,milk",L,Dairy,
-Tomato,"tamatar,tomato",kg,Vegetables,
-Basmati Rice,"rice,basmati",kg,Grocery,
-Mineral Water,"water,drinking water",pcs,Beverage,
+name,aliases,unit,category,subcategory,item_code,brand,description,purchase_unit,pack_size,pack_uom,base_qty_per_pack,barcode,storage_condition,storage_location,shelf_life_days,reorder_level,preferred_supplier,is_perishable
+Paneer,"cottage cheese,paneer",kg,Dairy,Fresh Dairy,DAI-PAN-001,Amul,"Fresh paneer",box,1,kg,1,,Chilled,Cold Room A,7,10,Example Supplier,Yes
+Milk,"doodh,milk",L,Dairy,Milk,DAI-MIL-001,Amul,"Full cream milk",case,12,L,12,,Chilled,Cold Room A,5,24,Example Supplier,Yes
+Tomato,"tamatar,tomato",kg,Vegetables,Fresh Produce,VEG-TOM-001,,,"Loose tomato",kg,1,1,,Ambient,Produce Rack,5,20,Example Supplier,Yes
+Basmati Rice,"rice,basmati",kg,Grocery,Rice,GRO-RIC-001,India Gate,"Basmati rice",bag,5,kg,5,,Ambient,Rack A1,365,25,Example Supplier,No
+Mineral Water,"water,drinking water",pcs,Beverage,Water,BEV-WAT-001,,,"500 ml bottle",case,24,pcs,24,,Ambient,Rack B1,365,48,Example Supplier,No
