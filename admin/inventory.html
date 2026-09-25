@@ -6,15 +6,15 @@
 <meta name="theme-color" content="#f6f8fb">
 <title>Bigly Agro — Inventory</title>
 <link rel="manifest" href="manifest.json">
-<link rel="stylesheet" href="../styles.css?v=20260925-7">
-<link rel="stylesheet" href="./inventory.css?v=20260925-7">
+<link rel="stylesheet" href="../styles.css?v=20260925-8">
+<link rel="stylesheet" href="./inventory.css?v=20260925-8">
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script defer src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-<script defer src="../config.js?v=20260925-7"></script>
-<script defer src="./auth.js?v=20260925-7"></script>
-<script>window.PA_VERSION_URL="../version.json";</script><script defer src="../update.js?v=20260925-7"></script></head>
+<script defer src="../config.js?v=20260925-8"></script>
+<script defer src="./auth.js?v=20260925-8"></script>
+<script>window.PA_VERSION_URL="../version.json";</script><script defer src="../update.js?v=20260925-8"></script></head>
 <body class="adminPage">
 <div id="adminBootOverlay"><div class="bootCard">Loading Inventory<span class="bootSub">Starting secure session…</span></div></div>
 <main id="app"><div class="baLayout">
@@ -92,15 +92,23 @@
 
 <dialog id="itemDialog" class="inventoryDialog"><form method="dialog" id="itemForm">
 <div class="dialogHead"><div><span class="eyebrow">ITEM MASTER</span><h3>Add Restaurant Item</h3></div><button value="cancel" class="secondary">✕</button></div>
-<label>Item name<input id="itemName" required></label><label>Aliases<input id="itemAliases" placeholder="e.g. tomato, tamatar"></label>
-<div class="inventoryFormGrid"><label>Unit<input id="itemUnit" value="pcs"></label><label>Category<input id="itemCategory" placeholder="Dairy, Grocery, Beverage..."></label></div>
-<label>Optional barcode<input id="itemBarcode" inputmode="numeric" placeholder="Scan or type barcode"></label>
+<div class="inventoryFormGrid"><label>Item name*<input id="itemName" required></label><label>Item Code / SKU<input id="itemCode" placeholder="e.g. MILK-001"></label></div>
+<div class="inventoryFormGrid"><label>Category*<input id="itemCategory" placeholder="Dairy, Grocery, Beverage..."></label><label>Subcategory<input id="itemSubcategory" placeholder="e.g. Fresh Dairy"></label></div>
+<div class="inventoryFormGrid"><label>Brand<input id="itemBrand" placeholder="Brand / manufacturer"></label><label>Base Unit*<input id="itemUnit" value="pcs" placeholder="kg, L, pcs"></label></div>
+<label>Aliases / Search names<input id="itemAliases" placeholder="e.g. tomato, tamatar, टमाटर"></label>
+<div class="inventoryFormGrid"><label>Purchase Unit<input id="itemPurchaseUnit" value="pcs" placeholder="box, case, kg, L, pcs"></label><label>Pack Size<input id="itemPackSize" type="number" min="0" step="any" placeholder="e.g. 12"></label></div>
+<div class="inventoryFormGrid"><label>Pack UOM<input id="itemPackUom" placeholder="pcs, kg, L, box"></label><label>Base Qty / Pack<input id="itemBaseQtyPerPack" type="number" min="0" step="any" placeholder="e.g. 12"></label></div>
+<label>Barcode<input id="itemBarcode" inputmode="numeric" placeholder="Scan or type barcode"></label>
+<div class="inventoryFormGrid"><label>Storage condition<input id="itemStorageCondition" placeholder="Ambient, Chilled, Frozen"></label><label>Storage location<input id="itemStorageLocation" placeholder="Rack / shelf / room"></label></div>
+<div class="inventoryFormGrid"><label>Shelf life (days)<input id="itemShelfLife" type="number" min="0" step="1" placeholder="e.g. 7"></label><label>Reorder level<input id="itemReorderLevel" type="number" min="0" step="any" placeholder="Minimum stock"></label></div>
+<div class="inventoryFormGrid"><label>Preferred supplier<input id="itemSupplier" placeholder="Supplier name"></label><label>Perishable<select id="itemPerishable"><option value="false">No</option><option value="true">Yes</option></select></label></div>
+<label>Description / handling notes<textarea id="itemDescription" rows="3" placeholder="Storage, handling, specification, brand notes..."></textarea></label>
 <div class="fetchDetailsBox"><button type="button" id="fetchItemDetailsBtn" class="secondary">✨ Fetch Details</button><span id="fetchItemStatus" class="hint">Enter an item name or barcode, then fetch. Review everything before saving.</span></div>
 <div id="fetchItemPreview" class="fetchItemPreview hidden"></div>
 <menu><button value="cancel" class="secondary">Cancel</button><button id="saveItemBtn" value="default" class="primary">Verify &amp; Save Item</button></menu>
 </form></dialog>
 </section>
 </div></div></main>
-<script defer src="./inventory.js?v=20260925-7"></script>
-<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20260925-7",{updateViaCache:"none"}).catch(console.warn));}window.addEventListener("load",()=>{if(typeof window.PA_ADMIN_START==="function")window.PA_ADMIN_START();});</script>
+<script defer src="./inventory.js?v=20260925-8"></script>
+<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20260925-8",{updateViaCache:"none"}).catch(console.warn));}window.addEventListener("load",()=>{if(typeof window.PA_ADMIN_START==="function")window.PA_ADMIN_START();});</script>
 </body></html>
