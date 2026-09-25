@@ -1,100 +1,119 @@
 (()=>{"use strict";
 const db=window.supabase.createClient(window.SUPABASE_CONFIG.url,window.SUPABASE_CONFIG.key);
-const S={items:[],fuse:null,selected:null,sessionId:null,staff:"",queue:[],scanner:null,pendingBarcode:"",category:"ALL",countedItemIds:new Set(),section:"restaurant"};
+const S={items:[],editId:null,scanner:null,importRows:[],validRows:[],errors:[]};
 const $=id=>document.getElementById(id);
-const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
-const today=()=>{const d=new Date();return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10)};
 const token=()=>window.PA_ADMIN_SESSION||localStorage.getItem("packing_assistant_admin_session_token")||"";
-const cfg=k=>window.PA_CONFIG_ENABLED?window.PA_CONFIG_ENABLED(k):true;
-function alertBox(msg,type){const e=$("inventoryAlert");e.textContent=msg||"";e.className="inventoryAlert "+(type||"");if(msg)e.classList.remove("hidden");else e.classList.add("hidden")}
-const INVENTORY_IDB_SCHEMA_VERSION=2;function migrateInventoryLocalStorage(){const k="inv_local_schema_version",old=Number(localStorage.getItem(k)||"1");if(old<2){localStorage.setItem(k,"2")}}function idb(){return new Promise((res,rej)=>{const r=indexedDB.open("bigly_inventory_v1",INVENTORY_IDB_SCHEMA_VERSION);r.onupgradeneeded=e=>{const db=e.target.result;if(!db.objectStoreNames.contains("queue"))db.createObjectStore("queue",{keyPath:"id"});if(e.oldVersion<2&&db.objectStoreNames.contains("queue")){const s=e.target.transaction.objectStore("queue");s.openCursor().onsuccess=ev=>{const cur=ev.target.result;if(!cur)return;const v=cur.value;if(!v.schemaVersion){v.schemaVersion=2;cur.update(v)}cur.continue()}}};r.onsuccess=()=>{r.result.onversionchange=()=>r.result.close();res(r.result)};r.onerror=()=>rej(r.error)})}
-async function qget(){const d=await idb();return new Promise((res,rej)=>{const r=d.transaction("queue","readonly").objectStore("queue").getAll();r.onsuccess=()=>res(r.result||[]);r.onerror=()=>rej(r.error)})}
-async function qput(v){const d=await idb();return new Promise((res,rej)=>{const t=d.transaction("queue","readwrite");t.objectStore("queue").put(v);t.oncomplete=res;t.onerror=()=>rej(t.error)})}
-async function qdel(id){const d=await idb();return new Promise((res,rej)=>{const t=d.transaction("queue","readwrite");t.objectStore("queue").delete(id);t.oncomplete=res;t.onerror=()=>rej(t.error)})}
-function setQueueBadge(){const n=S.queue.length;$("queueBadge").textContent=n?(n+" pending sync"):(navigator.onLine?"Synced":"Offline");$("queueBadge").className="inventoryBadge"+(n||!navigator.onLine?" offline":"")}
-async function loadItems(){const r=await db.rpc("inv_get_items_v2",{p_session_token:token(),p_section:S.section});if(r.error)throw r.error;S.items=(r.data||[]).map(x=>Object.assign({},x,{barcodes:String(x.barcode||"").split("|").filter(Boolean)}));S.fuse=new Fuse(S.items,{keys:["name","aliases"],threshold:.38,ignoreLocation:true});renderItems();renderMasterSummary()}
-function renderItems(list){const arr=list||S.items.filter(x=>S.category==="ALL"||x.category===S.category);const cats=["ALL"].concat(Array.from(new Set(S.items.map(x=>x.category).filter(Boolean))));$("categoryList").innerHTML=cats.map(c=>'<button class="categoryChip '+(S.category===c?"active":"")+'" data-cat="'+esc(c)+'">'+esc(c==="ALL"?"All":c)+"</button>").join("");$("categoryList").querySelectorAll(".categoryChip").forEach(b=>b.onclick=()=>{S.category=b.dataset.cat;renderItems()});$("itemList").innerHTML=arr.map(i=>'<button class="itemButton" data-id="'+i.id+'"><b>'+esc(i.name)+'</b><small>'+esc(i.category)+" · "+esc(i.unit)+(i.barcodes.length?" · "+esc(i.barcodes.join(", ")):"")+"</small></button>").join("")||'<div class="hint">No matching items.</div>';$("itemList").querySelectorAll(".itemButton").forEach(b=>b.onclick=()=>selectItem(b.dataset.id))}
-function renderMasterSummary(){$("masterItemSummary").textContent=S.items.length+" active "+(S.section==="vegetable"?"vegetable":"restaurant")+" items · "+new Set(S.items.flatMap(x=>x.barcodes)).size+" barcodes linked"}
-function selectItem(id){const i=S.items.find(x=>x.id===id);if(!i)return;S.selected=i;$("selectedItem").className="selectedItem";$("selectedItem").innerHTML="<b>"+esc(i.name)+"</b><small>"+esc(i.category)+" · Unit: "+esc(i.unit)+(i.barcodes.length?" · Barcode: "+esc(i.barcodes.join(", ")):"")+"</small>";$("countQty").focus();$("saveCountBtn").disabled=false;if(S.pendingBarcode)linkPendingBarcode(i)}
-async function linkPendingBarcode(i){const bc=S.pendingBarcode;if(!bc)return;try{const r=await db.rpc("inv_link_barcode",{p_session_token:token(),p_barcode:bc,p_item_id:i.id});if(r.error)throw r.error;i.barcodes.push(bc);S.pendingBarcode="";alertBox("Barcode linked. It will work for everyone.","success")}catch(e){alertBox(e.message||"Could not link barcode","error")}}
-function search(raw){const q=String(raw||"").trim();if(!q){S.category="ALL";renderItems();return}S.category="ALL";renderItems(S.fuse.search(q).map(x=>x.item))}
-function findBarcode(b){return S.items.find(i=>i.barcodes.includes(String(b).trim()))}
-async function handleBarcode(raw){const b=String(raw||"").trim();if(!b)return;const i=findBarcode(b);if(i){S.pendingBarcode="";selectItem(i.id);$("scanStatus").textContent="Barcode matched: "+i.name}else{S.pendingBarcode=b;$("scanStatus").textContent="Unknown barcode. Search the item to link it.";$("inventorySearch").focus();alertBox("Unknown barcode "+b+". Search the item to link it.","")}}
-async function startScanner(){if(!window.Html5Qrcode)return alertBox("Camera scanner library is still loading.","error");if(S.scanner)return;S.scanner=new Html5Qrcode("qrReader");$("startScannerBtn").classList.add("hidden");$("stopScannerBtn").classList.remove("hidden");try{await S.scanner.start({facingMode:"environment"},{fps:10,qrbox:{width:250,height:160}},x=>{handleBarcode(x);stopScanner()},()=>{})}catch(e){alertBox("Camera could not start. Check browser camera permission.","error");stopScanner()}}
-async function stopScanner(){if(!S.scanner)return;$("stopScannerBtn").classList.add("hidden");$("startScannerBtn").classList.remove("hidden");try{await S.scanner.stop()}catch{}try{S.scanner.clear()}catch{}S.scanner=null}
-async function syncQueue(){if(!cfg("inventory.offline_mode")){S.queue=await qget();setQueueBadge();return;}if(!navigator.onLine||!S.queue.length)return;for(const x of S.queue.slice()){try{const r=await db.rpc("inv_save_count",{p_session_token:token(),p_session_id:x.sessionId,p_item_id:x.itemId,p_qty:x.qty,p_counted_by:x.countedBy,p_note:x.note||null});if(r.error)throw r.error;await qdel(x.id)}catch(e){break}}S.queue=await qget();setQueueBadge()}
-async function saveCount(){if(!S.sessionId)return alertBox("Start a count session first.","error");if(!navigator.onLine&&!cfg("inventory.offline_mode"))return alertBox("Offline counting is disabled by admin configuration.","error");if(!S.selected)return alertBox("Select an item first.","error");const q=Number($("countQty").value);if(!Number.isFinite(q)||q<0)return alertBox("Enter a valid quantity.","error");const v={id:crypto.randomUUID(),schemaVersion:2,sessionId:S.sessionId,itemId:S.selected.id,qty:q,countedBy:S.staff,note:$("countNote").value.trim()};$("saveCountBtn").disabled=true;try{if(navigator.onLine){const r=await db.rpc("inv_save_count",{p_session_token:token(),p_session_id:v.sessionId,p_item_id:v.itemId,p_qty:v.qty,p_counted_by:v.countedBy,p_note:v.note||null});if(r.error)throw r.error;alertBox(S.selected.name+": "+q+" "+S.selected.unit+" saved.","success")}else{await qput(v);alertBox("Saved offline. It will sync automatically when the network returns.","success")}S.queue=await qget();S.countedItemIds.add(String(v.itemId));localStorage.setItem("inv_counted_items_"+S.sessionId,JSON.stringify([...S.countedItemIds]));setQueueBadge();clearItem();await syncQueue()}catch(e){await qput(v);S.queue=await qget();setQueueBadge();alertBox("Database unavailable. Count saved offline.","success")}finally{$("saveCountBtn").disabled=false}}
-function clearItem(){S.selected=null;$("selectedItem").className="selectedItem empty";$("selectedItem").textContent="Scan or search an item.";$("countQty").value="";$("countNote").value="";$("saveCountBtn").disabled=true}
-async function startCount(){const staff=$("staffName").value.trim(),date=$("countDate").value||today();if(!staff)return alertBox("Enter the staff name.","error");try{const r=await db.rpc("inv_start_session",{p_session_token:token(),p_section:S.section,p_date:date,p_counted_by:staff});if(r.error)throw r.error;S.sessionId=r.data;S.staff=staff;localStorage.setItem("inv_active_session",S.sessionId);localStorage.setItem("inv_active_staff",staff);$("startPanel").classList.add("hidden");$("countPanel").classList.remove("hidden");$("sessionMeta").textContent=date+" · Counted by "+staff;alertBox("Count session started.","success")}catch(e){alertBox(e.message||"Could not start count.","error")}}
-async function submitSession(){if(S.queue.length){await syncQueue();if(S.queue.length)return alertBox("Pending offline counts must sync before submitting.","error")}if(!S.sessionId)return;try{const r=await db.rpc("inv_submit_session",{p_session_token:token(),p_session_id:S.sessionId});if(r.error)throw r.error;localStorage.removeItem("inv_counted_items_"+S.sessionId);localStorage.removeItem("inv_active_session");localStorage.removeItem("inv_active_staff");S.countedItemIds=new Set();S.sessionId=null;$("countPanel").classList.add("hidden");$("startPanel").classList.remove("hidden");alertBox("Inventory count submitted.","success");await loadReports("history")}catch(e){alertBox(e.message||"Could not submit session.","error")}}
-function parseImport(file){return new Promise((res,rej)=>{const rd=new FileReader();rd.onload=e=>{try{const wb=XLSX.read(e.target.result,{type:"array"}),rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:""}),n=v=>String(v||"").trim().toLowerCase().replace(/[ _-]+/g,""),get=(r,a)=>{const k=Object.keys(r).find(x=>a.includes(n(x)));return k?String(r[k]).trim():""};res(rows.map(r=>({name:get(r,["name","itemname","productname"]),aliases:get(r,["aliases","alias"]),unit:get(r,["unit","uom","baseunit"]),category:get(r,["category"]),barcode:get(r,["barcode","barcodenumber"]),item_code:get(r,["itemcode","sku","code"]),brand:get(r,["brand","manufacturer"]),subcategory:get(r,["subcategory","subcat"]),description:get(r,["description","notes","handlingnotes"]),purchase_unit:get(r,["purchaseunit","buyunit"]),pack_size:get(r,["packsize","pack"]),pack_uom:get(r,["packuom","packunit"]),base_qty_per_pack:get(r,["baseqtyperpack","qtyperpack"]),storage_condition:get(r,["storagecondition","storage"]),storage_location:get(r,["storagelocation","location"]),shelf_life_days:get(r,["shelflifedays","shelflife"]),reorder_level:get(r,["reorderlevel","minstock","minimumstock"]),preferred_supplier:get(r,["preferredsupplier","supplier"]),is_perishable:get(r,["isperishable","perishable"])})).filter(x=>x.name))}catch(x){rej(x)}};rd.onerror=()=>rej(rd.error);rd.readAsArrayBuffer(file)})}
-async function importItems(file){try{const rows=await parseImport(file);if(!rows.length)throw new Error("No item rows found. Required column: name.");const p=rows.map(x=>Object.assign({},x,{aliases:x.aliases?x.aliases.split(/[;,]/).map(s=>s.trim()).filter(Boolean):[],pack_size:x.pack_size===""?null:Number(x.pack_size),base_qty_per_pack:x.base_qty_per_pack===""?null:Number(x.base_qty_per_pack),shelf_life_days:x.shelf_life_days===""?null:Number(x.shelf_life_days),reorder_level:x.reorder_level===""?null:Number(x.reorder_level),is_perishable:/^(true|yes|1)$/i.test(String(x.is_perishable||""))})),r=await db.rpc("inv_bulk_add_items_v2",{p_session_token:token(),p_section:S.section,p_items:p});if(r.error)throw r.error;alertBox("Import complete: "+r.data.added+" added, "+r.data.skipped+" skipped.","success");await loadItems()}catch(e){alertBox(e.message||"Import failed.","error")}}
-async function fetchItemDetails(){
- const name=$("itemName").value.trim(),barcode=$("itemBarcode").value.trim();
- const status=$("fetchItemStatus"),preview=$("fetchItemPreview"),btn=$("fetchItemDetailsBtn");
- if(!name&&!barcode){if(status)status.textContent="Enter an item name or barcode first.";return;}
- if(btn)btn.disabled=true;
- if(status)status.textContent="Fetching product details…";
+const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+function alertBox(msg,type=""){const e=$("inventoryAlert");e.textContent=msg||"";e.className="inventoryAlert "+type+(msg?"":" hidden")}
+function splitPipe(v){return String(v??"").split("|").map(x=>x.trim()).filter(Boolean)}
+function normalize(v){return String(v??"").trim().replace(/\s+/g," ")}
+function formPayload(){
+ const no=$("itemNoBarcode").checked;
+ return {section:$("itemSection").value,name:normalize($("itemName").value),category:normalize($("itemCategory").value),base_uom:$("itemUom").value,count_mode:$("itemCountMode").value,default_pack_size:$("itemCountMode").value==="packet"?$("itemPackSize").value:"",barcodes:no?[]:splitPipe($("itemBarcodes").value),no_barcode:no,aliases:splitPipe($("itemAliases").value),brand:normalize($("itemBrand").value)||null};
+}
+function showErrors(list=[]){$("fieldErrors").innerHTML=list.length?list.map(x=>"<div>• "+esc(x)+"</div>").join(""):""}
+function openDialog(item=null,barcode=""){
+ S.editId=item?.id||null;$("dialogTitle").textContent=item?"Edit Item":"Add Item";$("itemForm").reset();
+ $("itemSection").value=item?.section||$("sectionSelect").value;$("itemName").value=item?.name||"";$("itemCategory").value=item?.category||"";
+ $("itemUom").value=item?.base_uom||"";$("itemCountMode").value=item?.count_mode||"";$("itemPackSize").value=item?.default_pack_size??"";
+ $("itemBrand").value=item?.brand||"";$("itemBarcodes").value=item?.barcodes?.join("|")||barcode;$("itemNoBarcode").checked=!!item?.no_barcode;
+ $("itemAliases").value=item?.aliases?.join("|")||"";showErrors([]);togglePack();$("itemDialog").showModal();
+}
+function togglePack(){$("packWrap").classList.toggle("hidden",$("itemCountMode").value!=="packet")}
+async function lookup(){
+ const b=normalize($("barcodeInput").value);
+ if(!b)return alertBox("Scan or enter a barcode first.","error");
+ $("fetchDetailsBtn").disabled=true;$("fetchDetailsBtn").textContent="Fetching…";
  try{
-   let product=null,source="";
-   if(barcode){
-     const rr=await fetch("https://world.openfoodfacts.org/api/v2/product/"+encodeURIComponent(barcode)+"?fields=product_name,product_name_en,brands,categories,categories_tags,quantity,code,aliases");
-     if(rr.ok){const d=await rr.json();if(d.status===1)product=d.product;source="Open Food Facts";}
-   }
-   if(!product&&name){
-     const url="https://world.openfoodfacts.org/api/v2/search?search_terms="+encodeURIComponent(name)+"&page_size=8&fields=product_name,product_name_en,brands,categories,categories_tags,quantity,code,aliases";
-     const rr=await fetch(url);
-     if(rr.ok){const d=await rr.json();product=(d.products||[]).find(x=>x.product_name||x.product_name_en);if(product)source="Open Food Facts";}
-   }
-   if(!product)throw new Error("No matching product found. Enter the details manually.");
-   const productName=String(product.product_name_en||product.product_name||name).trim();
-   const categories=String(product.categories||"").split(",").map(x=>x.trim()).filter(Boolean);
-   const category=categories[0]||"Uncategorized";
-   const aliases=[...new Set([...(Array.isArray(product.aliases)?product.aliases:[]).map(String),String(product.brands||"").trim()].filter(Boolean))];
-   const quantity=String(product.quantity||"").trim();
-   let unit=$("itemUnit").value.trim()||"pcs";
-   const q=quantity.toLowerCase();
-   if(/\b(kg|kilogram|kilograms)\b/.test(q))unit="kg"; else if(/\b(l|liter|litre|liters|litres)\b/.test(q))unit="L"; else if(/\b(g|gram|grams|ml|milliliter|millilitre)\b/.test(q))unit="pcs";
-   $("itemName").value=productName;
-   $("itemCategory").value=category;
-   $("itemSubcategory").value=categories[1]||"";
-   $("itemAliases").value=aliases.join(", ");
-   $("itemUnit").value=unit;
-   $("itemBrand").value=String(product.brands||"").trim();
-   $("itemPurchaseUnit").value=unit;
-   if(quantity){const m=quantity.match(/([0-9]+(?:\.[0-9]+)?)\\s*(kg|g|l|ml|pcs|piece|pieces|pack|packs|box|boxes)\\b/i);if(m){$("itemPackSize").value=m[1];$("itemPackUom").value=m[2];}}
-   $("itemDescription").value=quantity?"Pack/quantity from product database: "+quantity:"";
-   $("itemPerishable").value=/fresh|chilled|frozen|dairy|meat|produce/i.test((product.categories||"")+" "+category)?"true":"false";
-   if(product.code&&!barcode)$("itemBarcode").value=String(product.code);
-   if(preview){preview.classList.remove("hidden");preview.innerHTML="<b>Fetched — review before saving</b><small>Source: "+esc(source)+"</small><div>"+esc([productName,category,quantity,product.brands||""].filter(Boolean).join(" · "))+"</div>";}
-   if(status)status.textContent="Details fetched. Verify the fields, then click Verify & Save Item.";
- }catch(e){if(status)status.textContent=e.message||"Could not fetch details.";if(preview)preview.classList.add("hidden");}
- finally{if(btn)btn.disabled=false;}
+  const r=await db.functions.invoke("admin-item-lookup",{body:{admin_session:token(),barcode:b}});
+  if(r.error)throw r.error;const d=r.data||{};
+  if(d.linked){alertBox("This barcode is already linked to "+(d.item?.name||"an item")+". No new item was opened.","error");$("fetchDetailsBtn").classList.add("hidden");return}
+  if(!d.found){alertBox(d.message||"Product not found. Add the item manually.","error");openDialog(null,b);return}
+  const p=d.data||{};openDialog(null,b);
+  $("itemName").value=p.name||"";$("itemBrand").value=p.brand||"";$("itemCategory").value=p.category||"";
+  $("itemAliases").value=[...(p.aliases||[])].filter((x,i,a)=>x&&a.indexOf(x)===i).join("|");
+  $("itemUom").value=p.base_uom||"";$("itemPackSize").value=p.default_pack_size??"";
+  $("itemBarcodes").value=p.barcode||b;showErrors(p.quantity_ambiguous?["Pack quantity was ambiguous; please select Base UOM and Pack Size manually."]:[]);
+  alertBox("Details fetched automatically. Review the fields before saving.","success");
+ }catch(e){alertBox(e.message||"Could not fetch product details.","error")}
+ finally{$("fetchDetailsBtn").disabled=false;$("fetchDetailsBtn").textContent="Fetch Details"}
 }
-
-function csv(rows){if(!rows.length)return"";const keys=Object.keys(rows[0]);return [keys.join(","),...rows.map(r=>keys.map(k=>'"'+String(r[k]==null?"":r[k]).replace(/"/g,'""')+'"').join(","))].join("\n")}
-function download(name,text){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type:"text/csv"}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
-async function loadReports(mode){const from=$("reportFrom").value||null,to=$("reportTo").value||null,staff=$("reportStaff").value.trim();try{const fn=mode==="history"?"inv_report_history":"inv_report_latest",r=await db.rpc(fn,{p_session_token:token(),p_section:S.section,p_from:from,p_to:to,p_staff:staff});if(r.error)throw r.error;mode==="history"?renderHistory(r.data||[]):renderLatest(r.data||[])}catch(e){$("reportResult").innerHTML='<p class="hint">'+esc(e.message||"Could not load report.")+"</p>"}}
-function renderLatest(rows){$("reportResult").innerHTML='<div class="reportActions"><button id="exportLatest" class="secondary">Download CSV</button></div><table class="reportTable"><thead><tr><th>Item</th><th>Category</th><th>Unit</th><th>Latest Qty</th><th>Staff</th><th>Counted At</th></tr></thead><tbody>'+(rows.map(r=>"<tr><td>"+esc(r.item_name)+"</td><td>"+esc(r.category)+"</td><td>"+esc(r.unit)+"</td><td>"+r.latest_qty+"</td><td>"+esc(r.counted_by)+"</td><td>"+new Date(r.counted_at).toLocaleString("en-IN")+"</td></tr>").join("")||'<tr><td colspan="6">No counts found.</td></tr>')+"</tbody></table>";$("exportLatest").onclick=()=>download("inventory-latest.csv",csv(rows))}
-function renderHistory(rows){$("reportResult").innerHTML='<div class="reportActions"><button id="exportHistory" class="secondary">Download CSV</button></div><table class="reportTable"><thead><tr><th>Date</th><th>Staff</th><th>Status</th><th>Items Counted</th><th>Total Qty</th><th>Action</th></tr></thead><tbody>'+(rows.map(r=>"<tr><td>"+esc(r.session_date)+"</td><td>"+esc(r.counted_by)+"</td><td>"+esc(r.status)+"</td><td>"+r.item_count+"</td><td>"+r.total_qty+'</td><td><button class="secondary notCountedBtn" data-id="'+r.session_id+'">Not counted</button></td></tr>').join("")||'<tr><td colspan="6">No sessions found.</td></tr>')+"</tbody></table>";$("exportHistory").onclick=()=>download("inventory-count-history.csv",csv(rows));$("reportResult").querySelectorAll(".notCountedBtn").forEach(b=>b.onclick=async()=>{const r=await db.rpc("inv_report_not_counted",{p_session_token:token(),p_session_id:b.dataset.id});if(r.error)return alertBox(r.error.message,"error");const rows=r.data||[];download("inventory-not-counted.csv",csv(rows));alertBox(rows.length+" items not counted. CSV downloaded.","success")})}
-function setSection(section){S.section=section;S.category="ALL";S.selected=null;const isVeg=section==="vegetable";$("vegetablePanel")?.classList.add("hidden");["startPanel","countPanel","itemsPanel","reportsPanel"].forEach(id=>$(id)?.classList.remove("hidden"));if($("sectionTitle"))$("sectionTitle").textContent=isVeg?"Vegetable Inventory":"Restaurant Inventory";if($("startCountBtn"))$("startCountBtn").textContent=isVeg?"Start Vegetable Count":"Start Restaurant Count";if($("itemsTitle"))$("itemsTitle").textContent=isVeg?"Vegetable Items":"Restaurant Items";if($("itemsDescription"))$("itemsDescription").textContent=isVeg?"Add vegetable items individually or import a CSV. Existing items are never overwritten.":"Add restaurant items individually or import a CSV. Existing items are never overwritten.";loadItems().catch(e=>alertBox(e.message||"Could not load items.","error"));} function showVeg(){setSection("vegetable")}
-function showRestaurant(){setSection("restaurant")}
-function applyInventoryConfig(){
- const barcode=cfg("inventory.barcode_scanning"),search=cfg("inventory.manual_search"),offline=cfg("inventory.offline_mode"),recount=cfg("inventory.allow_recount");
- const scannerBox=document.querySelector(".scannerBox");
- scannerBox?.classList.toggle("hidden",!barcode);
- $("startScannerBtn")?.classList.toggle("hidden",!barcode);
- $("barcodeInput")?.classList.toggle("hidden",!barcode);
- $("inventorySearch")?.classList.toggle("hidden",!search);
- $("inventorySearch")?.toggleAttribute("disabled",!search);
- if($("scanStatus"))$("scanStatus").textContent=barcode?"USB/Bluetooth scanners work like a keyboard. Press Enter after a scan.":"Barcode scanning is disabled by admin configuration.";
- if($("connection")&&!offline&&navigator.onLine===false)$("connection").textContent="● Online only";
- if($("selectedItem"))$("selectedItem").title=recount?"Recount allowed":"Recount disabled";
- setQueueBadge();
+function handleBarcode(b){
+ b=String(b||"").replace(/\D/g,"");if(!b)return;$("barcodeInput").value=b;$("barcodeResult").classList.remove("hidden");$("barcodeResult").textContent="Barcode scanned: "+b;
+ $("fetchDetailsBtn").classList.remove("hidden");$("manualAddBtn").onclick=()=>openDialog(null,b);
 }
-function wire(){ $("countDate").value=today();$("backDashboard").onclick=()=>location.href="./";$("sideDashboard").onclick=()=>location.href="./";$("sideInventory").onclick=()=>location.reload();$("sidePacking").onclick=()=>location.href="./";$("sideDelivery").onclick=()=>location.href="./";$("sideReports").onclick=()=>location.href="./";$("sideSettings").onclick=()=>location.href="./";$("vegBtn").onclick=showVeg;$("restaurantBtn").onclick=showRestaurant;$("backRestaurantBtn").onclick=showRestaurant;$("startCountBtn").onclick=startCount;$("newCountBtn").onclick=()=>{$("startPanel").scrollIntoView({behavior:"smooth"});$("staffName").focus()};$("submitSessionBtn").onclick=submitSession;$("saveCountBtn").onclick=saveCount;$("clearItemBtn").onclick=clearItem;$("startScannerBtn").onclick=startScanner;$("stopScannerBtn").onclick=stopScanner;$("barcodeInput").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();handleBarcode(e.target.value);e.target.value=""}});$("inventorySearch").addEventListener("input",e=>search(e.target.value));const openItemDialog=()=>{$("itemForm").reset();$("itemUnit").value="pcs";$("fetchItemStatus").textContent="Enter an item name or barcode, then fetch. Review everything before saving.";$("fetchItemPreview").classList.add("hidden");$("itemDialog").showModal()};$("addItemBtn").onclick=openItemDialog;$("addMasterItemBtn").onclick=openItemDialog;$("fetchItemDetailsBtn").onclick=fetchItemDetails;$("saveItemBtn").onclick=async e=>{e.preventDefault();const name=$("itemName").value.trim(),aliases=$("itemAliases").value.split(/[;,]/).map(x=>x.trim()).filter(Boolean),unit=$("itemUnit").value.trim()||"pcs",category=$("itemCategory").value.trim()||"Uncategorized",bc=$("itemBarcode").value.trim(),itemCode=$("itemCode").value.trim(),brand=$("itemBrand").value.trim(),subcategory=$("itemSubcategory").value.trim(),description=$("itemDescription").value.trim(),purchaseUnit=$("itemPurchaseUnit").value.trim()||unit,packSize=$("itemPackSize").value.trim(),packUom=$("itemPackUom").value.trim(),baseQtyPerPack=$("itemBaseQtyPerPack").value.trim(),storageCondition=$("itemStorageCondition").value.trim(),storageLocation=$("itemStorageLocation").value.trim(),shelfLife=$("itemShelfLife").value.trim(),reorderLevel=$("itemReorderLevel").value.trim(),supplier=$("itemSupplier").value.trim(),perishable=$("itemPerishable").value==="true";if(!name)return alertBox("Item name is required.","error");try{const r=await db.rpc("inv_add_item_v2",{p_session_token:token(),p_section:S.section,p_name:name,p_aliases:aliases,p_unit:unit,p_category:category,p_item_code:itemCode||null,p_brand:brand||null,p_subcategory:subcategory||null,p_description:description||null,p_purchase_unit:purchaseUnit,p_pack_size:packSize===""?null:Number(packSize),p_pack_uom:packUom||null,p_base_qty_per_pack:baseQtyPerPack===""?null:Number(baseQtyPerPack),p_storage_condition:storageCondition||null,p_storage_location:storageLocation||null,p_shelf_life_days:shelfLife===""?null:Number(shelfLife),p_reorder_level:reorderLevel===""?null:Number(reorderLevel),p_preferred_supplier:supplier||null,p_is_perishable:perishable});if(r.error)throw r.error;if(bc){const x=await db.rpc("inv_link_barcode",{p_session_token:token(),p_barcode:bc,p_item_id:r.data});if(x.error)throw x.error}$("itemDialog").close();await loadItems();alertBox("Item added.","success")}catch(x){alertBox(x.message||"Could not add item.","error")}};$("importBtn").onclick=()=>$("csvInput").click();$("csvInput").onchange=e=>{const f=e.target.files[0];if(f)importItems(f);e.target.value=""};$("latestReportBtn").onclick=()=>loadReports("latest");$("historyReportBtn").onclick=()=>loadReports("history");$("refreshReportsBtn").onclick=()=>loadReports("latest");window.addEventListener("online",async()=>{setQueueBadge();if(cfg("inventory.offline_mode"))await syncQueue()});window.addEventListener("offline",()=>{setQueueBadge();applyInventoryConfig()});$("baSidebarToggle").onclick=()=>document.querySelector(".baSidebar")?.classList.toggle("open")}
-async function init(){migrateInventoryLocalStorage();applyInventoryConfig();wire();S.queue=await qget();setQueueBadge();await loadItems();await loadReports("latest");const sid=localStorage.getItem("inv_active_session"),staff=localStorage.getItem("inv_active_staff");if(sid&&staff){S.sessionId=sid;S.staff=staff;try{S.countedItemIds=new Set(JSON.parse(localStorage.getItem("inv_counted_items_"+sid)||"[]").map(String))}catch{S.countedItemIds=new Set()}$("staffName").value=staff;$("startPanel").classList.add("hidden");$("countPanel").classList.remove("hidden");$("sessionMeta").textContent="Restored active session · "+staff;await syncQueue()}}
-window.addEventListener("pa-config-loaded",applyInventoryConfig);
+async function startScanner(){
+ if(!window.Html5Qrcode)return alertBox("Scanner is still loading. Try again.","error");
+ if(S.scanner)return;S.scanner=new Html5Qrcode("qrReader");$("qrReader").classList.remove("hidden");$("startScannerBtn").classList.add("hidden");$("stopScannerBtn").classList.remove("hidden");
+ try{await S.scanner.start({facingMode:"environment"},{fps:10,qrbox:{width:250,height:150}},x=>{handleBarcode(x);stopScanner()},()=>{})}
+ catch(e){alertBox("Camera could not start. Check camera permission.","error");stopScanner()}
+}
+async function stopScanner(){if(!S.scanner)return;$("stopScannerBtn").classList.add("hidden");$("startScannerBtn").classList.remove("hidden");try{await S.scanner.stop()}catch{}try{S.scanner.clear()}catch{}S.scanner=null;$("qrReader").classList.add("hidden")}
+async function loadItems(){
+ const r=await db.rpc("inv_v2_get_items",{p_session_token:token(),p_section:$("sectionSelect").value});if(r.error)throw r.error;S.items=r.data||[];renderItems();
+}
+function renderItems(){
+ const q=normalize($("itemSearch").value).toLowerCase(),rows=S.items.filter(i=>!q||[i.name,i.category,i.brand,(i.barcodes||[]).join(" "),...(i.aliases||[])].join(" ").toLowerCase().includes(q));
+ $("itemList").innerHTML=rows.length?rows.map(i=>'<article class="adminItem"><div><b>'+esc(i.name)+'</b><small>'+esc(i.category)+' · '+esc(i.base_uom)+' · '+esc(i.count_mode)+(i.default_pack_size?" · pack "+esc(i.default_pack_size):"")+'</small><small>'+(i.barcodes?.length?esc(i.barcodes.join(" · ")):"No barcode")+'</small></div><div class="itemActions"><button class="secondary editBtn" data-id="'+i.id+'">Edit</button>'+(i.active?'<button class="dangerBtn deactivateBtn" data-id="'+i.id+'">Deactivate</button>':'<span class="inactiveBadge">Inactive</span>')+'</div></article>').join(""):'<div class="emptyState">No items yet. Scan a barcode or add an item manually.</div>';
+ $("itemList").querySelectorAll(".editBtn").forEach(b=>b.onclick=()=>openDialog(S.items.find(i=>i.id===b.dataset.id)));
+ $("itemList").querySelectorAll(".deactivateBtn").forEach(b=>b.onclick=()=>deactivate(b.dataset.id));
+}
+async function deactivate(id){if(!confirm("Deactivate this item? It will never be deleted."))return;try{const r=await db.rpc("inv_v2_save_item",{p_session_token:token(),p_operation:"deactivate",p_item_id:id,p_payload:{},p_import_id:null});if(r.error)throw r.error;await loadItems();alertBox("Item deactivated.","success")}catch(e){alertBox(e.message||"Could not deactivate item.","error")}}
+async function saveItem(e){
+ e.preventDefault();const p=formPayload(),errors=[];
+ if(!p.name)errors.push("Name is required.");if(!p.category)errors.push("Category is required.");if(!p.base_uom)errors.push("Base UOM is required.");if(!p.count_mode)errors.push("Count mode is required.");
+ if(p.count_mode==="packet"&&!(Number(p.default_pack_size)>0))errors.push("Default pack size must be greater than 0.");
+ if(p.no_barcode&&p.barcodes.length)errors.push("No barcode cannot have barcodes.");if(!p.no_barcode&&!p.barcodes.length)errors.push("Barcode is required unless No barcode is selected.");
+ showErrors(errors);if(errors.length)return;
+ try{const r=await db.rpc("inv_v2_save_item",{p_session_token:token(),p_operation:S.editId?"update":"create",p_item_id:S.editId,p_payload:p,p_import_id:null});if(r.error)throw r.error;
+  $("itemDialog").close();await loadItems();alertBox("Item saved.","success");
+ }catch(x){showErrors([x.message||"Could not save item."]);alertBox(x.message||"Could not save item.","error")}
+}
+function template(){
+ const wb=XLSX.utils.book_new(),headers=["section","name","category","base_uom","count_mode","default_pack_size","barcode(s)","no_barcode","aliases","brand"];
+ const row=["restaurant","EXAMPLE Barilla Pasta 1kg","Dry Goods","kg","packet",1,"8076809571319",false,"barilla|pasta","Barilla"];
+ const ws=XLSX.utils.aoa_to_sheet([headers,row]);ws["!cols"]=headers.map(()=>({wch:22}));XLSX.utils.book_append_sheet(wb,ws,"Items");
+ const ins=[["Column","Required","Guidance"],...headers.map(h=>[h,h==="aliases"||h==="brand"?"No":"Yes",h==="section"?"restaurant or vegetable":h==="base_uom"?"kg, L or pcs":h==="count_mode"?"unit or packet":h==="barcode(s)"?"Use | for multiple valid EAN-8/UPC-A/EAN-13 barcodes":h==="no_barcode"?"TRUE only when there is no barcode":h==="default_pack_size"?"Required >0 for packet mode":"Trim spaces; do not use scientific notation"])];
+ XSLX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(ins),"Instructions");XLSX.writeFile(wb,"Bigly_Inventory_Item_Template.xlsx");
+}
+function parseFile(file){
+ return new Promise((res,rej)=>{const rd=new FileReader();rd.onload=e=>{try{const wb=XLSX.read(e.target.result,{type:"array",cellText:true,cellDates:false}),sheet=wb.Sheets[wb.SheetNames[0]],rows=XLSX.utils.sheet_to_json(sheet,{defval:"",raw:false});res(rows)}catch(x){rej(x)}};rd.onerror=()=>rej(rd.error);rd.readAsArrayBuffer(file)})
+}
+function rowToPayload(r){
+ const get=(...a)=>{const k=Object.keys(r).find(x=>a.includes(String(x).trim().toLowerCase().replace(/[ _-]+/g,"")));return k?String(r[k]).trim():""};
+ const n=get("name","itemname","productname"), section=get("section")||"restaurant", uom=get("base_uom","baseuom","unit","uom"), mode=get("count_mode","countmode"), pack=get("default_pack_size","defaultpacksize","packsize"), bc=get("barcode(s)","barcodes","barcode"), no=/^(true|yes|1)$/i.test(get("no_barcode","nobarcode")), aliases=splitPipe(get("aliases")),brand=normalize(get("brand"))||null;
+ return {section,name:normalize(n),category:normalize(get("category")),base_uom:uom,count_mode:mode,default_pack_size:mode==="packet"?pack:"",barcodes:no?[]:splitPipe(bc),no_barcode:no,aliases,brand};
+}
+async function importFile(file){
+ try{const rows=await parseFile(file);S.importRows=[];S.validRows=[];S.errors=[];let skipped=0;
+  rows.forEach((r,idx)=>{const p=rowToPayload(r);if(!p.name)return;if(/^EXAMPLE\b/i.test(p.name)){skipped++;return}S.importRows.push({row:idx+2,payload:p})});
+  for(const x of S.importRows){const p=x.payload,e=[];if(!p.category)e.push("Category required");if(!["restaurant","vegetable"].includes(p.section))e.push("Invalid section");if(!["kg","L","pcs"].includes(p.base_uom))e.push("Invalid base UOM");if(!["unit","packet"].includes(p.count_mode))e.push("Invalid count mode");if(p.count_mode==="packet"&&!(Number(p.default_pack_size)>0))e.push("Pack size must be >0");if(!p.no_barcode&&!p.barcodes.length)e.push("Barcode required");if(p.no_barcode&&p.barcodes.length)e.push("No barcode conflicts with barcode");
+   if(!p.no_barcode)p.barcodes.forEach(b=>{if(!/^[0-9]+$/.test(b)||![8,12,13].includes(b.length))e.push("Invalid barcode "+b)});
+   if(e.length)S.errors.push({row:x.row,errors:e.join("; "),payload:p});else S.validRows.push(x);
+  }
+  $("importSummary").innerHTML="<p><b>"+S.validRows.length+"</b> valid · <b>"+S.errors.length+"</b> errors · <b>"+skipped+"</b> example rows skipped.</p>";
+  $("importErrors").innerHTML=S.errors.length?"<div class='errorTable'>"+S.errors.map(x=>"<div>Row "+x.row+": "+esc(x.errors)+"</div>").join("")+"</div>":"<p class='successText'>No row-level validation errors.</p>";
+  $("importValidBtn").disabled=!S.validRows.length;$("downloadErrors").classList.toggle("hidden",!S.errors.length);$("importDialog").showModal();
+ }catch(e){alertBox(e.message||"Could not read import file.","error")}
+}
+async function importValid(){
+ const importId=crypto.randomUUID();let added=0,failed=[];
+ for(const x of S.validRows){try{const r=await db.rpc("inv_v2_save_item",{p_session_token:token(),p_operation:"create",p_item_id:null,p_payload:x.payload,p_import_id:importId});if(r.error)throw r.error;added++}catch(e){failed.push({row:x.row,error:e.message||"Import failed"})}}
+ if(failed.length){S.errors.push(...failed.map(x=>({row:x.row,errors:x.error,payload:{}})));alertBox(added+" imported; "+failed.length+" rows rejected. Download the error list.","error")}else{alertBox(added+" items imported.","success");$("importDialog").close()}
+ await loadItems();
+}
+function downloadErrors(){const rows=S.errors.map(x=>({row:x.row,error:x.errors}));const ws=XLSX.utils.json_to_sheet(rows);const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"Errors");XLSX.writeFile(wb,"Bigly_Inventory_Import_Errors.xlsx")}
+function wire(){
+ $("sideDashboard").onclick=()=>location.href="./";$("sidePacking").onclick=()=>location.href="./";$("sideDelivery").onclick=()=>location.href="./";$("sideReports").onclick=()=>location.href="./";$("sideSettings").onclick=()=>location.href="./";$("backDashboard").onclick=()=>location.href="./";
+ $("baSidebarToggle").onclick=()=>document.querySelector(".baSidebar")?.classList.toggle("open");
+ $("sectionSelect").onchange=()=>loadItems().catch(e=>alertBox(e.message,"error"));$("itemSearch").oninput=renderItems;$("refreshBtn").onclick=()=>loadItems().catch(e=>alertBox(e.message,"error"));
+ $("startScannerBtn").onclick=startScanner;$("stopScannerBtn").onclick=stopScanner;$("fetchDetailsBtn").onclick=lookup;$("barcodeInput").addEventListener("input",e=>{if(normalize(e.target.value)){handleBarcode(e.target.value)}});
+ $("barcodeInput").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();handleBarcode(e.target.value);lookup()}});
+ $("manualAddBtn").onclick=()=>openDialog(null,normalize($("barcodeInput").value));$("closeDialog").onclick=$("cancelDialog").onclick=()=>$("itemDialog").close();$("itemCountMode").onchange=togglePack;$("itemNoBarcode").onchange=()=>{$("itemBarcodes").disabled=$("itemNoBarcode").checked};$("itemForm").onsubmit=saveItem;
+ $("downloadTemplateBtn").onclick=template;$("importBtn").onclick=()=>$("fileInput").click();$("fileInput").onchange=e=>{if(e.target.files[0])importFile(e.target.files[0]);e.target.value=""};
+ $("closeImport").onclick=()=>$("importDialog").close();$("importValidBtn").onclick=importValid;$("downloadErrors").onclick=downloadErrors;
+}
+async function init(){wire();await loadItems();$("connection").textContent=navigator.onLine?"● Online":"● Offline"}
 window.addEventListener("pa-admin-authenticated",()=>init().catch(e=>alertBox(e.message||"Inventory startup failed.","error")));
-window.addEventListener("load",()=>{if(window.PA_ADMIN_SESSION&&!S.items.length)init().catch(e=>alertBox(e.message||"Inventory startup failed.","error"))});
+window.addEventListener("load",()=>{if(window.PA_ADMIN_SESSION)init().catch(e=>alertBox(e.message||"Inventory startup failed.","error"))});
 })();
