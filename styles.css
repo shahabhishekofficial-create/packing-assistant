@@ -1205,3 +1205,5 @@ button:focus-visible,input:focus-visible,select:focus-visible,dialog:focus-visib
 }
 /* Login has no useful logout action */
 .inventoryCountPage:has(#login:not(.hidden)) .invTopbar .invIconBtn{display:none}
+
+.inventoryCountPage .invItems .itemPick.selected{border-color:#9aaaf4!important;background:#f3f5ff!important;box-shadow:0 0 0 2px rgba(49,85,231,.08),0 5px 14px rgba(49,85,231,.08)!important}.inventoryCountPage .invItems .itemPick.selected b{color:#243fc0}
