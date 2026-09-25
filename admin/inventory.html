@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f6f8fb"><title>Bigly Agro — Inventory Item Master</title>
-<link rel="manifest" href="manifest.json"><link rel="stylesheet" href="../styles.css?v=20260925-24"><link rel="stylesheet" href="./inventory.css?v=20260925-24">
-<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script defer src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script><script defer src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script><script defer src="../config.js?v=20260925-24"></script><script defer src="./auth.js?v=20260925-24"></script>
-<script>window.PA_VERSION_URL="../version.json";</script><script defer src="../update.js?v=20260925-24"></script>
+<link rel="manifest" href="manifest.json"><link rel="stylesheet" href="../styles.css?v=20260925-25"><link rel="stylesheet" href="./inventory.css?v=20260925-25">
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script defer src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script><script defer src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script><script defer src="../config.js?v=20260925-25"></script><script defer src="./auth.js?v=20260925-25"></script>
+<script>window.PA_VERSION_URL="../version.json";</script><script defer src="../update.js?v=20260925-25"></script>
 </head>
 <body class="adminPage">
 <div id="adminBootOverlay"><div class="bootCard">Loading Item Master<span class="bootSub">Starting secure session…</span></div></div>
@@ -22,6 +22,15 @@
 <div id="vegetableTools" class="hidden">
 <div class="vegetableIntro"><span class="eyebrow">VEGETABLE INVENTORY</span><h3>Simple vegetable master</h3><p class="hint">Vegetables are a controlled list for warehouse counting. No barcode, pack size or aliases are used.</p></div>
 </div></section>
+<section class="inventoryCard invStockDashboard">
+<div class="inventoryCardHead"><div><span class="eyebrow">WAREHOUSE STOCK</span><h3>Available Inventory</h3><p class="hint">Latest physical counts and admin adjustments. Admin changes require a reason and are permanently logged.</p></div><div class="inventoryStockActions"><select id="stockSection"><option value="restaurant">Restaurant</option><option value="vegetable">Vegetable</option></select><button id="stockRefreshBtn" class="secondary">↻ Refresh</button></div></div>
+<div class="inventoryStockKpis" id="inventoryStockKpis"></div>
+<div class="tableWrap"><table class="inventoryStockTable"><thead><tr><th>Item</th><th>Category</th><th>Available Qty</th><th>Base UOM</th><th>Last Count</th><th>Counted By</th><th>Updated</th><th></th></tr></thead><tbody id="inventoryStockBody"></tbody></table></div>
+</section>
+<section class="inventoryCard">
+<div class="inventoryCardHead"><div><span class="eyebrow">AUDIT LOG</span><h3>Inventory Changes</h3><p class="hint">Every staff count and admin quantity adjustment is recorded.</p></div><button id="inventoryLogRefresh" class="secondary">↻ Refresh Log</button></div>
+<div class="tableWrap"><table class="inventoryStockTable"><thead><tr><th>Date</th><th>Item</th><th>Action</th><th>Actor</th><th>Old</th><th>New</th><th>Change</th><th>Reason</th></tr></thead><tbody id="inventoryLogBody"></tbody></table></div>
+</section>
 <section class="inventoryCard"><div class="inventoryCardHead"><div><span class="eyebrow">ITEM MASTER</span><h3 id="itemsTitle">Restaurant Items</h3><p class="hint">Active and inactive items are retained. Nothing is overwritten or deleted.</p></div></div><div class="itemSearchRow"><input id="itemSearch" type="search" placeholder="Search item, alias, category or barcode…"><select id="itemFilter"><option value="active">Active</option><option value="all">All</option><option value="inactive">Inactive</option></select></div><div id="itemList" class="adminItemList"></div></section>
 <section id="importPreviewCard" class="inventoryCard hidden"><div class="inventoryCardHead"><div><span class="eyebrow">IMPORT PREVIEW</span><h3>Review before import</h3></div><button id="cancelImportBtn" class="secondary">Cancel</button></div><div id="importSummary" class="importSummary"></div><div class="tableWrap"><table class="importTable"><thead><tr><th>Row</th><th>Name</th><th>Section</th><th>Status</th><th>Error</th></tr></thead><tbody id="importRows"></tbody></table></div><div class="importActions"><button id="downloadErrorsBtn" class="secondary hidden">↓ Download Error CSV</button><button id="confirmImportBtn" class="primary" disabled>Import Valid Rows</button></div></section>
 </section>
@@ -44,5 +53,5 @@
 <div id="vegetableErrors" class="fieldErrors"></div>
 <menu><button value="cancel" class="secondary">Cancel</button><button id="vegetableSaveAnotherBtn" type="button" class="secondary">Save &amp; Add Another</button><button id="vegetableSaveBtn" value="default" class="primary">Save Vegetable</button></menu></form></dialog>
 </div></div><section class="adminCard" style="margin-top:16px"><div class="sectionHead"><div><span class="eyebrow">WAREHOUSE ACCESS</span><h2>Warehouse Staff PIN</h2></div></div><p class="hint">Admin creates the PIN. Staff only use the separate Warehouse Inventory page for counting.</p><div class="formGrid"><label>Staff name<input id="staffAdminName"></label><label>PIN (4–6 digits)<input id="staffAdminPin" type="password" inputmode="numeric" maxlength="6"></label></div><button id="saveStaffBtn" class="primary">Create / Reset Staff PIN</button> <a class="secondary" href="../inventory-count.html" target="_blank" style="display:inline-block;text-decoration:none">Open Warehouse Count</a><p id="staffAdminMsg" class="hint"></p></section></main>
-<script defer src="./inventory.js?v=20260925-24"></script><script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20260925-24",{updateViaCache:"none"}).catch(console.warn));}</script>
+<script defer src="./inventory.js?v=20260925-25"></script><script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20260925-25",{updateViaCache:"none"}).catch(console.warn));}</script>
 </body></html>
