@@ -13,3 +13,21 @@
 - Files: `admin/inventory.html`, `admin/inventory.js`, `admin/inventory.css`, `supabase/functions/admin-item-lookup/index.ts`, `supabase/migrations/20260925060541_inv_v2_item_master_import_lookup.sql`, `supabase/migrations/20260925060541_inv_v2_item_master_import_lookup_rollback.sql`.
 - Verification performed: migration present in Supabase, V2 tables have RLS enabled, intended RPC execute grants exist, barcode check-digit helper passes 8076809571319 and rejects altered/short values, Edge Function deployed as version 3.
 - Open Food Facts documentation confirms v2 remains supported for backward compatibility, requires a custom User-Agent, applies read rate limits, and describes the data as community-supplied; attribution/compliance requirements should be followed for production use.
+
+## 2026-09-25 — Lookup connection completed
+
+- Deployed Supabase Edge Function admin-item-lookup v4.
+- Admin lookup now validates the custom admin session server-side, checks existing linked barcodes globally, reads the cache, and otherwise fetches Open Food Facts API v2.
+- Lookup uses an 8-second timeout, a custom User-Agent, rate-limit handling and cached not-found/error results.
+- Product data is returned directly to the Item Master form; the Admin never needs to open Open Food Facts.
+- Added barcode preflight RPC inv_v2_lookup_linked and deployed its own additive migration.
+- Updated Item Master asset version to 20260925-13.
+- Security advisor still reports pre-existing project-wide SECURITY DEFINER/RLS findings; no existing module was changed to address those unrelated findings.
+
+### Verification
+- Database migration applied successfully.
+- Unauthorized direct call to inv_v2_lookup_linked was rejected with Unauthorized.
+- Edge Function is ACTIVE (v4).
+- Live Open Food Facts request could not be exercised from this environment because outbound network/DNS is unavailable; therefore real barcode lookup from the deployed function still needs one authenticated browser test.
+
+-- END OF PART 2/2
