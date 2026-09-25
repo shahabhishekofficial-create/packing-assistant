@@ -36,3 +36,12 @@
 
 - Fixed a UI state bug where the top-level Fetch Details flow opened the Item dialog and then attempted to open it a second time after a successful lookup.
 - Successful lookup now populates the already-open form without throwing InvalidStateError.
+
+## 2026-09-25 — Vegetable Item Master separated
+
+- Vegetable Item Master now has a separate workflow from Restaurant Item Master.
+- Removed barcode lookup, Open Food Facts, pack size, aliases and brand from the vegetable UI.
+- Vegetable setup uses only name, category and base UOM (kg/pcs); counting mode is fixed to Unit and no-barcode is enforced server-side.
+- Restaurant workflow retains barcode lookup, Open Food Facts enrichment, packet configuration, aliases and brand.
+- Vegetable Import/Download Template controls are hidden because vegetables are maintained as a controlled, limited master list rather than the restaurant packaged-goods workflow.
+- Added versioned `inv_v2_save_item_v3` validation wrapper and kept the existing V2 save RPC unchanged.
