@@ -57,8 +57,14 @@ async function fetchItemDetails(){
    if(/\b(kg|kilogram|kilograms)\b/.test(q))unit="kg"; else if(/\b(l|liter|litre|liters|litres)\b/.test(q))unit="L"; else if(/\b(g|gram|grams|ml|milliliter|millilitre)\b/.test(q))unit="pcs";
    $("itemName").value=productName;
    $("itemCategory").value=category;
+   $("itemSubcategory").value=categories[1]||"";
    $("itemAliases").value=aliases.join(", ");
    $("itemUnit").value=unit;
+   $("itemBrand").value=String(product.brands||"").trim();
+   $("itemPurchaseUnit").value=unit;
+   if(quantity){const m=quantity.match(/([0-9]+(?:\\.[0-9]+)?)\\s*(kg|g|l|ml|pcs|piece|pieces|pack|packs|box|boxes)\\b/i);if(m){$("itemPackSize").value=m[1];$("itemPackUom").value=m[2];}}
+   $("itemDescription").value=quantity?"Pack/quantity from product database: "+quantity:"";
+   $("itemPerishable").value=/fresh|chilled|frozen|dairy|meat|produce/i.test((product.categories||"")+" "+category)?"true":"false";
    if(product.code&&!barcode)$("itemBarcode").value=String(product.code);
    if(preview){preview.classList.remove("hidden");preview.innerHTML="<b>Fetched — review before saving</b><small>Source: "+esc(source)+"</small><div>"+esc([productName,category,quantity,product.brands||""].filter(Boolean).join(" · "))+"</div>";}
    if(status)status.textContent="Details fetched. Verify the fields, then click Verify & Save Item.";
