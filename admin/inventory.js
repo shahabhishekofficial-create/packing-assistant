@@ -61,7 +61,7 @@ async function lookup(barcode,button,status){
   const d=data.data||{};$("itemBarcodes").value=d.barcode||barcode;if(d.name)$("itemName").value=d.name;if(d.brand)$("itemBrand").value=d.brand;if(d.category)$("itemCategory").value=d.category;if(d.aliases?.length)$("itemAliases").value=[...new Set(d.aliases)].join(" | ");if(d.base_uom)$("itemUom").value=d.base_uom;if(d.default_pack_size!=null)$("itemPackSize").value=d.default_pack_size;
   if(d.quantity_ambiguous)$("dialogFetchStatus").textContent="Quantity '"+(d.quantity||"")+" ' could not safely determine pack/base unit. Complete it manually.";else $("dialogFetchStatus").textContent="Details fetched. Verify all fields before saving.";
   $("fieldErrors").innerHTML="";alertBox("Product details fetched automatically. Review the fields before saving.","success");
-  $("itemDialog").showModal();
+  if(!$("itemDialog").open) $("itemDialog").showModal();
  }catch(e){status.textContent=e.message||"Could not fetch product details.";alertBox(status.textContent,"error")}finally{button.disabled=false}
 }
 async function handleLookupTop(){
