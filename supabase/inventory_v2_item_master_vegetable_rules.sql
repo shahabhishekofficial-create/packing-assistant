@@ -1,0 +1,4 @@
+-- Inventory V2 vegetable-specific save rules.
+-- Additive/versioned. Existing inv_v2_save_item remains intact.
+-- Vegetable rules: kg/pcs only, Unit mode, no barcode, no pack size, no aliases.
+-- END OF PART 1/1
