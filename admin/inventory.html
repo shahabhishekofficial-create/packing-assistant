@@ -6,15 +6,15 @@
 <meta name="theme-color" content="#f6f8fb">
 <title>Bigly Agro — Inventory</title>
 <link rel="manifest" href="manifest.json">
-<link rel="stylesheet" href="../styles.css?v=20260925-9">
-<link rel="stylesheet" href="./inventory.css?v=20260925-9">
+<link rel="stylesheet" href="../styles.css?v=20260925-10">
+<link rel="stylesheet" href="./inventory.css?v=20260925-10">
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script defer src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-<script defer src="../config.js?v=20260925-9"></script>
-<script defer src="./auth.js?v=20260925-9"></script>
-<script>window.PA_VERSION_URL="../version.json";</script><script defer src="../update.js?v=20260925-9"></script></head>
+<script defer src="../config.js?v=20260925-10"></script>
+<script defer src="./auth.js?v=20260925-10"></script>
+<script>window.PA_VERSION_URL="../version.json";</script><script defer src="../update.js?v=20260925-10"></script></head>
 <body class="adminPage">
 <div id="adminBootOverlay"><div class="bootCard">Loading Inventory<span class="bootSub">Starting secure session…</span></div></div>
 <main id="app"><div class="baLayout">
@@ -38,8 +38,16 @@
 
 <section class="inventoryPage">
 <div class="inventoryHero">
-<div><span class="eyebrow">INVENTORY</span><h2>Restaurant Inventory</h2><p>Scan, search and count stock. Every recount is preserved.</p></div>
-<div class="inventoryHeroActions"><button id="vegBtn" class="secondary">Vegetables Inventory</button><button id="newCountBtn" class="primary">Start New Count</button></div>
+<div><span class="eyebrow">INVENTORY</span><h2>Inventory Management</h2><p>Choose a main inventory section. Each section has its own items, counts and stock history.</p></div>
+<div class="inventoryHeroActions"><button id="newCountBtn" class="primary">Start New Count</button></div>
+</div>
+<div class="inventorySectionChooser">
+<button id="vegBtn" class="inventorySectionCard vegetableMain" type="button">
+  <span class="sectionCardIcon">🥬</span><span class="sectionCardBody"><span class="sectionCardEyebrow">PRIMARY INVENTORY</span><strong>Vegetable Inventory</strong><small>Fresh vegetables, produce, daily stock &amp; high-frequency counting</small></span><span class="sectionCardArrow">→</span>
+</button>
+<button id="restaurantBtn" class="inventorySectionCard restaurantMain" type="button">
+  <span class="sectionCardIcon">🍽️</span><span class="sectionCardBody"><span class="sectionCardEyebrow">MAIN INVENTORY</span><strong>Restaurant Inventory</strong><small>Restaurant grocery, packaged goods and other consumables</small></span><span class="sectionCardArrow">→</span>
+</button>
 </div>
 
 <div id="inventoryAlert" class="inventoryAlert hidden" role="status"></div>
@@ -87,7 +95,7 @@
 </section>
 
 <section id="vegetablePanel" class="inventoryCard hidden">
-<div class="comingSoonBox"><div class="comingIcon">🥬</div><span class="eyebrow">VEGETABLES INVENTORY</span><h2>Coming soon</h2><p>The inventory database already supports the <b>vegetable</b> section. Restaurant Inventory is live now.</p><button id="backRestaurantBtn" class="primary">Restaurant Inventory</button></div>
+<div class="comingSoonBox"><div class="comingIcon">🥬</div><span class="eyebrow">VEGETABLE INVENTORY</span><h2>Vegetable Inventory</h2><p>The vegetable inventory section is reserved as the primary produce workflow and will use the same inventory controls.</p><button id="backRestaurantBtn" class="primary">Restaurant Inventory</button></div>
 </section>
 
 <dialog id="itemDialog" class="inventoryDialog"><form method="dialog" id="itemForm">
@@ -109,6 +117,6 @@
 </form></dialog>
 </section>
 </div></div></main>
-<script defer src="./inventory.js?v=20260925-9"></script>
-<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20260925-9",{updateViaCache:"none"}).catch(console.warn));}window.addEventListener("load",()=>{if(typeof window.PA_ADMIN_START==="function")window.PA_ADMIN_START();});</script>
+<script defer src="./inventory.js?v=20260925-10"></script>
+<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20260925-10",{updateViaCache:"none"}).catch(console.warn));}window.addEventListener("load",()=>{if(typeof window.PA_ADMIN_START==="function")window.PA_ADMIN_START();});</script>
 </body></html>
