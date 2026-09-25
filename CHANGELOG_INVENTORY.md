@@ -31,3 +31,8 @@
 - Live Open Food Facts request could not be exercised from this environment because outbound network/DNS is unavailable; therefore real barcode lookup from the deployed function still needs one authenticated browser test.
 
 -- END OF PART 2/2
+
+## 2026-09-25 — Admin lookup dialog fix
+
+- Fixed a UI state bug where the top-level Fetch Details flow opened the Item dialog and then attempted to open it a second time after a successful lookup.
+- Successful lookup now populates the already-open form without throwing InvalidStateError.
