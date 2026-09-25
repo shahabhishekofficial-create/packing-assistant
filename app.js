@@ -1021,7 +1021,7 @@ async function exitOutlet(){
   $("packing").classList.add("hidden");
   $("home").classList.remove("hidden");
 }
-$("backBtn").onclick=exitOutlet;if($("saveOutletSettings"))$("saveOutletSettings").onclick=saveOutletSettings;if($("addDriverBtn"))$("addDriverBtn").onclick=async()=>{const el=$("newDriverName"),name=el.value.trim();if(!name)return;const {error}=await db.from("drivers").insert({name});if(error){if(String(error.code)==="23505")return alert("Driver already exists.");return alert(error.message);}await loadDrivers();el.value="";const drivers=getDrivers();document.querySelectorAll("#outletSettingsList .driverSelect").forEach(select=>{const current=select.value;select.innerHTML=`<option value="">Unassigned</option>${drivers.map(d=>`<option value="${esc(d)}">${esc(d)}</option>`).join("")}`;select.value=current;});};
+$("backBtn").onclick=exitOutlet;if($("saveOutletSettings"))$("saveOutletSettings").onclick=saveOutletSettings;
 
 $("fileInput").onchange=async e=>{
   try{
