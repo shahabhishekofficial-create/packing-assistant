@@ -1,5 +1,5 @@
 (()=>{"use strict";
-const BUILD_ID="20260925-11",VERSION_URL=window.PA_VERSION_URL||"version.json";
+const BUILD_ID="20260925-14",VERSION_URL=window.PA_VERSION_URL||"version.json";
 let checking=false,pendingBuild="";
 function removeNotice(){document.getElementById("paUpdateNotice")?.remove()}
 function showNotice(remote){
@@ -33,6 +33,7 @@ async function applyUpdate(){
     if("serviceWorker"in navigator)await Promise.all((await navigator.serviceWorker.getRegistrations()).map(x=>x.update().catch(()=>{})));
   }finally{
     sessionStorage.setItem("pa_last_update",pendingBuild||"");
+    removeNotice();
     location.reload();
   }
 }
