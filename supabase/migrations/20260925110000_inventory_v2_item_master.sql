@@ -116,6 +116,22 @@ begin
     raise exception 'Unauthorized';
   end if;
 
+  if v_operation='batch_create' then
+    if jsonb_typeof(p_payload->'items') <> 'array' then raise exception 'Import items must be an array'; end if;
+    declare
+      v_row jsonb;
+      v_added int := 0;
+    begin
+      for v_row in select value from jsonb_array_elements(p_payload->'items') loop
+        perform public.inv_v2_save_item(p_session_token,null,v_row,p_import_id);
+        v_added := v_added + 1;
+      end loop;
+      insert into public.inv_v2_audit_log(action,import_id,details)
+        values('import',p_import_id,jsonb_build_object('rows_added',v_added,'filename',p_payload->>'filename'));
+      return jsonb_build_object('ok',true,'added',v_added,'import_id',p_import_id);
+    end;
+  end if;
+
   if v_operation = 'deactivate' then
     if p_item_id is null then raise exception 'Item id is required'; end if;
     select to_jsonb(i) into v_old from public.inv_items i where i.id=p_item_id;
