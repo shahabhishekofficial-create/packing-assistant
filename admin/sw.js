@@ -1,5 +1,13 @@
-const BUILD_ID="20260925-15",CACHE="packing-assistant-admin-"+BUILD_ID,CORE=["./","./index.html","./inventory.html","../styles.css?v=20260925-15","./inventory.css?v=20260925-15","../config.js?v=20260925-15","./auth.js?v=20260925-15","../app.js?v=20260925-15","./inventory-nav.js?v=20260925-15","./inventory.js?v=20260925-15","../update.js?v=20260925-15","../version.json"];
-self.addEventListener("install",e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting())));
-self.addEventListener("activate",e=>e.waitUntil((async()=>{if(self.registration.navigationPreload)try{await self.registration.navigationPreload.enable()}catch(_){}await Promise.all((await caches.keys()).filter(k=>k.startsWith("packing-assistant-admin-")&&k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim()})()));
-async function nf(r,e){try{const p=e?.preloadResponse?await e.preloadResponse.catch(()=>null):null,x=p||await fetch(r);if(x.ok)await (await caches.open(CACHE)).put(r,x.clone());return x}catch(_){return caches.match(r)||new Response("Offline",{status:503})}}
-self.addEventListener("fetch",e=>{const r=e.request;if(r.method!=="GET")return;const u=new URL(r.url);if(u.origin!==location.origin)return;if(r.mode==="navigate"||u.pathname.endsWith("/version.json")){e.respondWith(nf(r,e));return}e.respondWith(fetch(r).then(x=>{if(x.ok)e.waitUntil(caches.open(CACHE).then(c=>c.put(r,x.clone())));return x}).catch(()=>caches.match(r)))})
+const BUILD_ID="20260925-16",CACHE="packing-assistant-admin-"+BUILD_ID;
+self.addEventListener("install",e=>e.waitUntil(self.skipWaiting()));
+self.addEventListener("activate",e=>e.waitUntil((async()=>{
+  await Promise.all((await caches.keys()).filter(k=>k.startsWith("packing-assistant-admin-")).map(k=>caches.delete(k).catch(()=>false)));
+  await self.clients.claim();
+})()));
+self.addEventListener("fetch",e=>{
+  const r=e.request;
+  if(r.method!=="GET")return;
+  const u=new URL(r.url);
+  if(u.origin!==location.origin)return;
+  e.respondWith(fetch(r,{cache:"no-store"}).catch(()=>caches.match(r)));
+});
