@@ -1,0 +1,4 @@
+-- Inventory warehouse counting end-to-end v1
+-- Adds staff PIN sessions, physical count + base quantity conversion, and reporting RPCs.
+-- Existing inv_stock_counts.qty and legacy RPCs remain untouched.
+-- See production Supabase migration history for applied SQL.
