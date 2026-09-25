@@ -12,7 +12,7 @@ function splitPipe(v){return norm(v).split("|").map(norm).filter(Boolean)}
 function payloadFromForm(){return{operation:S.editId?"update":"create",section:S.section,name:norm($("itemName").value),category:norm($("itemCategory").value),base_uom:$("itemUom").value,count_mode:$("itemMode").value,default_pack_size:$("itemPackSize").value.trim()===""?null:Number($("itemPackSize").value),storage_shelf:norm($("itemShelf").value)||null,storage_rack:norm($("itemRack").value)||null,barcodes:splitPipe($("itemBarcodes").value),no_barcode:$("itemNoBarcode").checked,aliases:splitPipe($("itemAliases").value),brand:norm($("itemBrand").value)||null}}
 function validateItem(p,existing=[]){
  const e=[];
- if(!["restaurant","vegetable"].includes(p.section))e.push("Section is required.");
+ if(p.section!=="restaurant")e.push("Restaurant import only: vegetable items must be managed in the Vegetable section.");
  if(!p.name)e.push("Item name is required.");
  if(!p.category)e.push("Category is required.");
  if(!["kg","g","L","ml","pcs"].includes(p.base_uom))e.push("UOM must be kg, g, L, ml or pcs.");
@@ -32,6 +32,7 @@ async function loadCategories(){
  sel.innerHTML='<option value="">Select category</option>'+(data||[]).map(x=>'<option value="'+esc(x.name)+'">'+esc(x.name)+'</option>').join("");
  if(current)[...sel.options].some(o=>{if(o.value===current){o.selected=true;return true}return false});
 }
+function setCategoryValue(value){const v=norm(value);const sel=$("itemCategory");if(!v){sel.value="";return}if(![...sel.options].some(o=>o.value===v)){const o=document.createElement("option");o.value=v;o.textContent=v;sel.appendChild(o)}sel.value=v}
 async function addCategory(){
  const name=prompt("New category name:");
  if(name===null)return;
@@ -40,7 +41,7 @@ async function addCategory(){
   const {data,error}=await db.rpc("inv_v2_add_category",{p_session_token:token(),p_section:S.section,p_name:nm});
   if(error)throw error;
   await loadCategories();
-  $("itemCategory").value=data.name;
+  setCategoryValue(data.name);
   alertBox("Category added: "+data.name,"success");
  }catch(e){alertBox(e.message||"Could not add category.","error")}
 }
@@ -55,7 +56,7 @@ function renderItems(){
  $("itemList").querySelectorAll(".deactivateItem").forEach(b=>b.onclick=()=>deactivate(b.dataset.id));
 }
 function resetForm(){S.editId=null;$("dialogTitle").textContent="Add Restaurant Item";$("itemForm").reset();$("itemBarcodes").disabled=false;$("dialogFetchBtn").disabled=!norm($("itemBarcodes").value);$("itemMode").value="";$("itemPackSize").value="";$("itemPackSize").disabled=true;$("fieldErrors").innerHTML="";$("dialogFetchStatus").textContent="Data is placed into these fields automatically."}
-async function openDialog(id=null){resetForm();try{await loadCategories()}catch(e){alertBox(e.message||"Could not load categories.","error");return}if(id){const i=S.items.find(x=>x.id===id);if(!i)return;S.editId=id;$("dialogTitle").textContent="Edit Item";$("itemCategory").value=i.category;$("itemName").value=i.name;$("itemUom").value=i.base_uom;$("itemMode").value=i.count_mode;$("itemPackSize").value=i.default_pack_size??"";$("itemPackSize").disabled=i.count_mode!=="packet";$("itemBarcodes").value=i.barcodes.join(" | ");$("itemNoBarcode").checked=!!i.no_barcode;$("itemAliases").value=(i.aliases||[]).join(" | ");$("itemBrand").value=i.brand||"";$("itemShelf").value=i.storage_shelf||"";$("itemRack").value=i.storage_rack||""} $("itemDialog").showModal()}
+async function openDialog(id=null){resetForm();try{await loadCategories()}catch(e){alertBox(e.message||"Could not load categories.","error");return}if(id){const i=S.items.find(x=>x.id===id);if(!i)return;S.editId=id;$("dialogTitle").textContent="Edit Item";setCategoryValue(i.category);$("itemName").value=i.name;$("itemUom").value=i.base_uom;$("itemMode").value=i.count_mode;$("itemPackSize").value=i.default_pack_size??"";$("itemPackSize").disabled=i.count_mode!=="packet";$("itemBarcodes").value=i.barcodes.join(" | ");$("itemNoBarcode").checked=!!i.no_barcode;$("itemAliases").value=(i.aliases||[]).join(" | ");$("itemBrand").value=i.brand||"";$("itemShelf").value=i.storage_shelf||"";$("itemRack").value=i.storage_rack||""} $("itemDialog").showModal()}
 function resetVegetableForm(){S.editId=null;$("vegetableDialogTitle").textContent="Add Vegetable";$("vegetableForm").reset();$("vegetableErrors").innerHTML=""}
 function openVegetableDialog(id=null){resetVegetableForm();if(id){const i=S.items.find(x=>x.id===id);if(!i)return;S.editId=id;$("vegetableDialogTitle").textContent="Edit Vegetable";$("vegetableName").value=i.name;$("vegetableCategory").value=i.category;$("vegetableUom").value=i.base_uom}$("vegetableDialog").showModal()}
 function vegetablePayload(){return{operation:S.editId?"update":"create",section:"vegetable",name:norm($("vegetableName").value),category:norm($("vegetableCategory").value),base_uom:$("vegetableUom").value,count_mode:"unit",default_pack_size:null,barcodes:[],no_barcode:true,aliases:[],brand:null}}
@@ -68,7 +69,7 @@ async function linkedBarcode(barcode){
   return Array.isArray(data)&&data.length?data[0]:null;
  }catch(e){
   console.warn("Barcode link check:",e.message||e);
-  return null;
+  throw e;
  }
 }
 async function lookup(barcode,button,status){
@@ -82,7 +83,7 @@ async function lookup(barcode,button,status){
   if(error)throw error;if(!data?.ok)throw new Error(data?.message||"Lookup failed.");
   if(data.linked){status.textContent=data.message||"Barcode already linked.";return}
   if(!data.found){status.textContent=data.message||"Product not found in Open Food Facts.";return}
-  const d=data.data||{};$("itemBarcodes").value=d.barcode||barcode;if(d.name)$("itemName").value=d.name;if(d.brand)$("itemBrand").value=d.brand;if(d.category)$("itemCategory").value=d.category;if(d.aliases?.length)$("itemAliases").value=[...new Set(d.aliases)].join(" | ");if(d.base_uom)$("itemUom").value=d.base_uom;if(d.default_pack_size!=null)$("itemPackSize").value=d.default_pack_size;
+  const d=data.data||{};$("itemBarcodes").value=d.barcode||barcode;if(d.name)$("itemName").value=d.name;if(d.brand)$("itemBrand").value=d.brand;if(d.category)setCategoryValue(d.category);if(d.aliases?.length)$("itemAliases").value=[...new Set(d.aliases)].join(" | ");if(d.base_uom)$("itemUom").value=d.base_uom;if(d.default_pack_size!=null)$("itemPackSize").value=d.default_pack_size;
   if(d.quantity_ambiguous)$("dialogFetchStatus").textContent="Quantity '"+(d.quantity||"")+" ' could not safely determine pack/base unit. Complete it manually.";else $("dialogFetchStatus").textContent="Details fetched. Verify all fields before saving.";
   $("fieldErrors").innerHTML="";alertBox("Product details fetched automatically. Review the fields before saving.","success");
   if(!$("itemDialog").open) $("itemDialog").showModal();
@@ -103,7 +104,7 @@ async function stopCamera(){if(!S.scanner)return;$("cameraBox").classList.add("h
 async function saveItem(e,keepOpen=false){e?.preventDefault();const p=payloadFromForm(),errors=validateItem(p,S.items);$("fieldErrors").innerHTML=errors.length?errors.map(x=>"<div>"+esc(x)+"</div>").join(""):"";if(errors.length)return;const b=$("saveItemBtn");b.disabled=true;b.textContent="Saving…";try{const {data,error}=await db.rpc("inv_v2_save_item_v4",{p_session_token:token(),p_item_id:S.editId,p_payload:p,p_import_id:null});if(error)throw error;const wasEdit=!!S.editId;if(keepOpen){resetForm();$("itemDialog").showModal();}else $("itemDialog").close();alertBox(wasEdit?"Item updated.":"Item saved.","success");await loadItems()}catch(x){alertBox(x.message||"Could not save item.","error")}finally{b.disabled=false;b.textContent="Save Item"}}
 async function deactivate(id){if(!confirm("Deactivate this item? It will remain in history and cannot be deleted."))return;try{const {error}=await db.rpc("inv_v2_save_item_v4",{p_session_token:token(),p_item_id:id,p_payload:{operation:"deactivate"},p_import_id:null});if(error)throw error;alertBox("Item deactivated.","success");await loadItems()}catch(e){alertBox(e.message||"Could not deactivate item.","error")}}
 function templateRows(){return [["restaurant","EXAMPLE Barilla Pasta 1kg","Dry Goods","kg","packet",1,"8076809571319",false,"barilla|pasta","Barilla","S-03","R-12"]]}
-function downloadTemplate(){const wb=XLSX.utils.book_new();const ws=XLSX.utils.aoa_to_sheet([["section","name","category","base_uom","count_mode","default_pack_size","barcodes","no_barcode","aliases","brand","storage_shelf","storage_rack"],...templateRows()]);ws["!cols"]=[{wch:14},{wch:30},{wch:18},{wch:12},{wch:14},{wch:20},{wch:22},{wch:12},{wch:24},{wch:18}];XLSX.utils.book_append_sheet(wb,ws,"Items");const ins=[["Column","Required","Guidance"],["section","YES","restaurant or vegetable"],["name","YES","Item name used for counting and search."],["category","YES","Operational category."],["base_uom","YES","kg, g, L, ml or pcs."],["count_mode","YES","unit or packet."],["default_pack_size","YES for packet","Pack size in the selected UOM. Leave blank for unit mode."],["barcodes","YES unless no_barcode=TRUE","One or more EAN-8, UPC-A or EAN-13 barcodes separated by |."],["no_barcode","YES","TRUE means there must be no barcode."],["aliases","NO","Optional search aliases separated by |."],["brand","NO","Optional brand/manufacturer."],["storage_shelf","NO","Shelf/location label."],["storage_rack","NO","Rack number/label."]];XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(ins),"Instructions");XLSX.writeFile(wb,"bigly-inventory-item-template.xlsx")}
+function downloadTemplate(){const wb=XLSX.utils.book_new();const ws=XLSX.utils.aoa_to_sheet([["section","name","category","base_uom","count_mode","default_pack_size","barcodes","no_barcode","aliases","brand","storage_shelf","storage_rack"],...templateRows()]);ws["!cols"]=[{wch:14},{wch:30},{wch:18},{wch:12},{wch:14},{wch:20},{wch:22},{wch:12},{wch:24},{wch:18}];XLSX.utils.book_append_sheet(wb,ws,"Items");const ins=[["Column","Required","Guidance"],["section","YES","restaurant only; vegetables use the separate Vegetable workflow"],["name","YES","Item name used for counting and search."],["category","YES","Operational category."],["base_uom","YES","kg, g, L, ml or pcs."],["count_mode","YES","unit or packet."],["default_pack_size","YES for packet","Pack size in the selected UOM. Leave blank for unit mode."],["barcodes","YES unless no_barcode=TRUE","One or more EAN-8, UPC-A or EAN-13 barcodes separated by |."],["no_barcode","YES","TRUE means there must be no barcode."],["aliases","NO","Optional search aliases separated by |."],["brand","NO","Optional brand/manufacturer."],["storage_shelf","NO","Shelf/location label."],["storage_rack","NO","Rack number/label."]];XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(ins),"Instructions");XLSX.writeFile(wb,"bigly-inventory-item-template.xlsx")}
 function parseFile(file){return new Promise((res,rej)=>{const rd=new FileReader();rd.onload=ev=>{try{const wb=XLSX.read(ev.target.result,{type:"array",cellText:false,cellDates:false});const name=wb.SheetNames.includes("Items")?"Items":wb.SheetNames[0];const rows=XLSX.utils.sheet_to_json(wb.Sheets[name],{header:1,defval:"",raw:false});if(!rows.length)return res([]);const headers=rows[0].map(x=>norm(x).toLowerCase());res(rows.slice(1).map((r,i)=>{const o={};headers.forEach((h,j)=>o[h]=norm(r[j]??""));return{row:i+2,raw:o}}))}catch(e){rej(e)}};rd.onerror=()=>rej(rd.error);rd.readAsArrayBuffer(file)})}
 function validateImport(rows){
  const valid=[],errors=[],seenNames=new Set(),seenBarcodes=new Set();
