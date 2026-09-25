@@ -1073,3 +1073,135 @@ button:focus-visible,input:focus-visible,select:focus-visible,dialog:focus-visib
 
 /* Warehouse inventory count page */
 .inventoryCountPage .adminCard:not(.hidden){display:block!important}
+
+/* =========================================================
+   Warehouse Count V3 — mobile-first operational UI
+   ========================================================= */
+.inventoryCountPage{
+  --inv-bg:#f6f7fb;--inv-surface:#fff;--inv-ink:#111827;--inv-muted:#667085;
+  --inv-line:#e4e7ec;--inv-blue:#3155e7;--inv-blue-dark:#243fc0;
+  background:var(--inv-bg)!important;color:var(--inv-ink);
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+.inventoryCountPage #inventoryApp{max-width:760px;margin:0 auto;padding:0 16px 96px}
+.inventoryCountPage .invTopbar{
+  position:relative!important;top:auto!important;z-index:20;
+  height:72px;margin:0 -16px 18px;padding:12px 16px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(255,255,255,.94);border-bottom:1px solid var(--inv-line);
+  box-shadow:0 2px 12px rgba(16,24,40,.04);
+}
+.invBrand{display:flex;align-items:center;gap:11px}
+.invBrandMark,.invLoginIcon{
+  display:grid;place-items:center;border-radius:13px;background:#edf1ff;color:var(--inv-blue);
+  font-weight:900;font-size:22px;
+}
+.invBrandMark{width:42px;height:42px}.invBrand strong{display:block;font-size:16px;letter-spacing:-.2px}.invBrand span{display:block;color:var(--inv-muted);font-size:11px;margin-top:2px}
+.invIconBtn{width:42px;height:42px!important;padding:0!important;display:grid;place-items:center;background:#f2f4f7;color:#475467;border:1px solid var(--inv-line);border-radius:12px!important;font-size:19px}
+.invKicker{display:block;color:#667085;font-size:10px;font-weight:900;letter-spacing:1.2px}
+.invMessage{min-height:18px;margin:8px 0 0!important;color:var(--inv-muted)!important;font-size:12px!important;font-weight:600}
+.invFull{width:100%;display:flex;align-items:center;justify-content:center;gap:10px}
+.invPrimary{
+  min-height:48px;border-radius:12px!important;padding:12px 18px!important;
+  background:var(--inv-blue)!important;color:#fff!important;border:0!important;
+  box-shadow:0 5px 12px rgba(49,85,231,.18)!important;
+}
+.invPrimary:hover:not(:disabled){background:var(--inv-blue-dark)!important;transform:translateY(-1px)!important}
+.invSecondary{
+  min-height:48px;border-radius:12px!important;padding:12px 18px!important;
+  background:#fff!important;color:#344054!important;border:1px solid #d9dee8!important;
+}
+.invLogin{min-height:calc(100vh - 90px);display:grid;place-items:center}
+.invLoginCard{
+  width:min(100%,430px);padding:28px 24px;border:1px solid var(--inv-line);border-radius:20px;
+  background:#fff;box-shadow:0 18px 50px rgba(16,24,40,.08);
+}
+.invLoginIcon{width:52px;height:52px;margin-bottom:22px;background:#edf1ff;font-size:25px}
+.invLoginCard h1{margin:7px 0 7px;font-size:25px;letter-spacing:-.6px}
+.invLoginCard>p{margin:0 0 22px;color:var(--inv-muted);font-size:13px}
+.invField{margin:0 0 14px}.invField label{display:block;margin-bottom:6px;font-size:12px;font-weight:800;color:#344054}
+.inventoryCountPage input,.inventoryCountPage select{
+  font-family:inherit;outline:none!important;box-shadow:none;
+}
+.invField input,.invSelect{
+  width:100%;height:48px;border:1px solid #d9dee8!important;border-radius:11px!important;
+  background:#fff!important;color:var(--inv-ink);padding:0 13px!important;
+}
+.invField input:focus,.invSelect:focus,.invSearchBox:focus-within,.invQtyRow:focus-within{border-color:#9aaaf4!important;box-shadow:0 0 0 3px rgba(49,85,231,.10)!important}
+.invWorkspace{padding-top:2px}
+.invWelcome{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin:4px 0 18px}
+.invWelcome h1{margin:4px 0 3px;font-size:25px;letter-spacing:-.6px}
+.invWelcome p{margin:0;color:var(--inv-muted);font-size:12px}
+.invLive{display:flex;align-items:center;gap:6px;padding:7px 9px;border:1px solid #d9f2e5;border-radius:999px;background:#f0fdf6;color:#067647;font-size:10px;font-weight:900}
+.invLive i{width:6px;height:6px;border-radius:50%;background:#12b76a}
+.invSetup,.invCounter{
+  background:#fff;border:1px solid var(--inv-line);border-radius:18px;padding:18px;margin-bottom:14px;
+  box-shadow:0 5px 20px rgba(16,24,40,.045)
+}
+.invSectionTitle{display:flex;align-items:center;gap:10px;margin-bottom:13px}
+.invSectionTitle>span{
+  width:28px;height:28px;display:grid;place-items:center;border-radius:9px;
+  background:#edf1ff;color:var(--inv-blue);font-size:12px;font-weight:900;flex:0 0 28px
+}
+.invSectionTitle strong{display:block;font-size:14px;letter-spacing:-.1px}.invSectionTitle small{display:block;margin-top:2px;color:var(--inv-muted);font-size:11px}
+.invSetup .invSelect{margin-bottom:10px}
+.invSetup .invPrimary span{font-size:18px}
+.invSearchRow{display:flex;gap:8px;margin-bottom:12px}
+.invSearchBox{
+  flex:1;min-width:0;height:48px;display:flex;align-items:center;gap:8px;
+  padding:0 12px;border:1px solid #d9dee8;border-radius:11px;background:#fff
+}
+.invSearchBox>span{color:#98a2b3;font-size:23px;line-height:1}.invSearchBox input{width:100%;min-width:0;border:0!important;background:transparent!important;padding:0!important;font-size:14px!important}
+.invScanBtn{
+  width:66px!important;height:48px!important;padding:4px!important;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:1px;background:#f3f5f8!important;color:#344054!important;border:1px solid #d9dee8!important;border-radius:11px!important;font-size:17px!important
+}
+.invScanBtn small{font-size:9px;font-weight:800}
+.invSelectedEmpty{
+  min-height:58px;padding:13px 14px;border:1px dashed #d5dae4;border-radius:12px;background:#fafbfc;
+  color:#667085;font-size:12px;line-height:1.45;margin-bottom:12px
+}
+.invSelectedEmpty b{display:block;color:#101828;font-size:16px;margin-bottom:3px}
+.invCountBox{padding:14px;border:1px solid #e5e9f0;border-radius:14px;background:#f9fafb}
+.invCountLabel{font-size:9px;font-weight:900;letter-spacing:1px;color:#667085;margin-bottom:7px}
+.invQtyRow{height:68px;display:flex;align-items:center;border:1px solid #d9dee8;border-radius:12px;background:#fff;overflow:hidden}
+.invQtyRow input{width:100%;height:100%;min-width:0;border:0!important;padding:0 14px!important;font-size:32px!important;font-weight:850!important;color:#101828!important;background:transparent!important}
+.invQtyRow span{padding:0 15px;color:#667085;font-size:13px;font-weight:800;white-space:nowrap}
+.invConversion{min-height:18px;padding-top:7px;color:#475467;font-size:12px;font-weight:700}
+.invActionRow{display:grid;grid-template-columns:1.25fr 1fr;gap:8px;margin-top:12px}
+.invItems{margin-bottom:14px}
+.invItems:before{content:"ITEMS";display:block;margin:18px 3px 9px;color:#667085;font-size:10px;font-weight:900;letter-spacing:1.1px}
+.invItems .itemPick{
+  display:block!important;width:100%!important;margin:0 0 7px!important;text-align:left!important;
+  min-height:65px;padding:12px 14px!important;border:1px solid #e2e6ed!important;border-radius:13px!important;
+  background:#fff!important;color:#101828!important;box-shadow:0 2px 8px rgba(16,24,40,.035);
+  white-space:normal!important
+}
+.invItems .itemPick:hover{border-color:#b8c3f6!important;background:#fbfcff!important;transform:none!important;box-shadow:0 4px 14px rgba(16,24,40,.07)!important}
+.invItems .itemPick b{display:block;font-size:14px;line-height:1.25;margin-bottom:4px}
+.invItems .itemPick small{display:block;color:#667085;font-size:10px;line-height:1.35;white-space:normal}
+.invSubmit{
+  position:sticky;bottom:14px;z-index:15;width:100%;height:52px;border:0;border-radius:13px!important;
+  background:#101828!important;color:#fff!important;font-size:14px;font-weight:850;
+  box-shadow:0 10px 25px rgba(16,24,40,.20)!important
+}
+.invSubmit span{margin-left:7px}
+.inventoryCountPage .screen{max-width:none}
+.inventoryCountPage #logoutBtn{display:grid}
+.inventoryCountPage body{}
+.inventoryCountPage #counter.hidden,.inventoryCountPage #items.hidden,.inventoryCountPage #submitBtn.hidden{display:none!important}
+.inventoryCountPage .good{background:#067647!important;color:#fff!important}
+@media(max-width:520px){
+  .inventoryCountPage #inventoryApp{padding:0 12px 88px}
+  .inventoryCountPage .invTopbar{margin:0 -12px 16px;padding:11px 12px}
+  .invLoginCard{padding:24px 18px;border-radius:18px}
+  .invWelcome h1{font-size:22px}
+  .invSetup,.invCounter{padding:15px;border-radius:16px}
+  .invActionRow{grid-template-columns:1fr 1fr}
+}
+@media(min-width:700px){
+  .invSetup,.invCounter{padding:22px}
+  .invLoginCard{padding:34px}
+}
+/* Login has no useful logout action */
+.inventoryCountPage:has(#login:not(.hidden)) .invTopbar .invIconBtn{display:none}
