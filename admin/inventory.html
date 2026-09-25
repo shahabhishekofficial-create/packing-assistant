@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f6f8fb"><title>Bigly Agro — Inventory Item Master</title>
-<link rel="manifest" href="manifest.json"><link rel="stylesheet" href="../styles.css?v=20260925-23"><link rel="stylesheet" href="./inventory.css?v=20260925-23">
-<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script defer src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script><script defer src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script><script defer src="../config.js?v=20260925-23"></script><script defer src="./auth.js?v=20260925-23"></script>
-<script>window.PA_VERSION_URL="../version.json";</script><script defer src="../update.js?v=20260925-23"></script>
+<link rel="manifest" href="manifest.json"><link rel="stylesheet" href="../styles.css?v=20260925-24"><link rel="stylesheet" href="./inventory.css?v=20260925-24">
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script defer src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script><script defer src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script><script defer src="../config.js?v=20260925-24"></script><script defer src="./auth.js?v=20260925-24"></script>
+<script>window.PA_VERSION_URL="../version.json";</script><script defer src="../update.js?v=20260925-24"></script>
 </head>
 <body class="adminPage">
 <div id="adminBootOverlay"><div class="bootCard">Loading Item Master<span class="bootSub">Starting secure session…</span></div></div>
@@ -43,6 +43,6 @@
 <label>Base UOM*<select id="vegetableUom"><option value="">Select</option><option value="kg">kg</option><option value="pcs">pcs</option></select></label>
 <div id="vegetableErrors" class="fieldErrors"></div>
 <menu><button value="cancel" class="secondary">Cancel</button><button id="vegetableSaveAnotherBtn" type="button" class="secondary">Save &amp; Add Another</button><button id="vegetableSaveBtn" value="default" class="primary">Save Vegetable</button></menu></form></dialog>
-</div></div></main>
-<script defer src="./inventory.js?v=20260925-23"></script><script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20260925-23",{updateViaCache:"none"}).catch(console.warn));}</script>
+</div></div><section class="adminCard" style="margin-top:16px"><div class="sectionHead"><div><span class="eyebrow">WAREHOUSE ACCESS</span><h2>Warehouse Staff PIN</h2></div></div><p class="hint">Admin creates the PIN. Staff only use the separate Warehouse Inventory page for counting.</p><div class="formGrid"><label>Staff name<input id="staffAdminName"></label><label>PIN (4–6 digits)<input id="staffAdminPin" type="password" inputmode="numeric" maxlength="6"></label></div><button id="saveStaffBtn" class="primary">Create / Reset Staff PIN</button><p id="staffAdminMsg" class="hint"></p></section></main>
+<script defer src="./inventory.js?v=20260925-24"></script><script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20260925-24",{updateViaCache:"none"}).catch(console.warn));}</script>
 </body></html>
