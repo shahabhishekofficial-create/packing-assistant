@@ -142,6 +142,7 @@
           localStorage.setItem(LAST_ACTIVITY_KEY,String(Date.now()));
           box.remove();
           removeBootOverlay();
+          clearTimeout(bootWatchdog);
           window.dispatchEvent(new CustomEvent("pa-admin-authenticated"));
           addLogoutButton();
           scheduleLogout();
@@ -187,6 +188,14 @@
   async function init(){
     document.body.style.visibility="visible";
     injectStyles();
+    // Never leave the dashboard on a boot screen indefinitely.
+    const bootWatchdog=setTimeout(()=>{
+      if(document.getElementById("adminBootOverlay") && !window.PA_ADMIN_SESSION){
+        console.warn("Admin boot watchdog: session verification did not complete.");
+        showLoginBox("Session check timed out. Please sign in again.");
+        removeBootOverlay();
+      }
+    },5000);
     if(sessionValid()){
       const token=localStorage.getItem(SESSION_TOKEN_KEY)||"";
       if(token && db){
@@ -206,6 +215,7 @@
     }else{
       forceLogout(false);
     }
+    clearTimeout(bootWatchdog);
     ["click","keydown","pointerdown","touchstart","mousemove","scroll"].forEach(ev=>{
       window.addEventListener(ev,()=>{ if(window.PA_ADMIN_SESSION)touch(); },{passive:true});
     });
