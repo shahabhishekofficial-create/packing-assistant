@@ -30,12 +30,20 @@ async function applyUpdate(){
   const b=document.getElementById("paUpdateNow");
   if(b){b.disabled=true;b.textContent="Updating…"}
   try{
-    if("serviceWorker"in navigator)await Promise.all((await navigator.serviceWorker.getRegistrations()).map(x=>x.update().catch(()=>{})));
-  }finally{
     sessionStorage.setItem("pa_last_update",pendingBuild||"");
-    removeNotice();
-    location.reload();
-  }
+    if("serviceWorker"in navigator){
+      const regs=await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map(reg=>reg.unregister().catch(()=>false)));
+    }
+    if("caches"in window){
+      const keys=await caches.keys();
+      await Promise.all(keys.map(k=>caches.delete(k).catch(()=>false)));
+    }
+  }catch(e){console.warn("Update cleanup:",e)}
+  removeNotice();
+  const u=new URL(location.href);
+  u.searchParams.set("_app_update",Date.now());
+  location.replace(u.href);
 }
 async function repair(){
   if(!confirm("Repair app cache only? Your login, localStorage and IndexedDB data will NOT be deleted."))return;
