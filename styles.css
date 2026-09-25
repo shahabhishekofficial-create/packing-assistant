@@ -1070,3 +1070,6 @@ button:focus-visible,input:focus-visible,select:focus-visible,dialog:focus-visib
 .configStatus.success{color:#078957}.configStatus.error{color:#b4232f}
 #nextItemBtn{width:100%;margin-top:10px}.hidden{display:none!important}
 @media(max-width:650px){.configSection{padding:14px}.configRow{align-items:flex-start}.configToggle{min-width:76px;height:36px}.configRowText span{max-width:220px}}
+
+/* Warehouse inventory count page */
+.inventoryCountPage .adminCard:not(.hidden){display:block!important}
