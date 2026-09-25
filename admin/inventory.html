@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f6f8fb"><title>Bigly Agro — Inventory Item Master</title>
-<link rel="manifest" href="manifest.json"><link rel="stylesheet" href="../styles.css?v=20260925-16"><link rel="stylesheet" href="./inventory.css?v=20260925-16">
-<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script defer src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script><script defer src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script><script defer src="../config.js?v=20260925-16"></script><script defer src="./auth.js?v=20260925-16"></script>
-<script>window.PA_VERSION_URL="../version.json";</script><script defer src="../update.js?v=20260925-16"></script>
+<link rel="manifest" href="manifest.json"><link rel="stylesheet" href="../styles.css?v=20260925-17"><link rel="stylesheet" href="./inventory.css?v=20260925-17">
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script defer src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script><script defer src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script><script defer src="../config.js?v=20260925-17"></script><script defer src="./auth.js?v=20260925-17"></script>
+<script>window.PA_VERSION_URL="../version.json";</script><script defer src="../update.js?v=20260925-17"></script>
 </head>
 <body class="adminPage">
 <div id="adminBootOverlay"><div class="bootCard">Loading Item Master<span class="bootSub">Starting secure session…</span></div></div>
@@ -26,13 +26,14 @@
 <section id="importPreviewCard" class="inventoryCard hidden"><div class="inventoryCardHead"><div><span class="eyebrow">IMPORT PREVIEW</span><h3>Review before import</h3></div><button id="cancelImportBtn" class="secondary">Cancel</button></div><div id="importSummary" class="importSummary"></div><div class="tableWrap"><table class="importTable"><thead><tr><th>Row</th><th>Name</th><th>Section</th><th>Status</th><th>Error</th></tr></thead><tbody id="importRows"></tbody></table></div><div class="importActions"><button id="downloadErrorsBtn" class="secondary hidden">↓ Download Error CSV</button><button id="confirmImportBtn" class="primary" disabled>Import Valid Rows</button></div></section>
 </section>
 <dialog id="itemDialog" class="inventoryDialog"><form method="dialog" id="itemForm"><div class="dialogHead"><div><span class="eyebrow">RESTAURANT ITEM MASTER</span><h3 id="dialogTitle">Add Restaurant Item</h3></div><button value="cancel" class="secondary">✕</button></div>
-<div class="formGrid"><label>Category*<input id="itemCategory" required></label><label>Base UOM*<select id="itemUom"><option value="">Select</option><option value="kg">kg</option><option value="L">L</option><option value="pcs">pcs</option></select></label></div>
-<label>Item name*<input id="itemName" required autocomplete="off"></label>
-<div class="formGrid"><label>Count mode*<select id="itemMode"><option value="">Select</option><option value="unit">Unit</option><option value="packet">Packet</option></select></label><label>Default pack size <span class="fieldHint">(required for Packet)</span><input id="itemPackSize" type="number" min="0" step="any" inputmode="decimal" placeholder="e.g. 1"></label></div>
+<div class="itemCoreIntro"><b>Core item details</b><span>Name, barcode and UOM are the main fields used for inventory.</span></div>
+<label>Item name*<input id="itemName" required autocomplete="off" placeholder="e.g. Spaghetti No 5"></label>
 <label>Barcode(s) <span class="fieldHint">use | between multiple</span><input id="itemBarcodes" inputmode="numeric" autocomplete="off" placeholder="e.g. 8076809571319"></label>
-<label class="checkLine"><input id="itemNoBarcode" type="checkbox"> No barcode</label>
-<label>Aliases <span class="fieldHint">use | between aliases</span><input id="itemAliases" placeholder="e.g. pasta|spaghetti"></label><label>Brand<input id="itemBrand" autocomplete="off"></label>
-<div class="fetchInline"><button type="button" id="dialogFetchBtn" class="secondary">Fetch Details from Barcode</button><span id="dialogFetchStatus" class="hint">Data is placed into these fields automatically.</span></div>
+<div class="fetchInline"><button type="button" id="dialogFetchBtn" class="secondary">Fetch Details from Barcode</button><span id="dialogFetchStatus" class="hint">Automatically fills available product details.</span></div>
+<div class="formGrid"><label>UOM* <span class="fieldHint">How stock is counted</span><select id="itemUom"><option value="">Select</option><option value="kg">kg</option><option value="g">g (grams)</option><option value="L">L</option><option value="ml">ml</option><option value="pcs">pcs</option></select></label><label>Category*<input id="itemCategory" required placeholder="e.g. Dry Goods"></label></div>
+<div class="formGrid"><label>Count mode*<select id="itemMode"><option value="">Select</option><option value="unit">Unit</option><option value="packet">Packet</option></select></label><label>Default pack size <span class="fieldHint">(only for Packet, in selected UOM)</span><input id="itemPackSize" type="number" min="0" step="any" inputmode="decimal" placeholder="e.g. 500"></label></div>
+<div class="storageBox"><b>Storage location <span class="fieldHint">optional for now</span></b><div class="formGrid"><label>Shelf<input id="itemShelf" autocomplete="off" placeholder="e.g. S-03"></label><label>Rack number<input id="itemRack" autocomplete="off" placeholder="e.g. R-12"></label></div></div>
+<div class="optionalBox"><b>Optional identification</b><label class="checkLine"><input id="itemNoBarcode" type="checkbox"> No barcode</label><label>Aliases <span class="fieldHint">use | between aliases</span><input id="itemAliases" placeholder="e.g. pasta | spaghetti"></label><label>Brand<input id="itemBrand" autocomplete="off" placeholder="e.g. Barilla"></label></div>
 <div class="sourceNote">Data from Open Food Facts is community-supplied. Verify populated fields before saving.</div><div id="fieldErrors" class="fieldErrors"></div>
 <menu><button value="cancel" class="secondary">Cancel</button><button id="saveAnotherBtn" type="button" class="secondary">Save &amp; Add Another</button><button id="saveItemBtn" value="default" class="primary">Save Item</button></menu></form></dialog>
 <dialog id="vegetableDialog" class="inventoryDialog vegetableDialog"><form method="dialog" id="vegetableForm"><div class="dialogHead"><div><span class="eyebrow">VEGETABLE ITEM MASTER</span><h3 id="vegetableDialogTitle">Add Vegetable</h3></div><button value="cancel" class="secondary">✕</button></div>
@@ -43,5 +44,5 @@
 <div id="vegetableErrors" class="fieldErrors"></div>
 <menu><button value="cancel" class="secondary">Cancel</button><button id="vegetableSaveAnotherBtn" type="button" class="secondary">Save &amp; Add Another</button><button id="vegetableSaveBtn" value="default" class="primary">Save Vegetable</button></menu></form></dialog>
 </div></div></main>
-<script defer src="./inventory.js?v=20260925-16"></script><script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20260925-16",{updateViaCache:"none"}).catch(console.warn));}window.addEventListener("load",()=>{if(typeof window.PA_ADMIN_START==="function")window.PA_ADMIN_START();});</script>
+<script defer src="./inventory.js?v=20260925-17"></script><script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20260925-17",{updateViaCache:"none"}).catch(console.warn));}window.addEventListener("load",()=>{if(typeof window.PA_ADMIN_START==="function")window.PA_ADMIN_START();});</script>
 </body></html>
