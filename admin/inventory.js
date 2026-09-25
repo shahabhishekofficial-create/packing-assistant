@@ -79,6 +79,7 @@ function template(){
 function parseFile(file){
  return new Promise((res,rej)=>{const rd=new FileReader();rd.onload=e=>{try{const wb=XLSX.read(e.target.result,{type:"array",cellText:true,cellDates:false}),sheet=wb.Sheets[wb.SheetNames[0]],rows=XLSX.utils.sheet_to_json(sheet,{defval:"",raw:false});res(rows)}catch(x){rej(x)}};rd.onerror=()=>rej(rd.error);rd.readAsArrayBuffer(file)})
 }
+function barcodeValid(b){if(!/^[0-9]+$/.test(b)||![8,12,13].includes(b.length))return false;let s=0;for(let i=0;i<b.length-1;i++){const d=+b[i];s+=d*(((b.length-i-1)%2)?3:1)}return(10-s%10)%10===+b.at(-1)}
 function rowToPayload(r){
  const get=(...a)=>{const k=Object.keys(r).find(x=>a.includes(String(x).trim().toLowerCase().replace(/[ _-]+/g,"")));return k?String(r[k]).trim():""};
  const n=get("name","itemname","productname"), section=get("section")||"restaurant", uom=get("base_uom","baseuom","unit","uom"), mode=get("count_mode","countmode"), pack=get("default_pack_size","defaultpacksize","packsize"), bc=get("barcode(s)","barcodes","barcode"), no=/^(true|yes|1)$/i.test(get("no_barcode","nobarcode")), aliases=splitPipe(get("aliases")),brand=normalize(get("brand"))||null;
@@ -87,8 +88,9 @@ function rowToPayload(r){
 async function importFile(file){
  try{const rows=await parseFile(file);S.importRows=[];S.validRows=[];S.errors=[];let skipped=0;
   rows.forEach((r,idx)=>{const p=rowToPayload(r);if(!p.name)return;if(/^EXAMPLE\b/i.test(p.name)){skipped++;return}S.importRows.push({row:idx+2,payload:p})});
-  for(const x of S.importRows){const p=x.payload,e=[];if(!p.category)e.push("Category required");if(!["restaurant","vegetable"].includes(p.section))e.push("Invalid section");if(!["kg","L","pcs"].includes(p.base_uom))e.push("Invalid base UOM");if(!["unit","packet"].includes(p.count_mode))e.push("Invalid count mode");if(p.count_mode==="packet"&&!(Number(p.default_pack_size)>0))e.push("Pack size must be >0");if(!p.no_barcode&&!p.barcodes.length)e.push("Barcode required");if(p.no_barcode&&p.barcodes.length)e.push("No barcode conflicts with barcode");
-   if(!p.no_barcode)p.barcodes.forEach(b=>{if(!/^[0-9]+$/.test(b)||![8,12,13].includes(b.length))e.push("Invalid barcode "+b)});
+  const names=new Set(),codes=new Set();
+  for(const x of S.importRows){const p=x.payload,e=[];const nk=p.section+"|"+p.name.toLowerCase();if(names.has(nk))e.push("Duplicate name in import file");else names.add(nk);p.barcodes.forEach(b=>{if(codes.has(b))e.push("Duplicate barcode in import file "+b);else codes.add(b)});if(!p.category)e.push("Category required");if(!["restaurant","vegetable"].includes(p.section))e.push("Invalid section");if(!["kg","L","pcs"].includes(p.base_uom))e.push("Invalid base UOM");if(!["unit","packet"].includes(p.count_mode))e.push("Invalid count mode");if(p.count_mode==="packet"&&!(Number(p.default_pack_size)>0))e.push("Pack size must be >0");if(!p.no_barcode&&!p.barcodes.length)e.push("Barcode required");if(p.no_barcode&&p.barcodes.length)e.push("No barcode conflicts with barcode");
+   if(!p.no_barcode)p.barcodes.forEach(b=>{if(!barcodeValid(b))e.push("Invalid barcode/check digit "+b)});
    if(e.length)S.errors.push({row:x.row,errors:e.join("; "),payload:p});else S.validRows.push(x);
   }
   $("importSummary").innerHTML="<p><b>"+S.validRows.length+"</b> valid · <b>"+S.errors.length+"</b> errors · <b>"+skipped+"</b> example rows skipped.</p>";
