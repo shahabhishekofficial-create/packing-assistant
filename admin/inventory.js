@@ -12,7 +12,7 @@ function splitPipe(v){return norm(v).split("|").map(norm).filter(Boolean)}
 function payloadFromForm(){return{operation:S.editId?"update":"create",section:S.section,name:norm($("itemName").value),category:norm($("itemCategory").value),base_uom:$("itemUom").value,count_mode:$("itemMode").value,default_pack_size:$("itemPackSize").value.trim()===""?null:Number($("itemPackSize").value),storage_shelf:norm($("itemShelf").value)||null,storage_rack:norm($("itemRack").value)||null,barcodes:splitPipe($("itemBarcodes").value),no_barcode:$("itemNoBarcode").checked,aliases:splitPipe($("itemAliases").value),brand:norm($("itemBrand").value)||null}}
 function validateItem(p,existing=[]){
  const e=[];
- if(p.section!=="restaurant")e.push("Restaurant import only: vegetable items must be managed in the Vegetable section.");
+ if(!["restaurant","vegetable"].includes(p.section))e.push("Section is required.");
  if(!p.name)e.push("Item name is required.");
  if(!p.category)e.push("Category is required.");
  if(!["kg","g","L","ml","pcs"].includes(p.base_uom))e.push("UOM must be kg, g, L, ml or pcs.");
@@ -110,7 +110,7 @@ function validateImport(rows){
  const valid=[],errors=[],seenNames=new Set(),seenBarcodes=new Set();
  const required=["section","name","category","base_uom","count_mode","default_pack_size","barcodes","no_barcode","aliases","brand"];
  rows.forEach(x=>{const r=x.raw;if(Object.keys(r).filter(Boolean).length===0)return;if(/^EXAMPLE\b/i.test(norm(r.name))){x.status="skipped";return}
- const packRaw=norm(r.default_pack_size),flag=norm(r.no_barcode).toUpperCase();const p={section:norm(r.section),name:norm(r.name),category:norm(r.category),base_uom:norm(r.base_uom),count_mode:norm(r.count_mode).toLowerCase(),default_pack_size:packRaw===""?null:Number(packRaw),storage_shelf:norm(r.storage_shelf)||null,storage_rack:norm(r.storage_rack)||null,barcodes:splitPipe(r.barcodes),no_barcode:flag==="TRUE",aliases:splitPipe(r.aliases),brand:norm(r.brand)||null};let e=[];if(packRaw!==""&&!Number.isFinite(p.default_pack_size))e.push("default_pack_size must be numeric.");if(!["TRUE","FALSE"].includes(flag))e.push("no_barcode must be TRUE or FALSE.");
+ const packRaw=norm(r.default_pack_size),flag=norm(r.no_barcode).toUpperCase();const p={section:norm(r.section),name:norm(r.name),category:norm(r.category),base_uom:norm(r.base_uom),count_mode:norm(r.count_mode).toLowerCase(),default_pack_size:packRaw===""?null:Number(packRaw),storage_shelf:norm(r.storage_shelf)||null,storage_rack:norm(r.storage_rack)||null,barcodes:splitPipe(r.barcodes),no_barcode:flag==="TRUE",aliases:splitPipe(r.aliases),brand:norm(r.brand)||null};let e=[];if(p.section!=="restaurant")e.push("Restaurant import only: vegetable items must be managed in the Vegetable section.");if(packRaw!==""&&!Number.isFinite(p.default_pack_size))e.push("default_pack_size must be numeric.");if(!["TRUE","FALSE"].includes(flag))e.push("no_barcode must be TRUE or FALSE.");
  if(!required.every(k=>Object.prototype.hasOwnProperty.call(r,k)))e.push("Template columns are incomplete.");
  e=e.concat(validateItem({...p},S.items));
  const nk=p.section+"|"+p.name.toLowerCase();if(seenNames.has(nk))e.push("Duplicate name in import file.");seenNames.add(nk);
