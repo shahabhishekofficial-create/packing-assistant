@@ -164,19 +164,10 @@ $("driverMenuBtn").onclick=openDriverMenu;
 $("driverMenuClose").onclick=()=>$("driverMenuDialog").close();
 $("invoiceCancelBtn").onclick=()=>$("invoiceDialog").close();$("invoiceCancelBtn2").onclick=()=>$("invoiceDialog").close();
 $("invoiceNumberForm").addEventListener("submit",e=>{
- e.preventDefault();
- const outletId=String($("invoiceNumber").dataset.outletId||"").trim(),n=String($("invoiceNumber").value||"").trim();
+ e.preventDefault();const outletId=String($("invoiceNumber").dataset.outletId||"").trim(),n=String($("invoiceNumber").value||"").trim();
  if(!outletId)return toast("Please reopen the invoice step.","error");
  if(!/^\d+$/.test(n))return toast("Enter the numeric invoice number.","error");
- pendingInvoiceUpload={outletId,invoiceNumber:n};
- $("invoiceDialog").close();
- const photoRequired=window.PA_CONFIG_ENABLED?window.PA_CONFIG_ENABLED("driver.invoice_photo_required"):true;
- if(!photoRequired){saveInvoiceNumberOnly(outletId,n).catch(e=>toast(e.message||"Could not save invoice number.","error"));return;}
- $("invoiceInput").value="";
- $("invoiceInput").dataset.outletId=outletId;
- $("invoiceInput").dataset.mode="invoice";
- $("invoiceInput").dataset.itemId="";
- $("invoiceInput").click();
+ $("invoiceDialog").close();openInvoiceScanner(outletId,n);
 });
 function resetPaymentPasswordForm(){
  $("driverPaymentPassword").value="";
@@ -226,7 +217,57 @@ document.querySelectorAll(".passwordToggle").forEach(b=>b.onclick=()=>{
  b.setAttribute("aria-label",show?"Hide password":"Show password");
 });
 $("driverPasswordForm").addEventListener("submit",e=>{e.preventDefault();savePaymentPassword();});
-$("invoiceInput").onchange=async e=>{const input=e.target,file=input.files[0],outletId=input.dataset.outletId,mode=input.dataset.mode||"invoice",itemId=input.dataset.itemId||"",invoiceNumber=mode==="invoice"?String(pendingInvoiceUpload.invoiceNumber||"").trim():String(input.dataset.invoiceNumber||"").trim();input.value="";if(!file||!outletId)return;if(mode==="invoice"&&window.PA_CONFIG_ENABLED&&window.PA_CONFIG_ENABLED("driver.invoice_number_required")&&!/^\d+$/.test(invoiceNumber)){pendingInvoiceUpload={outletId:"",invoiceNumber:""};return toast("Enter the invoice number before uploading.","error");}if(!file.type.startsWith("image/"))return toast("Please select an image.","error");if(file.size>15*1024*1024)return toast("Image must be under 15 MB.","error");const key=String(outletId);ds.busy[key]=true;render();try{const liveOutlet=ds.outlets.find(o=>String(o.outlet_id)===key);if(!liveOutlet)throw new Error("Outlet is no longer assigned to this driver. Refresh and try again.");const prepared=await compressImage(file);let ocr=null;if(mode==="invoice"){toast("Checking invoice…","info");ocr=await runInvoiceOcr(prepared,outletId,invoiceNumber);}const action=mode==="rejected"?"rejection_photo_url":"upload_url";const d=await api(action,{order_id:ds.orderId,outlet_id:outletId,outlet_name:(liveOutlet.outlet_name||""),item_id:itemId,filename:prepared.name,mime_type:prepared.type,extension:"jpg",invoice_number:invoiceNumber});let uploadError=null;for(let attempt=1;attempt<=3;attempt++){const {error}=await getSB().storage.from(mode==="rejected"?"delivery-evidence":"delivery-invoices").uploadToSignedUrl(d.path,d.token,prepared,{contentType:prepared.type});if(!error){uploadError=null;break;}uploadError=error;if(attempt<3)await new Promise(r=>setTimeout(r,700*attempt));}if(uploadError)throw uploadError;if(mode==="rejected"){await api("save_rejection_photo",{order_id:ds.orderId,outlet_id:outletId,item_id:itemId,path:d.path,filename:prepared.name,mime_type:prepared.type});toast("Damage photo uploaded.","success");}else{await api("invoice_uploaded",{order_id:ds.orderId,outlet_id:outletId,path:d.path,invoice_number:invoiceNumber,filename:(liveOutlet.outlet_name||"Outlet")+" - "+invoiceNumber+".jpg",mime_type:prepared.type,ocr_status:ocr?.status||"pending",ocr_result:ocr||null});const current=ds.outlets.find(o=>String(o.outlet_id)===String(d.outlet_id||outletId));if(current){current.delivery=current.delivery||{};current.delivery.invoice_path=d.path;current.delivery.invoice_number=invoiceNumber;current.delivery.invoice_uploaded_at=new Date().toISOString();current.delivery.ocr_status=ocr?.status||"pending";current.delivery.status="pending";}toast("Invoice uploaded. Verification result is available to admin.","success");}}catch(err){console.error("Driver evidence upload failed",{mode,outletId,itemId,message:err?.message||String(err)});toast(mode==="invoice"?"Invoice upload failed: "+(err?.message||"Please try again."):("Upload failed: "+(err?.message||"Please try again.")),"error");}finally{delete ds.busy[key];render();focusOutlet(outletId,true);}};async function saveRejections(outletId){
+let invoiceCameraStream=null,invoiceScanTimer=null,invoicePrevFrame=null,invoiceStableSince=0,invoiceScannerBusy=false;
+async function processInvoiceFile(file,outletId,invoiceNumber){
+ if(!file||!outletId)return;
+ if(!/image\//.test(file.type))return toast("Please select an image.","error");
+ if(file.size>15*1024*1024)return toast("Image must be under 15 MB.","error");
+ const key=String(outletId);ds.busy[key]=true;render();
+ try{
+  const liveOutlet=ds.outlets.find(o=>String(o.outlet_id)===key);
+  if(!liveOutlet)throw new Error("Outlet is no longer assigned to this driver. Refresh and try again.");
+  const prepared=await compressImage(file);let ocr=null;
+  toast("Checking invoice…","info");ocr=await runInvoiceOcr(prepared,outletId,invoiceNumber);
+  const d=await api("upload_url",{order_id:ds.orderId,outlet_id:outletId,outlet_name:(liveOutlet.outlet_name||""),filename:prepared.name,mime_type:prepared.type,extension:"jpg",invoice_number:invoiceNumber});
+  let uploadError=null;
+  for(let attempt=1;attempt<=3;attempt++){const {error}=await getSB().storage.from("delivery-invoices").uploadToSignedUrl(d.path,d.token,prepared,{contentType:prepared.type});if(!error){uploadError=null;break;}uploadError=error;if(attempt<3)await new Promise(r=>setTimeout(r,700*attempt));}
+  if(uploadError)throw uploadError;
+  await api("invoice_uploaded",{order_id:ds.orderId,outlet_id:outletId,path:d.path,invoice_number:invoiceNumber,filename:(liveOutlet.outlet_name||"Outlet")+" - "+invoiceNumber+".jpg",mime_type:prepared.type,ocr_status:ocr?.status||"pending",ocr_result:ocr||null});
+  const current=ds.outlets.find(o=>String(o.outlet_id)===String(outletId));
+  if(current){current.delivery=current.delivery||{};current.delivery.invoice_path=d.path;current.delivery.invoice_number=invoiceNumber;current.delivery.invoice_uploaded_at=new Date().toISOString();current.delivery.ocr_status=ocr?.status||"pending";current.delivery.status="pending";}
+  toast("Invoice uploaded. Verification result is available to admin.","success");
+ }catch(err){console.error("Invoice upload",{outletId,message:err?.message||String(err)});toast("Invoice upload failed: "+(err?.message||"Please try again."),"error");}
+ finally{delete ds.busy[key];render();focusOutlet(outletId,true);}
+}
+function stopInvoiceCamera(){if(invoiceScanTimer){clearInterval(invoiceScanTimer);invoiceScanTimer=null;}if(invoiceCameraStream){invoiceCameraStream.getTracks().forEach(t=>t.stop());invoiceCameraStream=null;}invoicePrevFrame=null;invoiceStableSince=0;invoiceScannerBusy=false;}
+function closeInvoiceScanner(){stopInvoiceCamera();$("invoiceScanner")?.classList.add("hidden");$("invoiceScanner")?.setAttribute("aria-hidden","true");}
+async function captureInvoiceFrame(){
+ if(invoiceScannerBusy)return;invoiceScannerBusy=true;
+ const video=$("invoiceCamera"),canvas=document.createElement("canvas"),w=video.videoWidth,h=video.videoHeight;
+ if(!w||!h){invoiceScannerBusy=false;return toast("Camera is not ready. Hold still and try again.","error");}
+ canvas.width=w;canvas.height=h;canvas.getContext("2d",{alpha:false}).drawImage(video,0,0,w,h);
+ const ctx=canvas.getContext("2d",{willReadFrequently:true}),img=ctx.getImageData(0,0,w,h).data;
+ let sum=0,sq=0;for(let i=0;i<img.length;i+=16){const g=.299*img[i]+.587*img[i+1]+.114*img[i+2];sum+=g;sq+=g*g;}
+ const n=Math.ceil(img.length/16),mean=sum/n,variance=Math.max(0,sq/n-mean*mean);
+ if(variance<350){$("invoiceScanStatus").textContent="Image is too flat/dark. Improve lighting.";invoiceScannerBusy=false;return;}
+ canvas.toBlob(async blob=>{if(!blob){invoiceScannerBusy=false;return toast("Could not capture invoice.","error");}
+   const file=new File([blob],"invoice-capture.jpg",{type:"image/jpeg",lastModified:Date.now()});
+   const outletId=pendingInvoiceUpload.outletId,invoiceNumber=pendingInvoiceUpload.invoiceNumber;closeInvoiceScanner();pendingInvoiceUpload={outletId:"",invoiceNumber:""};await processInvoiceFile(file,outletId,invoiceNumber);invoiceScannerBusy=false;
+ },"image/jpeg",.92);
+}
+async function openInvoiceScanner(outletId,invoiceNumber){
+ pendingInvoiceUpload={outletId,invoiceNumber};const modal=$("invoiceScanner"),video=$("invoiceCamera");
+ modal.classList.remove("hidden");modal.setAttribute("aria-hidden","false");$("invoiceScanStatus").textContent="Starting camera…";$("invoiceCaptureBtn").disabled=true;$("invoiceCaptureBtn").textContent="Hold steady…";
+ try{invoiceCameraStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"},width:{ideal:1920},height:{ideal:1080}},audio:false});video.srcObject=invoiceCameraStream;await video.play();
+   const probe=document.createElement("canvas"),pc=probe.getContext("2d",{willReadFrequently:true});probe.width=96;probe.height=54;
+   invoiceScanTimer=setInterval(()=>{if(video.readyState<2)return;pc.drawImage(video,0,0,96,54);const data=pc.getImageData(0,0,96,54).data;let diff=0;for(let i=0;i<data.length;i+=16){if(invoicePrevFrame)diff+=Math.abs(data[i]-invoicePrevFrame[i]);}invoicePrevFrame=data;const motion=invoicePrevFrame?diff/(data.length/16):999;if(motion<8){if(!invoiceStableSince)invoiceStableSince=Date.now();}else invoiceStableSince=0;const stable=invoiceStableSince&&Date.now()-invoiceStableSince>650;if(stable){$("invoiceScanStatus").textContent="✓ Steady — capturing…";$("invoiceCaptureBtn").disabled=false;$("invoiceCaptureBtn").textContent="Capture invoice";}else{$("invoiceScanStatus").textContent="Keep the entire bill inside the frame and hold steady";$("invoiceCaptureBtn").disabled=true;$("invoiceCaptureBtn").textContent="Hold steady…";}},150);
+ }catch(e){closeInvoiceScanner();toast(e?.name==="NotAllowedError"?"Camera permission is required. You can use gallery instead.":"Could not open camera. You can use gallery instead.","error");$("invoiceInput").value="";$("invoiceInput").dataset.outletId=outletId;$("invoiceInput").dataset.mode="invoice";$("invoiceInput").dataset.invoiceNumber=invoiceNumber;$("invoiceInput").click();}
+}
+$("invoiceScannerClose").onclick=()=>{pendingInvoiceUpload={outletId:"",invoiceNumber:""};closeInvoiceScanner();};
+$("invoiceCaptureBtn").onclick=captureInvoiceFrame;
+$("invoiceGalleryBtn").onclick=()=>{const outletId=pendingInvoiceUpload.outletId,invoiceNumber=pendingInvoiceUpload.invoiceNumber;$("invoiceInput").value="";$("invoiceInput").dataset.outletId=outletId;$("invoiceInput").dataset.mode="invoice";$("invoiceInput").dataset.invoiceNumber=invoiceNumber;$("invoiceInput").click();};
+$("invoiceInput").onchange=async e=>{const input=e.target,file=input.files[0],outletId=input.dataset.outletId,mode=input.dataset.mode||"invoice",itemId=input.dataset.itemId||"",invoiceNumber=mode==="invoice"?String(pendingInvoiceUpload.invoiceNumber||input.dataset.invoiceNumber||"").trim():String(input.dataset.invoiceNumber||"").trim();input.value="";if(!file||!outletId)return;if(mode==="invoice"){pendingInvoiceUpload={outletId:"",invoiceNumber:""};return processInvoiceFile(file,outletId,invoiceNumber);}if(!file.type.startsWith("image/"))return toast("Please select an image.","error");if(file.size>15*1024*1024)return toast("Image must be under 15 MB.","error");const key=String(outletId);ds.busy[key]=true;render();try{const liveOutlet=ds.outlets.find(o=>String(o.outlet_id)===key);if(!liveOutlet)throw new Error("Outlet is no longer assigned to this driver. Refresh and try again.");const prepared=await compressImage(file);const d=await api("rejection_photo_url",{order_id:ds.orderId,outlet_id:outletId,item_id:itemId,filename:prepared.name,mime_type:prepared.type,extension:"jpg"});const {error}=await getSB().storage.from("delivery-evidence").uploadToSignedUploadUrl(d.path,d.token,prepared,{contentType:prepared.type});if(error)throw error;await api("save_rejection_photo",{order_id:ds.orderId,outlet_id:outletId,item_id:itemId,path:d.path,filename:prepared.name,mime_type:prepared.type});toast("Damage photo uploaded.","success");}catch(err){toast("Upload failed: "+(err?.message||"Please try again."),"error");}finally{delete ds.busy[key];render();focusOutlet(outletId,true);}};
+;async function saveRejections(outletId){
  const outlet=ds.outlets.find(o=>String(o.outlet_id)===String(outletId)); if(!outlet)return;
  const rows=[...document.querySelectorAll('.driverRejectionRow[data-outlet-id="'+outletId+'"]')];
  const rejections=rows.map(row=>({item_id:row.dataset.itemId,qty:Number(row.querySelector(".rejectQty")?.value||0),reason:row.querySelector(".rejectReason")?.value||""})).filter(x=>x.qty>0||x.reason).filter(x=>{const item=outlet.items.find(i=>String(i.item_id)===String(x.item_id));return item&&Number(item.packed_qty||0)>0;});
