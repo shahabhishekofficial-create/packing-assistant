@@ -1,2 +1,35 @@
 .vegAdminPage{padding:18px}.vegAdminHead{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;margin-bottom:14px}.vegAdminHead h2{margin:4px 0}.vegAdminHead p{color:#64748b;font-size:12px;margin:0}.vegAdminActions{display:flex;gap:8px;flex-wrap:wrap}.vegLinkBtn{text-decoration:none;display:inline-flex;align-items:center}.vegAdminList{display:grid;gap:8px}.vegAdminRow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:13px;border:1px solid #e6ebf1;border-radius:13px;background:#fff}.vegAdminNames b{display:block;font-size:14px}.vegAdminNames span{display:block;color:#64748b;font-size:11px;margin-top:3px}.vegAdminActionsRow{display:flex;align-items:center;gap:7px}.vegAdminActionsRow button{padding:8px 10px}.vegAdminActionsRow .statusPill{font-size:10px}.vegReportFilters{display:grid;grid-template-columns:repeat(4,minmax(120px,1fr)) auto;gap:9px;margin-bottom:12px}.vegReportFilters label{font-size:11px;font-weight:800;color:#475467}.vegReportFilters input,.vegReportFilters select{display:block;width:100%;margin-top:5px;height:40px;border:1px solid #d8e0ea;border-radius:9px;padding:0 9px;background:#fff}.vegReportFilters button{align-self:end}.vegReportFilters+.tableWrap{overflow-x:auto}@media(max-width:850px){.vegAdminHead{display:block}.vegAdminActions{margin-top:12px}.vegReportFilters{grid-template-columns:1fr 1fr}.vegAdminPage{padding:10px}}@media(max-width:560px){.vegAdminRow{grid-template-columns:1fr}.vegAdminActionsRow{justify-content:flex-start}.vegReportFilters{grid-template-columns:1fr}.vegAdminActions button,.vegAdminActions a{flex:1}.inventoryStockTable{min-width:850px}}
 .vegAdminActions .secondary,.vegAdminActions .primary{min-height:46px;border-radius:11px;padding:11px 16px;font-weight:800;cursor:pointer}.vegAdminActions .primary{border:0}.vegAdminActions .secondary{border:1px solid #d6dde7;background:#fff;color:#344054}.vegAdminActions .vegLinkBtn{box-sizing:border-box}.vegAdminActions{align-items:stretch}.vegAdminActions>*{min-width:120px}@media(max-width:560px){.vegAdminActions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.vegAdminActions>*{min-width:0;width:100%;flex:unset}.vegAdminActions .vegLinkBtn{text-align:center;justify-content:center}.inventoryCard{overflow:hidden}.inventoryCardHead{gap:10px;flex-wrap:wrap}.inventoryCardHead #exportReport{width:100%}.vegReportFilters label{width:100%}.vegReportFilters button{width:100%;min-height:42px}}
+
+/* ===== Unified admin-shell vegetable workspace ===== */
+.vegAdminPage{padding:24px 0 36px}
+.vegAdminHead{align-items:flex-end;margin-bottom:18px}
+.vegAdminHead h2{font-size:25px;letter-spacing:-.4px}
+.vegAdminHead p{font-size:13px;max-width:720px;margin-top:4px}
+.vegAdminActions{justify-content:flex-end;align-items:center}
+.vegAdminActions>*{min-width:0}
+.vegAdminActions .primary,.vegAdminActions .secondary{box-shadow:none}
+.vegAdminActions .primary{box-shadow:0 7px 18px #2563eb22}
+.vegAdminPage>.inventoryCard{margin-bottom:18px}
+.vegAdminPage .itemSearchRow{margin-bottom:0}
+.vegAdminPage .inventoryCardHead{align-items:flex-start}
+.vegReportFilters{grid-template-columns:repeat(5,minmax(120px,1fr)) auto;align-items:end}
+.vegReportFilters label{min-width:0}
+.vegReportFilters input,.vegReportFilters select{height:42px}
+.vegReportFilters button{height:42px;white-space:nowrap}
+.vegAdminList{min-height:48px}
+@media(max-width:1100px){
+  .vegAdminHead{display:block}
+  .vegAdminActions{justify-content:flex-start;margin-top:14px}
+  .vegReportFilters{grid-template-columns:repeat(3,minmax(140px,1fr))}
+}
+@media(max-width:700px){
+  .vegAdminPage{padding:16px 0 28px}
+  .vegAdminActions{display:grid;grid-template-columns:1fr 1fr}
+  .vegAdminActions>*{width:100%;min-width:0}
+  .vegReportFilters{grid-template-columns:1fr 1fr}
+}
+@media(max-width:520px){
+  .vegAdminActions{grid-template-columns:1fr}
+  .vegReportFilters{grid-template-columns:1fr}
+}
