@@ -1205,7 +1205,7 @@ function renderDriverDashboard(data){
   k.innerHTML=[
     ["Live route",Number(l.delivered||0)+" / "+Number(l.outlets||0),"delivered now"],["Live unassigned",Number(l.unassigned||0),"current route"],
     ["Delivered",Number(p.delivered||0),"selected period"],
-    ["Pending delivery",Number(p.pending_delivery||0),"packing completed"],
+    ["Pending delivery",Number(p.pending_delivery||0),"packing completed"],["Invoices",Number(l.invoice_uploaded||0),"uploaded on live route"],
     ["Missing qty",Number(p.missing||0),"packing exceptions"],
     ["Rejected qty",Number(p.rejections||0),"driver-reported"],
     ["Partial items",Number(p.partial_items||0),"outlet items"],
