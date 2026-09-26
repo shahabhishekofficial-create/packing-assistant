@@ -528,23 +528,30 @@ async function exportHistoricalReport(){
 }
 
 function downloadReport(){openReportDialog();}
-let outletSetupDraft={};
+let outletSetupDraft={}; let invoiceNameMapDraft={};
 
+async function loadInvoiceNameMap(){
+  const {data,error}=await db.rpc("inv_admin_get_invoice_name_map",{p_admin_token:window.PA_ADMIN_SESSION||state.token||""});
+  if(error){console.warn("Invoice name mapping:",error.message);invoiceNameMapDraft={};return;}
+  invoiceNameMapDraft=Object.fromEntries((data||[]).map(x=>[String(x.app_outlet_name).trim(),x]));
+}
 function renderOutletSettings(all){
   const box=$("outletSettingsList");
   if(!box)return;
   const drivers=getDrivers();
   outletSetupDraft=Object.fromEntries(all.map(o=>[o.id,{driver:o.driver||"",rank:o.rank,deliveryCharge:Number(o.deliveryCharge||0)}]));
-  box.innerHTML=all.map((o,i)=>`<div class="outletSettingRow" draggable="${window.matchMedia("(pointer:fine)").matches}" data-id="${o.id}">
+  box.innerHTML=all.map((o,i)=>{const m=invoiceNameMapDraft[String(o.name).trim()]||{};return `<div class="outletSettingRow" draggable="${window.matchMedia("(pointer:fine)").matches}" data-id="${o.id}">
     <span class="dragHandle" title="Drag to change rank">☷</span>
     <b class="rankNo">${i+1}</b>
     <span class="settingName">${esc(o.name)}</span>
+    <input class="invoiceLegalNameInput" value="${esc(m.legal_name||"")}" placeholder="Bill legal name" aria-label="Bill legal name for ${esc(o.name)}">
+    <input class="invoiceAliasesInput" value="${esc((m.aliases||[]).join(" | "))}" placeholder="Bill aliases ( | separated)" aria-label="Bill aliases for ${esc(o.name)}">
     <select class="driverSelect" aria-label="Driver for ${esc(o.name)}">
       <option value="">Unassigned</option>
       ${drivers.map(d=>`<option value="${esc(d)}"${(o.driver||"")===d?" selected":""}>${esc(d)}</option>`).join("")}
     </select>
     <div class="chargeField"><span>₹ Delivery</span><input class="deliveryChargeInput" type="number" min="0" step="0.01" value="${Number(o.deliveryCharge||0).toFixed(2)}" aria-label="Delivery charge for ${esc(o.name)}" placeholder="0.00"></div>
-  </div>`).join("");
+  </div>}).join("");
 
   let drag=null;
   box.querySelectorAll(".outletSettingRow").forEach(row=>{
@@ -567,6 +574,10 @@ function renderOutletSettings(all){
     });
   });
 
+  box.querySelectorAll(".invoiceLegalNameInput,.invoiceAliasesInput").forEach(input=>{
+    input.addEventListener("pointerdown",e=>e.stopPropagation());
+    input.addEventListener("click",e=>e.stopPropagation());
+  });
   box.querySelectorAll(".deliveryChargeInput").forEach(input=>{
     input.addEventListener("pointerdown",e=>e.stopPropagation());
     input.addEventListener("click",e=>e.stopPropagation());
@@ -629,6 +640,13 @@ async function saveOutletSettings(){
 
   for(const o of state.outlets.values()){
     const draft=outletSetupDraft[o.id]||{};
+    const row=document.querySelector('.outletSettingRow[data-id="'+o.id+'"]');
+    const legalName=String(row?.querySelector(".invoiceLegalNameInput")?.value||"").trim();
+    const aliases=String(row?.querySelector(".invoiceAliasesInput")?.value||"").split("|").map(x=>x.trim()).filter(Boolean);
+    if(legalName){
+      const mr=await db.rpc("inv_admin_save_invoice_name_map",{p_admin_token:window.PA_ADMIN_SESSION||state.token||"",p_app_outlet_name:o.name,p_legal_name:legalName,p_aliases:aliases});
+      if(mr.error){errors.push(o.name+" invoice name mapping: "+mr.error.message);continue;}
+    }
     o.rank=Number(draft.rank)||9999;
     o.driver=String(draft.driver||"");
     o.deliveryCharge=Math.max(0,Number(draft.deliveryCharge)||0);
@@ -1458,7 +1476,7 @@ document.getElementById("driverPaymentDashboardBack")?.addEventListener("click",
 document.getElementById("closeInvoiceDialog")?.addEventListener("click",()=>document.getElementById("invoiceDialog")?.close());
 document.getElementById("exportReportBtn")?.addEventListener("click",exportHistoricalReport);
 document.getElementById("reportAllDatesBtn")?.addEventListener("click",()=>{$("reportFromDate").value="";$("reportToDate").value="";loadReportHistory();});
-document.getElementById("menuOutletSettings")?.addEventListener("click",()=>{adminMenu.classList.add("hidden");setBAActive("sideSettings");renderOutletSettings([...state.outlets.values()].sort((a,b)=>a.rank-b.rank));document.getElementById("outletSettingsDialog").showModal()});
+document.getElementById("menuOutletSettings")?.addEventListener("click",async()=>{adminMenu.classList.add("hidden");setBAActive("sideSettings");await loadInvoiceNameMap();renderOutletSettings([...state.outlets.values()].sort((a,b)=>a.rank-b.rank));document.getElementById("outletSettingsDialog").showModal()});
 
 async function ensureFleetAdminPassword(){if(window.PA_ADMIN_SESSION)return true;if(window.PA_REAUTH_ADMIN)return await window.PA_REAUTH_ADMIN();return false;}
 async function loadFleetManagement(){
