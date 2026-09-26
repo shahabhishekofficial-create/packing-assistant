@@ -154,11 +154,50 @@ async function saveAdjustment(e){
  catch(x){$("adjustErrors").textContent=x.message||"Could not save adjustment."}
  finally{b.disabled=false;b.textContent="Save Adjustment"}
 }
+function formatPdfQty(n){const x=Number(n);if(!Number.isFinite(x))return "0";return x.toLocaleString("en-IN",{maximumFractionDigits:3});}
+function pdfCountUnit(x){
+ const u=norm(x.count_unit||x.last_count_unit||"").toLowerCase().replace(/[._-]/g," ");
+ if(/^(packet|packets|pkt|pkts)$/.test(u))return "Packet";
+ if(/^(bottle|bottles|btl|btls)$/.test(u))return "Bottle";
+ if(/^(box|boxes|bx)$/.test(u))return "Box";
+ return u?String(x.count_unit||x.last_count_unit):"";
+}
+function pdfCountValue(x){
+ const qty=Number(x.available_qty||0),factor=Number(x.count_to_base||0);
+ if(!Number.isFinite(qty)||!Number.isFinite(factor)||factor<=0)return "";
+ return formatPdfQty(qty/factor);
+}
+function exportStockPDF(){
+ if(!S.stock.length){alertBox("There is no inventory stock to export.","error");return}
+ if(!window.jspdf?.jsPDF){alertBox("PDF engine is still loading. Please try again.","error");return}
+ const JsPDF=window.jspdf.jsPDF,doc=new JsPDF({orientation:"portrait",unit:"mm",format:"a4"});
+ const section=$("stockSection")?.value||"restaurant";
+ const title=section==="vegetable"?"Vegetable Inventory — Final In-Hand Stock":"Restaurant Inventory — Final In-Hand Stock";
+ const generated=new Date().toLocaleString("en-IN");
+ const groups=new Map();
+ S.stock.forEach(x=>{const cat=norm(x.category)||"Uncategorized";if(!groups.has(cat))groups.set(cat,[]);groups.get(cat).push(x)});
+ let first=true;
+ groups.forEach((items,category)=>{
+   if(!first)doc.addPage(); first=false;
+   doc.setFont("helvetica","bold");doc.setFontSize(16);doc.text("Bigly Agro Private Limited",14,16);
+   doc.setFontSize(12);doc.text(title,14,23);
+   doc.setFont("helvetica","normal");doc.setFontSize(8.5);doc.setTextColor(100);
+   doc.text("Category: "+category,14,29);doc.text("Generated: "+generated,196,29,{align:"right"});
+   const units=[...new Set(items.map(pdfCountUnit).filter(Boolean))];
+   const preferred=["Packet","Bottle","Box"];
+   const countUnits=[...preferred.filter(u=>units.includes(u)),...units.filter(u=>!preferred.includes(u))];
+   const head=["Sr No","Item Name","Available Qty"+(items[0]?.base_uom?" ("+items[0].base_uom+")":""),...countUnits];
+   const body=items.map((x,i)=>[String(i+1),String(x.item_name||""),formatPdfQty(x.available_qty)+" "+String(x.base_uom||""),...countUnits.map(u=>pdfCountUnit(x)===u?pdfCountValue(x):"—")]);
+   doc.autoTable({startY:34,head:[head],body,theme:"grid",styles:{font:"helvetica",fontSize:9,cellPadding:2.5,lineColor:[210,218,228],lineWidth:.25,textColor:[20,32,52]},headStyles:{fillColor:[8,122,91],textColor:[255,255,255],fontStyle:"bold",fontSize:8.5},alternateRowStyles:{fillColor:[248,250,252]},columnStyles:{0:{cellWidth:14,halign:"center"},1:{cellWidth:72},2:{cellWidth:40},3:{halign:"center"},4:{halign:"center"},5:{halign:"center"}},margin:{left:14,right:14},didDrawPage:d=>{doc.setFontSize(7.5);doc.setTextColor(120);doc.text("Bigly Agro • Final In-Hand Stock",14,289);doc.text("Page "+doc.internal.getNumberOfPages(),196,289,{align:"right"})}});
+ });
+ const stamp=new Date().toISOString().slice(0,10);
+ doc.save("Bigly-Agro-"+section+"-Final-In-Hand-Stock-"+stamp+".pdf");
+}
 function wire(){
  const go=section=>location.assign("./index.html?section="+encodeURIComponent(section));$("backDashboard").onclick=()=>go("home");$("sideDashboard").onclick=()=>go("home");$("sidePacking").onclick=()=>go("packing");$("sideDelivery").onclick=()=>go("delivery");$("sideReports").onclick=()=>go("reports");$("sideSettings").onclick=()=>go("settings");
  $("baSidebarToggle").onclick=()=>document.querySelector(".baSidebar")?.classList.toggle("open");
  document.querySelectorAll(".sectionTab").forEach(b=>b.onclick=async()=>{document.querySelectorAll(".sectionTab").forEach(x=>x.classList.remove("active"));b.classList.add("active");S.section=b.dataset.section;$("itemSearch").value="";const veg=S.section==="vegetable";$("restaurantTools").classList.toggle("hidden",veg);$("vegetableTools").classList.toggle("hidden",!veg);$("downloadTemplateBtn").classList.toggle("hidden",veg);$("importBtn").classList.toggle("hidden",veg);$("addItemBtn").textContent=veg?"+ Add Vegetable":"+ Add Restaurant Item";await loadItems()});
- $("stockRefreshBtn")?.addEventListener("click",()=>Promise.all([loadStockDashboard(),loadInventoryLog()]).catch(e=>alertBox(e.message||"Could not refresh stock.","error")));$("inventoryLogRefresh")?.addEventListener("click",()=>loadInventoryLog().catch(e=>alertBox(e.message||"Could not refresh log.","error")));$("stockSection")?.addEventListener("change",()=>Promise.all([loadStockDashboard(),loadInventoryLog()]).catch(e=>alertBox(e.message||"Could not refresh stock.","error")));$("adjustConfirmBtn")?.addEventListener("click",saveAdjustment);$("addCategoryBtn").onclick=addCategory;$("itemSearch").oninput=renderItems;$("itemFilter").onchange=renderItems;$("addItemBtn").onclick=()=>S.section==="vegetable"?openVegetableDialog():openDialog();$("downloadTemplateBtn").onclick=downloadTemplate;
+ $("stockRefreshBtn")?.addEventListener("click",()=>Promise.all([loadStockDashboard(),loadInventoryLog()]).catch(e=>alertBox(e.message||"Could not refresh stock.","error")));$("exportStockPdfBtn")?.addEventListener("click",exportStockPDF);$("inventoryLogRefresh")?.addEventListener("click",()=>loadInventoryLog().catch(e=>alertBox(e.message||"Could not refresh log.","error")));$("stockSection")?.addEventListener("change",()=>Promise.all([loadStockDashboard(),loadInventoryLog()]).catch(e=>alertBox(e.message||"Could not refresh stock.","error")));$("adjustConfirmBtn")?.addEventListener("click",saveAdjustment);$("addCategoryBtn").onclick=addCategory;$("itemSearch").oninput=renderItems;$("itemFilter").onchange=renderItems;$("addItemBtn").onclick=()=>S.section==="vegetable"?openVegetableDialog():openDialog();$("downloadTemplateBtn").onclick=downloadTemplate;
  $("importBtn").onclick=()=>$("fileInput").click();$("fileInput").onchange=e=>{const f=e.target.files?.[0];if(f)previewImport(f);e.target.value=""};
  $("cancelImportBtn").onclick=()=>{$("importPreviewCard").classList.add("hidden")};$("confirmImportBtn").onclick=confirmImport;$("downloadErrorsBtn").onclick=errorCsv;
  $("saveItemBtn").onclick=e=>saveItem(e,false);$("saveAnotherBtn").onclick=e=>saveItem(e,true);$("vegetableSaveBtn").onclick=e=>saveVegetable(e,false);$("vegetableSaveAnotherBtn").onclick=e=>saveVegetable(e,true);$("dialogFetchBtn").onclick=()=>lookup($("itemBarcodes").value.split("|")[0],$("dialogFetchBtn"),$("dialogFetchStatus"));
