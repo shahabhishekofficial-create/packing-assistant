@@ -4,7 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f6f8fb"><title>Bigly Agro — Inventory Item Master</title>
 <link rel="manifest" href="manifest.json"><link rel="stylesheet" href="../styles.css?v=veg-admin-1"><link rel="stylesheet" href="./inventory.css?v=veg-admin-1">
-<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script defer src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script><script defer src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script><script defer src="../config.js?v=veg-admin-1"></script><script defer src="./auth.js?v=veg-admin-1"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script defer src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script><script defer src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script><script defer src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script><script defer src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script><script defer src="../config.js?v=veg-admin-1"></script><script defer src="./auth.js?v=veg-admin-1"></script>
 <script>window.PA_VERSION_URL="../version.json";</script><script defer src="../update.js?v=veg-admin-1"></script>
 </head>
 <body class="adminPage">
@@ -23,7 +23,7 @@
 <div class="vegetableIntro"><span class="eyebrow">VEGETABLE INVENTORY</span><h3>Simple vegetable master</h3><p class="hint">Vegetables are a controlled list for warehouse counting. No barcode, pack size or aliases are used.</p></div>
 </div></section>
 <section class="inventoryCard invStockDashboard">
-<div class="inventoryCardHead"><div><span class="eyebrow">WAREHOUSE STOCK</span><h3>Available Inventory</h3><p class="hint">Latest physical counts and admin adjustments. Admin changes require a reason and are permanently logged.</p></div><div class="inventoryStockActions"><select id="stockSection"><option value="restaurant">Restaurant</option><option value="vegetable">Vegetable</option></select><button id="stockRefreshBtn" class="secondary">↻ Refresh</button></div></div>
+<div class="inventoryCardHead"><div><span class="eyebrow">WAREHOUSE STOCK</span><h3>Available Inventory</h3><p class="hint">Latest physical counts and admin adjustments. Admin changes require a reason and are permanently logged.</p></div><div class="inventoryStockActions"><select id="stockSection"><option value="restaurant">Restaurant</option><option value="vegetable">Vegetable</option></select><button id="stockRefreshBtn" class="secondary">↻ Refresh</button><button id="exportStockPdfBtn" class="primary">↓ Export Stock PDF</button></div></div>
 <div class="inventoryStockKpis" id="inventoryStockKpis"></div>
 <div class="tableWrap"><table class="inventoryStockTable"><thead><tr><th>Item</th><th>Category</th><th>Available Qty</th><th>Base UOM</th><th>Last Count</th><th>Counted By</th><th>Updated</th><th></th></tr></thead><tbody id="inventoryStockBody"></tbody></table></div>
 </section>
@@ -54,5 +54,5 @@
 <div id="vegetableErrors" class="fieldErrors"></div>
 <menu><button value="cancel" class="secondary">Cancel</button><button id="vegetableSaveAnotherBtn" type="button" class="secondary">Save &amp; Add Another</button><button id="vegetableSaveBtn" value="default" class="primary">Save Vegetable</button></menu></form></dialog>
 </div></div><section class="adminCard" style="margin-top:16px"><div class="sectionHead"><div><span class="eyebrow">WAREHOUSE ACCESS</span><h2>Warehouse Staff PIN</h2></div></div><p class="hint">Admin creates the PIN. Staff only use the separate Warehouse Inventory page for counting.</p><div class="formGrid"><label>Staff name<input id="staffAdminName"></label><label>PIN (4–6 digits)<input id="staffAdminPin" type="password" inputmode="numeric" maxlength="6"></label></div><button id="saveStaffBtn" class="primary">Create / Reset Staff PIN</button> <a class="secondary" href="../inventory-count.html" target="_blank" style="display:inline-block;text-decoration:none">Open Warehouse Count</a><p id="staffAdminMsg" class="hint"></p></section></main>
-<script defer src="./inventory.js?v=20260925-25"></script><script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20260925-25",{updateViaCache:"none"}).catch(console.warn));}</script>
+<script defer src="./inventory.js?v=20260926-stockpdf1"></script><script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20260925-25",{updateViaCache:"none"}).catch(console.warn));}</script>
 </body></html>
