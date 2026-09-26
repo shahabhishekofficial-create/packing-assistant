@@ -1210,7 +1210,7 @@ function renderDriverDashboard(data){
     ["Rejected qty",Number(p.rejections||0),"driver-reported"],
     ["Partial items",Number(p.partial_items||0),"outlet items"],
     ["Delivery checks",pendingExceptions,pendingExceptions?"needs attention":"clear"],
-    ["Earnings",dashboardMoney(p.earnings),"selected period"]
+    ["Delivery expense",dashboardMoney(p.earnings),"driver payout for selected period"]
   ].map(x=>'<div class="deliveryKpi"><small>'+esc(x[0])+'</small><b>'+esc(x[1])+'</b><span>'+esc(x[2])+'</span></div>').join("");
   drows.innerHTML=drivers.map(dr=>{
     const x=dr.period||{},lv=dr.live||{},liveOutlets=(data.live_outlets||[]).filter(o=>String(o.driver||"").trim().toLowerCase()===String(dr.driver_name||"").trim().toLowerCase()),done=liveOutlets.filter(o=>o.delivered),total=liveOutlets.length,missing=liveOutlets.reduce((s,o)=>s+Number(o.missing||0),0),rejected=liveOutlets.reduce((s,o)=>s+Number(o.rejections||0),0),width=total?Math.min(100,Math.round(done.length/total*100)):0,doneNames=done.map(o=>o.store_name).join(", ")||"None yet";
