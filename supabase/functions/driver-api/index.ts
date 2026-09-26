@@ -61,7 +61,16 @@ if(body.action==="invoice_ocr_result"){
  if(error)return json({ok:false,message:error.message},400);
  if(!o?.ok)return json({ok:false,message:o?.message||"Outlet is not assigned to this driver"},403);
  if(o.status!=="completed")return json({ok:false,message:"Outlet packing is not completed yet"},400);
- const ocrResult={status:String(body.status||"flagged"),invoice_number:invoiceNumber,invoice_match:body.invoice_match===true,outlet_match:body.outlet_match===true,confidence:Number(body.confidence||0),result_text:String(body.result_text||"").slice(0,4000),invoice_candidates:Array.isArray(body.ocr_invoice_candidates)?body.ocr_invoice_candidates.slice(0,30):[],checked_at:new Date().toISOString()};
+ const appOutletName=String(body.outlet_name||"").trim();
+ const {data:mapRow}=await db.from("invoice_outlet_name_map").select("legal_name,aliases").eq("app_outlet_name",appOutletName).eq("active",true).maybeSingle();
+ const normalizeName=(v:string)=>v.toLowerCase().replace(/[^a-z0-9]+/g," ").replace(/\s+/g," ").trim();
+ const ocrText=String(body.result_text||"").slice(0,4000);
+ const nameCandidates=[appOutletName,mapRow?.legal_name||"",...(Array.isArray(mapRow?.aliases)?mapRow.aliases:[])].map(normalizeName).filter(Boolean);
+ const normalizedOcr=normalizeName(ocrText);
+ const outletMatch=nameCandidates.some(n=>normalizedOcr.includes(n)||n.split(" ").filter(w=>w.length>=4).filter(w=>normalizedOcr.includes(w)).length>=Math.min(2,n.split(" ").filter(w=>w.length>=4).length||1));
+ const invoiceMatch=body.invoice_match===true;
+ const ocrStatus=invoiceMatch&&outletMatch?"verified":"mismatch";
+ const ocrResult={status:ocrStatus,invoice_number:invoiceNumber,invoice_match:invoiceMatch,outlet_match:outletMatch,app_outlet_name:appOutletName,legal_name:mapRow?.legal_name||null,aliases:mapRow?.aliases||[],confidence:Number(body.confidence||0),result_text:ocrText,invoice_candidates:Array.isArray(body.ocr_invoice_candidates)?body.ocr_invoice_candidates.slice(0,30):[],checked_at:new Date().toISOString()};
  const {error:updateError}=await db.from("delivery_records").update({ocr_status:ocrResult.status,ocr_result:ocrResult,updated_at:new Date().toISOString()}).eq("order_id",String(o.order_id)).eq("outlet_id",String(o.outlet_id)).eq("driver_id",driver.id);
  if(updateError)return json({ok:false,message:updateError.message},400);
  return json({ok:true,ocr_status:ocrResult.status});
