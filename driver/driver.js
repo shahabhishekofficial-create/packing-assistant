@@ -234,8 +234,8 @@ async function processInvoiceFile(file,outletId,invoiceNumber){
   if(uploadError)throw uploadError;
   await api("invoice_uploaded",{order_id:ds.orderId,outlet_id:outletId,path:d.path,invoice_number:invoiceNumber,filename:(liveOutlet.outlet_name||"Outlet")+" - "+invoiceNumber+".jpg",mime_type:prepared.type,ocr_status:ocr?.status||"pending",ocr_result:ocr||null});
   const current=ds.outlets.find(o=>String(o.outlet_id)===String(outletId));
-  if(current){current.delivery=current.delivery||{};current.delivery.invoice_path=d.path;current.delivery.invoice_number=invoiceNumber;current.delivery.invoice_uploaded_at=new Date().toISOString();current.delivery.ocr_status=ocr?.status||"pending";current.delivery.status="pending";}
-  toast("Invoice uploaded. Verification result is available to admin.","success");
+  if(current){current.delivery=current.delivery||{};current.delivery.invoice_path=d.path;current.delivery.invoice_number=invoiceNumber;current.delivery.invoice_uploaded_at=new Date().toISOString();current.delivery.ocr_status=ocr?.status||"pending";current.delivery.status="delivered";current.delivery.delivered_at=new Date().toISOString();current.delivery.delivery_charge=Number(current.delivery.delivery_charge||current.deliveryCharge||0);current.delivery.earned=current.delivery.delivery_charge;ds.earned=Number(ds.earned||0)+Number(current.delivery.delivery_charge||0);}
+  toast("Invoice uploaded. Delivery completed and earnings updated.","success");
  }catch(err){console.error("Invoice upload",{outletId,message:err?.message||String(err)});toast("Invoice upload failed: "+(err?.message||"Please try again."),"error");}
  finally{delete ds.busy[key];render();focusOutlet(outletId,true);}
 }
