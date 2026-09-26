@@ -10,6 +10,7 @@
   const HASH_B64 = "hx8/4FHwWBPUr43NnskKji0Y4PW0Tee3HHpiQY4pCO4=";
   const db = window.supabase && window.SUPABASE_CONFIG ? window.supabase.createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.key) : null;
   let logoutTimer = null;
+  let bootWatchdog = null;
   let reauthResolver = null;
   let serverSessionRefreshAt = 0;
   let serverSessionRefreshing = false;
@@ -189,7 +190,7 @@
     document.body.style.visibility="visible";
     injectStyles();
     // Never leave the dashboard on a boot screen indefinitely.
-    const bootWatchdog=setTimeout(()=>{
+    bootWatchdog=setTimeout(()=>{
       if(document.getElementById("adminBootOverlay") && !window.PA_ADMIN_SESSION){
         console.warn("Admin boot watchdog: session verification did not complete.");
         showLoginBox("Session check timed out. Please sign in again.");
