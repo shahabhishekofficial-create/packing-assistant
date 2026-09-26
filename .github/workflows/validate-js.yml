@@ -14,17 +14,26 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Check JavaScript syntax
+      - name: Check app.js
+        run: node --check app.js
+      - name: Check driver.js
+        run: node --check driver/driver.js
+      - name: Check admin auth.js
+        run: node --check admin/auth.js
+      - name: Check admin team.js
+        run: node --check admin/team.js
+      - name: Check admin inventory.js
+        run: node --check admin/inventory.js
+      - name: Check admin inventory-nav.js
+        run: node --check admin/inventory-nav.js
+      - name: Check admin vegetable-inventory.js
+        run: node --check admin/vegetable-inventory.js
+      - name: Check config.js
+        run: node --check config.js
+      - name: Check update.js
+        run: node --check update.js
+      - name: Check service workers
         run: |
-          node --check app.js
-          node --check driver/driver.js
-          node --check admin/auth.js
-          node --check admin/inventory.js
-          node --check admin/inventory-nav.js
-          node --check admin/team.js
-          node --check admin/vegetable-inventory.js
-          node --check config.js
-          node --check update.js
           node --check driver/sw.js
           node --check admin/sw.js
           node --check sw.js
