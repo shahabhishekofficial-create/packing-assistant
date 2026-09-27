@@ -1293,3 +1293,5 @@ button:focus-visible,input:focus-visible,select:focus-visible,dialog:focus-visib
   #recentDeliveriesBody td:nth-child(7)::before{content:"Rejected"}
   .deliveryDashTable td>button{max-width:100%;font-size:10px;padding:6px 8px}
 }
+
+@media(max-width:600px){.deliveryDashTable td[colspan]{display:block;text-align:left}.deliveryDashTable td[colspan]::before{display:none}}
