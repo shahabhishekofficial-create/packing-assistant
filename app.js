@@ -529,19 +529,14 @@ async function exportHistoricalReport(){
 }
 
 function downloadReport(){openReportDialog();}
-let outletSetupDraft={}; let invoiceNameMapDraft={};
+let outletSetupDraft={};
 
-async function loadInvoiceNameMap(){
-  const {data,error}=await db.rpc("inv_admin_get_invoice_name_map",{p_admin_token:window.PA_ADMIN_SESSION||state.token||""});
-  if(error){console.warn("Invoice name mapping:",error.message);invoiceNameMapDraft={};return;}
-  invoiceNameMapDraft=Object.fromEntries((data||[]).map(x=>[String(x.app_outlet_name).trim(),x]));
-}
 function renderOutletSettings(all){
   const box=$("outletSettingsList");
   if(!box)return;
   const drivers=getDrivers();
   outletSetupDraft=Object.fromEntries(all.map(o=>[o.id,{driver:o.driver||"",rank:o.rank,deliveryCharge:Number(o.deliveryCharge||0)}]));
-  box.innerHTML=all.map((o,i)=>{const m=invoiceNameMapDraft[String(o.name).trim()]||{};return `<div class="outletSettingRow" draggable="${window.matchMedia("(pointer:fine)").matches}" data-id="${o.id}">
+  box.innerHTML=all.map((o,i)=>{return `<div class="outletSettingRow" draggable="${window.matchMedia("(pointer:fine)").matches}" data-id="${o.id}">
     <span class="dragHandle" title="Drag to change rank">☷</span>
     <b class="rankNo">${i+1}</b>
     <span class="settingName">${esc(o.name)}</span>
@@ -1485,7 +1480,7 @@ document.getElementById("driverPaymentDashboardBack")?.addEventListener("click",
 document.getElementById("closeInvoiceDialog")?.addEventListener("click",()=>document.getElementById("invoiceDialog")?.close());
 document.getElementById("exportReportBtn")?.addEventListener("click",exportHistoricalReport);
 document.getElementById("reportAllDatesBtn")?.addEventListener("click",()=>{$("reportFromDate").value="";$("reportToDate").value="";loadReportHistory();});
-document.getElementById("menuOutletSettings")?.addEventListener("click",async()=>{adminMenu.classList.add("hidden");setBAActive("sideSettings");await loadInvoiceNameMap();renderOutletSettings([...state.outlets.values()].sort((a,b)=>a.rank-b.rank));document.getElementById("outletSettingsDialog").showModal()});
+document.getElementById("menuOutletSettings")?.addEventListener("click",async()=>{adminMenu.classList.add("hidden");setBAActive("sideSettings");await loadDrivers();renderOutletSettings([...state.outlets.values()].sort((a,b)=>a.rank-b.rank));document.getElementById("outletSettingsDialog").showModal()});
 
 async function ensureFleetAdminPassword(){if(window.PA_ADMIN_SESSION)return true;if(window.PA_REAUTH_ADMIN)return await window.PA_REAUTH_ADMIN();return false;}
 async function loadFleetManagement(){
