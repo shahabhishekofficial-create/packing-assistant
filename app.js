@@ -1193,7 +1193,7 @@ function renderDriverDashboard(data){
     ["Delivered",Number(p.delivered||0),"selected period"],
     ["Missing qty",Number(p.missing||0),"packing exceptions"],
     ["Rejected qty",Number(p.rejections||0),"driver-reported"],
-    ["Driver payout",dashboardMoney(p.earnings),"selected period"]
+    ["Driver payout",dashboardMoney(data.cumulative_earnings),"all orders"]
   ].map(x=>'<div class="deliveryKpi"><small>'+esc(x[0])+'</small><b>'+esc(x[1])+'</b><span>'+esc(x[2])+'</span></div>').join("");
 
   live.innerHTML=(data.live_outlets||[]).map(x=>{
@@ -1229,7 +1229,7 @@ function renderDriverDashboard(data){
 
   const lo=data.live_order;
   $("liveOrderLabel").textContent=lo?(lo.order_name+" · "+dashboardDate(lo.created_at,false)):"No active order";
-  $("driverDashboardPeriodLabel").textContent=(data.period?.from_date&&data.period?.to_date)?(data.period.from_date+" → "+data.period.to_date):"All saved dates";
+  $("driverDashboardPeriodLabel").textContent=data.live_order?"Current order":"No current order";
 }
 let driverDashboardBusy=false;
 async function loadDriverAdminDashboard(){
