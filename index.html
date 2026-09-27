@@ -6,9 +6,24 @@
 <meta name="theme-color" content="#f6f8fb">
 <title>Packing Assistant</title>
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="styles.css?v=20260927-touchfix2">
+<link rel="stylesheet" href="styles.css?v=20260927-cmd1">
+<style>
+.activePackingContainer{min-height:calc(100vh - 78px)}
+.tactilePacker{background:#eef3f0}
+.tactilePacker .packingTop{position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid #dbe5df;padding:14px 12px}
+.tactilePacker .tactileCard{border-radius:22px;border:2px solid #d9e4de;box-shadow:0 12px 28px rgba(15,81,50,.10);padding:20px}
+.voiceBanner{display:flex;align-items:center;gap:9px;flex-wrap:wrap;background:#123f2a;color:#fff;border-radius:15px;padding:11px 13px;margin-bottom:18px}
+.voiceBanner span{font-size:10px;font-weight:900;letter-spacing:.12em;background:#2e7d57;border-radius:8px;padding:5px 7px}
+.voiceBanner b{font-size:13px}.voiceBanner small{opacity:.82;font-size:11px}
+.packingSequenceQueue{display:flex;gap:7px;overflow-x:auto;margin:14px 0;padding:2px 0 6px;scrollbar-width:thin}
+.packingSequenceQueue .queueItem{flex:0 0 auto;max-width:150px;padding:9px 10px;border:1px solid #dbe5df;border-radius:12px;background:#f8fbf9;font-size:10px;color:#365448}
+.packingSequenceQueue .queueItem.current{border-color:#137547;background:#ecfdf3;color:#14532d;font-weight:800}
+.quickFill{display:flex;gap:8px;flex-wrap:wrap;margin-top:-6px;margin-bottom:8px}
+.quickFill button{min-width:58px;min-height:42px;border:1px solid #cbd8d1;border-radius:11px;background:#f4f8f5;font-weight:800;color:#14532d}
+@media(max-width:640px){.tactilePacker .actions{grid-template-columns:1fr;gap:10px}.tactilePacker .actions button{min-height:62px;font-size:16px}.tactilePacker button{touch-action:manipulation}}
+</style>
 </head>
-<body class="packerPage">
+<body class="packerPage tactilePacker">
 <main id="app">
 
 <header class="appHeader">
@@ -53,6 +68,7 @@
   <div id="outletList" class="outletGrid"></div>
 </section>
 
+<section id="activePackingContainer" class="activePackingContainer">
 <section id="packing" class="screen hidden">
   <div class="packingTop">
     <button id="backBtn" class="secondary">← Outlets</button>
@@ -62,7 +78,8 @@
   <div class="progressCard">
     <span id="progressText"></span><div><i id="progressBar"></i></div>
   </div>
-  <div class="product card">
+  <div class="product card tactileCard">
+    <div class="voiceBanner" aria-live="polite"><span>VOICE</span><b>EN / HI / GU</b><small id="voiceBannerText">Product name in English • Quantity in selected language</small></div>
     <div class="productMeta"><small id="itemCode"></small><button id="repeatBtn" class="secondary">🔊 Repeat</button></div>
     <h2 id="productName"></h2>
     <div class="qtyLabel">REQUIRED QUANTITY</div>
@@ -72,16 +89,18 @@
       <button id="partialBtn" class="warn">✎ PARTIAL<span>Enter Quantity</span></button>
       <button id="missingBtn" class="bad">× MISSING<span>Select Reason</span></button>
     </div>
+    <div id="packingSequenceQueue" class="packingSequenceQueue" aria-label="Upcoming item sequence"></div>
     <button id="nextItemBtn" class="secondary hidden" type="button">Next Item →</button>
     <p id="syncStatus" class="hint"></p>
   </div>
+</section>
 </section>
 
 <dialog id="partialDialog">
 <form method="dialog" id="partialForm">
 <h3>Partial quantity</h3>
 <label>Required <input id="partialRequired" disabled></label>
-<label>Packed <input id="packedQty" type="number" min="0" step="any" required></label>
+<label>Packed <input id="packedQty" type="number" min="0" step="any" required></label><div class="quickFill" aria-label="Quick fill"><button type="button" data-qty-step="1">+1</button><button type="button" data-qty-step="5">+5</button><button type="button" data-qty-step="10">+10</button><button type="button" data-qty-fill="max">MAX</button></div>
 <label>Reason<select id="partialReason"><option>No Stock</option><option>Poor Quality</option><option>Not Received</option><option>Other</option></select></label>
 <menu><button value="cancel">Cancel</button><button id="partialConfirm" value="default">Confirm</button></menu>
 </form>
@@ -99,7 +118,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script src="config.js?v=20260927-touchfix1"></script>
-<script src="app.js?v=20260927-voicefix1"></script>
-<script>window.PA_VERSION_URL="version.json";</script><script src="update.js?v=20260927-voicefix1"></script><script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20260927-qa2",{updateViaCache:"none"}).then(r=>r.update()).catch(console.warn));}</script>
+<script src="app.js?v=20260927-cmd1"></script>
+<script>window.PA_VERSION_URL="version.json";</script><script src="update.js?v=20260927-cmd1"></script><script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20260927-cmd1",{updateViaCache:"none"}).then(r=>r.update()).catch(console.warn));}</script>
 <script>fetch("version.json?_"+Date.now(),{cache:"no-store"}).then(r=>r.json()).then(v=>{const e=document.getElementById("buildVersion");if(e)e.textContent="Build "+(v.build_id||"unknown")}).catch(()=>{});</script></body>
 </html>
