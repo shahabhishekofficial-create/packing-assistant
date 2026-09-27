@@ -1298,3 +1298,8 @@ button:focus-visible,input:focus-visible,select:focus-visible,dialog:focus-visib
 
 .deliveryEvidenceViewer{width:min(96vw,900px);max-width:900px}.deliveryEvidenceViewerBody{min-height:55vh;display:flex;align-items:center;justify-content:center;padding:12px;background:#f5f7fa;border-radius:12px}.deliveryEvidenceViewerBody img{display:block;max-width:100%;max-height:70vh;width:auto;height:auto;object-fit:contain;border-radius:8px;background:#fff}.deliveryEvidenceViewer::backdrop{background:rgba(15,23,42,.68)}
 @media(max-width:600px){.deliveryEvidenceViewer{width:96vw;padding:0}.deliveryEvidenceViewerBody{min-height:60vh}.deliveryEvidenceViewerBody img{max-height:68vh}}
+
+/* Global mobile gesture policy: one-finger scrolling stays free-flowing; pinch remains available. */
+html,body{touch-action:pan-x pan-y pinch-zoom;-webkit-text-size-adjust:100%}
+button,input,select,textarea{touch-action:manipulation}
+dialog,.tableWrap,[class*="scroll"],[class*="Scroller"]{touch-action:pan-x pan-y pinch-zoom}
