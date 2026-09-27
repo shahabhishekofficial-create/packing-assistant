@@ -1459,6 +1459,28 @@ function showPackingOverview(){
   renderPackingOverview();
   window.scrollTo({top:0,behavior:"smooth"});
 }
+async function renderHomeOperationalKpis(){
+  const order=state.order||null;
+  const orderEl=$("homeKpiOrder"),packEl=$("homeKpiPackingValue"),delEl=$("homeKpiDeliveryValue"),unEl=$("homeKpiUnassigned"),issueEl=$("homeKpiIssues");
+  if(orderEl)orderEl.textContent=order?.order_name||"No current order";
+  const outlets=[...state.outlets.values()];
+  const req=outlets.reduce((s,o)=>s+o.rows.reduce((a,r)=>a+Number(r.required||0),0),0);
+  const done=outlets.reduce((s,o)=>s+o.rows.reduce((a,r)=>a+Number(r.packed||0)+Number(r.missing||0),0),0);
+  const pct=req?Math.round(done/req*100):0;
+  if(packEl)packEl.textContent=pct+"%";
+  if(unEl)unEl.textContent=outlets.filter(o=>!o.driver||o.driver==="Unassigned").length;
+  if(issueEl)issueEl.textContent=outlets.reduce((s,o)=>s+o.rows.reduce((a,r)=>a+Number(r.missing||0),0),0);
+  if(delEl)delEl.textContent="—";
+  try{
+    if(window.PA_ADMIN_SESSION){
+      const r=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_driver_dashboard",admin_session:window.PA_ADMIN_SESSION,preset:"all"})});
+      const d=await r.json(),live=d?.live||{};
+      if(delEl)delEl.textContent=String(Number(live.pending_delivery||0));
+      if(issueEl)issueEl.textContent=String(Number(live.missing||0)+Number(live.rejections||0));
+      if(unEl)unEl.textContent=String(Number(live.unassigned||0));
+    }
+  }catch(_){}
+}
 function showAdminDashboard(){
   if(typeof stopItemNarration==="function")stopItemNarration();
   if(typeof setBAActive==="function")setBAActive("sideDashboard");
@@ -1468,6 +1490,7 @@ function showAdminDashboard(){
   document.getElementById("home")?.classList.remove("hidden");
   ["reportDialog","invoiceDialog","outletSettingsDialog","driverPaymentDialog"].forEach(id=>document.getElementById(id)?.open&&document.getElementById(id).close());
   window.scrollTo({top:0,behavior:"smooth"});
+  void renderHomeOperationalKpis();
 }
 const adminMenu=document.getElementById("adminMenu"),adminMenuBtn=document.getElementById("adminMenuBtn");
 adminMenuBtn?.addEventListener("click",e=>{e.stopPropagation();adminMenu.classList.toggle("hidden");adminMenuBtn.setAttribute("aria-expanded",String(!adminMenu.classList.contains("hidden")))});
@@ -1620,6 +1643,8 @@ document.addEventListener("keydown",e=>{
     globalSearch?.select();
   }
 });
+$("homeKpiPacking")?.addEventListener("click",showPackingOverview);
+$("homeKpiDelivery")?.addEventListener("click",()=>document.getElementById("menuDriverDashboard")?.click());
 document.getElementById("dashOpenPacking")?.addEventListener("click",showPackingOverview);
 document.getElementById("dashOpenDelivery")?.addEventListener("click",()=>document.getElementById("menuDriverDashboard")?.click());
 document.getElementById("dashOpenReports")?.addEventListener("click",()=>document.getElementById("menuReportBtn")?.click());
