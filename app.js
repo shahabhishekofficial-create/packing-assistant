@@ -903,8 +903,15 @@ function applyPackingConfig(){
   $("partialBtn")?.classList.toggle("hidden",!partial);
   $("missingBtn")?.classList.toggle("hidden",!missing);
 }
+function renderPackingSequence(){
+  const host=$("packingSequenceQueue"); if(!host)return;
+  const o=state.outlets.get(state.current); if(!o)return;
+  const rows=o.rows||[], upcoming=rows.slice(state.index,Math.min(rows.length,state.index+4));
+  host.innerHTML=upcoming.map((r,i)=>'<div class="queueItem '+(i===0?"current":"")+'"><span>'+(i===0?"NOW":"NEXT")+'</span><br><b>'+esc(r.product)+'</b><br><small>Qty '+Number(r.required||0)+'</small></div>').join("");
+}
 function showProduct(){
   applyPackingConfig();
+  renderPackingSequence();
   $("nextItemBtn")?.classList.add("hidden");
   const o=state.outlets.get(state.current);
   if(!o)return;
@@ -916,12 +923,19 @@ function showProduct(){
   $("itemCode").textContent="Item Code: "+r.code;
   $("productName").textContent=r.product;
   $("requiredQty").textContent=r.required;
+  if($("voiceBannerText")) $("voiceBannerText").textContent="Product name in English • Quantity "+(document.getElementById("packingVoiceLanguage")?.value||"selected").toUpperCase();
   $("syncStatus").textContent=navigator.onLine?"● Synced":"● Offline — changes will sync when online";
   speakProduct(r);
 }
 
 async function record(status,packed,missing,reason=""){
   stopItemNarration();
+  const current=state.outlets.get(state.current)?.rows?.[state.index];
+  const required=Number(current?.required||0),packedN=Number(packed||0),missingN=Number(missing||0);
+  if(!Number.isFinite(required)||Math.abs(required-(packedN+missingN))>1e-9){
+    $("syncStatus").textContent="Quantity mismatch blocked";
+    return alert("Quantity error: Required must equal Packed + Missing.");
+  }
   const o=state.outlets.get(state.current),r=o.rows[state.index];
   if(!r||r.status)return;
   $("syncStatus").textContent="Saving…";
@@ -991,6 +1005,11 @@ $("partialBtn").onclick=()=>{
   $("partialDialog").showModal();
 };
 
+document.querySelectorAll(".quickFill [data-qty-step]").forEach(btn=>btn.addEventListener("click",()=>{
+  const input=$("packedQty"),required=Number($("partialRequired").value||0),step=Number(btn.dataset.qtyStep||0);
+  input.value=Math.min(required,Math.max(0,Number(input.value||0)+step));
+}));
+document.querySelectorAll(".quickFill [data-qty-fill='max']").forEach(btn=>btn.addEventListener("click",()=>{$("packedQty").value=$("partialRequired").value;}));
 $("partialConfirm").onclick=e=>{
   e.preventDefault();
   const r=state.outlets.get(state.current).rows[state.index];
