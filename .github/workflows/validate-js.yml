@@ -32,6 +32,8 @@ jobs:
         run: node --check config.js
       - name: Check update.js
         run: node --check update.js
+      - name: Check driver-api edge function
+        run: node --check supabase/functions/driver-api/index.ts
       - name: Check service workers
         run: |
           node --check driver/sw.js
