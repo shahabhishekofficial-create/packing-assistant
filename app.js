@@ -323,6 +323,7 @@ async function syncFromServer(){
   state.syncBusy=true;
   try{
     await loadOrder();
+    const liveSync=$("liveSyncStatus"); if(liveSync){liveSync.textContent="LIVE · synced "+new Date().toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit",second:"2-digit"});liveSync.className="cmdLiveStatus";}
     if(state.current){
       const o=state.outlets.get(state.current);
       if(o && o.status==="in_progress" && o.lockedDeviceId===DEVICE_ID){
@@ -1028,6 +1029,13 @@ async function exitOutlet(){
 }
 $("backBtn").onclick=exitOutlet;if($("saveOutletSettings"))$("saveOutletSettings").onclick=saveOutletSettings;
 
+const commandOrderFile=$("orderFileInput"),commandManifestDrop=$("cmdManifestDrop");
+if(commandOrderFile)commandOrderFile.onchange=e=>{const target=$("fileInput");if(target&&e.target.files?.length){try{target.files=e.target.files;}catch(_){}target.dispatchEvent(new Event("change",{bubbles:true}));}};
+if(commandManifestDrop){
+  ["dragenter","dragover"].forEach(ev=>commandManifestDrop.addEventListener(ev,e=>{e.preventDefault();commandManifestDrop.style.borderColor="#137547";commandManifestDrop.style.background="#f0fdf4";}));
+  ["dragleave","drop"].forEach(ev=>commandManifestDrop.addEventListener(ev,e=>{e.preventDefault();commandManifestDrop.style.borderColor="";commandManifestDrop.style.background="";}));
+  commandManifestDrop.addEventListener("drop",e=>{const target=$("fileInput"),file=e.dataTransfer?.files?.[0];if(target&&file){try{target.files=e.dataTransfer.files;}catch(_){}target.dispatchEvent(new Event("change",{bubbles:true}));}});
+}
 $("fileInput").onchange=async e=>{
   try{
     const file=e.target.files[0];
