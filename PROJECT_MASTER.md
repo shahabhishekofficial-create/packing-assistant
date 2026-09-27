@@ -2124,3 +2124,17 @@ Future scrolling changes must be isolated and validated independently before bei
 - **Backup:** Weekly GitHub Actions workflow dumps only the `inv_` tables, encrypts the dump with a GitHub secret, and stores the encrypted artifact for 30 days. Configure repository secrets `SUPABASE_DB_URL` and `INVENTORY_BACKUP_KEY`; the workflow never writes plaintext inventory data to the repository.
 - **Dependencies:** html5-qrcode, Fuse.js and SheetJS are loaded from free public CDNs. No paid service/library was added.
 - **Important:** The existing Admin authentication is custom-session based rather than Supabase Auth. Inventory authorization therefore validates the established Admin session RPC rather than inventing a second login system.
+
+
+## 2026-09-27 — QA hardening pass
+- Added inventory security/counting migration: staff PIN attempts capped at 5, 15-minute lockout, staff-session revoke RPC, RLS/direct-table denial retained, packet arithmetic constraint, and append-only inv_v2_audit_log trigger.
+- Added database audit trail operations_audit_v1 with triggers on outlets, order items, and driver payments, recording old/new row state and actor context.
+- Added offline inventory-count IndexedDB queue; queued counts synchronize automatically when connectivity returns and block submission until synchronized.
+- Added staff logout session revocation.
+- Fixed admin invoice viewer JavaScript error caused by an out-of-scope btn reference.
+- Expanded admin global search to orders/invoices.
+- Added visible build version to packer, admin and driver surfaces.
+- Bumped main/admin/driver PWA caches to build 20260927-qa2 and aligned service-worker registration/update detection.
+- Added home operational KPI strip with packing/delivery drill-downs.
+- Purchase & Suppliers and Employees & HR are now visibly disabled as Coming Soon.
+- Verified JavaScript syntax for changed JS/service-worker files and verified database RLS denial, audit immutability, and packet-math rejection in production.
