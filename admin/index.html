@@ -60,8 +60,8 @@ body.adminPage{background:var(--cmd-bg);font-family:"Plus Jakarta Sans",Inter,sy
     <button id="sidePurchase" class="soon" type="button" disabled>🛒 <span>Purchase &amp; Suppliers</span><em>Soon</em></button>
     <button id="sideEmployees" class="soon" type="button" disabled>♟ <span>Employees &amp; HR</span><em>Soon</em></button>
     <div class="cmdNavLabel">Governance</div>
-    <button id="sideReports" type="button" onclick="openReportsModal?.()">▥ <span>Reports &amp; Analytics</span></button>
-    <button id="sideSettings" type="button" onclick="openAdminSecurityModal?.()">⚙ <span>Settings / Audit</span></button>
+    <button id="sideReports" type="button" onclick="openReportDialog?.()">▥ <span>Reports &amp; Analytics</span></button>
+    <button id="sideSettings" type="button" onclick="showConfiguration?.()">⚙ <span>Settings / Audit</span></button>
   </nav>
   <div class="cmdFooter"><b>●</b> Cold Chain Mesh <span style="float:right">Protected</span></div>
 </aside>
@@ -106,7 +106,7 @@ body.adminPage{background:var(--cmd-bg);font-family:"Plus Jakarta Sans",Inter,sy
       </aside>
     </div>
 
-    <div id="orderSummary" class="hidden"></div>
+    <div id="orderSummary" class="hidden"></div><div id="orderStats" class="hidden"></div>
     <section id="adminDashboard" class="hidden">
       <input id="dashboardOutletFilter"><input id="dashboardItemFilter"><input id="dashboardDriverFilter"><select id="dashboardStatusFilter"><option value="ALL">All</option></select><datalist id="dashboardOutletOptions"></datalist><datalist id="dashboardItemOptions"></datalist><datalist id="dashboardDriverOptions"></datalist>
       <div id="dashboardKpis"></div><table><tbody id="outletAnalysisBody"></tbody></table><table><tbody id="itemAnalysisBody"></tbody></table><table><tbody id="exceptionAnalysisBody"></tbody></table><table><tbody id="driverAnalysisBody"></tbody></table>
