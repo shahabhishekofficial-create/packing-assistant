@@ -2138,3 +2138,76 @@ Future scrolling changes must be isolated and validated independently before bei
 - Added home operational KPI strip with packing/delivery drill-downs.
 - Purchase & Suppliers and Employees & HR are now visibly disabled as Coming Soon.
 - Verified JavaScript syntax for changed JS/service-worker files and verified database RLS denial, audit immutability, and packet-math rejection in production.
+
+
+---
+
+# 2026-09-28 — ADMIN OPERATIONS COMMAND CENTER
+
+The admin PWA dashboard was redesigned without removing the existing packing, delivery, inventory, reports, team, configuration, outlet-setup, payment, invoice, or evidence DOM contracts.
+
+## Dashboard shell
+
+- Persistent navigation:
+  - Operations Dashboard
+  - Packing & Dispatch
+  - Delivery & Fleet
+  - Inventory & Stock
+  - Purchase & Suppliers (Soon)
+  - Employees & HR (Soon)
+  - Reports & Analytics
+  - Settings / Audit
+- Header includes current-order badge, live sync indicator, New Order import, Staff Packing Portal and admin session profile.
+- Executive KPIs cover:
+  - Store Outlets
+  - Crate Pack Fulfillment
+  - Fleet Delivery Leg
+  - Critical Variances / Exceptions
+- Master live outlet/dispatch matrix shows:
+  - rank
+  - outlet/cluster
+  - assigned driver and status tag
+  - packed/indent progress
+  - delivery status
+  - delivery fee
+  - Open / Setup actions
+- Side rail includes fleet workload, manifest import/drop area and operations audit trail.
+
+## Existing contracts preserved
+
+Existing RPC calls, Supabase data models and critical DOM IDs remain in place, including:
+- get_current_order
+- get_order
+- update_outlet_settings_v2
+- update_outlet_delivery_charge
+- admin_driver_payment_ledger
+- adminOutletList
+- orderStats / orderSummary
+- liveSyncStatus
+- orderFileInput
+- exportLedgerBtn
+- all existing packing/delivery/report/settings dialog IDs
+
+The old operational screens after the dashboard shell were restored from the pre-command-center revision rather than recreated.
+
+## Operations audit read path
+
+Because `operations_audit_v1` is protected from direct browser table access, the dashboard uses:
+
+`admin_get_operations_audit_v1(p_admin_session text, p_limit integer)`
+
+The RPC validates the existing admin session before returning recent audit rows. The audit table itself remains append-only and direct browser access remains revoked.
+
+Migration:
+- `202609280001_admin_operations_audit_read_v1.sql`
+
+## PWA cache
+
+Admin service worker build/cache:
+- `20260928-cmd1`
+
+## Frontend command-center logic
+
+`app.js` now derives command-center packing KPIs from the current order and uses the existing `admin_driver_dashboard` Edge Function response for live delivery/fleet state. Audit polling refreshes every 5 seconds while the dashboard is visible.
+
+No service-role or secret key is exposed to the browser.
