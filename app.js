@@ -393,7 +393,7 @@ async function openOrderInvoices(orderId,orderName){
     if(!files.length){box.innerHTML='<div class="hint">No invoice has been uploaded for this order.</div>';return;}
     box.innerHTML=files.map(r=>'<div class="reportHistoryRow"><div><b>'+esc(r.outlet_name)+'</b><span>'+esc(r.invoice_filename)+'</span></div><button class="primary viewInvoiceBtn" data-order-id="'+esc(r.order_id)+'" data-outlet-id="'+esc(r.outlet_id)+'">View Invoice</button></div>').join("");
     box.querySelectorAll(".viewInvoiceBtn").forEach(b=>b.onclick=async()=>{b.disabled=true;b.textContent="Opening…";try{const resp=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_invoice_url",admin_session:window.PA_ADMIN_SESSION,order_id:b.dataset.orderId,outlet_id:b.dataset.outletId})});const d=await resp.json();if(!resp.ok||!d.ok)throw new Error(d.message||"Could not open invoice");const viewer=$("deliveryEvidenceViewer"),img=$("deliveryEvidenceImage"),title=$("deliveryEvidenceTitle");
-      if(viewer&&img){img.src=d.url;img.alt=btn.dataset.kind==="invoice"?"Delivery invoice":"Delivery evidence";if(title)title.textContent=btn.dataset.kind==="invoice"?"Invoice":"Delivery evidence";viewer.showModal();}else{window.open(d.url,"_blank","noopener");}}catch(e){alert("Could not open invoice: "+e.message)}finally{b.disabled=false;b.textContent="View Invoice";}});
+      if(viewer&&img){img.src=d.url;img.alt="Delivery invoice";if(title)title.textContent="Invoice";viewer.showModal();}else{window.open(d.url,"_blank","noopener");}}catch(e){alert("Could not open invoice: "+e.message)}finally{b.disabled=false;b.textContent="View Invoice";}});
   }catch(e){box.innerHTML='<div class="hint">Could not load invoices: '+esc(e.message||e)+'</div>';}
 }
 
@@ -1568,13 +1568,27 @@ document.addEventListener("keydown",e=>{
 document.getElementById("sideDashboard")?.addEventListener("click",()=>{document.querySelector(".baSidebar")?.classList.remove("open");showAdminDashboard();setBAActive("sideDashboard")});
 document.getElementById("sidePacking")?.addEventListener("click",showPackingOverview);bindBAAction("sideDelivery","menuDriverDashboard");bindBAAction("sideReports","menuReportBtn");document.getElementById("sideSettings")?.addEventListener("click",showConfiguration);
 document.getElementById("modulePacking")?.addEventListener("click",showPackingOverview);bindBAAction("moduleDelivery","menuDriverDashboard");bindBAAction("moduleReports","menuReportBtn");
-["moduleInventory","modulePurchase","moduleEmployees","sideInventory","sidePurchase","sideEmployees"].forEach(id=>document.getElementById(id)?.addEventListener("click",e=>alert((e.currentTarget.dataset.comingSoon||({"moduleInventory":"Inventory","modulePurchase":"Purchase & Suppliers","moduleEmployees":"Employees & HR","sideInventory":"Inventory","sidePurchase":"Purchase & Suppliers","sideEmployees":"Employees & HR"}[id]))+" is coming soon.")));
-function runGlobalSearch(raw){
+["modulePurchase","moduleEmployees","sidePurchase","sideEmployees"].forEach(id=>document.getElementById(id)?.addEventListener("click",e=>{if(e.currentTarget.disabled)return;alert((e.currentTarget.dataset.comingSoon||({"modulePurchase":"Purchase & Suppliers","moduleEmployees":"Employees & HR","sidePurchase":"Purchase & Suppliers","sideEmployees":"Employees & HR"}[id]))+" is coming soon.")}));\ndocument.getElementById("moduleInventory")?.addEventListener("click",()=>{window.location.href="./inventory.html"});\ndocument.getElementById("sideInventory")?.addEventListener("click",()=>{window.location.href="./inventory.html"});
+async function runGlobalSearch(raw){
   const q=String(raw||"").trim().toLowerCase();
   if(!q)return;
   if(/^(packing|pack|dispatch)/.test(q)){showPackingOverview();return;}
   if(/^(delivery|deliveries|fleet|driver)/.test(q)){document.getElementById("menuDriverDashboard")?.click();return;}
   if(/^(report|reports|analytics)/.test(q)){document.getElementById("menuReportBtn")?.click();return;}
+  if(/^(order|orders|invoice|invoices)/.test(q)){
+    try{
+      if(!(await ensureReportAccess())) throw new Error("No report access");
+      const {data,error}=await db.rpc("get_order_history",{p_access_token:state.token});
+      if(error)throw error;
+      const matches=(data||[]).filter(o=>String(o.order_name||"").toLowerCase().includes(q.replace(/^(order|orders|invoice|invoices)\\s*/,""))||String(o.order_id||"").toLowerCase().includes(q));
+      openReportDialog();
+      const box=$("reportHistoryList");
+      if(box&&matches.length) box.innerHTML=matches.map(o=>'<div class="reportHistoryRow"><div><b>'+esc(reportDateLabel(o.created_at))+'</b><span>'+esc(o.order_name||"Packing Order")+'</span></div><div><small>'+Number(o.outlet_count||0)+' outlets · '+Number(o.item_count||0)+' items</small> <button class="secondary invoiceHistoryBtn" data-order-id="'+esc(o.order_id)+'" data-order-name="'+esc(o.order_name||"Packing Order")+'">📄 Invoices</button></div></div>').join("");
+      if(box&&matches.length) box.querySelectorAll(".invoiceHistoryBtn").forEach(b=>b.onclick=()=>openOrderInvoices(b.dataset.orderId,b.dataset.orderName));
+      if(box&&!matches.length) box.innerHTML='<div class="hint">No matching orders/invoices found.</div>';
+      return;
+    }catch(e){alert("Search failed: "+(e.message||e));return;}
+  }
   const all=[...state.outlets.values()];
   const outlet=all.find(o=>String(o.name).toLowerCase().includes(q));
   const driver=all.find(o=>String(o.driver||"Unassigned").toLowerCase().includes(q));
@@ -1590,7 +1604,7 @@ function runGlobalSearch(raw){
     document.getElementById("adminDashboard")?.scrollIntoView({behavior:"smooth",block:"start"});
     return;
   }
-  alert("No matching outlet, item, driver, or dashboard section found.");
+  alert("No matching outlet, item, driver, order, invoice, or dashboard section found.");
 }
 const globalSearch=$("globalSearch");
 globalSearch?.addEventListener("keydown",e=>{
