@@ -1239,3 +1239,57 @@ button:focus-visible,input:focus-visible,select:focus-visible,dialog:focus-visib
 .invoiceLegalNameInput,.invoiceAliasesInput{min-width:170px;max-width:240px;padding:9px 10px;border:1px solid #d8dee9;border-radius:10px;background:#fff;font:600 13px system-ui}.invoiceAliasesInput{min-width:210px}.outletSettingRow{flex-wrap:wrap}
 .invoiceScanner{position:fixed;inset:0;z-index:99999;background:#000;display:flex;flex-direction:column;color:#fff}
 .invoiceScanner.hidden{display:none!important}.invoiceScannerTop{height:58px;display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:rgba(0,0,0,.78);font-size:18px}.invoiceCameraWrap{position:relative;flex:1;min-height:0;display:flex;align-items:center;justify-content:center;overflow:hidden}.invoiceCameraWrap video{width:100%;height:100%;object-fit:cover}.invoiceGuide{position:absolute;left:6%;right:6%;top:12%;bottom:12%;border:2px solid rgba(255,255,255,.65);border-radius:10px;box-shadow:0 0 0 9999px rgba(0,0,0,.38);pointer-events:none}.invoiceGuide i{position:absolute;width:34px;height:34px;border-color:#fff;border-style:solid}.invoiceGuide i:nth-child(1){left:-3px;top:-3px;border-width:5px 0 0 5px}.invoiceGuide i:nth-child(2){right:-3px;top:-3px;border-width:5px 5px 0 0}.invoiceGuide i:nth-child(3){left:-3px;bottom:-3px;border-width:0 0 5px 5px}.invoiceGuide i:nth-child(4){right:-3px;bottom:-3px;border-width:0 5px 5px 0}.invoiceGuide span{position:absolute;top:10px;left:50%;transform:translateX(-50%);white-space:nowrap;background:rgba(0,0,0,.7);padding:7px 12px;border-radius:20px;font-size:13px;font-weight:700}.invoiceScanStatus{position:absolute;left:10%;right:10%;bottom:24px;text-align:center;background:rgba(0,0,0,.72);padding:10px;border-radius:12px;font-weight:700}.invoiceScannerActions{display:flex;gap:10px;padding:12px 14px;background:#000}.invoiceScannerActions button{flex:1;min-height:48px}
+
+
+/* Delivery dashboard mobile UX v3 */
+.deliveryDashboardControls{grid-template-columns:minmax(180px,220px) 1fr auto;gap:10px}
+.deliveryDashSection{overflow:hidden}
+.deliveryDashTable{min-width:0}
+.deliveryDashTable td,.deliveryDashTable th{white-space:nowrap}
+.deliveryDashTable .evidenceBtns{display:flex;gap:5px;flex-wrap:wrap;margin-top:4px}
+.deliveryDashTable .evidenceBtns button{font-size:10px;padding:6px 8px}
+@media(max-width:600px){
+  .deliveryDashboardControls{display:flex;flex-direction:row;align-items:center;gap:8px;flex-wrap:wrap}
+  .deliveryDashboardControls select{flex:1 1 100%;width:100%}
+  .dashboardPeriodLabel{flex:1 1 100%;font-size:11px;text-align:left}
+  .liveRouteBanner{margin-bottom:10px;padding:12px 13px}
+  .liveRouteBanner b{font-size:14px}
+  .deliveryKpis{grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+  .deliveryKpi{padding:11px;border-radius:12px}
+  .deliveryKpi b{font-size:18px;margin:4px 0 1px}
+  .deliveryKpi span{font-size:9px}
+  .deliveryDashSection{padding:10px;margin-bottom:10px;border-radius:14px}
+  .deliveryDashSection .sectionHead{margin-bottom:8px}
+  .deliveryDashSection h3{font-size:15px}
+  .deliveryDashTable{width:100%;min-width:0}
+  .deliveryDashTable thead{display:none}
+  .deliveryDashTable tbody{display:block}
+  .deliveryDashTable tr{display:block;padding:10px 2px;border-bottom:1px solid #edf1f5}
+  .deliveryDashTable tr:last-child{border-bottom:0}
+  .deliveryDashTable td{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;width:100%;padding:5px 2px;border:0;font-size:12px;white-space:normal;text-align:right}
+  .deliveryDashTable td::before{content:"";flex:0 0 82px;text-align:left;color:#98a2b3;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+  .deliveryDashTable td:first-child{padding-top:2px}
+  .deliveryDashTable td:first-child b{font-size:13px}
+  #liveRouteBody td:nth-child(1)::before{content:"Outlet"}
+  #liveRouteBody td:nth-child(2)::before{content:"Driver"}
+  #liveRouteBody td:nth-child(3)::before{content:"Status"}
+  #liveRouteBody td:nth-child(4)::before{content:"Missing"}
+  #liveRouteBody td:nth-child(5)::before{content:"Rejected"}
+  #liveRouteBody td:nth-child(6)::before{content:"Last action"}
+  #liveRouteBody td:nth-child(7)::before{content:"Evidence"}
+  #driverExceptionsBody td:nth-child(1)::before{content:"Order date"}
+  #driverExceptionsBody td:nth-child(2)::before{content:"Driver"}
+  #driverExceptionsBody td:nth-child(3)::before{content:"Outlet"}
+  #driverExceptionsBody td:nth-child(4)::before{content:"Missing"}
+  #driverExceptionsBody td:nth-child(5)::before{content:"Rejected"}
+  #driverExceptionsBody td:nth-child(6)::before{content:"Invoice"}
+  #driverExceptionsBody td:nth-child(7)::before{content:"Check"}
+  #recentDeliveriesBody td:nth-child(1)::before{content:"Delivered"}
+  #recentDeliveriesBody td:nth-child(2)::before{content:"Driver"}
+  #recentDeliveriesBody td:nth-child(3)::before{content:"Outlet"}
+  #recentDeliveriesBody td:nth-child(4)::before{content:"Delivery time"}
+  #recentDeliveriesBody td:nth-child(5)::before{content:"Charge"}
+  #recentDeliveriesBody td:nth-child(6)::before{content:"Missing"}
+  #recentDeliveriesBody td:nth-child(7)::before{content:"Rejected"}
+  .deliveryDashTable td>button{max-width:100%;font-size:10px;padding:6px 8px}
+}
