@@ -1198,31 +1198,51 @@ function dashboardDate(v,withTime=true){if(!v)return "—";return new Date(v).to
 function dashboardDuration(m){if(m==null||!Number.isFinite(Number(m)))return "—";const n=Math.round(Number(m));if(n<60)return n+" min";const h=Math.floor(n/60),mm=n%60;return h+"h "+String(mm).padStart(2,"0")+"m";}
 function dashboardStatus(x){if(x.delivered)return ["delivered","✓ Delivered"];if(x.packing_done)return ["pending","Ready • Pending delivery"];return ["packing","Packing "+String(x.status||"available").replace("_"," ")];}
 function renderDriverDashboard(data){
-  const k=$("driverDashboardKpis"),drows=$("driverPerformanceBody"),live=$("liveRouteBody"),ex=$("driverExceptionsBody"),recent=$("recentDeliveriesBody");
-  if(!k||!drows||!live||!ex||!recent)return;
-  const p=data.period||{},l=data.live||{},drivers=data.drivers||[];
-  const pendingExceptions=Number(p.invoice_pending||0)+Number(p.rejection_confirmation_pending||0);
+  const k=$("driverDashboardKpis"),live=$("liveRouteBody"),ex=$("driverExceptionsBody"),recent=$("recentDeliveriesBody"),exSection=$("driverExceptionsSection");
+  if(!k||!live||!ex||!recent)return;
+  const p=data.period||{},l=data.live||{};
   k.innerHTML=[
-    ["Live route",Number(l.delivered||0)+" / "+Number(l.outlets||0),"delivered now"],["Live unassigned",Number(l.unassigned||0),"current route"],
+    ["Live route",Number(l.delivered||0)+" / "+Number(l.outlets||0),"delivered now"],
+    ["Pending delivery",Number(l.pending_delivery||0),"current route"],
+    ["Invoices",Number(l.invoice_uploaded||0),"uploaded on current route"],
+    ["Unassigned",Number(l.unassigned||0),"current route"],
     ["Delivered",Number(p.delivered||0),"selected period"],
-    ["Pending delivery",Number(p.pending_delivery||0),"packing completed"],["Invoices",Number(l.invoice_uploaded||0),"uploaded on live route"],
     ["Missing qty",Number(p.missing||0),"packing exceptions"],
     ["Rejected qty",Number(p.rejections||0),"driver-reported"],
-    ["Partial items",Number(p.partial_items||0),"outlet items"],
-    ["Delivery checks",pendingExceptions,pendingExceptions?"needs attention":"clear"],
-    ["Delivery expense",dashboardMoney(p.earnings),"driver payout for selected period"]
+    ["Delivery expense",dashboardMoney(p.earnings),"selected period"]
   ].map(x=>'<div class="deliveryKpi"><small>'+esc(x[0])+'</small><b>'+esc(x[1])+'</b><span>'+esc(x[2])+'</span></div>').join("");
-  drows.innerHTML=drivers.map(dr=>{
-    const x=dr.period||{},lv=dr.live||{},liveOutlets=(data.live_outlets||[]).filter(o=>String(o.driver||"").trim().toLowerCase()===String(dr.driver_name||"").trim().toLowerCase()),done=liveOutlets.filter(o=>o.delivered),total=liveOutlets.length,missing=liveOutlets.reduce((s,o)=>s+Number(o.missing||0),0),rejected=liveOutlets.reduce((s,o)=>s+Number(o.rejections||0),0),width=total?Math.min(100,Math.round(done.length/total*100)):0,doneNames=done.map(o=>o.store_name).join(", ")||"None yet";
-    return '<tr><td><b>'+esc(dr.driver_name)+'</b><small>Done: '+esc(doneNames)+'</small></td><td>'+Number(x.delivered||0)+'</td><td>'+Number(x.pending_delivery||0)+'</td><td>'+missing+'</td><td>'+rejected+'</td><td><div class="routeProgress"><div class="routeProgressTrack"><i style="width:'+width+'%"></i></div><b>'+done.length+' / '+total+' outlets</b></div></td><td>'+dashboardDuration(x.avg_delivery_minutes)+'</td><td>'+dashboardMoney(x.earnings)+'</td><td>'+dashboardMoney(dr.balance)+'</td></tr>';
-  }).join("")||'<tr><td colspan="9" class="hint">No active driver data.</td></tr>';
+
   live.innerHTML=(data.live_outlets||[]).map(x=>{
-    const st=dashboardStatus(x),pending=x.packing_done&&!x.delivered,photos=Array.isArray(x.rejection_photos)?x.rejection_photos:[],evidence=x.invoice_path?'<button class="secondary deliveryEvidenceBtn" data-kind="invoice" data-path="'+esc(x.invoice_path)+'">Invoice</button>':"";
-    return '<tr><td><b>'+esc(x.store_name)+'</b><small>Rank '+Number(x.outlet_rank||0)+'</small></td><td><b>'+esc(x.driver||"Unassigned")+'</b></td><td><span class="deliveryStatus '+st[0]+'">'+esc(st[1])+'</span></td><td>'+(pending?"YES":"—")+'</td><td>'+Number(x.missing||0)+'</td><td>'+Number(x.rejections||0)+'</td><td>'+(x.delivered?dashboardDate(x.delivered_at):x.packing_done?(x.invoice_uploaded?"Invoice uploaded":"Invoice pending"):"Packing in progress")+'</td><td>'+evidence+(photos.length?'<div class="evidenceBtns">'+photos.map((p,i)=>'<button class="secondary deliveryEvidenceBtn" data-kind="rejection" data-path="'+esc(p.path||"")+'">Photo '+(i+1)+'</button>').join("")+'</div>':"")+'</td></tr>';
+    const st=dashboardStatus(x),photos=Array.isArray(x.rejection_photos)?x.rejection_photos:[],evidence=x.invoice_path?'<button class="secondary deliveryEvidenceBtn" data-kind="invoice" data-path="'+esc(x.invoice_path)+'">Invoice</button>':"";
+    const action=x.delivered?dashboardDate(x.delivered_at):x.packing_done?(x.invoice_uploaded?"Invoice uploaded":"Invoice pending"):"Packing in progress";
+    const photoButtons=photos.length?'<div class="evidenceBtns">'+photos.map((p,i)=>'<button class="secondary deliveryEvidenceBtn" data-kind="rejection" data-path="'+esc(p.path||"")+'">Photo '+(i+1)+'</button>').join("")+'</div>':"";
+    return '<tr><td><b>'+esc(x.store_name)+'</b><small>Rank '+Number(x.outlet_rank||0)+'</small></td><td><b>'+esc(x.driver||"Unassigned")+'</b></td><td><span class="deliveryStatus '+st[0]+'">'+esc(st[1])+'</span></td><td>'+Number(x.missing||0)+'</td><td>'+Number(x.rejections||0)+'</td><td>'+action+'</td><td>'+evidence+photoButtons+'</td></tr>';
   }).join("")||'<tr><td colspan="7" class="hint">No active live order.</td></tr>';
-  const exceptionRows=[...(data.exceptions||[])].sort((a,b)=>{const score=x=>Number(x.invoice_ocr_mismatch)*100+Number(x.invoice_pending)*50+Number(x.rejection_confirmation_pending)*30+Number(x.missing||0)+Number(x.rejections||0);return score(b)-score(a);});ex.innerHTML=exceptionRows.map(x=>{const invoice=x.invoice_path?'<button class="secondary deliveryEvidenceBtn" data-kind="invoice" data-path="'+esc(x.invoice_path)+'">View invoice</button>':'—';const photos=(Array.isArray(x.rejection_photos)?x.rejection_photos:[]).map((p,i)=>'<button class="secondary deliveryEvidenceBtn" data-kind="rejection" data-path="'+esc(p.path||"")+'">Photo '+(i+1)+'</button>').join(" ");return '<tr><td>'+dashboardDate(x.order_created_at,false)+'</td><td>'+esc(x.driver)+'</td><td><b>'+esc(x.store_name)+'</b><small>'+esc(x.order_name)+'</small></td><td>'+Number(x.missing||0)+'</td><td>'+Number(x.rejections||0)+'</td><td>'+invoice+'</td><td>'+(x.invoice_ocr_mismatch?'<span class="deliveryFlag bad">Invoice mismatch</span>':x.rejection_confirmation_pending?'<span class="deliveryFlag warn">Pending</span>':'✓ Confirmed')+(photos?'<div class="evidenceBtns">'+photos+'</div>':'')+'</td></tr>';}).join("")||'<tr><td colspan="7" class="hint">No delivery exceptions in selected period.</td></tr>';
-  [...live.querySelectorAll(".deliveryEvidenceBtn"),...ex.querySelectorAll(".deliveryEvidenceBtn")].forEach(btn=>btn.onclick=async()=>{btn.disabled=true;try{const r=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_delivery_evidence_url",admin_session:window.PA_ADMIN_SESSION,kind:btn.dataset.kind,path:btn.dataset.path})});const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.message||"Could not open evidence");window.open(d.url,"_blank","noopener");}catch(e){if(typeof toast==="function")toast(e.message||"Could not open evidence.","error");else console.warn(e);}finally{btn.disabled=false;}});
-  recent.innerHTML=(data.recent||[]).map(x=>'<tr><td>'+dashboardDate(x.delivered_at)+'</td><td>'+esc(x.driver)+'</td><td><b>'+esc(x.store_name)+'</b></td><td>'+dashboardDuration(x.delivery_minutes)+'</td><td>'+dashboardMoney(x.delivery_charge)+'</td><td>'+(x.missing?Number(x.missing):"—")+'</td><td>'+(x.rejections?Number(x.rejections):"—")+'</td></tr>').join("")||'<tr><td colspan="7" class="hint">No completed deliveries yet.</td></tr>';
+
+  const exceptionRows=[...(data.exceptions||[])].sort((a,b)=>{
+    const score=x=>Number(x.invoice_ocr_mismatch)*100+Number(x.invoice_pending)*50+Number(x.rejection_confirmation_pending)*30+Number(x.missing||0)+Number(x.rejections||0);
+    return score(b)-score(a);
+  });
+  if(exSection)exSection.classList.toggle("hidden",exceptionRows.length===0);
+  ex.innerHTML=exceptionRows.map(x=>{
+    const invoice=x.invoice_path?'<button class="secondary deliveryEvidenceBtn" data-kind="invoice" data-path="'+esc(x.invoice_path)+'">View invoice</button>':'—';
+    const photos=(Array.isArray(x.rejection_photos)?x.rejection_photos:[]).map((p,i)=>'<button class="secondary deliveryEvidenceBtn" data-kind="rejection" data-path="'+esc(p.path||"")+'">Photo '+(i+1)+'</button>').join(" ");
+    return '<tr><td>'+dashboardDate(x.order_created_at,false)+'</td><td>'+esc(x.driver)+'</td><td><b>'+esc(x.store_name)+'</b><small>'+esc(x.order_name)+'</small></td><td>'+Number(x.missing||0)+'</td><td>'+Number(x.rejections||0)+'</td><td>'+invoice+'</td><td>'+(x.invoice_ocr_mismatch?'<span class="deliveryFlag bad">Invoice mismatch</span>':x.rejection_confirmation_pending?'<span class="deliveryFlag warn">Pending check</span>':'✓ Confirmed')+(photos?'<div class="evidenceBtns">'+photos+'</div>':'')+'</td></tr>';
+  }).join("");
+
+  [...live.querySelectorAll(".deliveryEvidenceBtn"),...ex.querySelectorAll(".deliveryEvidenceBtn")].forEach(btn=>btn.onclick=async()=>{
+    btn.disabled=true;
+    const original=btn.textContent;btn.textContent="Opening…";
+    try{
+      const r=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_delivery_evidence_url",admin_session:window.PA_ADMIN_SESSION,kind:btn.dataset.kind,path:btn.dataset.path})});
+      const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.message||"Could not open evidence");
+      window.open(d.url,"_blank","noopener");
+    }catch(e){if(typeof toast==="function")toast(e.message||"Could not open evidence.","error");else console.warn(e);}
+    finally{btn.disabled=false;btn.textContent=original;}
+  });
+
+  recent.innerHTML=(data.recent||[]).slice(0,8).map(x=>'<tr><td>'+dashboardDate(x.delivered_at)+'</td><td>'+esc(x.driver)+'</td><td><b>'+esc(x.store_name)+'</b></td><td>'+dashboardDuration(x.delivery_minutes)+'</td><td>'+dashboardMoney(x.delivery_charge)+'</td><td>'+(x.missing?Number(x.missing):"—")+'</td><td>'+(x.rejections?Number(x.rejections):"—")+'</td></tr>').join("")||'<tr><td colspan="7" class="hint">No completed deliveries yet.</td></tr>';
+
   const lo=data.live_order;
   $("liveOrderLabel").textContent=lo?(lo.order_name+" · "+dashboardDate(lo.created_at,false)):"No active order";
   $("driverDashboardPeriodLabel").textContent=(data.period?.from_date&&data.period?.to_date)?(data.period.from_date+" → "+data.period.to_date):"All saved dates";
@@ -1512,9 +1532,18 @@ async function saveDriverPayment(){
   }catch(e){$("paymentMsg").textContent=e.message;}finally{btn.disabled=false;btn.textContent="Save Payment";}
 }
 document.getElementById("menuFleetManagement")?.addEventListener("click",async()=>{adminMenu.classList.add("hidden");setBAActive("sideDelivery");document.querySelector(".baSidebar")?.classList.remove("open");document.body.classList.remove("baSidebarOpen");document.getElementById("home")?.classList.add("hidden");document.getElementById("packing")?.classList.add("hidden");document.getElementById("packingOverview")?.classList.add("hidden");document.getElementById("driverDashboard")?.classList.add("hidden");document.getElementById("fleetManagement")?.classList.remove("hidden");await loadFleetManagement();});document.getElementById("fleetRefreshBtn")?.addEventListener("click",loadFleetManagement);document.getElementById("closeDriverPayment")?.addEventListener("click",()=>document.getElementById("driverPaymentDialog").close());document.getElementById("saveDriverPayment")?.addEventListener("click",saveDriverPayment);
-document.getElementById("menuDriverDashboard")?.addEventListener("click",async()=>{adminMenu.classList.add("hidden");setBAActive("sideDelivery");document.querySelector(".baSidebar")?.classList.remove("open");document.body.classList.remove("baSidebarOpen");document.getElementById("home")?.classList.add("hidden");document.getElementById("packing")?.classList.add("hidden");document.getElementById("packingOverview")?.classList.add("hidden");document.getElementById("fleetManagement")?.classList.add("hidden");document.getElementById("driverDashboard")?.classList.remove("hidden");await loadDriverAdminDashboard();});let driverDashboardTimer=null;function refreshDriverDashboardSoon(){clearInterval(driverDashboardTimer);driverDashboardTimer=setInterval(()=>{if(!document.getElementById("driverDashboard")?.classList.contains("hidden"))loadDriverAdminDashboard();},30000);}document.getElementById("driverDashboardApply")?.addEventListener("click",()=>loadDriverAdminDashboard());document.getElementById("driverDashboardRefresh")?.addEventListener("click",()=>loadDriverAdminDashboard());document.getElementById("driverDashboardPreset")?.addEventListener("change",e=>{const v=e.target.value;const custom=v==="custom";$("driverDashboardFrom").disabled=!custom;$("driverDashboardTo").disabled=!custom;if(!custom)loadDriverAdminDashboard();});$("driverDashboardFrom")?.addEventListener("change",()=>{if($("driverDashboardPreset")?.value==="custom")$("driverDashboardApply").disabled=!($("driverDashboardFrom").value&&$("driverDashboardTo").value);});$("driverDashboardTo")?.addEventListener("change",()=>{if($("driverDashboardPreset")?.value==="custom")$("driverDashboardApply").disabled=!($("driverDashboardFrom").value&&$("driverDashboardTo").value);});
+document.getElementById("menuDriverDashboard")?.addEventListener("click",async()=>{adminMenu.classList.add("hidden");setBAActive("sideDelivery");document.querySelector(".baSidebar")?.classList.remove("open");document.body.classList.remove("baSidebarOpen");document.getElementById("home")?.classList.add("hidden");document.getElementById("packing")?.classList.add("hidden");document.getElementById("packingOverview")?.classList.add("hidden");document.getElementById("fleetManagement")?.classList.add("hidden");document.getElementById("driverDashboard")?.classList.remove("hidden");await loadDriverAdminDashboard();});let driverDashboardTimer=null;function refreshDriverDashboardSoon(){clearInterval(driverDashboardTimer);driverDashboardTimer=setInterval(()=>{if(!document.getElementById("driverDashboard")?.classList.contains("hidden"))loadDriverAdminDashboard();},30000);}function syncDriverDashboardDateControls(){
+  const custom=$("driverDashboardPreset")?.value==="custom";
+  ["driverDashboardFrom","driverDashboardTo","driverDashboardApply"].forEach(id=>$(id)?.classList.toggle("hidden",!custom));
+  if($("driverDashboardApply"))$("driverDashboardApply").disabled=!custom||!($("driverDashboardFrom")?.value&&$("driverDashboardTo")?.value);
+}
+document.getElementById("driverDashboardApply")?.addEventListener("click",()=>loadDriverAdminDashboard());
+document.getElementById("driverDashboardRefresh")?.addEventListener("click",()=>loadDriverAdminDashboard());
+document.getElementById("driverDashboardPreset")?.addEventListener("change",()=>{syncDriverDashboardDateControls();loadDriverAdminDashboard();});
+$("driverDashboardFrom")?.addEventListener("change",syncDriverDashboardDateControls);
+$("driverDashboardTo")?.addEventListener("change",syncDriverDashboardDateControls);
 refreshDriverDashboardSoon();
-if($("driverDashboardPreset")){ $("driverDashboardFrom").disabled=true; $("driverDashboardTo").disabled=true; $("driverDashboardApply").disabled=true; }
+syncDriverDashboardDateControls();
 document.getElementById("menuPacking")?.addEventListener("click",async()=>{adminMenu.classList.add("hidden");setBAActive("sidePacking");document.querySelector(".baSidebar")?.classList.remove("open");document.body.classList.remove("baSidebarOpen");try{if(!state.outlets.size){const ok=await loadCurrentOrder();if(!ok)return alert("No active order available.");}renderAdminPackingChooser();document.getElementById("home")?.classList.add("hidden");document.getElementById("packingOverview")?.classList.add("hidden");document.getElementById("driverDashboard")?.classList.add("hidden");document.getElementById("packing")?.classList.remove("hidden");document.getElementById("adminPackingChooser")?.classList.remove("hidden");document.getElementById("packing")?.querySelector(".packingTop")?.classList.add("hidden");}catch(e){alert("Could not load packing screen: "+e.message);}});
 document.getElementById("closeOutletSettings")?.addEventListener("click",()=>document.getElementById("outletSettingsDialog").close());
 
