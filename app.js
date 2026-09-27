@@ -1086,9 +1086,9 @@ function speakProduct(r,force=false){
   if(!r || r.status || !("speechSynthesis" in window))return;
   if(window.PA_CONFIG_ENABLED && !window.PA_CONFIG_ENABLED("packing.voice_narration"))return;
   const itemId=String(r.id||"");
-  // Never restart the same item because of a background sync/render.
-  // This prevents Android Chrome from producing syllable-like repeats
-  // such as "ba-ba-ba Basil".
+  // Never restart the same item because a background sync/render fired.
+  // Keep product-name speech isolated from the quantity language so Android
+  // does not try to pronounce an English SKU/product name with a Gujarati/Hindi engine.
   if(!force && state.narrationItemId===itemId &&
      (speechSynthesis.speaking||speechSynthesis.pending)) return;
 
@@ -1096,44 +1096,52 @@ function speakProduct(r,force=false){
   const generation=state.narrationGeneration;
   const lang=getVoiceLanguage();
   const qtyText=lang==="hi"?numberWordsHindi(r.required):lang==="gu"?numberWordsGujarati(r.required):numberWordsEnglish(r.required);
-  const textToSpeak=String(r.product||"").trim()+" - "+qtyText;
+  const productText=String(r.product||"").trim();
   state.narrationItemId=itemId;
   state.narrationCount=1;
 
-  // Android speech engines can race a cancel() followed immediately by
-  // speak(). Give the engine a short clean gap before starting the new utterance.
   state.narrationTimer=setTimeout(()=>{
     state.narrationTimer=null;
     if(state.narrationGeneration!==generation || state.narrationItemId!==itemId || r.status)return;
 
     const voices=speechSynthesis.getVoices();
-    const locale=lang==="hi"?"hi-IN":lang==="gu"?"gu-IN":"en-IN";
-    const candidates=voices.filter(v=>v.lang.toLowerCase().startsWith(locale.toLowerCase()));
-    const voice=candidates.find(v=>/male|man|ravi|hemant|google hindi|google ગુજરાતી/i.test(v.name))
-      || candidates[0]
-      || voices.find(v=>v.lang.toLowerCase().startsWith(lang+"-"));
+    const pickVoice=(prefixes)=>{
+      const candidates=voices.filter(v=>prefixes.some(p=>v.lang.toLowerCase().startsWith(p)));
+      return candidates.find(v=>/male|man|ravi|hemant|google hindi|google gujarati|google ગુજરાતી/i.test(v.name))
+        || candidates[0] || null;
+    };
+    const productVoice=pickVoice(["en-in","en-us","en-gb","en"]);
+    const qtyLocale=lang==="hi"?"hi-IN":lang==="gu"?"gu-IN":"en-IN";
+    const qtyVoice=pickVoice([qtyLocale.toLowerCase(),lang]);
 
-    const u=new SpeechSynthesisUtterance(textToSpeak);
-    u.lang=locale;
-    u.rate=.72;
-    u.pitch=.9;
-    u.volume=1;
-    if(voice)u.voice=voice;
-    u.onend=()=>{
-      if(state.narrationGeneration===generation && state.narrationItemId===itemId){
+    const finish=()=>{
+      if(state.narrationGeneration===generation && state.narrationItemId===itemId)
         state.narrationTimer=null;
-      }
     };
-    u.onerror=(e)=>{
-      // Cancellation/interruption is expected when the worker moves to another item.
-      // Do not auto-retry: automatic retries were causing audible stutter/repetition.
-      if(state.narrationGeneration===generation && state.narrationItemId===itemId){
-        state.narrationTimer=null;
-        console.warn("Narration error:",e?.error||"unknown");
-      }
+    const speakQty=()=>{
+      if(state.narrationGeneration!==generation || state.narrationItemId!==itemId || r.status)return;
+      const q=new SpeechSynthesisUtterance(qtyText);
+      q.lang=qtyLocale;
+      q.rate=.82;
+      q.pitch=.9;
+      q.volume=1;
+      if(qtyVoice)q.voice=qtyVoice;
+      q.onend=finish;
+      q.onerror=(e)=>{if(state.narrationGeneration===generation&&state.narrationItemId===itemId){finish();console.warn("Quantity narration error:",e?.error||"unknown");}};
+      speechSynthesis.speak(q);
     };
-    speechSynthesis.speak(u);
-  },80);
+
+    if(!productText){speakQty();return;}
+    const p=new SpeechSynthesisUtterance(productText);
+    p.lang="en-IN";
+    p.rate=.82;
+    p.pitch=.9;
+    p.volume=1;
+    if(productVoice)p.voice=productVoice;
+    p.onend=speakQty;
+    p.onerror=(e)=>{if(state.narrationGeneration===generation&&state.narrationItemId===itemId){finish();console.warn("Product narration error:",e?.error||"unknown");}};
+    speechSynthesis.speak(p);
+  },120);
 }
 
 function speak(text, lang="en"){
