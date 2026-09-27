@@ -216,6 +216,7 @@
     <div class="reportHistoryHead"><b>Saved Orders</b><span>Newest first</span></div>
     <div id="reportHistoryList" class="reportHistoryList"></div>
   </dialog>
+  <dialog id="deliveryEvidenceViewer" class="settingsDialog deliveryEvidenceViewer"><div class="settingsDialogHead"><div><span class="eyebrow">DELIVERY EVIDENCE</span><h3 id="deliveryEvidenceTitle">Invoice</h3></div><div class="dialogHeadActions"><button id="closeDeliveryEvidence" class="secondary">✕</button></div></div><div class="deliveryEvidenceViewerBody"><img id="deliveryEvidenceImage" alt="Delivery invoice"></div></dialog>
   <dialog id="invoiceDialog" class="settingsDialog reportDialog"><div class="settingsDialogHead"><div><span class="eyebrow">DELIVERY INVOICES</span><h3 id="invoiceDialogTitle">Invoices</h3><p class="hint">Invoices remain available from previous orders as well as the current order.</p></div><div class="dialogHeadActions"><button id="invoiceDashboardBack" class="secondary">← Dashboard</button><button id="closeInvoiceDialog" class="secondary">✕</button></div></div><div id="invoiceList" class="reportHistoryList"></div></dialog>
 </div></div></main>
 <script>
@@ -254,7 +255,7 @@
 <script defer src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script defer src="../config.js?v=20260926-team2"></script>
 <script defer src="./auth.js?v=20260927-adminfix2"></script>
-<script defer src="../app.js?v=20260927-delivery4"></script>
+<script defer src="../app.js?v=20260927-invoice1"></script>
 <script defer src="./team.js?v=20260927-adminfix2"></script>
 <script defer src="./inventory-nav.js?v=20260927-adminfix2"></script>
 <script>window.PA_VERSION_URL="../version.json";</script><script defer src="../update.js?v=20260927-adminfix2"></script><script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20260927-adminfix2",{updateViaCache:"none"}).then(r=>r.update()).catch(console.warn));}</script>
