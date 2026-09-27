@@ -1209,7 +1209,7 @@ function renderDriverDashboard(data){
     ["Delivered",Number(p.delivered||0),"selected period"],
     ["Missing qty",Number(p.missing||0),"packing exceptions"],
     ["Rejected qty",Number(p.rejections||0),"driver-reported"],
-    ["Delivery expense",dashboardMoney(p.earnings),"selected period"]
+    ["Driver payout",dashboardMoney(p.earnings),"selected period"]
   ].map(x=>'<div class="deliveryKpi"><small>'+esc(x[0])+'</small><b>'+esc(x[1])+'</b><span>'+esc(x[2])+'</span></div>').join("");
 
   live.innerHTML=(data.live_outlets||[]).map(x=>{
