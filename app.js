@@ -545,8 +545,6 @@ function renderOutletSettings(all){
     <span class="dragHandle" title="Drag to change rank">☷</span>
     <b class="rankNo">${i+1}</b>
     <span class="settingName">${esc(o.name)}</span>
-    <input class="invoiceLegalNameInput" value="${esc(m.legal_name||"")}" placeholder="Bill legal name" aria-label="Bill legal name for ${esc(o.name)}">
-    <input class="invoiceAliasesInput" value="${esc((m.aliases||[]).join(" | "))}" placeholder="Bill aliases ( | separated)" aria-label="Bill aliases for ${esc(o.name)}">
     <select class="driverSelect" aria-label="Driver for ${esc(o.name)}">
       <option value="">Unassigned</option>
       ${drivers.map(d=>`<option value="${esc(d)}"${(o.driver||"")===d?" selected":""}>${esc(d)}</option>`).join("")}
@@ -575,10 +573,6 @@ function renderOutletSettings(all){
     });
   });
 
-  box.querySelectorAll(".invoiceLegalNameInput,.invoiceAliasesInput").forEach(input=>{
-    input.addEventListener("pointerdown",e=>e.stopPropagation());
-    input.addEventListener("click",e=>e.stopPropagation());
-  });
   box.querySelectorAll(".deliveryChargeInput").forEach(input=>{
     input.addEventListener("pointerdown",e=>e.stopPropagation());
     input.addEventListener("click",e=>e.stopPropagation());
@@ -642,12 +636,6 @@ async function saveOutletSettings(){
   for(const o of state.outlets.values()){
     const draft=outletSetupDraft[o.id]||{};
     const row=document.querySelector('.outletSettingRow[data-id="'+o.id+'"]');
-    const legalName=String(row?.querySelector(".invoiceLegalNameInput")?.value||"").trim();
-    const aliases=String(row?.querySelector(".invoiceAliasesInput")?.value||"").split("|").map(x=>x.trim()).filter(Boolean);
-    if(legalName){
-      const mr=await db.rpc("inv_admin_save_invoice_name_map",{p_admin_token:window.PA_ADMIN_SESSION||state.token||"",p_app_outlet_name:o.name,p_legal_name:legalName,p_aliases:aliases});
-      if(mr.error){errors.push(o.name+" invoice name mapping: "+mr.error.message);continue;}
-    }
     o.rank=Number(draft.rank)||9999;
     o.driver=String(draft.driver||"");
     o.deliveryCharge=Math.max(0,Number(draft.deliveryCharge)||0);
