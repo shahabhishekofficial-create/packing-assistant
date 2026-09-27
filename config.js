@@ -92,3 +92,23 @@ window.SUPABASE_CONFIG = {
   window.addEventListener("pa-config-loaded",applyMaintenance);
   setInterval(()=>refresh().catch(()=>{}),300000);
 })();
+
+
+/* Global touch gesture guard */
+(function(){
+  if(window.__PA_TOUCH_GUARD__)return;
+  window.__PA_TOUCH_GUARD__=true;
+  let startDistance=0, pinch=false;
+  const distance=(a,b)=>Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);
+  document.addEventListener("touchstart",e=>{
+    if(e.touches.length===2){startDistance=distance(e.touches[0],e.touches[1]);pinch=false;}
+  },{passive:true,capture:true});
+  document.addEventListener("touchmove",e=>{
+    if(e.touches.length!==2)return;
+    const d=distance(e.touches[0],e.touches[1]);
+    if(Math.abs(d-startDistance)>6){pinch=true;return;}
+    if(!pinch)e.preventDefault();
+  },{passive:false,capture:true});
+  document.addEventListener("touchend",e=>{if(e.touches.length<2){startDistance=0;pinch=false;}},{passive:true,capture:true});
+  document.addEventListener("touchcancel",()=>{startDistance=0;pinch=false;},{passive:true,capture:true});
+})();
