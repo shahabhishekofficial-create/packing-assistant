@@ -754,6 +754,7 @@ async function loadLiveDeliverySummary(){
     if(pendingDelivery)alerts.push('<div class="baAlert"><b>'+pendingDelivery+'</b> outlet'+(pendingDelivery===1?"":"s")+" waiting for delivery.</div>");
     if(!alerts.length)alerts.push('<div class="baAlert empty">No active delivery alerts.</div>');
     if($("dashAlerts"))$("dashAlerts").innerHTML=alerts.join("");
+    renderCommandCenter(d);
   }catch(e){
     console.warn("Live delivery summary:",e.message);
     section.classList.remove("hidden");
@@ -771,6 +772,7 @@ function startLiveDeliverySummary(){
 }
 async function handleAdminAuthenticated(){try{if(IS_ADMIN_PAGE && (!state.orderId || !state.outlets.size)){await loadCurrentOrder();}else if(IS_ADMIN_PAGE){renderHome();}}catch(e){console.warn("Admin dashboard order refresh:",e.message);}loadLiveDeliverySummary();startLiveDeliverySummary();const section=new URLSearchParams(location.search).get("section");if(IS_ADMIN_PAGE&&section){setTimeout(()=>{if(section==="packing")showPackingOverview();else if(section==="delivery")document.getElementById("menuDriverDashboard")?.click();else if(section==="reports")document.getElementById("menuReportBtn")?.click();else if(section==="settings")showConfiguration();else if(section==="team")document.getElementById("menuManageTeam")?.click();else showAdminDashboard();},0);}}
 window.addEventListener("pa-admin-authenticated",handleAdminAuthenticated);
+window.addEventListener("pa-admin-authenticated",startCommandCenterAudit);
 window.addEventListener("pa-config-loaded",()=>{applyPackingConfig();renderStaffOutletList();if(IS_ADMIN_PAGE)renderAdminDashboard();});
 if(IS_ADMIN_PAGE && window.PA_ADMIN_SESSION)void handleAdminAuthenticated();
 document.getElementById("deliverySummaryRefresh")?.addEventListener("click",loadLiveDeliverySummary);
@@ -868,6 +870,7 @@ function renderHome(){
   enableSelectTypeSearch();
   renderStaffOutletList();
   renderAdminDashboard();
+  renderCommandCenter();
 }
 async function startOutlet(outletId){
   const o=state.outlets.get(outletId);
@@ -1481,6 +1484,43 @@ async function renderHomeOperationalKpis(){
     }
   }catch(_){}
 }
+
+let commandCenterAuditTimer=null;
+function commandCenterStatus(x){if(x.delivered)return["delivered","Delivered"];if(x.packing_done)return["pickup","Awaiting Pickup"];if(Number(x.packed||0)>0)return["packed","Packed"];return["transit","In-Transit"];}
+function renderCommandCenter(deliveryData=null){
+  const outlets=[...state.outlets.values()].sort((a,b)=>a.rank-b.rank||String(a.name).localeCompare(String(b.name))),order=state.order||{};
+  const totalRequired=outlets.reduce((s,o)=>s+o.rows.reduce((a,r)=>a+Number(r.required||0),0),0),totalPacked=outlets.reduce((s,o)=>s+o.rows.reduce((a,r)=>a+Number(r.packed||0),0),0),totalMissing=outlets.reduce((s,o)=>s+o.rows.reduce((a,r)=>a+Number(r.missing||0),0),0),packedPct=totalRequired?Math.round(totalPacked/totalRequired*1000)/10:0,exceptions=outlets.reduce((s,o)=>s+o.rows.filter(r=>r.status==="MISSING"||r.status==="PARTIAL").length,0);
+  const set=(id,v)=>{const e=$(id);if(e)e.textContent=String(v??"—");};
+  set("currentOrderName",order.order_name||"No current order");set("cmdOrderBadge",order.order_name||"Current Order");set("cmdOrderCreated",formatDate(order.created_at)||"—");set("cmdStoreOutlets",outlets.length);set("cmdStoreAllocated",outlets.length);set("cmdPackedUnits",totalPacked);set("cmdIndentUnits",totalRequired);set("cmdPackedPct",packedPct+"%");set("cmdExceptionCount",exceptions);set("cmdExceptionDetail",totalMissing+" missing units · "+exceptions+" exception items");
+  const bar=$("cmdPackedBar");if(bar)bar.style.width=Math.min(100,packedPct)+"%";
+  const live=deliveryData?.live||{};set("cmdDelivered",Number(live.delivered||0));set("cmdInTransit",Math.max(0,Number(live.outlets||0)-Number(live.delivered||0)-Number(live.pending_delivery||0)));set("cmdDeliveryPending",Number(live.pending_delivery||0));
+  const matrix=$("cmdOutletMatrixBody");
+  if(matrix){
+    const liveMap=new Map((deliveryData?.live_outlets||[]).map(x=>[String(x.id),x]));
+    matrix.innerHTML=outlets.map((o,i)=>{
+      const x=liveMap.get(String(o.id))||{store_name:o.name,driver:o.driver||"Unassigned",required:o.rows.reduce((s,r)=>s+r.required,0),packed:o.rows.reduce((s,r)=>s+r.packed,0),missing:o.rows.reduce((s,r)=>s+r.missing,0),packing_done:o.status==="completed",delivered:false,delivery_charge:o.deliveryCharge||0};
+      const req=Number(x.required||0),pk=Number(x.packed||0),pct=req?Math.round(pk/req*100):0,[statusClass,statusLabel]=commandCenterStatus(x),driver=String(x.driver||"Unassigned"),driverClass=driver==="Unassigned"?"unassigned":"assigned",phone=x.driver_phone||"";
+      return '<tr><td><span class="cmdRank">#'+String(i+1).padStart(2,"0")+'</span></td><td><div class="cmdOutletName">'+esc(x.store_name||o.name)+'</div><span class="cmdCluster">Ahmedabad</span></td><td><div class="cmdDriver">'+esc(driver)+'</div><div class="cmdTags"><span class="cmdTag '+driverClass+'">'+(driver==="Unassigned"?"UNASSIGNED":"ACTIVE")+'</span><span class="cmdPhone">'+(phone?esc(phone):"Phone —")+'</span></div></td><td><div class="cmdProgressMeta"><b>'+pk+'</b><span>/ '+req+'</span><em>'+pct+'%</em></div><div class="cmdProgress"><i style="width:'+Math.min(100,pct)+'%"></i></div></td><td><span class="cmdStatus '+statusClass+'">'+statusLabel+'</span></td><td class="cmdFee">₹'+Number(x.delivery_charge??o.deliveryCharge??0).toLocaleString("en-IN",{maximumFractionDigits:2})+'</td><td><div class="cmdActions"><button type="button" data-cmd-action="pack" data-outlet-id="'+esc(o.id)+'">Open</button><button type="button" data-cmd-action="setup" data-outlet-id="'+esc(o.id)+'">Setup</button></div></td></tr>';
+    }).join("")||'<tr><td colspan="7" class="cmdEmpty">No current-order outlets.</td></tr>';
+  }
+  const fleet=$("cmdFleetWorkload");
+  if(fleet){
+    const groups=new Map();for(const x of deliveryData?.live_outlets||[]){const d=String(x.driver||"Unassigned");if(!groups.has(d))groups.set(d,{name:d,total:0,delivered:0,pending:0});const g=groups.get(d);g.total++;if(x.delivered)g.delivered++;else if(x.packing_done)g.pending++;}
+    if(!groups.size)for(const o of outlets){const d=o.driver||"Unassigned";if(!groups.has(d))groups.set(d,{name:d,total:0,delivered:0,pending:0});groups.get(d).total++;}
+    fleet.innerHTML=[...groups.values()].sort((a,b)=>a.name.localeCompare(b.name)).map(g=>'<div class="cmdFleetRow"><div><b>'+esc(g.name)+'</b><small>'+g.total+' outlet'+(g.total===1?"":"s")+'</small></div><span>'+g.delivered+' delivered · '+g.pending+' ready</span></div>').join("")||'<div class="cmdEmpty">No fleet workload.</div>';
+  }
+  const health=$("liveSyncStatus");if(health){health.textContent="LIVE · 3s fallback";health.className="cmdLiveStatus";}
+  void loadCommandCenterAudit();
+}
+async function loadCommandCenterAudit(){
+  const box=$("cmdAuditBody");if(!box||!window.PA_ADMIN_SESSION||!window.SUPABASE_CONFIG?.url)return;
+  try{
+    const {data,error}=await db.rpc("admin_get_operations_audit_v1",{p_admin_session:window.PA_ADMIN_SESSION,p_limit:12});if(error)throw error;
+    box.innerHTML=(data||[]).map(x=>'<div class="cmdAuditRow"><span class="cmdAuditDot"></span><div><b>'+esc(String(x.operation||"CHANGE").toUpperCase())+'</b><span>'+esc(String(x.table_name||"system"))+' · '+esc(String(x.record_id||""))+'</span></div><time>'+esc(formatDate(x.created_at))+'</time></div>').join("")||'<div class="cmdEmpty">No audit activity yet.</div>';
+  }catch(e){box.innerHTML='<div class="cmdEmpty">Audit trail unavailable for this session.</div>';}
+}
+function startCommandCenterAudit(){clearInterval(commandCenterAuditTimer);loadCommandCenterAudit();commandCenterAuditTimer=setInterval(()=>{if(!$("home")?.classList.contains("hidden"))loadCommandCenterAudit();},5000);}
+
 function showAdminDashboard(){
   if(typeof stopItemNarration==="function")stopItemNarration();
   if(typeof setBAActive==="function")setBAActive("sideDashboard");
@@ -1496,6 +1536,8 @@ const adminMenu=document.getElementById("adminMenu"),adminMenuBtn=document.getEl
 adminMenuBtn?.addEventListener("click",e=>{e.stopPropagation();adminMenu.classList.toggle("hidden");adminMenuBtn.setAttribute("aria-expanded",String(!adminMenu.classList.contains("hidden")))});
 document.addEventListener("click",e=>{if(adminMenu&&!adminMenu.contains(e.target)&&e.target!==adminMenuBtn)adminMenu.classList.add("hidden")});
 document.getElementById("menuReportBtn")?.addEventListener("click",()=>{adminMenu.classList.add("hidden");setBAActive("sideReports");openReportDialog()});
+document.addEventListener("click",e=>{const b=e.target.closest("[data-cmd-action]");if(!b)return;const action=b.dataset.cmdAction,id=b.dataset.outletId;if(action==="pack"){showPackingOverview();setTimeout(()=>startOutlet(id),0);}else if(action==="setup"){document.getElementById("menuOutletSettings")?.click();}});
+
 document.getElementById("menuConfiguration")?.addEventListener("click",showConfiguration);document.getElementById("configurationRefresh")?.addEventListener("click",loadAdminConfiguration);document.getElementById("configurationDashboardBack")?.addEventListener("click",showAdminDashboard);
 document.getElementById("menuChangePassword")?.addEventListener("click",()=>{adminMenu.classList.add("hidden");window.PA_ADMIN_CHANGE_PASSWORD?.();});
 document.getElementById("menuLogout")?.addEventListener("click",()=>{adminMenu.classList.add("hidden");window.PA_ADMIN_LOGOUT?.();});
