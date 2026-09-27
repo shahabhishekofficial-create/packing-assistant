@@ -1568,7 +1568,9 @@ document.addEventListener("keydown",e=>{
 document.getElementById("sideDashboard")?.addEventListener("click",()=>{document.querySelector(".baSidebar")?.classList.remove("open");showAdminDashboard();setBAActive("sideDashboard")});
 document.getElementById("sidePacking")?.addEventListener("click",showPackingOverview);bindBAAction("sideDelivery","menuDriverDashboard");bindBAAction("sideReports","menuReportBtn");document.getElementById("sideSettings")?.addEventListener("click",showConfiguration);
 document.getElementById("modulePacking")?.addEventListener("click",showPackingOverview);bindBAAction("moduleDelivery","menuDriverDashboard");bindBAAction("moduleReports","menuReportBtn");
-["modulePurchase","moduleEmployees","sidePurchase","sideEmployees"].forEach(id=>document.getElementById(id)?.addEventListener("click",e=>{if(e.currentTarget.disabled)return;alert((e.currentTarget.dataset.comingSoon||({"modulePurchase":"Purchase & Suppliers","moduleEmployees":"Employees & HR","sidePurchase":"Purchase & Suppliers","sideEmployees":"Employees & HR"}[id]))+" is coming soon.")}));\ndocument.getElementById("moduleInventory")?.addEventListener("click",()=>{window.location.href="./inventory.html"});\ndocument.getElementById("sideInventory")?.addEventListener("click",()=>{window.location.href="./inventory.html"});
+["modulePurchase","moduleEmployees","sidePurchase","sideEmployees"].forEach(id=>document.getElementById(id)?.addEventListener("click",e=>{if(e.currentTarget.disabled)return;alert((e.currentTarget.dataset.comingSoon||({"modulePurchase":"Purchase & Suppliers","moduleEmployees":"Employees & HR","sidePurchase":"Purchase & Suppliers","sideEmployees":"Employees & HR"}[id]))+" is coming soon.")}));
+document.getElementById("moduleInventory")?.addEventListener("click",()=>{window.location.href="./inventory.html"});
+document.getElementById("sideInventory")?.addEventListener("click",()=>{window.location.href="./inventory.html"});
 async function runGlobalSearch(raw){
   const q=String(raw||"").trim().toLowerCase();
   if(!q)return;
@@ -1580,7 +1582,7 @@ async function runGlobalSearch(raw){
       if(!(await ensureReportAccess())) throw new Error("No report access");
       const {data,error}=await db.rpc("get_order_history",{p_access_token:state.token});
       if(error)throw error;
-      const matches=(data||[]).filter(o=>String(o.order_name||"").toLowerCase().includes(q.replace(/^(order|orders|invoice|invoices)\\s*/,""))||String(o.order_id||"").toLowerCase().includes(q));
+      const matches=(data||[]).filter(o=>String(o.order_name||"").toLowerCase().includes(q.replace(/^(order|orders|invoice|invoices)\s*/,""))||String(o.order_id||"").toLowerCase().includes(q));
       openReportDialog();
       const box=$("reportHistoryList");
       if(box&&matches.length) box.innerHTML=matches.map(o=>'<div class="reportHistoryRow"><div><b>'+esc(reportDateLabel(o.created_at))+'</b><span>'+esc(o.order_name||"Packing Order")+'</span></div><div><small>'+Number(o.outlet_count||0)+' outlets · '+Number(o.item_count||0)+' items</small> <button class="secondary invoiceHistoryBtn" data-order-id="'+esc(o.order_id)+'" data-order-name="'+esc(o.order_name||"Packing Order")+'">📄 Invoices</button></div></div>').join("");
