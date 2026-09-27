@@ -5,7 +5,7 @@ const admin=()=>createClient(Deno.env.get("SUPABASE_URL")!,Deno.env.get("SUPABAS
 async function hashToken(token:string){const buf=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(token));return [...new Uint8Array(buf)].map(x=>x.toString(16).padStart(2,"0")).join("");}
 async function driverId(session:string){const db=admin();const {data,error}=await db.rpc("driver_session_info",{p_session_token:session});if(error||!data?.ok)return null;return{id:data.driver_id,name:data.driver_name};}
 async function adminSessionOk(session:string){if(!session||session.length<20)return false;const db=admin();const {data,error}=await db.rpc("verify_admin_session",{p_session_token:session});return !error&&data===true;}
-function driverKey(v:string){return String(v||"").normalize("NFKC").replace(/[\\s\\u200B-\\u200D\\uFEFF_-]+/g,"").toLocaleLowerCase();} function sameDriver(a:string,b:string){return driverKey(a)===driverKey(b);}
+function driverKey(v:string){return String(v||"").normalize("NFKC").replace(/[\s\u200B-\u200D\uFEFF_-]+/g,"").toLocaleLowerCase();} function sameDriver(a:string,b:string){return driverKey(a)===driverKey(b);}
 async function configEnabled(db:any,key:string,fallback=true){
  const {data,error}=await db.from("app_config_v1").select("enabled").eq("config_key",key).maybeSingle();
  return error ? fallback : (data?.enabled ?? fallback);
