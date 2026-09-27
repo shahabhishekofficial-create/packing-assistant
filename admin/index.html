@@ -81,11 +81,7 @@
     <div class="sectionHeadActions"><button id="driverDashboardBackBtn" class="secondary">← Dashboard</button><button id="driverDashboardRefresh" class="secondary">↻ Refresh</button></div>
   </div>
   <div class="deliveryDashboardControls">
-    <select id="driverDashboardPreset"><option value="today" selected>Today</option><option value="7d">Last 7 days</option><option value="30d">Last 30 days</option><option value="all">All saved dates</option><option value="custom">Custom range</option></select>
-    <input id="driverDashboardFrom" class="hidden" type="date" aria-label="From date">
-    <input id="driverDashboardTo" class="hidden" type="date" aria-label="To date">
-    <button id="driverDashboardApply" class="primary hidden">Apply</button>
-    <span id="driverDashboardPeriodLabel" class="dashboardPeriodLabel"></span>
+    <span id="driverDashboardPeriodLabel" class="dashboardPeriodLabel">Current order</span>
   </div>
   <div class="liveRouteBanner"><div><span class="eyebrow">LIVE ROUTE</span><b id="liveOrderLabel">Loading…</b></div><span>Updates automatically</span></div>
   <div id="driverDashboardKpis" class="deliveryKpis"></div>
@@ -255,7 +251,7 @@
 <script defer src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script defer src="../config.js?v=20260927-touchfix1"></script>
 <script defer src="./auth.js?v=20260927-adminfix2"></script>
-<script defer src="../app.js?v=20260927-invoice1"></script>
+<script defer src="../app.js?v=20260927-orderstats1"></script>
 <script defer src="./team.js?v=20260927-adminfix2"></script>
 <script defer src="./inventory-nav.js?v=20260927-adminfix2"></script>
 <script>window.PA_VERSION_URL="../version.json";</script><script defer src="../update.js?v=20260927-adminfix2"></script><script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20260927-adminfix2",{updateViaCache:"none"}).then(r=>r.update()).catch(console.warn));}</script>
