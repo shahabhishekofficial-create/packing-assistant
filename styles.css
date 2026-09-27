@@ -1305,3 +1305,12 @@ button,input,select,textarea{touch-action:manipulation}
 dialog,.tableWrap,[class*="scroll"],[class*="Scroller"]{touch-action:pan-x pan-y pinch-zoom}
 
 .liveRouteBanner b{overflow-wrap:anywhere;word-break:break-word;min-width:0}
+
+/* Outlet Setup v2: driver + delivery charge are first-class controls */
+.outletSetupColumns{display:grid;grid-template-columns:28px 34px minmax(220px,1fr) 160px 145px;gap:8px;align-items:center;padding:0 10px 8px;color:#64748b;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.04em}
+.settingsDialog .outletSettingsList{display:grid!important;grid-template-columns:1fr!important;gap:7px!important;max-height:55vh!important;overflow-y:auto!important;overflow-x:hidden!important}
+.settingsDialog .outletSettingRow{display:grid!important;grid-template-columns:28px 34px minmax(220px,1fr) 160px 145px!important;align-items:center!important;gap:8px!important;width:100%!important;min-width:0!important;padding:10px!important;box-sizing:border-box!important}
+.settingsDialog .driverSelect{width:100%!important;min-width:0!important;padding:9px 8px!important}
+.settingsDialog .chargeField{display:flex;align-items:center;gap:5px;min-width:0}.settingsDialog .chargeField span{font-size:11px;font-weight:800;color:#64748b;white-space:nowrap}.settingsDialog .deliveryChargeInput{width:100%;min-width:0;padding:9px 8px;border:1px solid #dbe3ef;border-radius:8px;background:#fff;color:var(--ink);font-weight:700}
+@media(max-width:850px){.outletSetupColumns{grid-template-columns:24px 28px minmax(150px,1fr) 125px 105px}.settingsDialog .outletSettingRow{grid-template-columns:24px 28px minmax(150px,1fr) 125px 105px!important}.settingsDialog .chargeField span{display:none}}
+@media(max-width:650px){.outletSetupColumns{grid-template-columns:24px 28px minmax(110px,1fr) 105px 88px;font-size:9px}.settingsDialog .outletSettingRow{grid-template-columns:24px 28px minmax(110px,1fr) 105px 88px!important;padding:9px 7px!important}.settingsDialog .driverSelect{font-size:12px}.settingsDialog .deliveryChargeInput{font-size:12px}}
