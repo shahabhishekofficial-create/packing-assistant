@@ -7,7 +7,7 @@
 <title>Bigly Agro — Operations Dashboard</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="../icon-192.png">
-<link rel="stylesheet" href="../styles.css?v=20260927-outletsetup2">
+<link rel="stylesheet" href="../styles.css?v=20260928-cmd1">
 <script>
 (function(){
   window.addEventListener("error",function(e){
@@ -20,48 +20,105 @@
   });
 })();
 </script><style>body.adminPage{visibility:visible}#adminBootOverlay{position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;background:#f6f8fb;color:#10203a;font:700 16px system-ui,-apple-system,sans-serif}#adminBootOverlay .bootCard{padding:22px 24px;border:1px solid #e2e8f0;border-radius:16px;background:#fff;box-shadow:0 18px 50px rgba(15,23,42,.12);text-align:center}.bootSub{display:block;margin-top:7px;color:#64748b;font-size:12px;font-weight:500}</style>
-<style>#homeOperationalKpis .analysisKpi{min-height:72px;border:1px solid #e2e8f0;border-radius:14px;background:#fff;padding:14px;cursor:default}#homeOperationalKpis button.analysisKpi{cursor:pointer;color:inherit;font:inherit}#homeOperationalKpis .analysisKpi span{display:block;font-size:11px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:.04em}#homeOperationalKpis .analysisKpi b{display:block;margin-top:5px;font-size:20px}</style></head>
+<style>#homeOperationalKpis .analysisKpi{min-height:72px;border:1px solid #e2e8f0;border-radius:14px;background:#fff;padding:14px;cursor:default}#homeOperationalKpis button.analysisKpi{cursor:pointer;color:inherit;font:inherit}#homeOperationalKpis .analysisKpi span{display:block;font-size:11px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:.04em}#homeOperationalKpis .analysisKpi b{display:block;margin-top:5px;font-size:20px}</style><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet"><script src="https://cdn.tailwindcss.com"></script>
+<style>
+:root{--cmd-green:#137547;--cmd-green-dark:#0f5132;--cmd-bg:#f5f8f7;--cmd-border:#e2e8f0}
+body.adminPage{background:var(--cmd-bg);font-family:"Plus Jakarta Sans",Inter,system-ui,sans-serif}
+.cmdShell{height:100vh;display:flex;overflow:hidden;background:var(--cmd-bg)}
+.cmdSidebar{width:248px;background:#fff;border-right:1px solid var(--cmd-border);display:flex;flex-direction:column;flex:none;z-index:30}
+.cmdBrand{padding:18px;border-bottom:1px solid #eef2f7;display:flex;gap:11px;align-items:center}
+.cmdLogo{width:40px;height:40px;border-radius:12px;background:var(--cmd-green-dark);color:#b7f7ce;display:grid;place-items:center;font-weight:800;box-shadow:0 6px 16px rgba(15,81,50,.15)}
+.cmdBrand h1{font-size:13px;margin:0;font-weight:800;color:#0f172a}.cmdBrand p{font-size:9px;margin:3px 0 0;color:#94a3b8;font-weight:800;letter-spacing:.12em}
+.cmdHealth{margin:10px 12px;padding:9px 10px;border:1px solid #dcfce7;background:#f0fdf4;border-radius:10px;font-size:10px;color:#166534;display:flex;justify-content:space-between;gap:8px}.cmdHealth i{width:7px;height:7px;border-radius:50%;background:#22c55e;display:inline-block;margin-right:6px}
+.cmdNav{padding:10px 10px;overflow:auto;flex:1}.cmdNavLabel{font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#94a3b8;font-weight:800;padding:8px 10px 5px}.cmdNav button,.cmdNav a{width:100%;border:0;background:transparent;color:#475569;text-decoration:none;text-align:left;padding:9px 10px;border-radius:9px;font-size:11px;font-weight:700;display:flex;align-items:center;gap:9px;cursor:pointer}.cmdNav button:hover,.cmdNav a:hover{background:#f1f5f9;color:#0f172a}.cmdNav .active{background:var(--cmd-green-dark);color:#fff}.cmdNav .soon{color:#94a3b8;cursor:not-allowed}.cmdNav em{font-size:8px;margin-left:auto;background:#f1f5f9;color:#64748b;padding:3px 5px;border-radius:5px;font-style:normal}
+.cmdFooter{border-top:1px solid #eef2f7;padding:11px 14px;font-size:9px;color:#64748b}.cmdFooter b{color:#16a34a}
+.cmdMain{flex:1;min-width:0;overflow:auto}.cmdHeader{height:64px;background:#fff;border-bottom:1px solid var(--cmd-border);display:flex;align-items:center;justify-content:space-between;padding:0 22px;position:sticky;top:0;z-index:20}.cmdHeaderLeft,.cmdHeaderRight{display:flex;align-items:center;gap:10px}.cmdCycle{font-size:10px;font-weight:700;color:#475569;background:#f8fafc;border:1px solid #e2e8f0;padding:7px 10px;border-radius:8px}.cmdLiveStatus{font-size:10px;font-weight:800;color:#15803d;background:#f0fdf4;border:1px solid #bbf7d0;padding:7px 9px;border-radius:8px}.cmdLiveStatus:before{content:"";display:inline-block;width:6px;height:6px;background:#22c55e;border-radius:50%;margin-right:6px;animation:cmdPulse 1.5s infinite}@keyframes cmdPulse{50%{opacity:.35}}
+.cmdHeaderBtn{border:1px solid #dbe3eb;background:#fff;color:#334155;padding:7px 10px;border-radius:8px;font-size:10px;font-weight:800;text-decoration:none;cursor:pointer}.cmdHeaderBtn.primary{background:var(--cmd-green-dark);color:#fff;border-color:var(--cmd-green-dark)}
+.cmdProfile{padding-left:10px;border-left:1px solid #e2e8f0;font-size:10px;text-align:right}.cmdProfile b{display:block;color:#0f172a}.cmdProfile span{color:#94a3b8}
+.cmdBody{padding:20px;max-width:1600px;margin:auto}.cmdOrderBar{background:#fff;border:1px solid var(--cmd-border);border-radius:14px;padding:13px 15px;display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap;margin-bottom:14px}.cmdOrderMeta{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.cmdOrderBadge{font-size:9px;font-weight:800;color:#166534;background:#dcfce7;padding:5px 8px;border-radius:999px}.cmdOrderId{font:800 14px "JetBrains Mono",monospace;color:#0f172a}.cmdOrderDate{font-size:10px;color:#64748b}
+.cmdKpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:14px}.cmdCard{background:#fff;border:1px solid var(--cmd-border);border-radius:14px;padding:15px;min-width:0}.cmdKpiLabel{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#64748b;font-weight:800}.cmdKpiNum{font-size:27px;line-height:1.1;font-weight:800;color:#0f172a;margin-top:8px}.cmdKpiNum small{font-size:10px;color:#94a3b8;font-weight:700}.cmdKpiSub{display:flex;justify-content:space-between;gap:8px;font-size:9px;color:#64748b;margin-top:10px}.cmdBar{height:6px;border-radius:99px;background:#e2e8f0;overflow:hidden;margin-top:9px}.cmdBar i{display:block;height:100%;background:#16a34a;border-radius:99px}.cmdException{color:#b91c1c}.cmdDelivery{color:#2563eb}
+.cmdGrid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px}.cmdPanel{background:#fff;border:1px solid var(--cmd-border);border-radius:14px;overflow:hidden}.cmdPanelHead{padding:13px 15px;border-bottom:1px solid #eef2f7;display:flex;justify-content:space-between;align-items:center;gap:10px}.cmdPanelHead h2{font-size:13px;margin:0;color:#0f172a}.cmdPanelHead p{font-size:9px;margin:3px 0 0;color:#94a3b8}.cmdTableWrap{overflow:auto}.cmdTable{width:100%;border-collapse:collapse;min-width:850px}.cmdTable th{font-size:8px;text-transform:uppercase;letter-spacing:.06em;color:#94a3b8;background:#f8fafc;text-align:left;padding:9px;border-bottom:1px solid #e2e8f0}.cmdTable td{padding:10px 9px;border-bottom:1px solid #eef2f7;vertical-align:middle;font-size:10px}.cmdTable tr:last-child td{border-bottom:0}.cmdRank{font:800 10px "JetBrains Mono",monospace;color:#64748b}.cmdOutletName{font-weight:800;color:#0f172a}.cmdCluster{font-size:8px;color:#94a3b8}.cmdDriver{font-weight:700;color:#334155}.cmdTags{display:flex;gap:4px;margin-top:3px;flex-wrap:wrap}.cmdTag{font-size:7px;font-weight:800;padding:2px 4px;border-radius:4px}.cmdTag.assigned{background:#dcfce7;color:#166534}.cmdTag.unassigned{background:#fee2e2;color:#991b1b}.cmdPhone{font-size:7px;color:#94a3b8}.cmdProgressMeta{display:flex;align-items:center;gap:4px;font-size:9px}.cmdProgressMeta span{color:#94a3b8}.cmdProgressMeta em{margin-left:auto;color:#64748b;font-style:normal;font-weight:800}.cmdProgress{height:5px;background:#e2e8f0;border-radius:99px;overflow:hidden;margin-top:5px}.cmdProgress i{height:100%;display:block;background:#16a34a}.cmdStatus{font-size:8px;font-weight:800;padding:4px 6px;border-radius:6px;white-space:nowrap}.cmdStatus.delivered{background:#dcfce7;color:#166534}.cmdStatus.pickup{background:#dbeafe;color:#1d4ed8}.cmdStatus.packed{background:#fef3c7;color:#92400e}.cmdStatus.transit{background:#ede9fe;color:#6d28d9}.cmdFee{font-weight:800;white-space:nowrap}.cmdActions{display:flex;gap:4px}.cmdActions button{border:1px solid #dbe3eb;background:#fff;color:#475569;border-radius:6px;padding:5px 7px;font-size:8px;font-weight:800;cursor:pointer}.cmdActions button:hover{background:#f1f5f9}.cmdEmpty{padding:18px;color:#94a3b8;font-size:10px;text-align:center}
+.cmdRail{display:flex;flex-direction:column;gap:14px}.cmdFleetRow{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid #eef2f7;font-size:9px}.cmdFleetRow:last-child{border-bottom:0}.cmdFleetRow b{display:block;color:#0f172a}.cmdFleetRow small,.cmdFleetRow span{display:block;color:#94a3b8;font-size:8px;margin-top:2px}.cmdDrop{margin:12px;border:1px dashed #94a3b8;border-radius:10px;padding:16px;text-align:center;color:#64748b;background:#f8fafc}.cmdDrop b{display:block;color:#334155;font-size:10px;margin-bottom:3px}.cmdAudit{max-height:280px;overflow:auto}.cmdAuditRow{display:flex;gap:7px;padding:9px 12px;border-bottom:1px solid #eef2f7;align-items:flex-start}.cmdAuditDot{width:6px;height:6px;border-radius:50%;background:#22c55e;margin-top:4px;flex:none}.cmdAuditRow b{display:block;font-size:8px;color:#334155}.cmdAuditRow span{display:block;font-size:8px;color:#94a3b8;margin-top:2px}.cmdAuditRow time{margin-left:auto;font-size:7px;color:#94a3b8;white-space:nowrap}
+#adminDashboard{display:none!important}.cmdMobileOnly{display:none}
+@media(max-width:1050px){.cmdSidebar{width:210px}.cmdGrid{grid-template-columns:1fr}.cmdRail{display:grid;grid-template-columns:1fr 1fr}.cmdKpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:760px){.cmdShell{height:auto;min-height:100vh;display:block}.cmdSidebar{width:100%;height:auto}.cmdNav{display:none}.cmdSidebar.open .cmdNav{display:block}.cmdHealth,.cmdFooter{display:none}.cmdHeader{position:sticky;top:0;padding:8px 12px;height:auto}.cmdHeaderRight .cmdProfile,.cmdHeaderRight .cmdHeaderBtn:not(.primary){display:none}.cmdBody{padding:12px}.cmdKpis{grid-template-columns:1fr 1fr}.cmdRail{display:block}.cmdCycle{display:none}.cmdTableWrap{margin:0}.cmdOrderBar{padding:11px}.cmdGrid{display:block}.cmdPanel{margin-bottom:12px}}
+</style>
+</head>
 <body class="adminPage"><div id="adminBootOverlay"><div class="bootCard">Loading Admin Dashboard<span class="bootSub">Starting secure session…</span></div></div>
-<main id="app"><div class="baLayout"><aside class="baSidebar"><button class="baSideItem active" id="sideDashboard">⌂ <span>Dashboard</span></button><button class="baSideItem" id="sidePacking">▣ <span>Packing &amp; Dispatch</span><b>›</b></button><button class="baSideItem" id="sideDelivery">🚚 <span>Delivery &amp; Fleet</span><b>›</b></button><button class="baSideItem" id="sideInventory">□ <span>Inventory</span><b>›</b></button><button class="baSideItem coming" id="sidePurchase" disabled>🛒 <span>Purchase &amp; Suppliers</span><em>Coming soon</em></button><button class="baSideItem coming" id="sideEmployees" disabled>♟ <span>Employees &amp; HR</span><em>Coming soon</em></button><button class="baSideItem" id="sideReports">▥ <span>Reports &amp; Analytics</span><b>›</b></button><div class="baSideDivider"></div><button class="baSideItem" id="sideSettings">⚙ <span>Settings</span><b>›</b></button><div class="baSideHelp">Need help?<small>Operations support</small></div></aside><div class="baContent">
-
-<header class="appHeader baHeader">
-  <div class="baBrand"><button id="baSidebarToggle" class="baMobileMenu" aria-label="Open menu">☰</button><div class="baLogo">BA</div><div><h1>Bigly Agro Private Limited</h1><p>Fresh Produce. Stronger Partnerships.</p></div></div>
-  <div class="baHeaderSearch" role="search"><span aria-hidden="true">⌕</span><input id="globalSearch" type="search" placeholder="Search outlets, items, drivers..." autocomplete="off" aria-label="Search dashboard"><kbd>Ctrl K</kbd></div>
-  <div class="headerActions"><span id="connection" class="liveBadge">● Online</span><span id="buildVersion" class="liveBadge" title="App build"></span><span class="baHeaderDate" id="baHeaderDate"></span><button id="adminRefreshBtn" class="menuDots refreshBtn" aria-label="Refresh data" title="Refresh data">↻</button><button id="adminMenuBtn" class="menuDots" aria-label="Options" aria-expanded="false">⋮</button><div id="adminMenu" class="adminMenu hidden">
+<main id="app">
+<div class="cmdShell">
+<aside class="cmdSidebar" id="cmdSidebar">
+  <div class="cmdBrand"><div class="cmdLogo">BA</div><div><h1>Bigly Agro Private Limited</h1><p>OPS COMMAND CENTER</p></div></div>
+  <div class="cmdHealth"><span><i></i>Live Sync Active</span><span>3s fallback</span></div>
+  <nav class="cmdNav">
+    <div class="cmdNavLabel">Core Operations</div>
+    <button id="sideDashboard" class="active" type="button" onclick="showAdminDashboard?.()">▦ <span>Operations Dashboard</span></button>
+    <button id="sidePacking" type="button" onclick="showPackingOverview?.()">▣ <span>Packing &amp; Dispatch</span></button>
+    <button id="sideDelivery" type="button" onclick="document.getElementById('menuDriverDashboard')?.click()">🚚 <span>Delivery &amp; Fleet</span></button>
+    <a id="sideInventory" href="inventory.html">□ <span>Inventory &amp; Stock</span></a>
+    <div class="cmdNavLabel">Procurement &amp; Teams</div>
+    <button id="sidePurchase" class="soon" type="button" disabled>🛒 <span>Purchase &amp; Suppliers</span><em>Soon</em></button>
+    <button id="sideEmployees" class="soon" type="button" disabled>♟ <span>Employees &amp; HR</span><em>Soon</em></button>
+    <div class="cmdNavLabel">Governance</div>
+    <button id="sideReports" type="button" onclick="openReportsModal?.()">▥ <span>Reports &amp; Analytics</span></button>
+    <button id="sideSettings" type="button" onclick="openAdminSecurityModal?.()">⚙ <span>Settings / Audit</span></button>
+  </nav>
+  <div class="cmdFooter"><b>●</b> Cold Chain Mesh <span style="float:right">Protected</span></div>
+</aside>
+<div class="cmdMain">
+<header class="cmdHeader">
+  <div class="cmdHeaderLeft"><button id="baSidebarToggle" class="cmdHeaderBtn cmdMobileOnly" type="button">☰</button><span class="cmdCycle">Order Window · Active Cycle</span><span id="liveSyncStatus" class="cmdLiveStatus">LIVE · 3s fallback</span></div>
+  <div class="cmdHeaderRight">
+    <button id="adminRefreshBtn" class="cmdHeaderBtn" type="button">↻ Refresh</button>
+    <button id="cmdNewOrderBtn" class="cmdHeaderBtn primary" type="button" onclick="document.getElementById('orderFileInput')?.click()">+ New Order</button>
+    <a href="../" target="_blank" rel="noopener" class="cmdHeaderBtn">Staff Packing Portal</a>
+    <div class="cmdProfile"><b>Administrator</b><span>Secure session</span></div>
+    <button id="adminMenuBtn" class="cmdHeaderBtn" type="button" aria-expanded="false">⋮</button>
+    <div id="adminMenu" class="adminMenu hidden">
       <button id="menuReportBtn">Reports / Export</button><button id="menuOutletSettings">Outlet Setup</button><button id="menuPacking">Staff Packing Screen</button><button id="menuDriverDashboard">Driver Dashboard</button><button id="menuFleetManagement">Delivery Fleet Management</button><button id="menuManageTeam">Manage Team</button><button id="menuConfiguration">Configuration</button><button id="menuChangePassword">Change Password</button><button id="menuLogout">Log Out</button>
-    </div></div>
+    </div>
+  </div>
 </header>
+<section id="home" class="screen baHome" style="display:block">
+  <div class="cmdBody">
+    <div class="cmdOrderBar">
+      <div class="cmdOrderMeta"><span class="cmdOrderBadge">CURRENT ORDER</span><strong id="currentOrderName" class="cmdOrderId">#ORD-20260923-01</strong><span class="cmdOrderDate">Created <b id="cmdOrderCreated">—</b></span><span id="cmdOrderBadge" class="cmdOrderDate">Cycle</span></div>
+      <div style="display:flex;gap:7px;align-items:center"><button class="cmdHeaderBtn" type="button" onclick="syncFromServer?.()">↻ Sync</button><button class="cmdHeaderBtn" type="button" onclick="showPackingOverview?.()">Packing Workspace</button></div>
+    </div>
 
-<section id="home" class="screen baHome"><section id="homeOperationalKpis" class="analysisKpis" style="margin:0 0 18px">
-<div class="analysisKpi"><span>Current Order</span><b id="homeKpiOrder">—</b></div>
-<button type="button" class="analysisKpi" id="homeKpiPacking" style="text-align:left"><span>Packing Progress</span><b id="homeKpiPackingValue">—</b></button>
-<button type="button" class="analysisKpi" id="homeKpiDelivery" style="text-align:left"><span>Delivery Pending</span><b id="homeKpiDeliveryValue">—</b></button>
-<div class="analysisKpi"><span>Unassigned</span><b id="homeKpiUnassigned">—</b></div>
-<div class="analysisKpi"><span>Missing / Rejected</span><b id="homeKpiIssues">—</b></div>
+    <div class="cmdKpis">
+      <div class="cmdCard"><div class="cmdKpiLabel">Store Outlets</div><div class="cmdKpiNum"><span id="cmdStoreOutlets">0</span> <small>/ <span id="cmdStoreAllocated">0</span> allocated</small></div><div class="cmdKpiSub"><span>Current order</span><span>Ranked route</span></div></div>
+      <div class="cmdCard"><div class="cmdKpiLabel">Crate Pack Fulfillment</div><div class="cmdKpiNum"><span id="cmdPackedUnits">0</span> <small>/ <span id="cmdIndentUnits">0</span> indents</small></div><div class="cmdBar"><i id="cmdPackedBar" style="width:0%"></i></div><div class="cmdKpiSub"><span id="cmdPackedPct">0%</span><span>Packed</span></div></div>
+      <div class="cmdCard"><div class="cmdKpiLabel">Fleet Delivery Leg</div><div class="cmdKpiNum"><span id="cmdInTransit">0</span> <small>in-transit</small></div><div class="cmdKpiSub"><span class="cmdDelivery"><b id="cmdDelivered">0</b> delivered</span><span><b id="cmdDeliveryPending">0</b> pending</span></div></div>
+      <div class="cmdCard"><div class="cmdKpiLabel">Critical Variances / Exceptions</div><div class="cmdKpiNum cmdException"><span id="cmdExceptionCount">0</span></div><div class="cmdKpiSub"><span id="cmdExceptionDetail">0 missing units · 0 exception items</span></div></div>
+    </div>
+
+    <div class="cmdGrid">
+      <section class="cmdPanel">
+        <div class="cmdPanelHead"><div><h2>Master Live Outlet &amp; Dispatch Matrix</h2><p>Ranked current-order workload · driver assignment · packing and delivery readiness</p></div><button class="cmdHeaderBtn" type="button" onclick="document.getElementById('menuOutletSettings')?.click()">Driver / Fee Setup</button></div>
+        <div class="cmdTableWrap"><table class="cmdTable"><thead><tr><th>#</th><th>Outlet / Cluster</th><th>Assigned Driver</th><th>Packed / Indent</th><th>Status</th><th>Delivery Fee</th><th>Actions</th></tr></thead><tbody id="cmdOutletMatrixBody"><tr><td colspan="7" class="cmdEmpty">Loading current order…</td></tr></tbody></table></div>
+      </section>
+
+      <aside class="cmdRail">
+        <section class="cmdPanel"><div class="cmdPanelHead"><div><h2>Active Fleet Workload</h2><p>Current route by driver</p></div></div><div id="cmdFleetWorkload" style="padding:0 12px"><div class="cmdEmpty">Loading…</div></div></section>
+        <section class="cmdPanel"><div class="cmdPanelHead"><div><h2>Drag &amp; Drop Manifest Parser</h2><p>Start a new order from Excel / CSV</p></div></div><div id="cmdManifestDrop" class="cmdDrop" onclick="document.getElementById('orderFileInput')?.click()"><b>Drop manifest here</b><span>or tap to choose .xlsx / .xls / .csv</span></div><input id="orderFileInput" type="file" accept=".xlsx,.xls,.csv" hidden><input id="exportLedgerBtn" type="button" hidden></section>
+        <section class="cmdPanel"><div class="cmdPanelHead"><div><h2>Real-Time Operations Audit Trail</h2><p>Protected source: operations_audit_v1</p></div></div><div id="cmdAuditBody" class="cmdAudit"><div class="cmdEmpty">Loading audit events…</div></div></section>
+      </aside>
+    </div>
+
+    <div id="orderSummary" class="hidden"></div>
+    <section id="adminDashboard" class="hidden">
+      <input id="dashboardOutletFilter"><input id="dashboardItemFilter"><input id="dashboardDriverFilter"><select id="dashboardStatusFilter"><option value="ALL">All</option></select><datalist id="dashboardOutletOptions"></datalist><datalist id="dashboardItemOptions"></datalist><datalist id="dashboardDriverOptions"></datalist>
+      <div id="dashboardKpis"></div><table><tbody id="outletAnalysisBody"></tbody></table><table><tbody id="itemAnalysisBody"></tbody></table><table><tbody id="exceptionAnalysisBody"></tbody></table><table><tbody id="driverAnalysisBody"></tbody></table>
+      <div id="dashAlerts"></div><span id="dashPendingDelivery"></span><span id="dashDeliveryIssues"></span><span id="dashDeliveryDetail"></span><span id="dashTotalOutlets"></span><span id="dashPackingProgress"></span><span id="dashPackingProgressText"></span><span id="dashPackingProgressBar"></span><span id="dashOrderDate"></span><span id="dashOrderOutlets"></span><span id="dashOrderProducts"></span><span id="dashPackingDetail"></span><span id="dashOrderName"></span><span id="dashOrderStatus"></span><span id="dashOpenDelivery"></span><span id="dashOpenPacking"></span><span id="dashOpenReports"></span>
+    </section>
+    <div id="globalSearch" style="display:none"></div>
+  </div>
 </section>
-  <section class="baWelcome">
-    <div>
-      <span class="eyebrow">BIGLY AGRO PRIVATE LIMITED</span>
-      <h2>Welcome to your Operations Dashboard</h2>
-      <p>Monitor packing, deliveries, inventory and people from one place.</p>
-    </div>
-    <div class="baWelcomeArt" aria-hidden="true"><span>🥦</span><span>🥬</span><span>🫑</span><span>🥕</span></div>
-  </section>
-
-  <section class="baDashboardFocus">
-    <div class="baPanel baDashboardWelcomePanel">
-      <span class="eyebrow">OPERATIONS CONTROL CENTER</span>
-      <h2>Choose a department</h2>
-      <p class="hint">Department-specific data is kept inside its own workspace so the main dashboard stays clean and fast.</p>
-      <div class="baDashboardFocusGrid">
-        <button class="baModule green" id="modulePacking"><span class="baModuleIcon">📦</span><span><b>Packing &amp; Dispatch</b><small>Orders, packing progress, exceptions and dispatch readiness</small></span><strong>→</strong></button>
-        <button class="baModule blue" id="moduleDelivery"><span class="baModuleIcon">🚚</span><span><b>Delivery &amp; Fleet</b><small>Live driver routes, outlet progress, invoices and rejection evidence</small></span><strong>→</strong></button>
-        <button class="baModule amber" id="moduleInventory"><span class="baModuleIcon">📦</span><span><b>Inventory</b><small>Stock, cold room and inventory movement</small></span><strong>→</strong></button>
-        <button class="baModule purple" id="modulePurchase" data-coming-soon="Purchase &amp; Suppliers" disabled><span class="baModuleIcon">🛒</span><span><b>Purchase &amp; Suppliers</b><small>Suppliers, purchase orders and GRN</small></span><strong>→</strong></button>
-        <button class="baModule red" id="moduleEmployees" data-coming-soon="Employees &amp; HR" disabled><span class="baModuleIcon">👥</span><span><b>Employees &amp; HR</b><small>Employee records, attendance and leave</small></span><strong>→</strong></button>
-        <button class="baModule violet" id="moduleReports"><span class="baModuleIcon">▥</span><span><b>Reports &amp; Analytics</b><small>Business reports, history and exports</small></span><strong>→</strong></button>
-      </div>
-    </div>
+<section id="packingOverview" class="screen hidden">
+  <section class="analysisCard packingCreatePanel">
+    <div class="sectionHead"><div><span class="eyebrow">ORDER IMPORT</span><h3>Create / refresh live packing order</h3><p class="hint">Upload the latest Excel/CSV here. Packaging operations remain inside this section.</p></div><button id="dashCreateOrder" class="secondary">Create New Order</button></div>
+    <div class="baCreateOrderTools hidden" id="dashCreateOrderTools"><input id="fileInput" type="file" accept=".xlsx,.xls,.csv"><button id="createOrderBtn" class="primary">Create Live Order</button><button id="loadDemo" class="secondary">Demo</button><p class="hint">Required headers: STORE_NAME, ITEM_CODE, PRODUCT_NAME, Sum of Indents, SKU Narration Order</p><p id="orderLoadStatus" class="hint hidden" role="status"></p><div id="orderLinkBox" class="shareBox hidden"><span>Packaging Staff Link</span><div class="shareRow"><input id="orderLink" readonly><button id="copyLink">Copy</button></div></div></div>
   </section>
 </section>
 <section id="fleetManagement" class="screen hidden">
@@ -256,10 +313,10 @@
 <script>if(!window.supabase){document.write('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\\/script>')}</script>
 <script defer src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script defer src="../config.js?v=20260927-touchfix1"></script>
-<script defer src="./auth.js?v=20260927-adminfix2"></script>
-<script defer src="../app.js?v=20260927-voicefix1"></script>
-<script defer src="./team.js?v=20260927-adminfix2"></script>
-<script defer src="./inventory-nav.js?v=20260927-adminfix2"></script>
-<script>window.PA_VERSION_URL="../version.json";</script><script defer src="../update.js?v=20260927-adminfix2"></script><script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20260927-adminfix2",{updateViaCache:"none"}).then(r=>r.update()).catch(console.warn));}</script>
+<script defer src="./auth.js?v=20260928-cmd1"></script>
+<script defer src="../app.js?v=20260928-cmd1"></script>
+<script defer src="./team.js?v=20260928-cmd1"></script>
+<script defer src="./inventory-nav.js?v=20260928-cmd1"></script>
+<script>window.PA_VERSION_URL="../version.json";</script><script defer src="../update.js?v=20260928-cmd1"></script><script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20260928-cmd1",{updateViaCache:"none"}).then(r=>r.update()).catch(console.warn));}</script>
 <script>fetch("../version.json?_"+Date.now(),{cache:"no-store"}).then(r=>r.json()).then(v=>{const e=document.getElementById("buildVersion");if(e)e.textContent="Build "+(v.build_id||"unknown")}).catch(()=>{});</script></body>
 </html>
