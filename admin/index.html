@@ -20,7 +20,7 @@
   });
 })();
 </script><style>body.adminPage{visibility:visible}#adminBootOverlay{position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;background:#f6f8fb;color:#10203a;font:700 16px system-ui,-apple-system,sans-serif}#adminBootOverlay .bootCard{padding:22px 24px;border:1px solid #e2e8f0;border-radius:16px;background:#fff;box-shadow:0 18px 50px rgba(15,23,42,.12);text-align:center}.bootSub{display:block;margin-top:7px;color:#64748b;font-size:12px;font-weight:500}</style>
-</head>
+<style>#homeOperationalKpis .analysisKpi{min-height:72px;border:1px solid #e2e8f0;border-radius:14px;background:#fff;padding:14px;cursor:default}#homeOperationalKpis button.analysisKpi{cursor:pointer;color:inherit;font:inherit}#homeOperationalKpis .analysisKpi span{display:block;font-size:11px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:.04em}#homeOperationalKpis .analysisKpi b{display:block;margin-top:5px;font-size:20px}</style></head>
 <body class="adminPage"><div id="adminBootOverlay"><div class="bootCard">Loading Admin Dashboard<span class="bootSub">Starting secure session…</span></div></div>
 <main id="app"><div class="baLayout"><aside class="baSidebar"><button class="baSideItem active" id="sideDashboard">⌂ <span>Dashboard</span></button><button class="baSideItem" id="sidePacking">▣ <span>Packing &amp; Dispatch</span><b>›</b></button><button class="baSideItem" id="sideDelivery">🚚 <span>Delivery &amp; Fleet</span><b>›</b></button><button class="baSideItem" id="sideInventory">□ <span>Inventory</span><b>›</b></button><button class="baSideItem coming" id="sidePurchase" disabled>🛒 <span>Purchase &amp; Suppliers</span><em>Coming soon</em></button><button class="baSideItem coming" id="sideEmployees" disabled>♟ <span>Employees &amp; HR</span><em>Coming soon</em></button><button class="baSideItem" id="sideReports">▥ <span>Reports &amp; Analytics</span><b>›</b></button><div class="baSideDivider"></div><button class="baSideItem" id="sideSettings">⚙ <span>Settings</span><b>›</b></button><div class="baSideHelp">Need help?<small>Operations support</small></div></aside><div class="baContent">
 
@@ -32,7 +32,13 @@
     </div></div>
 </header>
 
-<section id="home" class="screen baHome">
+<section id="home" class="screen baHome"><section id="homeOperationalKpis" class="analysisKpis" style="margin:0 0 18px">
+<div class="analysisKpi"><span>Current Order</span><b id="homeKpiOrder">—</b></div>
+<button type="button" class="analysisKpi" id="homeKpiPacking" style="text-align:left"><span>Packing Progress</span><b id="homeKpiPackingValue">—</b></button>
+<button type="button" class="analysisKpi" id="homeKpiDelivery" style="text-align:left"><span>Delivery Pending</span><b id="homeKpiDeliveryValue">—</b></button>
+<div class="analysisKpi"><span>Unassigned</span><b id="homeKpiUnassigned">—</b></div>
+<div class="analysisKpi"><span>Missing / Rejected</span><b id="homeKpiIssues">—</b></div>
+</section>
   <section class="baWelcome">
     <div>
       <span class="eyebrow">BIGLY AGRO PRIVATE LIMITED</span>
