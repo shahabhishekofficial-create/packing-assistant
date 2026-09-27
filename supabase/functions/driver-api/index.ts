@@ -11,6 +11,18 @@ async function configEnabled(db:any,key:string,fallback=true){
  return error ? fallback : (data?.enabled ?? fallback);
 }
 Deno.serve(async(req)=>{if(req.method==="OPTIONS")return new Response("ok",{headers:cors});try{const body=await req.json(),db=admin();if(body.action==="login"){const {data,error}=await db.rpc("driver_login",{p_login_name:String(body.login_name||""),p_pin:String(body.pin||"")});if(error)return json({ok:false,message:error.message},400);return json(data);}if(body.action==="admin_payment_screenshot_url"){const session=String(body.admin_session||"");if(!(await adminSessionOk(session)))return json({ok:false,message:"Admin session expired. Please sign in again."},403);const path=String(body.path||"");if(!path)return json({ok:false,message:"Missing screenshot path"},400);const {data,error}=await db.storage.from("driver-payments").createSignedUrl(path,3600);if(error)return json({ok:false,message:error.message},400);return json({ok:true,url:data.signedUrl});}
+if(body.action==="admin_delivery_evidence_url"){
+ const session=String(body.admin_session||"");
+ if(!(await adminSessionOk(session)))return json({ok:false,message:"Admin session expired. Please sign in again."},403);
+ const kind=String(body.kind||"invoice");
+ const path=String(body.path||"").trim();
+ if(!path)return json({ok:false,message:"Invoice is not available."},404);
+ const bucket=kind==="invoice"?"delivery-invoices":kind==="rejection"?"delivery-rejections":"";
+ if(!bucket)return json({ok:false,message:"Unsupported evidence type."},400);
+ const {data,error}=await db.storage.from(bucket).createSignedUrl(path,3600);
+ if(error)return json({ok:false,message:"Could not open invoice."},400);
+ return json({ok:true,url:data.signedUrl});
+}
 if(body.action==="admin_driver_dashboard"){
 const session=String(body.admin_session||"");
 if(!(await adminSessionOk(session)))return json({ok:false,message:"Admin session expired. Please sign in again."},403);
