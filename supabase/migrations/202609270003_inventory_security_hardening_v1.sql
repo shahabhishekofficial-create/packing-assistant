@@ -29,7 +29,7 @@ begin
   where token_hash=th;
   return found;
 end $$;
-revoke all on function public.inv_staff_revoke_session(text) from public, anon, authenticated;
+revoke execute on function public.inv_staff_revoke_session(text) from public;
 grant execute on function public.inv_staff_revoke_session(text) to anon, authenticated;
 
 create or replace function public.inv_staff_login(p_name text,p_pin text)
