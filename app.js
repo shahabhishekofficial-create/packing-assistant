@@ -1471,8 +1471,8 @@ async function loadAdminConfiguration(){
 }
 function showConfiguration(){
   if(typeof stopItemNarration==="function")stopItemNarration();
-  document.querySelector(".baSidebar")?.classList.remove("open");
-  document.body.classList.remove("baSidebarOpen");
+  document.querySelector(".cmdSidebar")?.classList.remove("open");
+  document.body.classList.remove("cmdSidebarOpen");
   ["home","packing","packingOverview","driverDashboard","fleetManagement"].forEach(id=>$(id)?.classList.add("hidden"));
   $("configuration")?.classList.remove("hidden");
   setBAActive("sideSettings");
@@ -1632,15 +1632,15 @@ document.getElementById("menuPacking")?.addEventListener("click",async()=>{admin
 document.getElementById("closeOutletSettings")?.addEventListener("click",()=>document.getElementById("outletSettingsDialog").close());
 
 
-function setBAActive(id){document.querySelectorAll(".baSideItem").forEach(x=>x.classList.toggle("active",x.id===id));}
+function setBAActive(id){document.querySelectorAll(".cmdNav button,.cmdNav a").forEach(x=>x.classList.toggle("active",x.id===id));}
 function bindBAAction(id,targetId){document.getElementById(id)?.addEventListener("click",()=>document.getElementById(targetId)?.click());}
 document.getElementById("baSidebarToggle")?.addEventListener("click",()=>{
-  const sidebar=document.querySelector(".baSidebar"),open=sidebar?.classList.toggle("open");
-  document.body.classList.toggle("baSidebarOpen",!!open);
+  const sidebar=document.querySelector(".cmdSidebar"),open=sidebar?.classList.toggle("open");
+  document.body.classList.toggle("cmdSidebarOpen",!!open);
   document.getElementById("baSidebarToggle")?.setAttribute("aria-expanded",String(!!open));
 });
 document.addEventListener("click",e=>{
-  const sidebar=document.querySelector(".baSidebar"),toggle=document.getElementById("baSidebarToggle");
+  const sidebar=document.querySelector(".cmdSidebar"),toggle=document.getElementById("baSidebarToggle");
   if(!sidebar||!sidebar.classList.contains("open")||!window.matchMedia("(max-width:850px)").matches)return;
   if(!sidebar.contains(e.target)&&e.target!==toggle){
     sidebar.classList.remove("open");
@@ -1650,7 +1650,7 @@ document.addEventListener("click",e=>{
 });
 document.addEventListener("keydown",e=>{
   if(e.key!=="Escape")return;
-  const sidebar=document.querySelector(".baSidebar");
+  const sidebar=document.querySelector(".cmdSidebar");
   if(sidebar?.classList.contains("open")){
     sidebar.classList.remove("open");
     document.body.classList.remove("baSidebarOpen");
