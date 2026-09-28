@@ -1727,31 +1727,18 @@ setInterval(()=>{const el=document.getElementById("baHeaderDate");if(el)el.textC
 window.__adminRefresh=async()=>{
   if(!navigator.onLine)return alert("You are offline. Please reconnect and try again.");
   const btn=document.getElementById("adminRefreshBtn");
-  if(btn)btn.disabled=true;
+  if(btn){btn.disabled=true;btn.textContent="↻";}
   try{
     await syncFromServer();
     await loadLiveDeliverySummary();
     if(!document.getElementById("driverDashboard")?.classList.contains("hidden")) await loadDriverAdminDashboard();
     if(!document.getElementById("fleetManagement")?.classList.contains("hidden")) await loadFleetManagement();
     if(!document.getElementById("packingOverview")?.classList.contains("hidden")) renderPackingOverview();
+    if(btn)btn.title="Data refreshed";
   }catch(e){alert("Refresh failed: "+e.message);}
-  finally{if(btn)btn.disabled=false;}
+  finally{if(btn){btn.disabled=false;btn.textContent="↻ Refresh";}}
 };
-const adminRefreshBtn=document.getElementById("adminRefreshBtn");
-adminRefreshBtn?.addEventListener("click",window.__adminRefresh);
-
-  if(!navigator.onLine)return alert("You are offline. Please reconnect and try again.");
-  const old=adminRefreshBtn.textContent; adminRefreshBtn.disabled=true; adminRefreshBtn.textContent="↻";
-  try{
-    await syncFromServer();
-    await loadLiveDeliverySummary();
-    if(!document.getElementById("driverDashboard")?.classList.contains("hidden")) await loadDriverAdminDashboard();
-    if(!document.getElementById("fleetManagement")?.classList.contains("hidden")) await loadFleetManagement();
-    if(!document.getElementById("packingOverview")?.classList.contains("hidden")) renderPackingOverview();
-    adminRefreshBtn.title="Data refreshed";
-  }catch(e){alert("Refresh failed: "+e.message);}
-  finally{adminRefreshBtn.disabled=false;adminRefreshBtn.textContent=old;}
-});
+document.getElementById("adminRefreshBtn")?.addEventListener("click",window.__adminRefresh);
 
 
 /* ===== Admin table touch routing =====
