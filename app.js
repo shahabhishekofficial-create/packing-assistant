@@ -1724,8 +1724,22 @@ document.getElementById("packingOverviewStaffBtn")?.addEventListener("click",()=
 document.getElementById("baHeaderDate")?.replaceChildren(document.createTextNode(new Date().toLocaleString("en-IN",{weekday:"short",day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"})));
 setInterval(()=>{const el=document.getElementById("baHeaderDate");if(el)el.textContent=new Date().toLocaleString("en-IN",{weekday:"short",day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"});},60000);
 
+window.__adminRefresh=async()=>{
+  if(!navigator.onLine)return alert("You are offline. Please reconnect and try again.");
+  const btn=document.getElementById("adminRefreshBtn");
+  if(btn)btn.disabled=true;
+  try{
+    await syncFromServer();
+    await loadLiveDeliverySummary();
+    if(!document.getElementById("driverDashboard")?.classList.contains("hidden")) await loadDriverAdminDashboard();
+    if(!document.getElementById("fleetManagement")?.classList.contains("hidden")) await loadFleetManagement();
+    if(!document.getElementById("packingOverview")?.classList.contains("hidden")) renderPackingOverview();
+  }catch(e){alert("Refresh failed: "+e.message);}
+  finally{if(btn)btn.disabled=false;}
+};
 const adminRefreshBtn=document.getElementById("adminRefreshBtn");
-adminRefreshBtn?.addEventListener("click",async()=>{
+adminRefreshBtn?.addEventListener("click",window.__adminRefresh);
+
   if(!navigator.onLine)return alert("You are offline. Please reconnect and try again.");
   const old=adminRefreshBtn.textContent; adminRefreshBtn.disabled=true; adminRefreshBtn.textContent="↻";
   try{
