@@ -69,7 +69,7 @@ body.adminPage{background:var(--cmd-bg);font-family:"Plus Jakarta Sans",Inter,sy
 <header class="cmdHeader">
   <div class="cmdHeaderLeft"><button id="baSidebarToggle" class="cmdHeaderBtn cmdMobileOnly" type="button">☰</button><span class="cmdCycle">Order Window · Active Cycle</span><span id="liveSyncStatus" class="cmdLiveStatus">LIVE · 3s fallback</span></div>
   <div class="cmdHeaderRight">
-    <button id="adminRefreshBtn" class="cmdHeaderBtn" type="button">↻ Refresh</button>
+    <button id="adminRefreshBtn" class="cmdHeaderBtn" type="button" onclick="window.__adminRefresh?.()">↻ Refresh</button>
     <button id="cmdNewOrderBtn" class="cmdHeaderBtn primary" type="button" onclick="document.getElementById('orderFileInput')?.click()">+ New Order</button>
     <a href="../" target="_blank" rel="noopener" class="cmdHeaderBtn">Staff Packing Portal</a>
     <div class="cmdProfile"><b>Administrator</b><span>Secure session</span></div>
@@ -161,7 +161,7 @@ body.adminPage{background:var(--cmd-bg);font-family:"Plus Jakarta Sans",Inter,sy
   <section class="analysisCard packingCreatePanel">
     <div class="sectionHead">
       <div><span class="eyebrow">ORDER IMPORT</span><h3>Create / refresh live packing order</h3><p class="hint">Upload the latest Excel/CSV here. Packaging operations remain inside this section.</p></div>
-      <button id="dashCreateOrder" class="secondary">Create New Order</button>
+      <button id="dashCreateOrder" class="secondary" type="button" onclick="document.getElementById('dashCreateOrderTools')?.classList.toggle('hidden')">Create New Order</button>
     </div>
     <div class="baCreateOrderTools hidden" id="dashCreateOrderTools">
       <input id="fileInput" type="file" accept=".xlsx,.xls,.csv">
@@ -175,7 +175,7 @@ body.adminPage{background:var(--cmd-bg);font-family:"Plus Jakarta Sans",Inter,sy
 
   <div class="sectionHead packingOverviewHead">
     <div><span class="eyebrow">PACKING &amp; DISPATCH</span><h2>Packing Overview</h2><p class="hint">Monitor the current order and packing progress. Item-by-item packing controls remain on the separate staff packing screen.</p></div>
-    <div class="sectionHeadActions"><button id="packingOverviewRefresh" class="secondary">↻ Refresh</button><button id="packingOverviewDashboardBack" class="secondary">← Dashboard</button></div>
+    <div class="sectionHeadActions"><button id="packingOverviewRefresh" class="secondary" type="button" onclick="(async()=>{try{await syncFromServer();renderPackingOverview();}catch(e){alert('Refresh failed: '+e.message)}})()">↻ Refresh</button><button id="packingOverviewDashboardBack" class="secondary" type="button" onclick="showAdminDashboard?.()">← Dashboard</button></div>
   </div>
 
   <div id="packingOverviewKpis" class="analysisKpis"></div>
@@ -196,17 +196,17 @@ body.adminPage{background:var(--cmd-bg);font-family:"Plus Jakarta Sans",Inter,sy
   </section>
 
   <section class="analysisCard">
-    <div class="sectionHead"><div><span class="eyebrow">CURRENT ORDER</span><h3 id="packingOverviewOrderName">Loading…</h3></div><button id="packingOverviewStaffBtn" class="secondary">Open Staff Packing Screen</button></div>
+    <div class="sectionHead"><div><span class="eyebrow">CURRENT ORDER</span><h3 id="packingOverviewOrderName">Loading…</h3></div><button id="packingOverviewStaffBtn" class="secondary" type="button" onclick="document.getElementById('menuPacking')?.click()">Open Staff Packing Screen</button></div>
     <div class="tableWrap"><table><thead><tr><th>Rank</th><th>Outlet</th><th>Driver</th><th>Products</th><th>Required</th><th>Packed</th><th>Missing</th><th>Progress</th><th>Status</th></tr></thead><tbody id="packingOverviewBody"></tbody></table></div>
   </section>
 </section>
 <section id="packing" class="screen hidden">
   <div id="adminPackingChooser" class="adminPackingChooser">
-    <div class="sectionHead"><div><span class="eyebrow">ORDER PACKING</span><h2>Select Outlet</h2><p class="hint">Choose an outlet to open its packing screen.</p></div><button id="packingChooserDashboardBackBtn" class="secondary">← Dashboard</button></div>
+    <div class="sectionHead"><div><span class="eyebrow">ORDER PACKING</span><h2>Select Outlet</h2><p class="hint">Choose an outlet to open its packing screen.</p></div><button id="packingChooserDashboardBackBtn" class="secondary" type="button" onclick="showAdminDashboard?.()">← Dashboard</button></div>
     <div id="adminOutletList" class="outletGrid"></div>
   </div>
   <div class="packingTop hidden">
-    <button id="packingDashboardBackBtn" class="secondary">← Dashboard</button><button id="backBtn" class="secondary">← Outlets</button>
+    <button id="packingDashboardBackBtn" class="secondary" type="button" onclick="showAdminDashboard?.()">← Dashboard</button><button id="backBtn" class="secondary">← Outlets</button>
     <div><span class="eyebrow">NOW PACKING</span><b id="outletTitle"></b></div>
     <div class="packingVoice"><select id="packingVoiceLanguage" aria-label="Voice language"><option value="en">English</option><option value="hi">Hindi</option><option value="gu">Gujarati</option></select></div>
   </div>
