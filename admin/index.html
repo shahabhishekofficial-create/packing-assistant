@@ -26,7 +26,18 @@
   });
 })();
 </script><style>body.adminPage{visibility:visible}#adminBootOverlay{position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;background:#f6f8fb;color:#10203a;font:700 16px system-ui,-apple-system,sans-serif}#adminBootOverlay .bootCard{padding:22px 24px;border:1px solid #e2e8f0;border-radius:16px;background:#fff;box-shadow:0 18px 50px rgba(15,23,42,.12);text-align:center}.bootSub{display:block;margin-top:7px;color:#64748b;font-size:12px;font-weight:500}</style>
-<style>#homeOperationalKpis .analysisKpi{min-height:72px;border:1px solid #e2e8f0;border-radius:14px;background:#fff;padding:14px;cursor:default}#homeOperationalKpis button.analysisKpi{cursor:pointer;color:inherit;font:inherit}#homeOperationalKpis .analysisKpi span{display:block;font-size:11px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:.04em}#homeOperationalKpis .analysisKpi b{display:block;margin-top:5px;font-size:20px}</style><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet"><script src="https://cdn.tailwindcss.com"></script>
+<style>
+#home .cmdBody{max-width:1500px}
+.cmdExecutiveBar{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:12px;padding:14px 18px;border:1px solid #dbe5df;border-radius:16px;background:#fff}
+.cmdExecutiveMain{display:flex;align-items:center;gap:12px;min-width:0}.cmdExecutiveMain strong{font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cmdCycleMeta{font-size:12px;color:#64748b}
+.cmdUrgency{display:flex;gap:8px;flex-wrap:wrap}.cmdUrgency .u{border-radius:999px;padding:7px 11px;font-size:12px;font-weight:800;background:#f1f5f9;color:#475569}.cmdUrgency .u.alert{background:#fff1f2;color:#b42318}.cmdUrgency .u.good{background:#ecfdf3;color:#087443}
+.cmdTriageGrid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(300px,.75fr);gap:14px;margin-bottom:14px}
+.cmdTriagePanel{border:1px solid #dbe5df;border-radius:16px;background:#fff;overflow:hidden}.cmdTriageHead{display:flex;justify-content:space-between;align-items:center;padding:16px 18px;border-bottom:1px solid #eef2f0}.cmdTriageHead h2{margin:0;font-size:15px}.cmdTriageHead p{margin:4px 0 0;color:#64748b;font-size:11px}.cmdTriageBody{padding:12px 18px}.cmdAttentionRow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid #eef2f0}.cmdAttentionRow:last-child{border-bottom:0}.cmdAttentionRow b{font-size:13px}.cmdAttentionRow small{display:block;color:#64748b;margin-top:3px}.cmdAttentionMetric{font-weight:900;color:#b42318;white-space:nowrap}.cmdTriageActions{display:flex;gap:7px;flex-wrap:wrap}.cmdStage{display:grid;gap:10px}.cmdStageLine{display:flex;justify-content:space-between;align-items:center;font-size:12px}.cmdStageLine b{font-size:13px}.cmdStageBar{height:8px;border-radius:999px;background:#edf2ef;overflow:hidden}.cmdStageBar i{display:block;height:100%;background:#0b7a45;border-radius:inherit}.cmdStageHint{padding:9px 11px;border-radius:10px;background:#f8faf9;color:#52605a;font-size:11px}
+.cmdFleetCompact{display:grid;gap:8px}.cmdFleetCompactRow{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid #eef2f0}.cmdFleetCompactRow:last-child{border-bottom:0}.cmdFleetCompactRow b{font-size:13px}.cmdFleetCompactRow small{display:block;color:#64748b;margin-top:2px}.cmdFleetReady{font-size:11px;font-weight:800;color:#087443}
+.cmdMatrixPanel{border:1px solid #dbe5df;border-radius:16px;background:#fff;overflow:hidden}.cmdMatrixToolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 18px;border-bottom:1px solid #eef2f0}.cmdMatrixToolbar h2{margin:0;font-size:15px}.cmdMatrixToolbar p{margin:3px 0 0;color:#64748b;font-size:11px}.cmdMatrixTools{display:flex;gap:6px;flex-wrap:wrap}.cmdMatrixTools button{border:1px solid #dbe5df;background:#fff;border-radius:9px;padding:7px 10px;font-weight:700;font-size:11px}.cmdMatrixTools button.active{background:#0b5d3b;color:#fff;border-color:#0b5d3b}
+.cmdManifestCollapsed{display:flex;justify-content:flex-end;margin-bottom:10px}.cmdManifestCollapsed button{border:1px solid #cbd8d1;background:#fff;border-radius:10px;padding:8px 12px;font-weight:800}
+@media(max-width:900px){.cmdTriageGrid{grid-template-columns:1fr}.cmdExecutiveBar{align-items:flex-start;flex-direction:column}.cmdMatrixToolbar{align-items:flex-start;flex-direction:column}}
+</style><style>#homeOperationalKpis .analysisKpi{min-height:72px;border:1px solid #e2e8f0;border-radius:14px;background:#fff;padding:14px;cursor:default}#homeOperationalKpis button.analysisKpi{cursor:pointer;color:inherit;font:inherit}#homeOperationalKpis .analysisKpi span{display:block;font-size:11px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:.04em}#homeOperationalKpis .analysisKpi b{display:block;margin-top:5px;font-size:20px}</style><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet"><script src="https://cdn.tailwindcss.com"></script>
 <style>
 :root{--cmd-green:#137547;--cmd-green-dark:#0f5132;--cmd-bg:#f5f8f7;--cmd-border:#e2e8f0}
 body.adminPage{background:var(--cmd-bg);font-family:"Plus Jakarta Sans",Inter,system-ui,sans-serif}
@@ -87,32 +98,57 @@ body.adminPage{background:var(--cmd-bg);font-family:"Plus Jakarta Sans",Inter,sy
 </header>
 <section id="home" class="screen baHome" style="display:block">
   <div class="cmdBody">
-    <div class="cmdOrderBar">
-      <div class="cmdOrderMeta"><span class="cmdOrderBadge">CURRENT ORDER</span><strong id="currentOrderName" class="cmdOrderId">#ORD-20260923-01</strong><span class="cmdOrderDate">Created <b id="cmdOrderCreated">—</b></span><span id="cmdOrderBadge" class="cmdOrderDate">Cycle</span></div>
-      <div style="display:flex;gap:7px;align-items:center"><button class="cmdHeaderBtn" type="button" onclick="syncFromServer?.()">↻ Sync</button><button class="cmdHeaderBtn" type="button">Packing Workspace</button></div>
+    <div class="cmdExecutiveBar">
+      <div class="cmdExecutiveMain">
+        <span class="cmdOrderBadge">ACTIVE CYCLE</span>
+        <strong id="currentOrderName">Current order</strong>
+        <span class="cmdCycleMeta">Created <b id="cmdOrderCreated">—</b></span>
+      </div>
+      <div class="cmdUrgency">
+        <span class="u good" id="cmdUrgencyProgress">0% packed</span>
+        <span class="u alert" id="cmdUrgencyAlerts">0 alerts</span>
+        <span class="u" id="cmdUrgencyFleet">0 ready for dispatch</span>
+      </div>
     </div>
 
     <div class="cmdKpis">
       <div class="cmdCard"><div class="cmdKpiLabel">Store Outlets</div><div class="cmdKpiNum"><span id="cmdStoreOutlets">0</span> <small>/ <span id="cmdStoreAllocated">0</span> allocated</small></div><div class="cmdKpiSub"><span>Current order</span><span>Ranked route</span></div></div>
       <div class="cmdCard"><div class="cmdKpiLabel">Crate Pack Fulfillment</div><div class="cmdKpiNum"><span id="cmdPackedUnits">0</span> <small>/ <span id="cmdIndentUnits">0</span> indents</small></div><div class="cmdBar"><i id="cmdPackedBar" style="width:0%"></i></div><div class="cmdKpiSub"><span id="cmdPackedPct">0%</span><span>Packed</span></div></div>
       <div class="cmdCard"><div class="cmdKpiLabel">Fleet Delivery Leg</div><div class="cmdKpiNum"><span id="cmdInTransit">0</span> <small>in-transit</small></div><div class="cmdKpiSub"><span class="cmdDelivery"><b id="cmdDelivered">0</b> delivered</span><span><b id="cmdDeliveryPending">0</b> pending</span></div></div>
-      <div class="cmdCard"><div class="cmdKpiLabel">Critical Variances / Exceptions</div><div class="cmdKpiNum cmdException"><span id="cmdExceptionCount">0</span></div><div class="cmdKpiSub"><span id="cmdExceptionDetail">0 missing units · 0 exception items</span></div></div>
+      <div class="cmdCard"><div class="cmdKpiLabel">Critical Variances</div><div class="cmdKpiNum cmdException"><span id="cmdExceptionCount">0</span></div><div class="cmdKpiSub"><span id="cmdExceptionDetail">0 missing units · 0 exception items</span></div></div>
     </div>
 
-    <div class="cmdGrid">
-      <section class="cmdPanel">
-        <div class="cmdPanelHead"><div><h2>Master Live Outlet &amp; Dispatch Matrix</h2><p>Ranked current-order workload · driver assignment · packing and delivery readiness</p></div><button class="cmdHeaderBtn" type="button" onclick="document.getElementById('menuOutletSettings')?.click()">Driver / Fee Setup</button></div>
-        <div class="cmdTableWrap"><table class="cmdTable"><thead><tr><th>#</th><th>Outlet / Cluster</th><th>Assigned Driver</th><th>Packed / Indent</th><th>Status</th><th>Delivery Fee</th><th>Actions</th></tr></thead><tbody id="cmdOutletMatrixBody"><tr><td colspan="7" class="cmdEmpty">Loading current order…</td></tr></tbody></table></div>
+    <div class="cmdManifestCollapsed"><button type="button" id="cmdImportManifestBtn">＋ Import Manifest</button></div>
+
+    <div class="cmdTriageGrid">
+      <section class="cmdTriagePanel">
+        <div class="cmdTriageHead"><div><h2>Attention Required</h2><p>Only current-order outlets that need action are shown first.</p></div><div class="cmdTriageActions"><button type="button" class="cmdHeaderBtn" id="cmdOpenPackingBtn">Open Packing</button></div></div>
+        <div class="cmdTriageBody" id="cmdAttentionBody"><div class="cmdEmpty">No exceptions detected.</div></div>
       </section>
-
-      <aside class="cmdRail">
-        <section class="cmdPanel"><div class="cmdPanelHead"><div><h2>Active Fleet Workload</h2><p>Current route by driver</p></div></div><div id="cmdFleetWorkload" style="padding:0 12px"><div class="cmdEmpty">Loading…</div></div></section>
-        <section class="cmdPanel"><div class="cmdPanelHead"><div><h2>Drag &amp; Drop Manifest Parser</h2><p>Start a new order from Excel / CSV</p></div></div><div id="cmdManifestDrop" class="cmdDrop"><b>Drop manifest here</b><span>or tap to choose .xlsx / .xls / .csv</span></div><input id="orderFileInput" type="file" accept=".xlsx,.xls,.csv" hidden><input id="exportLedgerBtn" type="button" hidden></section>
-        <section class="cmdPanel"><div class="cmdPanelHead"><div><h2>Real-Time Operations Audit Trail</h2><p>Protected source: operations_audit_v1</p></div></div><div id="cmdAuditBody" class="cmdAudit"><div class="cmdEmpty">Loading audit events…</div></div></section>
-      </aside>
+      <section class="cmdTriagePanel">
+        <div class="cmdTriageHead"><div><h2>Fleet &amp; Capacity Readiness</h2><p>Driver workload before individual outlet detail.</p></div></div>
+        <div class="cmdTriageBody"><div id="cmdFleetCompact" class="cmdFleetCompact"><div class="cmdEmpty">Loading…</div></div></div>
+      </section>
     </div>
 
+    <section class="cmdMatrixPanel">
+      <div class="cmdMatrixToolbar">
+        <div><h2>Master Dispatch Matrix</h2><p>Searchable operational detail · grouped by readiness state</p></div>
+        <div class="cmdMatrixTools">
+          <button type="button" class="active" data-cmd-matrix-filter="all">All <span id="cmdAllCount">0</span></button>
+          <button type="button" data-cmd-matrix-filter="ready">Ready <span id="cmdReadyCount">0</span></button>
+          <button type="button" data-cmd-matrix-filter="blocked">Blocked <span id="cmdBlockedCount">0</span></button>
+          <button type="button" id="cmdDriverSetupBtn">Driver / Fee Setup</button>
+        </div>
+      </div>
+      <div class="cmdTableWrap"><table class="cmdTable"><thead><tr><th>#</th><th>Outlet / Cluster</th><th>Assigned Driver</th><th>Packed / Indent</th><th>Status</th><th>Delivery Fee</th><th>Actions</th></tr></thead><tbody id="cmdOutletMatrixBody"><tr><td colspan="7" class="cmdEmpty">Loading current order…</td></tr></tbody></table></div>
+    </section>
+
+    <div id="cmdManifestDrop" class="cmdDrop hidden" style="margin-top:10px"><b>Drop manifest here</b><span>or tap to choose .xlsx / .xls / .csv</span></div>
+    <input id="orderFileInput" type="file" accept=".xlsx,.xls,.csv" hidden>
+    <input id="exportLedgerBtn" type="button" hidden>
     <div id="orderSummary" class="hidden"></div><div id="orderStats" class="hidden"></div>
+
     <section id="adminDashboard" class="hidden">
       <input id="dashboardOutletFilter"><input id="dashboardItemFilter"><input id="dashboardDriverFilter"><select id="dashboardStatusFilter"><option value="ALL">All</option></select><datalist id="dashboardOutletOptions"></datalist><datalist id="dashboardItemOptions"></datalist><datalist id="dashboardDriverOptions"></datalist>
       <div id="dashboardKpis"></div><table><tbody id="outletAnalysisBody"></tbody></table><table><tbody id="itemAnalysisBody"></tbody></table><table><tbody id="exceptionAnalysisBody"></tbody></table><table><tbody id="driverAnalysisBody"></tbody></table>
