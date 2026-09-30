@@ -1558,8 +1558,8 @@ function renderCommandCenter(deliveryData=null){
     const liveMap=new Map((deliveryData?.live_outlets||[]).map(x=>[String(x.id),x]));
     matrix.innerHTML=outlets.map((o,i)=>{
       const x=liveMap.get(String(o.id))||{store_name:o.name,driver:o.driver||"Unassigned",required:o.rows.reduce((s,r)=>s+r.required,0),packed:o.rows.reduce((s,r)=>s+r.packed,0),missing:o.rows.reduce((s,r)=>s+r.missing,0),packing_done:o.status==="completed",delivered:false,delivery_charge:o.deliveryCharge||0};
-      const req=Number(x.required||0),pk=Number(x.packed||0),pct=req?Math.round(pk/req*100):0,[statusClass,statusLabel]=commandCenterStatus(x),driver=String(x.driver||"Unassigned"),driverClass=driver==="Unassigned"?"unassigned":"assigned",phone=x.driver_phone||"";
-      return '<tr><td><span class="cmdRank">#'+String(i+1).padStart(2,"0")+'</span></td><td><div class="cmdOutletName">'+esc(x.store_name||o.name)+'</div><span class="cmdCluster">Ahmedabad</span></td><td><div class="cmdDriver">'+esc(driver)+'</div><div class="cmdTags"><span class="cmdTag '+driverClass+'">'+(driver==="Unassigned"?"UNASSIGNED":"ACTIVE")+'</span><span class="cmdPhone">'+(phone?esc(phone):"Phone —")+'</span></div></td><td><div class="cmdProgressMeta"><b>'+pk+'</b><span>/ '+req+'</span><em>'+pct+'%</em></div><div class="cmdProgress"><i style="width:'+Math.min(100,pct)+'%"></i></div></td><td><span class="cmdStatus '+statusClass+'">'+statusLabel+'</span></td><td class="cmdFee">₹'+Number(x.delivery_charge??o.deliveryCharge??0).toLocaleString("en-IN",{maximumFractionDigits:2})+'</td><td><div class="cmdActions"><button type="button" data-cmd-action="pack" data-outlet-id="'+esc(o.id)+'">Open</button><button type="button" data-cmd-action="setup" data-outlet-id="'+esc(o.id)+'">Setup</button></div></td></tr>';
+      const req=Number(x.required||0),pk=Number(x.packed||0),missing=Number(x.missing||0),pct=req?Math.round(pk/req*100):0,[statusClass,statusLabel]=commandCenterStatus(x),driver=String(x.driver||"Unassigned"),driverClass=driver==="Unassigned"?"unassigned":"assigned",phone=x.driver_phone||"",ready=!!x.packing_done&&missing===0&&driver!=="Unassigned",blocked=missing>0||driver==="Unassigned";
+      return '<tr data-cmd-state="'+(ready?"ready":blocked?"blocked":"all")+'"><td><span class="cmdRank">#'+String(i+1).padStart(2,"0")+'</span></td><td><div class="cmdOutletName">'+esc(x.store_name||o.name)+'</div><span class="cmdCluster">Ahmedabad</span></td><td><div class="cmdDriver">'+esc(driver)+'</div><div class="cmdTags"><span class="cmdTag '+driverClass+'">'+(driver==="Unassigned"?"UNASSIGNED":"ACTIVE")+'</span><span class="cmdPhone">'+(phone?esc(phone):"Phone —")+'</span></div></td><td><div class="cmdProgressMeta"><b>'+pk+'</b><span>/ '+req+'</span><em>'+pct+'%</em></div><div class="cmdProgress"><i style="width:'+Math.min(100,pct)+'%"></i></div></td><td><span class="cmdStatus '+statusClass+'">'+statusLabel+'</span></td><td class="cmdFee">₹'+Number(x.delivery_charge??o.deliveryCharge??0).toLocaleString("en-IN",{maximumFractionDigits:2})+'</td><td><div class="cmdActions"><button type="button" data-cmd-action="pack" data-outlet-id="'+esc(o.id)+'">Open</button><button type="button" data-cmd-action="setup" data-outlet-id="'+esc(o.id)+'">Setup</button></div></td></tr>';
     }).join("")||'<tr><td colspan="7" class="cmdEmpty">No current-order outlets.</td></tr>';
   }
   const fleet=$("cmdFleetWorkload");
@@ -1569,6 +1569,41 @@ function renderCommandCenter(deliveryData=null){
     fleet.innerHTML=[...groups.values()].sort((a,b)=>a.name.localeCompare(b.name)).map(g=>'<div class="cmdFleetRow"><div><b>'+esc(g.name)+'</b><small>'+g.total+' outlet'+(g.total===1?"":"s")+'</small></div><span>'+g.delivered+' delivered · '+g.pending+' ready</span></div>').join("")||'<div class="cmdEmpty">No fleet workload.</div>';
   }
   const health=$("liveSyncStatus");if(health){health.textContent="LIVE · 3s fallback";health.className="cmdLiveStatus";}
+
+  const attention=$("cmdAttentionBody");
+  const attentionRows=outlets.map(o=>{
+    const required=o.rows.reduce((s,r)=>s+Number(r.required||0),0);
+    const packed=o.rows.reduce((s,r)=>s+Number(r.packed||0),0);
+    const missing=o.rows.reduce((s,r)=>s+Number(r.missing||0),0);
+    const incomplete=Math.max(0,required-(packed+missing));
+    return {o,required,packed,missing,incomplete};
+  }).filter(x=>x.missing>0||x.incomplete>0||!x.o.driver).sort((a,b)=>(b.missing*100+b.incomplete)-(a.missing*100+a.incomplete));
+  if(attention){
+    attention.innerHTML=attentionRows.slice(0,6).map(x=>{
+      const reason=x.missing>0 ? x.missing+" missing unit"+(x.missing===1?"":"s") : x.incomplete+" unit"+(x.incomplete===1?"":"s")+" still to pack";
+      const driver=!x.o.driver||x.o.driver==="Unassigned" ? "Driver unassigned" : x.o.driver;
+      return '<div class="cmdAttentionRow"><div><b>'+esc(x.o.name)+'</b><small>'+esc(reason)+' · '+esc(driver)+'</small></div><div class="cmdTriageActions"><span class="cmdAttentionMetric">'+(x.missing>0?x.missing+" short":Math.round((x.packed+ x.missing)/Math.max(1,x.required)*100)+"%")+'</span><button type="button" data-cmd-action="pack" data-outlet-id="'+esc(x.o.id)+'">Open</button><button type="button" data-cmd-action="setup" data-outlet-id="'+esc(x.o.id)+'">Setup</button></div></div>';
+    }).join("")||'<div class="cmdStageHint">✓ No current-order exceptions require attention.</div>';
+  }
+  const totalReq=outlets.reduce((s,o)=>s+o.rows.reduce((a,r)=>a+Number(r.required||0),0),0);
+  const totalPacked=outlets.reduce((s,o)=>s+o.rows.reduce((a,r)=>a+Number(r.packed||0),0),0);
+  const totalMissing=outlets.reduce((s,o)=>s+o.rows.reduce((a,r)=>a+Number(r.missing||0),0),0);
+  const cyclePct=totalReq?Math.round((totalPacked+totalMissing)/totalReq*100):0;
+  const readyCount=outlets.filter(o=>o.status==="completed"&&o.rows.every(r=>Number(r.missing||0)===0)).length + outlets.filter(o=>o.status==="in_progress"&&o.rows.every(r=>r.status)&&o.rows.every(r=>Number(r.missing||0)===0)&&o.driver).length;
+  const blockedCount=outlets.filter(o=>!o.driver||o.driver==="Unassigned"||o.rows.some(r=>Number(r.missing||0)>0)).length;
+  const up=(id,v)=>{const e=$(id);if(e)e.textContent=String(v);};
+  up("cmdUrgencyProgress",cyclePct+"% packed");
+  up("cmdUrgencyAlerts",attentionRows.length+" alert"+(attentionRows.length===1?"":"s"));
+  up("cmdUrgencyFleet",Math.max(0,readyCount)+" ready for dispatch");
+  up("cmdAllCount",outlets.length);up("cmdReadyCount",readyCount);up("cmdBlockedCount",blockedCount);
+  const compact=$("cmdFleetCompact");
+  if(compact){
+    const compactGroups=[...groups.values()].sort((a,b)=>a.name.localeCompare(b.name));
+    compact.innerHTML=compactGroups.map(g=>{
+      const ready=g.total-g.pending-g.delivered;
+      return '<div class="cmdFleetCompactRow"><div><b>'+esc(g.name)+'</b><small>'+g.total+' outlet'+(g.total===1?"":"s")+' assigned</small></div><span class="cmdFleetReady">'+Math.max(0,ready)+' ready</span></div>';
+    }).join("")||'<div class="cmdStageHint">No driver workload loaded.</div>';
+  }
   void loadCommandCenterAudit();
 }
 async function loadCommandCenterAudit(){
@@ -1771,6 +1806,14 @@ window.__adminRefresh=async()=>{
   finally{if(btn){btn.disabled=false;btn.textContent="↻ Refresh";}}
 };
 document.getElementById("adminRefreshBtn")?.addEventListener("click",window.__adminRefresh);
+document.getElementById("cmdOpenPackingBtn")?.addEventListener("click",showPackingOverview);
+document.getElementById("cmdDriverSetupBtn")?.addEventListener("click",()=>document.getElementById("menuOutletSettings")?.click());
+document.getElementById("cmdImportManifestBtn")?.addEventListener("click",()=>{const f=document.getElementById("orderFileInput");if(f)f.click();});
+document.querySelectorAll("[data-cmd-matrix-filter]").forEach(btn=>btn.addEventListener("click",()=>{
+  document.querySelectorAll("[data-cmd-matrix-filter]").forEach(x=>x.classList.remove("active"));btn.classList.add("active");
+  const filter=btn.dataset.cmdMatrixFilter;
+  document.querySelectorAll("#cmdOutletMatrixBody tr[data-cmd-state]").forEach(row=>{row.hidden=filter!=="all"&&row.dataset.cmdState!==filter;});
+}));
 
 
 /* ===== Admin table touch routing =====
