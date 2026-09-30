@@ -202,7 +202,7 @@ body.adminPage{background:var(--cmd-bg);font-family:"Plus Jakarta Sans",Inter,sy
   <section class="analysisCard packingCreatePanel">
     <div class="sectionHead">
       <div><span class="eyebrow">ORDER IMPORT</span><h3>Create / refresh live packing order</h3><p class="hint">Upload the latest Excel/CSV here. Packaging operations remain inside this section.</p></div>
-      <button id="dashCreateOrder" class="secondary" type="button">Create New Order</button>
+      <button id="dashCreateOrder" class="primary" type="button">＋ Import New Order</button>
     </div>
     <div class="baCreateOrderTools hidden" id="dashCreateOrderTools">
       <input id="fileInput" type="file" accept=".xlsx,.xls,.csv">
@@ -215,7 +215,6 @@ body.adminPage{background:var(--cmd-bg);font-family:"Plus Jakarta Sans",Inter,sy
   </section>
 
   <div class="sectionHead packingOverviewHead">
-    <div class="sectionHeadActions"><button id="cmdImportManifestBtn" class="primary" type="button">＋ Import New Order</button></div>
     <div><span class="eyebrow">PACKING &amp; DISPATCH</span><h2>Packing Overview</h2><p class="hint">Monitor the current order and packing progress. Item-by-item packing controls remain on the separate staff packing screen.</p></div>
     <div class="sectionHeadActions"><button id="packingOverviewRefresh" class="secondary" type="button">↻ Refresh</button><button id="packingOverviewDashboardBack" class="secondary" type="button">← Dashboard</button></div>
   </div>
