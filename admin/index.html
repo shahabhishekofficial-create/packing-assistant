@@ -301,7 +301,7 @@ body.adminPage{background:var(--cmd-bg);font-family:"Plus Jakarta Sans",Inter,sy
     if(e.target && e.target.tagName==="SCRIPT" && /cdn\.jsdelivr\.net/.test(e.target.src)){
       if(!window.supabase){
         const s=document.createElement("script");
-        s.src="https://unpkg.com/@supabase/supabase-js@2";
+        s.src="https://unpkg.com/@supabase/supabase-js@2.117.1";
         s.async=false;
         document.head.appendChild(s);
       }
@@ -309,10 +309,10 @@ body.adminPage{background:var(--cmd-bg);font-family:"Plus Jakarta Sans",Inter,sy
   },true);
 })();
 </script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1"></script>
 <script>
 if(!window.supabase){
-  document.write('<script src="https://unpkg.com/@supabase/supabase-js@2"><\\/script>');
+  document.write('<script src="https://unpkg.com/@supabase/supabase-js@2.117.1"><\\/script>');
 }
 </script>
 <script defer src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
