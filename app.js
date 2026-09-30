@@ -1069,6 +1069,8 @@ async function prepareOrderFile(file,sourceInput){
   }
 }
 
+document.getElementById("cmdNewOrderBtn")?.addEventListener("click",()=>document.getElementById("orderFileInput")?.click());
+document.getElementById("cmdManifestDrop")?.addEventListener("click",()=>document.getElementById("orderFileInput")?.click());
 const commandOrderFile=$("orderFileInput"),commandManifestDrop=$("cmdManifestDrop");
 if(commandOrderFile)commandOrderFile.onchange=async e=>{
   const file=e.target.files?.[0];
