@@ -32,7 +32,36 @@ body.adminPage{background:#f5f8f7;font-family:"Plus Jakarta Sans",Inter,system-u
 .cmdBody{padding:20px;max-width:1600px;margin:auto}
 .baMobileMenu{display:none}
 @media(max-width:900px){.cmdSidebar{position:fixed;inset:0 auto 0 0;transform:translateX(-100%);transition:.2s;box-shadow:10px 0 30px rgba(15,23,42,.12)}.cmdSidebar.open{transform:none}.cmdShell{height:100dvh}.baMobileMenu{display:inline-flex;border:0;background:transparent;font-size:20px}.cmdHeader{padding:0 12px}.cmdProfile{display:none}.cmdBody{padding:12px}}
-</style>
+<style>
+/* Operations Command Center module styling — shared by inventory workspaces */
+.cmdMain{background:#f5f8f7}.cmdBody,.vegCmdBody{background:#f5f8f7}
+.inventoryAdminPage,.vegAdminPage{max-width:1500px;margin:0 auto;padding:22px 20px 34px}
+.inventoryAdminHead,.vegAdminHead{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;padding:0 2px 16px;margin:0 0 12px}
+.inventoryAdminHead h2,.vegAdminHead h2{font-size:24px;line-height:1.2;letter-spacing:-.3px;color:#0f172a;margin:3px 0 4px;font-weight:700}
+.inventoryAdminHead p,.vegAdminHead p{font-size:11px;line-height:1.6;color:#64748b;margin:0;max-width:720px}
+.inventoryAdminActions,.vegAdminActions{display:flex;gap:8px;align-items:center;justify-content:flex-end;flex-wrap:wrap}
+.inventoryAdminActions button,.inventoryAdminActions a,.vegAdminActions button,.vegAdminActions a{font-family:"Plus Jakarta Sans",Inter,system-ui,sans-serif;font-size:10px;font-weight:800;border-radius:9px;min-height:38px;padding:8px 12px;box-shadow:none}
+.inventoryAdminActions .primary,.vegAdminActions .primary{background:#0f5132!important;border:1px solid #0f5132!important;color:#fff!important}
+.inventoryAdminActions .secondary,.vegAdminActions .secondary{background:#fff!important;border:1px solid #dbe3eb!important;color:#334155!important}
+.inventoryCard{background:#fff;border:1px solid #dfe8e3;border-radius:15px;box-shadow:none;padding:0;margin:0 0 12px;overflow:hidden}
+.inventoryCardHead{padding:14px 16px;border-bottom:1px solid #eef2f0}
+.inventoryCardHead h3,.adminScanBox h3,.vegetableIntro h3{font-size:14px;color:#0f172a;margin:3px 0}
+.inventoryCard .hint,.adminScanBox .hint,.vegetableIntro .hint{font-size:10px;line-height:1.55;color:#64748b}
+.inventorySectionBar{padding:12px 14px;margin:0;border-bottom:1px solid #eef2f0}
+.sectionTab{font-family:inherit;font-size:10px;padding:8px 11px;border-radius:8px;background:#fff;border:1px solid #dbe3eb}
+.sectionTab.active{background:#0f5132;border-color:#0f5132}
+.masterSummary{font-size:10px}
+.adminScanBox,.vegetableIntro{margin:12px;padding:14px;border:1px solid #e7eeea;background:#f8faf9;border-radius:11px}
+.scanRow{margin-top:10px}.inventoryAdminPage input,.inventoryAdminPage select,.vegAdminPage input,.vegAdminPage select{font-family:inherit;font-size:11px;border:1px solid #dbe3eb;border-radius:8px;background:#fff;color:#0f172a}
+.fetchLookupBtn{background:#0f5132!important;border-radius:8px;font-size:11px;padding:10px 12px}
+.itemSearchRow{padding:12px 14px;border-bottom:1px solid #eef2f0;margin:0}
+.adminItemList,.vegAdminList{padding:10px 14px}
+.adminItemRow,.vegAdminRow{border:1px solid #e7eeea;border-radius:10px;background:#fff;padding:11px}
+.tableWrap{padding:0 14px 14px}.tableWrap table{font-size:10px}.tableWrap th{background:#f8faf9;color:#94a3b8;font-size:8px;text-transform:uppercase;letter-spacing:.04em}.tableWrap td{font-size:10px;color:#334155}
+.importActions{padding:0 14px 14px}.importSummary{margin:12px 14px;padding:10px;background:#f8faf9;border-radius:8px}
+.inventoryAlert{margin:0 0 12px;border-radius:9px;font-size:10px}
+@media(max-width:900px){.inventoryAdminHead,.vegAdminHead{display:block}.inventoryAdminActions,.vegAdminActions{justify-content:flex-start;margin-top:12px}.inventoryAdminPage,.vegAdminPage{padding:16px 12px 28px}}
+</style></style>
 </head>
 <body class="adminPage">
 <div id="adminBootOverlay"><div class="bootCard">Loading Inventory<span class="bootSub">Starting secure session…</span></div></div>
@@ -59,11 +88,11 @@ body.adminPage{background:#f5f8f7;font-family:"Plus Jakarta Sans",Inter,system-u
 </aside>
 <div class="cmdMain">
 <header class="cmdHeader">
-  <div class="cmdHeaderLeft"><button id="baSidebarToggle" class="baMobileMenu" aria-label="Open menu">☰</button><span class="cmdCycle">Inventory · Item Master</span><span id="connection" class="cmdLiveStatus">LIVE</span></div>
+  <div class="cmdHeaderLeft"><button id="baSidebarToggle" class="baMobileMenu" aria-label="Open menu">☰</button><span class="cmdCycle">Restaurant Inventory</span><span id="connection" class="cmdLiveStatus">LIVE</span></div>
   <div class="cmdHeaderRight"><a href="./index.html?section=home" class="cmdHeaderBtn">⌂ Dashboard</a><div class="cmdProfile"><b>Administrator</b><span>Secure session</span></div><a href="./index.html?section=home" class="cmdHeaderBtn">⋮</a></div>
 </header>
 <section class="inventoryAdminPage">
-<div class="inventoryAdminHead"><div><span class="eyebrow">ADMIN · INVENTORY</span><h2>Item Master</h2><p>Manage inventory master data. Warehouse staff use the separate counting workflow.</p></div><div class="inventoryAdminActions"><button id="downloadTemplateBtn" class="secondary">↓ Download Template</button><button id="importBtn" class="secondary">Import CSV / XLSX</button><input id="fileInput" type="file" accept=".csv,.xlsx,.xls" hidden><a href="./vegetable-inventory.html" class="secondary" style="text-decoration:none;display:inline-flex;align-items:center">🥬 Vegetable Inventory</a><button id="addItemBtn" class="primary">+ Add Item</button></div></div>
+<div class="inventoryAdminHead"><div><span class="eyebrow">OPERATIONS · RESTAURANT INVENTORY</span><h2>Restaurant Inventory</h2><p>Manage restaurant grocery inventory. Warehouse staff use the separate counting workflow.</p></div><div class="inventoryAdminActions"><button id="downloadTemplateBtn" class="secondary">↓ Download Template</button><button id="importBtn" class="secondary">Import CSV / XLSX</button><input id="fileInput" type="file" accept=".csv,.xlsx,.xls" hidden><a href="./vegetable-inventory.html" class="secondary" style="text-decoration:none;display:inline-flex;align-items:center">🥬 Vegetable Inventory</a><button id="addItemBtn" class="primary">+ Add Item</button></div></div>
 <div id="inventoryAlert" class="inventoryAlert hidden" role="status"></div>
 <section class="inventoryCard itemMasterTools"><div class="inventorySectionBar"><button class="sectionTab active" data-section="restaurant">🍽️ Restaurant</button><button class="sectionTab" data-section="vegetable">🥬 Vegetable</button><span id="masterSummary" class="masterSummary"></span></div>
 <div id="restaurantTools">
