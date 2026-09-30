@@ -7,7 +7,7 @@
 <title>Bigly Agro — Operations Dashboard</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="../icon-192.png">
-<link rel="stylesheet" href="../styles.css?v=20260928-cmd1">
+<link rel="stylesheet" href="../styles.css?v=20260930-adminfix2">
 <script>
 (function(){
   window.addEventListener("error",function(e){
@@ -307,10 +307,35 @@ body.adminPage{background:var(--cmd-bg);font-family:"Plus Jakarta Sans",Inter,sy
 <script>if(!window.supabase){document.write('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\\/script>')}</script>
 <script defer src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script defer src="../config.js?v=20260927-touchfix1"></script>
-<script defer src="./auth.js?v=20260928-cmd1"></script>
-<script defer src="../app.js?v=20260928-cmd1"></script>
-<script defer src="./team.js?v=20260928-cmd1"></script>
-<script defer src="./inventory-nav.js?v=20260928-cmd1"></script>
-<script>window.PA_VERSION_URL="../version.json";</script><script defer src="../update.js?v=20260928-cmd1"></script><script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20260928-cmd1",{updateViaCache:"none"}).then(r=>r.update()).catch(console.warn));}</script>
-<script>fetch("../version.json?_"+Date.now(),{cache:"no-store"}).then(r=>r.json()).then(v=>{const e=document.getElementById("buildVersion");if(e)e.textContent="Build "+(v.build_id||"unknown")}).catch(()=>{});</script></body>
+<script defer src="./auth.js?v=20260930-adminfix2"></script>
+<script defer src="../app.js?v=20260930-orderupload1"></script>
+<script defer src="./team.js?v=20260930-adminfix2"></script>
+<script defer src="./inventory-nav.js?v=20260930-adminfix2"></script>
+<script>window.PA_VERSION_URL="../version.json";</script><script defer src="../update.js?v=20260930-adminfix2"></script><script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20260930-adminfix2",{updateViaCache:"none"}).then(r=>r.update()).catch(console.warn));}</script>
+<script>fetch("../version.json?_"+Date.now(),{cache:"no-store"}).then(r=>r.json()).then(v=>{const e=document.getElementById("buildVersion");if(e)e.textContent="Build "+(v.build_id||"unknown")}).catch(()=>{});</script><script>
+/* Admin navigation safety net.
+   These handlers are intentionally independent of app.js event bindings so
+   the primary navigation remains usable if a secondary module throws. */
+window.__adminNavigate=function(section){
+  const ids=["home","packing","packingOverview","driverDashboard","fleetManagement","configuration"];
+  ids.forEach(id=>document.getElementById(id)?.classList.add("hidden"));
+  const menu=document.getElementById("adminMenu"); menu?.classList.add("hidden");
+  const active={dashboard:"sideDashboard",packing:"sidePacking",delivery:"sideDelivery",inventory:"sideInventory",reports:"sideReports",settings:"sideSettings"}[section];
+  document.querySelectorAll(".cmdNav button,.cmdNav a").forEach(x=>x.classList.toggle("active",x.id===active));
+  if(section==="dashboard"){document.getElementById("home")?.classList.remove("hidden");window.scrollTo({top:0,behavior:"smooth"});if(typeof renderHomeOperationalKpis==="function")void renderHomeOperationalKpis();return;}
+  if(section==="packing"){document.getElementById("packingOverview")?.classList.remove("hidden");window.scrollTo({top:0,behavior:"smooth"});if(typeof renderPackingOverview==="function")renderPackingOverview();return;}
+  if(section==="delivery"){document.getElementById("driverDashboard")?.classList.remove("hidden");window.scrollTo({top:0,behavior:"smooth"});if(typeof loadDriverAdminDashboard==="function")void loadDriverAdminDashboard();return;}
+  if(section==="inventory"){location.href="./inventory.html";return;}
+  if(section==="reports"){if(typeof openReportDialog==="function")openReportDialog();return;}
+  if(section==="settings"){document.getElementById("configuration")?.classList.remove("hidden");window.scrollTo({top:0,behavior:"smooth"});if(typeof loadAdminConfiguration==="function")void loadAdminConfiguration();return;}
+};
+document.getElementById("sideDashboard")?.addEventListener("click",()=>window.__adminNavigate("dashboard"),true);
+document.getElementById("sidePacking")?.addEventListener("click",()=>window.__adminNavigate("packing"),true);
+document.getElementById("sideDelivery")?.addEventListener("click",()=>window.__adminNavigate("delivery"),true);
+document.getElementById("sideInventory")?.addEventListener("click",()=>window.__adminNavigate("inventory"),true);
+document.getElementById("sideReports")?.addEventListener("click",()=>window.__adminNavigate("reports"),true);
+document.getElementById("sideSettings")?.addEventListener("click",()=>window.__adminNavigate("settings"),true);
+document.getElementById("cmdNewOrderBtn")?.addEventListener("click",()=>document.getElementById("orderFileInput")?.click(),true);
+document.getElementById("cmdManifestDrop")?.addEventListener("click",()=>document.getElementById("orderFileInput")?.click(),true);
+</script></body>
 </html>
