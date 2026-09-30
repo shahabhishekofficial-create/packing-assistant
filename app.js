@@ -1656,7 +1656,10 @@ async function loadCommandCenterAudit(){
   const box=$("cmdAuditBody");if(!box||!window.PA_ADMIN_SESSION||!window.SUPABASE_CONFIG?.url)return;
   try{
     const {data,error}=await db.rpc("admin_get_operations_audit_v1",{p_admin_session:window.PA_ADMIN_SESSION,p_limit:12});if(error)throw error;
-    box.innerHTML=(data||[]).map(x=>'<div class="cmdAuditRow"><span class="cmdAuditDot"></span><div><b>'+esc(String(x.operation||"CHANGE").toUpperCase())+'</b><span>'+esc(String(x.table_name||"system"))+' · '+esc(String(x.record_id||""))+'</span></div><time>'+esc(formatDate(x.created_at))+'</time></div>').join("")||'<div class="cmdEmpty">No audit activity yet.</div>';
+    const rows=data||[];
+    box.innerHTML=rows.map(x=>'<div class="cmdAuditRow"><span class="cmdAuditDot"></span><div><b>'+esc(String(x.operation||"CHANGE").toUpperCase())+'</b><span>'+esc(String(x.table_name||"system"))+' · '+esc(String(x.record_id||""))+'</span></div><time>'+esc(formatDate(x.created_at))+'</time></div>').join("")||'<div class="cmdEmpty">No audit activity yet.</div>';
+    const feed=$("opsActivityFeed");
+    if(feed) feed.innerHTML=rows.slice(0,6).map(x=>'<div class="opsActivityRow"><span class="opsDot"></span><div><b>'+esc(String(x.table_name||"system"))+' · '+esc(String(x.operation||"CHANGE").toUpperCase())+'</b><small>'+esc(String(x.record_id||""))+' · '+esc(formatDate(x.created_at))+'</small></div></div>').join("")||'<div class="opsPriority"><div><b>No recent activity</b></div></div>';
   }catch(e){box.innerHTML='<div class="cmdEmpty">Audit trail unavailable for this session.</div>';}
 }
 function startCommandCenterAudit(){clearInterval(commandCenterAuditTimer);loadCommandCenterAudit();commandCenterAuditTimer=setInterval(()=>{if(!$("home")?.classList.contains("hidden"))loadCommandCenterAudit();},5000);}
@@ -1852,6 +1855,21 @@ window.__adminRefresh=async()=>{
   finally{if(btn){btn.disabled=false;btn.textContent="↻ Refresh";}}
 };
 document.getElementById("adminRefreshBtn")?.addEventListener("click",window.__adminRefresh);
+document.getElementById("opsOpenPacking")?.addEventListener("click",showPackingOverview);
+document.getElementById("opsImportOrder")?.addEventListener("click",()=>document.getElementById("menuPacking")?.click());
+document.getElementById("opsOpenFleet")?.addEventListener("click",()=>document.getElementById("menuDriverDashboard")?.click());
+document.getElementById("opsOpenInventory")?.addEventListener("click",()=>location.href="./inventory.html");
+document.getElementById("opsOpenReports")?.addEventListener("click",()=>document.getElementById("menuReportBtn")?.click());
+document.getElementById("opsViewFleet")?.addEventListener("click",()=>document.getElementById("menuDriverDashboard")?.click());
+document.getElementById("opsViewActivity")?.addEventListener("click",()=>document.getElementById("menuReportBtn")?.click());
+document.getElementById("opsAttentionKpi")?.addEventListener("click",()=>document.getElementById("opsViewAttention")?.click());
+document.getElementById("opsViewAttention")?.addEventListener("click",()=>document.getElementById("menuDriverDashboard")?.click());
+document.querySelectorAll("[data-ops-delivery]").forEach(btn=>btn.addEventListener("click",()=>{
+  document.querySelectorAll("[data-ops-delivery]").forEach(x=>x.classList.remove("active"));btn.classList.add("active");
+  const box=$("opsDeliverySnapshot");if(!box)return;const rows=JSON.parse(box.dataset.rows||"[]"),filter=btn.dataset.opsDelivery;
+  const filtered=rows.filter(x=>filter==="all"||filter==="transit"?(filter==="all"?true:!x.delivered&&Number(x.packed||0)>0):!x.delivered&&Number(x.packed||0)===0);
+  box.innerHTML=filtered.slice(0,8).map(x=>{const status=x.delivered?"Delivered":Number(x.packed||0)>0?"In Transit":"Pending";const cls=x.delivered?"delivered":status==="Pending"?"pending":"";return '<div class="opsSnapshotRow"><div><b>'+esc(x.store_name||"Outlet")+'</b><small>'+esc(x.driver||"Unassigned")+'</small></div><span class="snapStatus '+cls+'">'+status+'</span><small>'+(x.delivered?formatDate(x.delivered_at):"—")+'</small></div>';}).join("")||'<div class="opsPriority"><div><b>No outlets in this view</b></div></div>';
+}));
 document.getElementById("cmdOpenPackingBtn")?.addEventListener("click",showPackingOverview);
 document.getElementById("cmdDriverSetupBtn")?.addEventListener("click",()=>document.getElementById("menuOutletSettings")?.click());
 document.getElementById("cmdImportManifestBtn")?.addEventListener("click",()=>{const f=document.getElementById("orderFileInput");if(f)f.click();});
