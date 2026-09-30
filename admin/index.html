@@ -37,7 +37,11 @@
 .cmdMatrixPanel{border:1px solid #dbe5df;border-radius:16px;background:#fff;overflow:hidden}.cmdMatrixToolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 18px;border-bottom:1px solid #eef2f0}.cmdMatrixToolbar h2{margin:0;font-size:15px}.cmdMatrixToolbar p{margin:3px 0 0;color:#64748b;font-size:11px}.cmdMatrixTools{display:flex;gap:6px;flex-wrap:wrap}.cmdMatrixTools button{border:1px solid #dbe5df;background:#fff;border-radius:9px;padding:7px 10px;font-weight:700;font-size:11px}.cmdMatrixTools button.active{background:#0b5d3b;color:#fff;border-color:#0b5d3b}
 .cmdManifestCollapsed{display:flex;justify-content:flex-end;margin-bottom:10px}.cmdManifestCollapsed button{border:1px solid #cbd8d1;background:#fff;border-radius:10px;padding:8px 12px;font-weight:800}
 @media(max-width:900px){.cmdTriageGrid{grid-template-columns:1fr}.cmdExecutiveBar{align-items:flex-start;flex-direction:column}.cmdMatrixToolbar{align-items:flex-start;flex-direction:column}}
-</style><style>#homeOperationalKpis .analysisKpi{min-height:72px;border:1px solid #e2e8f0;border-radius:14px;background:#fff;padding:14px;cursor:default}#homeOperationalKpis button.analysisKpi{cursor:pointer;color:inherit;font:inherit}#homeOperationalKpis .analysisKpi span{display:block;font-size:11px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:.04em}#homeOperationalKpis .analysisKpi b{display:block;margin-top:5px;font-size:20px}</style><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet"><script src="https://cdn.tailwindcss.com"></script>
+<style>
+.opsHome{max-width:1500px;margin:0 auto;padding:4px 0 30px}.opsHero{display:flex;justify-content:space-between;gap:20px;align-items:center;padding:18px 20px;margin-bottom:12px;border:1px solid #dbe8e0;border-radius:16px;background:linear-gradient(110deg,#e9f8ef,#fff)}.opsHeroTitle{display:flex;align-items:center;gap:14px;min-width:0}.opsHeroIcon{width:52px;height:52px;border-radius:14px;background:#dff4e7;display:grid;place-items:center;font-size:26px}.opsHero h1{margin:2px 0 2px;font-size:24px}.opsHero p{margin:0;color:#64748b;font-size:12px}.opsLivePill{margin-left:4px;padding:6px 10px;border-radius:999px;background:#e6f8ed;color:#087443;font-size:11px;font-weight:800}.opsStage{display:flex;align-items:center;gap:8px;min-width:420px}.opsStage>div{text-align:center;min-width:72px}.opsStage .stageIcon{display:grid;place-items:center;width:28px;height:28px;margin:0 auto 5px;border-radius:50%;background:#f1f5f9;color:#64748b;font-size:13px}.opsStage .stageIcon.done{background:#087443;color:#fff}.opsStage .stageIcon.pack{background:#dff4e7;color:#087443}.opsStage b,.opsStage small{display:block}.opsStage b{font-size:11px}.opsStage small{font-size:10px;color:#64748b}.opsStage i{height:1px;flex:1;background:#dce7e1}.opsKpiGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px}.opsKpi{display:flex;gap:12px;align-items:flex-start;padding:16px;border:1px solid #dfe8e3;border-radius:15px;background:#fff;min-height:96px;text-align:left}.opsKpiIcon{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;font-weight:900;background:#eef4ff;color:#2563eb;flex:0 0 auto}.opsKpi.green .opsKpiIcon{background:#e9f8ef;color:#087443}.opsKpi.amber .opsKpiIcon{background:#fff4dc;color:#b7791f}.opsKpi.red .opsKpiIcon{background:#fff0f0;color:#c62828}.opsKpi small,.opsKpi strong,.opsKpi label{display:block}.opsKpi small{font-size:11px;color:#64748b}.opsKpi strong{font-size:25px;margin:2px 0 5px}.opsKpi strong em{font-size:13px;color:#94a3b8;font-style:normal}.opsKpi label{font-size:10px;color:#64748b}.opsBar{height:6px;background:#edf2ef;border-radius:99px;overflow:hidden;margin-bottom:5px}.opsBar i{display:block;height:100%;width:0;background:#0b7a45;border-radius:inherit}.opsKpi.blue .opsBar i{background:#2563eb}.opsKpi.amber .opsBar i{background:#f59e0b}.opsKpi.red{position:relative}.opsKpiButton{cursor:pointer;border:1px solid #eadede}.opsArrow{position:absolute;right:13px;top:42%;font-size:24px;color:#c62828}.opsThreeGrid{display:grid;grid-template-columns:1.15fr 1.1fr .9fr;gap:12px;margin-bottom:12px}.opsPanel{border:1px solid #dfe8e3;border-radius:15px;background:#fff;overflow:hidden}.opsPanelHead{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid #eef2f0}.opsPanelHead h2{margin:0;font-size:14px}.opsPanelHead span{font-size:10px;color:#64748b}.opsPanelHead button,.opsTabs button{border:0;background:transparent;color:#2563eb;font-weight:800;font-size:10px;cursor:pointer}.opsList{padding:4px 14px}.opsPriority{display:flex;align-items:center;gap:10px;padding:10px 2px;border-bottom:1px solid #eef2f0}.opsPriority:last-child{border-bottom:0}.opsPriorityIcon{width:27px;height:27px;border-radius:8px;display:grid;place-items:center;background:#fff0f0;color:#c62828;font-weight:900}.opsPriority.warn .opsPriorityIcon{background:#fff4dc;color:#b7791f}.opsPriority b{display:block;font-size:11px}.opsPriority small{color:#64748b;font-size:9px}.opsPriority strong{margin-left:auto;padding:4px 8px;border-radius:999px;background:#fff0f0;color:#c62828;font-size:10px}.opsDriverHead{display:grid;grid-template-columns:1.2fr .55fr .8fr .9fr;padding:8px 14px;background:#f8faf9;color:#94a3b8;font-size:8px;font-weight:800}.opsDriverRow{display:grid;grid-template-columns:1.2fr .55fr .8fr .9fr;align-items:center;padding:10px 14px;border-bottom:1px solid #eef2f0}.opsDriverRow b{font-size:11px}.opsDriverRow small{display:block;color:#94a3b8;font-size:9px}.opsStatus{display:inline-block;padding:4px 7px;border-radius:999px;background:#eaf7ef;color:#087443;font-size:9px;font-weight:800}.opsStatus.transit{background:#edf4ff;color:#2563eb}.opsStatus.packing{background:#fff4dc;color:#b7791f}.opsMiniBar{height:6px;background:#edf2ef;border-radius:99px;overflow:hidden}.opsMiniBar i{display:block;height:100%;background:#22a65a}.opsActivity{padding:7px 14px}.opsActivityRow{display:flex;gap:9px;padding:9px 0;border-bottom:1px solid #eef2f0}.opsActivityRow:last-child{border-bottom:0}.opsDot{width:8px;height:8px;border-radius:50%;background:#18a05e;margin-top:4px;flex:0 0 auto}.opsActivityRow b{display:block;font-size:10px}.opsActivityRow small{font-size:9px;color:#64748b}.opsQuickPanel{margin-bottom:12px}.opsQuickGrid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;padding:12px 14px}.opsQuickGrid button{padding:13px;border:1px solid #dfe8e3;border-radius:11px;background:#fff;text-align:left;cursor:pointer}.opsQuickGrid button:hover{border-color:#9dcab0;background:#f8fcf9}.opsQuickGrid b,.opsQuickGrid small{display:block}.opsQuickGrid b{font-size:11px}.opsQuickGrid small{margin-top:4px;color:#64748b;font-size:9px}.opsBottomGrid{display:grid;grid-template-columns:1.2fr .9fr 1fr;gap:12px}.opsTableWrap{overflow:auto}.opsTable{width:100%;border-collapse:collapse;font-size:10px}.opsTable th,.opsTable td{padding:9px 11px;border-bottom:1px solid #eef2f0;text-align:left;white-space:nowrap}.opsTable th{font-size:8px;color:#94a3b8;background:#f8faf9}.opsMissing{padding:3px 7px;border-radius:999px;background:#fff0f0;color:#c62828;font-weight:800}.opsCategoryChart{padding:13px 16px}.opsCatRow{display:grid;grid-template-columns:100px 1fr 48px;gap:8px;align-items:center;margin-bottom:11px}.opsCatRow label{font-size:9px;overflow:hidden;text-overflow:ellipsis}.opsCatBar{height:9px;border-radius:99px;background:#edf2ef;overflow:hidden}.opsCatBar i{display:block;height:100%;background:#2f80ed;border-radius:inherit}.opsCatRow span{font-size:9px;text-align:right;color:#64748b}.opsTabs{display:flex;gap:5px}.opsTabs button{padding:4px 7px;border-radius:8px;color:#64748b}.opsTabs button.active{background:#e9f8ef;color:#087443}.opsSnapshot{padding:5px 14px}.opsSnapshotRow{display:grid;grid-template-columns:1fr auto auto;gap:9px;align-items:center;padding:9px 0;border-bottom:1px solid #eef2f0}.opsSnapshotRow b{font-size:10px}.opsSnapshotRow small{font-size:9px;color:#64748b}.opsSnapshotRow .snapStatus{font-size:8px;padding:4px 7px;border-radius:999px;background:#edf4ff;color:#2563eb;font-weight:800}.opsSnapshotRow .snapStatus.delivered{background:#e9f8ef;color:#087443}.opsSnapshotRow .snapStatus.pending{background:#f1f5f9;color:#64748b}
+@media(max-width:1150px){.opsThreeGrid,.opsBottomGrid{grid-template-columns:1fr 1fr}.opsThreeGrid>:last-child,.opsBottomGrid>:last-child{grid-column:1/-1}.opsKpiGrid{grid-template-columns:1fr 1fr}.opsQuickGrid{grid-template-columns:repeat(3,1fr)}.opsStage{min-width:330px}}
+@media(max-width:800px){.opsHero{display:block}.opsStage{margin-top:15px;min-width:0}.opsKpiGrid,.opsThreeGrid,.opsBottomGrid{grid-template-columns:1fr}.opsQuickGrid{grid-template-columns:1fr 1fr}.opsStage>div{min-width:55px}}
+</style></style><style>#homeOperationalKpis .analysisKpi{min-height:72px;border:1px solid #e2e8f0;border-radius:14px;background:#fff;padding:14px;cursor:default}#homeOperationalKpis button.analysisKpi{cursor:pointer;color:inherit;font:inherit}#homeOperationalKpis .analysisKpi span{display:block;font-size:11px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:.04em}#homeOperationalKpis .analysisKpi b{display:block;margin-top:5px;font-size:20px}</style><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet"><script src="https://cdn.tailwindcss.com"></script>
 <style>
 :root{--cmd-green:#137547;--cmd-green-dark:#0f5132;--cmd-bg:#f5f8f7;--cmd-border:#e2e8f0}
 body.adminPage{background:var(--cmd-bg);font-family:"Plus Jakarta Sans",Inter,system-ui,sans-serif}
@@ -97,63 +101,69 @@ body.adminPage{background:var(--cmd-bg);font-family:"Plus Jakarta Sans",Inter,sy
   </div>
 </header>
 <section id="home" class="screen baHome" style="display:block">
-  <div class="cmdBody">
-    <div class="cmdExecutiveBar">
-      <div class="cmdExecutiveMain">
-        <span class="cmdOrderBadge">ACTIVE CYCLE</span>
-        <strong id="currentOrderName">Current order</strong>
-        <span class="cmdCycleMeta">Created <b id="cmdOrderCreated">—</b></span>
+  <div class="opsHome">
+    <section class="opsHero">
+      <div class="opsHeroTitle">
+        <div class="opsHeroIcon">🚚</div>
+        <div><span class="eyebrow">OPERATIONS COMMAND CENTER</span><h1>Operations Overview</h1><p id="opsActiveOrder">Active Order · —</p></div>
+        <span class="opsLivePill">● LIVE</span>
       </div>
-      <div class="cmdUrgency">
-        <span class="u good" id="cmdUrgencyProgress">0% packed</span>
-        <span class="u alert" id="cmdUrgencyAlerts">0 alerts</span>
-        <span class="u" id="cmdUrgencyFleet">0 ready for dispatch</span>
+      <div class="opsStage">
+        <div><span class="stageIcon done">✓</span><b>Order</b><small>Loaded</small></div><i></i>
+        <div><span class="stageIcon pack">▣</span><b>Packing</b><small id="opsStagePacking">In Progress</small></div><i></i>
+        <div><span class="stageIcon">🚚</span><b>Dispatch</b><small id="opsStageDispatch">Ongoing</small></div><i></i>
+        <div><span class="stageIcon">⚑</span><b>Cycle</b><small id="opsStageCycle">Active</small></div>
       </div>
-    </div>
-
-    <div class="cmdKpis">
-      <div class="cmdCard"><div class="cmdKpiLabel">Store Outlets</div><div class="cmdKpiNum"><span id="cmdStoreOutlets">0</span> <small>/ <span id="cmdStoreAllocated">0</span> allocated</small></div><div class="cmdKpiSub"><span>Current order</span><span>Ranked route</span></div></div>
-      <div class="cmdCard"><div class="cmdKpiLabel">Crate Pack Fulfillment</div><div class="cmdKpiNum"><span id="cmdPackedUnits">0</span> <small>/ <span id="cmdIndentUnits">0</span> indents</small></div><div class="cmdBar"><i id="cmdPackedBar" style="width:0%"></i></div><div class="cmdKpiSub"><span id="cmdPackedPct">0%</span><span>Packed</span></div></div>
-      <div class="cmdCard"><div class="cmdKpiLabel">Fleet Delivery Leg</div><div class="cmdKpiNum"><span id="cmdInTransit">0</span> <small>in-transit</small></div><div class="cmdKpiSub"><span class="cmdDelivery"><b id="cmdDelivered">0</b> delivered</span><span><b id="cmdDeliveryPending">0</b> pending</span></div></div>
-      <div class="cmdCard"><div class="cmdKpiLabel">Critical Variances</div><div class="cmdKpiNum cmdException"><span id="cmdExceptionCount">0</span></div><div class="cmdKpiSub"><span id="cmdExceptionDetail">0 missing units · 0 exception items</span></div></div>
-    </div>
-
-
-    <div class="cmdTriageGrid">
-      <section class="cmdTriagePanel">
-        <div class="cmdTriageHead"><div><h2>Attention Required</h2><p>Only current-order outlets that need action are shown first.</p></div><div class="cmdTriageActions"><button type="button" class="cmdHeaderBtn" id="cmdOpenPackingBtn">Open Packing</button></div></div>
-        <div class="cmdTriageBody" id="cmdAttentionBody"><div class="cmdEmpty">No exceptions detected.</div></div>
-      </section>
-      <section class="cmdTriagePanel">
-        <div class="cmdTriageHead"><div><h2>Fleet &amp; Capacity Readiness</h2><p>Driver workload before individual outlet detail.</p></div></div>
-        <div class="cmdTriageBody"><div id="cmdFleetCompact" class="cmdFleetCompact"><div class="cmdEmpty">Loading…</div></div></div>
-      </section>
-    </div>
-
-    <section class="cmdMatrixPanel">
-      <div class="cmdMatrixToolbar">
-        <div><h2>Master Dispatch Matrix</h2><p>Searchable operational detail · grouped by readiness state</p></div>
-        <div class="cmdMatrixTools">
-          <button type="button" class="active" data-cmd-matrix-filter="all">All <span id="cmdAllCount">0</span></button>
-          <button type="button" data-cmd-matrix-filter="ready">Ready <span id="cmdReadyCount">0</span></button>
-          <button type="button" data-cmd-matrix-filter="attention">Needs Attention <span id="cmdBlockedCount">0</span></button>
-          <button type="button" id="cmdDriverSetupBtn">Driver / Fee Setup</button>
-        </div>
-      </div>
-      <div class="cmdTableWrap"><table class="cmdTable"><thead><tr><th>#</th><th>Outlet / Cluster</th><th>Assigned Driver</th><th>Packed / Indent</th><th>Status</th><th>Delivery Fee</th><th>Actions</th></tr></thead><tbody id="cmdOutletMatrixBody"><tr><td colspan="7" class="cmdEmpty">Loading current order…</td></tr></tbody></table></div>
     </section>
 
-    <div id="cmdManifestDrop" class="cmdDrop hidden" style="margin-top:10px"><b>Drop manifest here</b><span>or tap to choose .xlsx / .xls / .csv</span></div>
-    <input id="orderFileInput" type="file" accept=".xlsx,.xls,.csv" hidden>
-    <input id="exportLedgerBtn" type="button" hidden>
-    <div id="orderSummary" class="hidden"></div><div id="orderStats" class="hidden"></div>
-
-    <section id="adminDashboard" class="hidden">
-      <input id="dashboardOutletFilter"><input id="dashboardItemFilter"><input id="dashboardDriverFilter"><select id="dashboardStatusFilter"><option value="ALL">All</option></select><datalist id="dashboardOutletOptions"></datalist><datalist id="dashboardItemOptions"></datalist><datalist id="dashboardDriverOptions"></datalist>
-      <div id="dashboardKpis"></div><table><tbody id="outletAnalysisBody"></tbody></table><table><tbody id="itemAnalysisBody"></tbody></table><table><tbody id="exceptionAnalysisBody"></tbody></table><table><tbody id="driverAnalysisBody"></tbody></table>
-      <div id="dashAlerts"></div><span id="dashPendingDelivery"></span><span id="dashDeliveryIssues"></span><span id="dashDeliveryDetail"></span><span id="dashTotalOutlets"></span><span id="dashPackingProgress"></span><span id="dashPackingProgressText"></span><span id="dashPackingProgressBar"></span><span id="dashOrderDate"></span><span id="dashOrderOutlets"></span><span id="dashOrderProducts"></span><span id="dashPackingDetail"></span><span id="dashOrderName"></span><span id="dashOrderStatus"></span><span id="dashOpenDelivery"></span><span id="dashOpenPacking"></span><span id="dashOpenReports"></span>
+    <section class="opsKpiGrid">
+      <div class="opsKpi blue"><span class="opsKpiIcon">▣</span><div><small>Store Outlets</small><strong><b id="opsOutletCount">0</b> <em>/ <span id="opsOutletAllocated">0</span></em></strong><div class="opsBar"><i id="opsOutletBar"></i></div><label id="opsOutletSub">0% allocated</label></div></div>
+      <div class="opsKpi green"><span class="opsKpiIcon">▦</span><div><small>Crate Pack Fulfillment</small><strong><b id="opsPacked">0</b> <em>/ <span id="opsRequired">0</span></em></strong><div class="opsBar"><i id="opsPackedBar"></i></div><label><span id="opsPackedPct">0%</span> packed · <span id="opsShort">0</span> items short</label></div></div>
+      <div class="opsKpi amber"><span class="opsKpiIcon">🚚</span><div><small>Fleet Delivery Leg</small><strong><b id="opsInTransit">0</b> <em>/ <span id="opsFleetTotal">0</span></em></strong><div class="opsBar"><i id="opsFleetBar"></i></div><label><span id="opsDelivered">0</span> delivered · <span id="opsPending">0</span> pending</label></div></div>
+      <button class="opsKpi red opsKpiButton" id="opsAttentionKpi" type="button"><span class="opsKpiIcon">!</span><div><small>Attention Required</small><strong><b id="opsAttention">0</b></strong><label id="opsAttentionSub">No active exceptions</label></div><span class="opsArrow">›</span></button>
     </section>
-    <div id="adminGlobalSearch" style="padding:10px 0 0"><input id="globalSearch" type="search" placeholder="Quick Search… (Ctrl+K)" aria-label="Search outlets, items, drivers, orders and invoices" style="width:100%;box-sizing:border-box;border:1px solid #e2e8f0;background:#f8fafc;border-radius:9px;padding:9px 11px;font-size:10px;outline:none"></div>
+
+    <section class="opsThreeGrid">
+      <div class="opsPanel">
+        <div class="opsPanelHead"><h2>Today's Priorities</h2><span>Action queue</span></div>
+        <div id="opsPriorities" class="opsList"></div>
+      </div>
+      <div class="opsPanel">
+        <div class="opsPanelHead"><h2>Driver Readiness</h2><button id="opsViewFleet" type="button">View Fleet</button></div>
+        <div class="opsDriverHead"><span>DRIVER</span><span>OUTLETS</span><span>STATUS</span><span>PROGRESS</span></div>
+        <div id="opsDriverReadiness"></div>
+      </div>
+      <div class="opsPanel">
+        <div class="opsPanelHead"><h2>Live Activity Feed</h2><button id="opsViewActivity" type="button">View All</button></div>
+        <div id="opsActivityFeed" class="opsActivity"></div>
+      </div>
+    </section>
+
+    <section class="opsPanel opsQuickPanel">
+      <div class="opsPanelHead"><h2>Quick Actions</h2><span>Jump directly to a workflow</span></div>
+      <div class="opsQuickGrid">
+        <button type="button" id="opsImportOrder"><b>☁ Import New Order</b><small>Open Packing &amp; Dispatch</small></button>
+        <button type="button" id="opsOpenPacking"><b>▣ Open Packing</b><small>View live packing status</small></button>
+        <button type="button" id="opsOpenFleet"><b>🚚 Driver / Fleet</b><small>Assign &amp; track deliveries</small></button>
+        <button type="button" id="opsOpenInventory"><b>▦ Inventory</b><small>Stock counts &amp; items</small></button>
+        <button type="button" id="opsOpenReports"><b>▥ Reports</b><small>View analytics &amp; exports</small></button>
+      </div>
+    </section>
+
+    <section class="opsBottomGrid">
+      <div class="opsPanel">
+        <div class="opsPanelHead"><h2>Top Outlets Needing Attention</h2><button id="opsViewAttention" type="button">View All</button></div>
+        <div class="opsTableWrap"><table class="opsTable"><thead><tr><th>#</th><th>OUTLET</th><th>DRIVER</th><th>PACKED / INDENT</th><th>MISSING</th></tr></thead><tbody id="opsAttentionTable"></tbody></table></div>
+      </div>
+      <div class="opsPanel">
+        <div class="opsPanelHead"><h2>Packing Progress by Category</h2><span id="opsCategoryTotal">0 / 0</span></div>
+        <div id="opsCategoryChart" class="opsCategoryChart"></div>
+      </div>
+      <div class="opsPanel">
+        <div class="opsPanelHead"><h2>Delivery Snapshot</h2><div class="opsTabs"><button class="active" data-ops-delivery="all">All</button><button data-ops-delivery="transit">In Transit</button><button data-ops-delivery="pending">Pending</button></div></div>
+        <div id="opsDeliverySnapshot" class="opsSnapshot"></div>
+      </div>
+    </section>
   </div>
 </section>
 <section id="fleetManagement" class="screen hidden">
