@@ -1048,23 +1048,52 @@ async function exitOutlet(){
 }
 $("backBtn").onclick=exitOutlet;if($("saveOutletSettings"))$("saveOutletSettings").onclick=saveOutletSettings;
 
+async function prepareOrderFile(file,sourceInput){
+  if(!file)return false;
+  try{
+    const status=$("orderLoadStatus");
+    if(status){status.textContent="Reading "+file.name+"…";status.classList.remove("hidden");}
+    const data=await file.arrayBuffer();
+    const rows=parseWorkbook(XLSX.read(data,{type:"array"}));
+    validateRows(rows);
+    state.pendingRows=rows;
+    if(status){status.textContent=`✓ ${file.name} — ${rows.length} products validated. Click Create Live Order.`;status.classList.remove("hidden");}
+    if(sourceInput)sourceInput.value="";
+    return true;
+  }catch(err){
+    state.pendingRows=[];
+    const status=$("orderLoadStatus");
+    if(status){status.textContent="";status.classList.add("hidden");}
+    alert(err?.message||"Could not read the order sheet.");
+    return false;
+  }
+}
+
 const commandOrderFile=$("orderFileInput"),commandManifestDrop=$("cmdManifestDrop");
-if(commandOrderFile)commandOrderFile.onchange=e=>{const target=$("fileInput");if(target&&e.target.files?.length){try{target.files=e.target.files;}catch(_){}target.dispatchEvent(new Event("change",{bubbles:true}));}};
+if(commandOrderFile)commandOrderFile.onchange=async e=>{
+  const file=e.target.files?.[0];
+  if(await prepareOrderFile(file,commandOrderFile)){
+    $("packingOverview")?.classList.remove("hidden");
+    $("dashCreateOrderTools")?.classList.remove("hidden");
+    $("home")?.classList.add("hidden");
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
+};
 if(commandManifestDrop){
   ["dragenter","dragover"].forEach(ev=>commandManifestDrop.addEventListener(ev,e=>{e.preventDefault();commandManifestDrop.style.borderColor="#137547";commandManifestDrop.style.background="#f0fdf4";}));
   ["dragleave","drop"].forEach(ev=>commandManifestDrop.addEventListener(ev,e=>{e.preventDefault();commandManifestDrop.style.borderColor="";commandManifestDrop.style.background="";}));
-  commandManifestDrop.addEventListener("drop",e=>{const target=$("fileInput"),file=e.dataTransfer?.files?.[0];if(target&&file){try{target.files=e.dataTransfer.files;}catch(_){}target.dispatchEvent(new Event("change",{bubbles:true}));}});
-}
-$("fileInput").onchange=async e=>{
-  try{
-    const file=e.target.files[0];
+  commandManifestDrop.addEventListener("drop",async e=>{
+    const file=e.dataTransfer?.files?.[0];
     if(!file)return;
-    const data=await file.arrayBuffer();
-    state.pendingRows=parseWorkbook(XLSX.read(data,{type:"array"}));
-    validateRows(state.pendingRows);
-    alert(`Validated ${state.pendingRows.length} products successfully. Click Create Live Order.`);
-  }catch(err){alert(err.message)}
-};
+    await prepareOrderFile(file,null);
+    $("packingOverview")?.classList.remove("hidden");
+    $("dashCreateOrderTools")?.classList.remove("hidden");
+    $("home")?.classList.add("hidden");
+    window.scrollTo({top:0,behavior:"smooth"});
+  });
+}
+const normalOrderFile=$("fileInput");
+if(normalOrderFile)normalOrderFile.onchange=e=>prepareOrderFile(e.target.files?.[0],normalOrderFile);
 
 $("createOrderBtn").onclick=async()=>{
   try{
