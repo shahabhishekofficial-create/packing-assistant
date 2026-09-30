@@ -1510,8 +1510,8 @@ function showConfiguration(){
 }
 function showPackingOverview(){
   if(typeof stopItemNarration==="function")stopItemNarration();
-  document.querySelector(".baSidebar")?.classList.remove("open");
-  document.body.classList.remove("baSidebarOpen");
+  document.querySelector(".cmdSidebar")?.classList.remove("open");
+  document.body.classList.remove("cmdSidebarOpen");
   ["home","packing","packingOverview","driverDashboard","fleetManagement"].forEach(id=>document.getElementById(id)?.classList.add("hidden"));
   document.getElementById("packingOverview")?.classList.remove("hidden");
   setBAActive("sidePacking");
@@ -1580,8 +1580,8 @@ function startCommandCenterAudit(){clearInterval(commandCenterAuditTimer);loadCo
 function showAdminDashboard(){
   if(typeof stopItemNarration==="function")stopItemNarration();
   if(typeof setBAActive==="function")setBAActive("sideDashboard");
-  document.querySelector(".baSidebar")?.classList.remove("open");
-  document.body.classList.remove("baSidebarOpen");
+  document.querySelector(".cmdSidebar")?.classList.remove("open");
+  document.body.classList.remove("cmdSidebarOpen");
   ["packing","packingOverview","driverDashboard","fleetManagement","configuration"].forEach(id=>document.getElementById(id)?.classList.add("hidden"));
   document.getElementById("home")?.classList.remove("hidden");
   ["reportDialog","invoiceDialog","outletSettingsDialog","driverPaymentDialog"].forEach(id=>document.getElementById(id)?.open&&document.getElementById(id).close());
@@ -1644,8 +1644,8 @@ async function saveDriverPayment(){
     $("driverPaymentDialog").close();await loadFleetManagement();
   }catch(e){$("paymentMsg").textContent=e.message;}finally{btn.disabled=false;btn.textContent="Save Payment";}
 }
-document.getElementById("menuFleetManagement")?.addEventListener("click",async()=>{adminMenu.classList.add("hidden");setBAActive("sideDelivery");document.querySelector(".baSidebar")?.classList.remove("open");document.body.classList.remove("baSidebarOpen");document.getElementById("home")?.classList.add("hidden");document.getElementById("packing")?.classList.add("hidden");document.getElementById("packingOverview")?.classList.add("hidden");document.getElementById("driverDashboard")?.classList.add("hidden");document.getElementById("fleetManagement")?.classList.remove("hidden");await loadFleetManagement();});document.getElementById("fleetRefreshBtn")?.addEventListener("click",loadFleetManagement);document.getElementById("closeDriverPayment")?.addEventListener("click",()=>document.getElementById("driverPaymentDialog").close());document.getElementById("saveDriverPayment")?.addEventListener("click",saveDriverPayment);
-document.getElementById("closeDeliveryEvidence")?.addEventListener("click",()=>document.getElementById("deliveryEvidenceViewer")?.close());document.getElementById("menuDriverDashboard")?.addEventListener("click",async()=>{adminMenu.classList.add("hidden");setBAActive("sideDelivery");document.querySelector(".baSidebar")?.classList.remove("open");document.body.classList.remove("baSidebarOpen");document.getElementById("home")?.classList.add("hidden");document.getElementById("packing")?.classList.add("hidden");document.getElementById("packingOverview")?.classList.add("hidden");document.getElementById("fleetManagement")?.classList.add("hidden");document.getElementById("driverDashboard")?.classList.remove("hidden");await loadDriverAdminDashboard();});let driverDashboardTimer=null;function refreshDriverDashboardSoon(){clearInterval(driverDashboardTimer);driverDashboardTimer=setInterval(()=>{if(!document.getElementById("driverDashboard")?.classList.contains("hidden"))loadDriverAdminDashboard();},30000);}function syncDriverDashboardDateControls(){
+document.getElementById("menuFleetManagement")?.addEventListener("click",async()=>{adminMenu.classList.add("hidden");setBAActive("sideDelivery");document.querySelector(".cmdSidebar")?.classList.remove("open");document.body.classList.remove("cmdSidebarOpen");document.getElementById("home")?.classList.add("hidden");document.getElementById("packing")?.classList.add("hidden");document.getElementById("packingOverview")?.classList.add("hidden");document.getElementById("driverDashboard")?.classList.add("hidden");document.getElementById("fleetManagement")?.classList.remove("hidden");await loadFleetManagement();});document.getElementById("fleetRefreshBtn")?.addEventListener("click",loadFleetManagement);document.getElementById("closeDriverPayment")?.addEventListener("click",()=>document.getElementById("driverPaymentDialog").close());document.getElementById("saveDriverPayment")?.addEventListener("click",saveDriverPayment);
+document.getElementById("closeDeliveryEvidence")?.addEventListener("click",()=>document.getElementById("deliveryEvidenceViewer")?.close());document.getElementById("menuDriverDashboard")?.addEventListener("click",async()=>{adminMenu.classList.add("hidden");setBAActive("sideDelivery");document.querySelector(".cmdSidebar")?.classList.remove("open");document.body.classList.remove("cmdSidebarOpen");document.getElementById("home")?.classList.add("hidden");document.getElementById("packing")?.classList.add("hidden");document.getElementById("packingOverview")?.classList.add("hidden");document.getElementById("fleetManagement")?.classList.add("hidden");document.getElementById("driverDashboard")?.classList.remove("hidden");await loadDriverAdminDashboard();});let driverDashboardTimer=null;function refreshDriverDashboardSoon(){clearInterval(driverDashboardTimer);driverDashboardTimer=setInterval(()=>{if(!document.getElementById("driverDashboard")?.classList.contains("hidden"))loadDriverAdminDashboard();},30000);}function syncDriverDashboardDateControls(){
   const custom=$("driverDashboardPreset")?.value==="custom";
   ["driverDashboardFrom","driverDashboardTo","driverDashboardApply"].forEach(id=>$(id)?.classList.toggle("hidden",!custom));
   if($("driverDashboardApply"))$("driverDashboardApply").disabled=!custom||!($("driverDashboardFrom")?.value&&$("driverDashboardTo")?.value);
@@ -1657,7 +1657,7 @@ $("driverDashboardFrom")?.addEventListener("change",syncDriverDashboardDateContr
 $("driverDashboardTo")?.addEventListener("change",syncDriverDashboardDateControls);
 refreshDriverDashboardSoon();
 syncDriverDashboardDateControls();
-document.getElementById("menuPacking")?.addEventListener("click",async()=>{adminMenu.classList.add("hidden");setBAActive("sidePacking");document.querySelector(".baSidebar")?.classList.remove("open");document.body.classList.remove("baSidebarOpen");try{if(!state.outlets.size){const ok=await loadCurrentOrder();if(!ok)return alert("No active order available.");}renderAdminPackingChooser();document.getElementById("home")?.classList.add("hidden");document.getElementById("packingOverview")?.classList.add("hidden");document.getElementById("driverDashboard")?.classList.add("hidden");document.getElementById("packing")?.classList.remove("hidden");document.getElementById("adminPackingChooser")?.classList.remove("hidden");document.getElementById("packing")?.querySelector(".packingTop")?.classList.add("hidden");}catch(e){alert("Could not load packing screen: "+e.message);}});
+document.getElementById("menuPacking")?.addEventListener("click",async()=>{adminMenu.classList.add("hidden");setBAActive("sidePacking");document.querySelector(".cmdSidebar")?.classList.remove("open");document.body.classList.remove("cmdSidebarOpen");try{if(!state.outlets.size){const ok=await loadCurrentOrder();if(!ok)return alert("No active order available.");}renderAdminPackingChooser();document.getElementById("home")?.classList.add("hidden");document.getElementById("packingOverview")?.classList.add("hidden");document.getElementById("driverDashboard")?.classList.add("hidden");document.getElementById("packing")?.classList.remove("hidden");document.getElementById("adminPackingChooser")?.classList.remove("hidden");document.getElementById("packing")?.querySelector(".packingTop")?.classList.add("hidden");}catch(e){alert("Could not load packing screen: "+e.message);}});
 document.getElementById("closeOutletSettings")?.addEventListener("click",()=>document.getElementById("outletSettingsDialog").close());
 
 
@@ -1673,7 +1673,7 @@ document.addEventListener("click",e=>{
   if(!sidebar||!sidebar.classList.contains("open")||!window.matchMedia("(max-width:850px)").matches)return;
   if(!sidebar.contains(e.target)&&e.target!==toggle){
     sidebar.classList.remove("open");
-    document.body.classList.remove("baSidebarOpen");
+    document.body.classList.remove("cmdSidebarOpen");
     toggle?.setAttribute("aria-expanded","false");
   }
 });
@@ -1682,11 +1682,11 @@ document.addEventListener("keydown",e=>{
   const sidebar=document.querySelector(".cmdSidebar");
   if(sidebar?.classList.contains("open")){
     sidebar.classList.remove("open");
-    document.body.classList.remove("baSidebarOpen");
+    document.body.classList.remove("cmdSidebarOpen");
     document.getElementById("baSidebarToggle")?.setAttribute("aria-expanded","false");
   }
 });
-document.getElementById("sideDashboard")?.addEventListener("click",()=>{document.querySelector(".baSidebar")?.classList.remove("open");showAdminDashboard();setBAActive("sideDashboard")});
+document.getElementById("sideDashboard")?.addEventListener("click",()=>{document.querySelector(".cmdSidebar")?.classList.remove("open");showAdminDashboard();setBAActive("sideDashboard")});
 document.getElementById("sidePacking")?.addEventListener("click",showPackingOverview);bindBAAction("sideDelivery","menuDriverDashboard");bindBAAction("sideReports","menuReportBtn");document.getElementById("sideSettings")?.addEventListener("click",showConfiguration);
 document.getElementById("modulePacking")?.addEventListener("click",showPackingOverview);bindBAAction("moduleDelivery","menuDriverDashboard");bindBAAction("moduleReports","menuReportBtn");
 ["modulePurchase","moduleEmployees","sidePurchase","sideEmployees"].forEach(id=>document.getElementById(id)?.addEventListener("click",e=>{if(e.currentTarget.disabled)return;alert((e.currentTarget.dataset.comingSoon||({"modulePurchase":"Purchase & Suppliers","moduleEmployees":"Employees & HR","sidePurchase":"Purchase & Suppliers","sideEmployees":"Employees & HR"}[id]))+" is coming soon.")}));
