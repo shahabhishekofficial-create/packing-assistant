@@ -312,32 +312,5 @@ body.adminPage{background:var(--cmd-bg);font-family:"Plus Jakarta Sans",Inter,sy
 <script defer src="./team.js?v=20260930-adminfix2"></script>
 <script defer src="./inventory-nav.js?v=20260930-adminfix2"></script>
 <script>window.PA_VERSION_URL="../version.json";</script><script defer src="../update.js?v=20260930-adminfix2"></script><script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20260930-adminfix2",{updateViaCache:"none"}).then(r=>r.update()).catch(console.warn));}</script>
-<script>fetch("../version.json?_"+Date.now(),{cache:"no-store"}).then(r=>r.json()).then(v=>{const e=document.getElementById("buildVersion");if(e)e.textContent="Build "+(v.build_id||"unknown")}).catch(()=>{});</script><script>
-/* Admin navigation safety net.
-   These handlers are intentionally independent of app.js event bindings so
-   the primary navigation remains usable if a secondary module throws. */
-window.__adminNavigate=function(section){
-  const ids=["home","packing","packingOverview","driverDashboard","fleetManagement","configuration"];
-  ids.forEach(id=>document.getElementById(id)?.classList.add("hidden"));
-  const menu=document.getElementById("adminMenu"); menu?.classList.add("hidden");
-  const active={dashboard:"sideDashboard",packing:"sidePacking",delivery:"sideDelivery",inventory:"sideInventory",reports:"sideReports",settings:"sideSettings"}[section];
-  document.querySelectorAll(".cmdNav button,.cmdNav a").forEach(x=>x.classList.toggle("active",x.id===active));
-  if(section==="dashboard"){document.getElementById("home")?.classList.remove("hidden");window.scrollTo({top:0,behavior:"smooth"});if(typeof renderHomeOperationalKpis==="function")void renderHomeOperationalKpis();return;}
-  if(section==="packing"){document.getElementById("packingOverview")?.classList.remove("hidden");window.scrollTo({top:0,behavior:"smooth"});if(typeof renderPackingOverview==="function")renderPackingOverview();return;}
-  if(section==="delivery"){document.getElementById("driverDashboard")?.classList.remove("hidden");window.scrollTo({top:0,behavior:"smooth"});if(typeof loadDriverAdminDashboard==="function")void loadDriverAdminDashboard();return;}
-  if(section==="inventory"){location.href="./inventory.html";return;}
-  if(section==="reports"){if(typeof openReportDialog==="function")openReportDialog();return;}
-  if(section==="settings"){document.getElementById("configuration")?.classList.remove("hidden");window.scrollTo({top:0,behavior:"smooth"});if(typeof loadAdminConfiguration==="function")void loadAdminConfiguration();return;}
-};
-const safe=(id,fn)=>document.getElementById(id)?.addEventListener("click",e=>{e.preventDefault();e.stopImmediatePropagation();fn(e);},true);
-safe("sideDashboard",()=>window.__adminNavigate("dashboard"));
-safe("sidePacking",()=>window.__adminNavigate("packing"));
-safe("sideDelivery",()=>window.__adminNavigate("delivery"));
-safe("sideInventory",()=>window.__adminNavigate("inventory"));
-safe("sideReports",()=>window.__adminNavigate("reports"));
-safe("sideSettings",()=>window.__adminNavigate("settings"));
-safe("cmdNewOrderBtn",()=>document.getElementById("orderFileInput")?.click());
-safe("cmdManifestDrop",()=>document.getElementById("orderFileInput")?.click());
-safe("adminMenuBtn",()=>{const m=document.getElementById("adminMenu");m?.classList.toggle("hidden");});
-</script></body>
+<script>fetch("../version.json?_"+Date.now(),{cache:"no-store"}).then(r=>r.json()).then(v=>{const e=document.getElementById("buildVersion");if(e)e.textContent="Build "+(v.build_id||"unknown")}).catch(()=>{});</script></body>
 </html>
