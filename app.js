@@ -1363,7 +1363,8 @@ function startPolling(){
 }
 
 function updateConnection(){
-  $("connection").textContent=navigator.onLine?"● Online":"● Offline";
+  const el=$("connection");
+  if(el) el.textContent=navigator.onLine?"● Online":"● Offline";
 }
 window.addEventListener("online",updateConnection);
 window.addEventListener("offline",updateConnection);
