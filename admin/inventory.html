@@ -92,17 +92,16 @@ body.adminPage{background:#f5f8f7;font-family:"Plus Jakarta Sans",Inter,system-u
   <div class="cmdHeaderRight"><a href="./index.html?section=home" class="cmdHeaderBtn">⌂ Dashboard</a><div class="cmdProfile"><b>Administrator</b><span>Secure session</span></div><a href="./index.html?section=home" class="cmdHeaderBtn">⋮</a></div>
 </header>
 <section class="inventoryAdminPage">
-<div class="inventoryAdminHead"><div><span class="eyebrow">OPERATIONS · RESTAURANT INVENTORY</span><h2>Restaurant Inventory</h2><p>Manage restaurant grocery inventory. Warehouse staff use the separate counting workflow.</p></div><div class="inventoryAdminActions"><button id="downloadTemplateBtn" class="secondary">↓ Download Template</button><button id="importBtn" class="secondary">Import CSV / XLSX</button><input id="fileInput" type="file" accept=".csv,.xlsx,.xls" hidden><a href="./vegetable-inventory.html" class="secondary" style="text-decoration:none;display:inline-flex;align-items:center">🥬 Vegetable Inventory</a><button id="addItemBtn" class="primary">+ Add Item</button></div></div>
+<div class="inventoryAdminHead"><div><span class="eyebrow">OPERATIONS · RESTAURANT INVENTORY</span><h2>Restaurant Inventory</h2><p>Manage restaurant grocery inventory. Warehouse staff use the separate counting workflow.</p></div><div class="inventoryAdminActions"><button id="downloadTemplateBtn" class="secondary">↓ Download Template</button><button id="importBtn" class="secondary">Import CSV / XLSX</button><input id="fileInput" type="file" accept=".csv,.xlsx,.xls" hidden><button id="addItemBtn" class="primary">+ Add Item</button></div></div>
 <div id="inventoryAlert" class="inventoryAlert hidden" role="status"></div>
-<section class="inventoryCard itemMasterTools"><div class="inventorySectionBar"><button class="sectionTab active" data-section="restaurant">🍽️ Restaurant</button><button class="sectionTab" data-section="vegetable">🥬 Vegetable</button><span id="masterSummary" class="masterSummary"></span></div>
+<section class="inventoryCard itemMasterTools"><div class="inventorySectionBar"><span class="sectionTab active">🍽️ Restaurant Inventory</span><span id="masterSummary" class="masterSummary"></span></div>
 <div id="restaurantTools">
 <div class="adminScanBox"><div><span class="eyebrow">BARCODE LOOKUP</span><h3>Scan a barcode</h3><p class="hint">Restaurant items can be identified by barcode and enriched automatically.</p></div><div class="scanRow"><input id="adminBarcode" inputmode="numeric" autocomplete="off" placeholder="Scan / type barcode"><button id="cameraBtn" class="secondary">📷 Scan</button></div><div id="cameraBox" class="cameraBox hidden"><div id="qrReader"></div><button id="stopCameraBtn" class="secondary">Stop camera</button></div><button id="fetchLookupBtn" class="fetchLookupBtn" disabled>Fetch Details</button><p id="lookupStatus" class="hint"></p></div>
 </div>
-<div id="vegetableTools" class="hidden">
-<div class="vegetableIntro"><span class="eyebrow">VEGETABLE INVENTORY</span><h3>Simple vegetable master</h3><p class="hint">Vegetables are a controlled list for warehouse counting. No barcode, pack size or aliases are used.</p></div>
+
 </div></section>
 <section class="inventoryCard invStockDashboard">
-<div class="inventoryCardHead"><div><span class="eyebrow">WAREHOUSE STOCK</span><h3>Available Inventory</h3><p class="hint">Latest physical counts and admin adjustments. Admin changes require a reason and are permanently logged.</p></div><div class="inventoryStockActions"><select id="stockSection"><option value="restaurant">Restaurant</option><option value="vegetable">Vegetable</option></select><button id="stockRefreshBtn" class="secondary">↻ Refresh</button><button id="exportStockPdfBtn" class="primary">↓ Export Stock PDF</button></div></div>
+<div class="inventoryCardHead"><div><span class="eyebrow">WAREHOUSE STOCK</span><h3>Available Inventory</h3><p class="hint">Latest physical counts and admin adjustments. Admin changes require a reason and are permanently logged.</p></div><div class="inventoryStockActions"><span class="stockScope">Restaurant Inventory</span><button id="stockRefreshBtn" class="secondary">↻ Refresh</button><button id="exportStockPdfBtn" class="primary">↓ Export Stock PDF</button></div></div>
 <div class="inventoryStockKpis" id="inventoryStockKpis"></div>
 <div class="tableWrap"><table class="inventoryStockTable"><thead><tr><th>Item</th><th>Category</th><th>Available Qty</th><th>Base UOM</th><th>Last Count</th><th>Counted By</th><th>Updated</th><th></th></tr></thead><tbody id="inventoryStockBody"></tbody></table></div>
 </section>
@@ -128,13 +127,7 @@ body.adminPage{background:#f5f8f7;font-family:"Plus Jakarta Sans",Inter,system-u
 <div class="optionalBox"><b>Optional identification</b><label class="checkLine"><input id="itemNoBarcode" type="checkbox"> No barcode</label><label>Aliases <span class="fieldHint">use | between aliases</span><input id="itemAliases" placeholder="e.g. pasta | spaghetti"></label><label>Brand<input id="itemBrand" autocomplete="off" placeholder="e.g. Barilla"></label></div>
 <div class="conversionNote">Example: UOM <b>kg</b> + Count unit <b>Box</b> + Quantity per box <b>1</b> → staff counts 10 boxes → stock = <b>10 kg</b>. If quantity per box is 5 kg, 10 boxes → <b>50 kg</b>.</div><div class="sourceNote">Data from Open Food Facts is community-supplied. Verify populated fields before saving.</div><div id="fieldErrors" class="fieldErrors"></div>
 <menu><button value="cancel" class="secondary">Cancel</button><button id="saveAnotherBtn" type="button" class="secondary">Save &amp; Add Another</button><button id="saveItemBtn" value="default" class="primary">Save Item</button></menu></form></dialog>
-<dialog id="vegetableDialog" class="inventoryDialog vegetableDialog"><form method="dialog" id="vegetableForm"><div class="dialogHead"><div><span class="eyebrow">VEGETABLE ITEM MASTER</span><h3 id="vegetableDialogTitle">Add Vegetable</h3></div><button value="cancel" class="secondary">✕</button></div>
-<div class="vegetableRule"><b>Vegetable setup</b><span>No barcode · No fixed pack/weight · No aliases</span></div>
-<label>Vegetable name*<input id="vegetableName" required autocomplete="off" placeholder="e.g. Tomato"></label>
-<label>Category*<input id="vegetableCategory" required placeholder="e.g. Tomato / Leafy / Root"></label>
-<label>Base UOM*<select id="vegetableUom"><option value="">Select</option><option value="kg">kg</option><option value="pcs">pcs</option></select></label>
-<div id="vegetableErrors" class="fieldErrors"></div>
-<menu><button value="cancel" class="secondary">Cancel</button><button id="vegetableSaveAnotherBtn" type="button" class="secondary">Save &amp; Add Another</button><button id="vegetableSaveBtn" value="default" class="primary">Save Vegetable</button></menu></form></dialog>
+
 
 </main>
 <script defer src="./inventory.js?v=20261001-invtheme2"></script>
