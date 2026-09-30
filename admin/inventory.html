@@ -8,7 +8,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="../icon-192.png">
 <link rel="stylesheet" href="../styles.css?v=20261001-ops1">
-<link rel="stylesheet" href="./inventory.css?v=20261001-invtheme4">
+<link rel="stylesheet" href="./inventory.css?v=20261001-invtheme5">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
@@ -18,9 +18,9 @@
 <script defer src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>
 <script defer src="../config.js?v=20260927-touchfix1"></script>
-<script defer src="./auth.js?v=veg-admin-1"></script>
+<script defer src="./auth.js?v=20261001-invtheme5"></script>
 <script>window.PA_VERSION_URL="../version.json";</script>
-<script defer src="../update.js?v=20261001-ops1"></script>
+<script defer src="../update.js?v=20261001-invtheme5"></script>
 <style>
 body.adminPage{background:#f5f8f7;font-family:"Plus Jakarta Sans",Inter,system-ui,sans-serif} body.adminPage .cmdSidebar{display:flex}
 .cmdShell{height:100vh;display:flex;overflow:hidden;background:#f5f8f7}
@@ -34,7 +34,7 @@ body.adminPage{background:#f5f8f7;font-family:"Plus Jakarta Sans",Inter,system-u
 @media(max-width:900px){.cmdSidebar{position:fixed;inset:0 auto 0 0;transform:translateX(-100%);transition:.2s;box-shadow:10px 0 30px rgba(15,23,42,.12)}.cmdSidebar.open{transform:none}.cmdShell{height:100dvh}.baMobileMenu{display:inline-flex;border:0;background:transparent;font-size:20px}.cmdHeader{padding:0 12px}.cmdProfile{display:none}.cmdBody{padding:12px}}
 /* Operations Command Center module styling — shared by inventory workspaces */
 .cmdMain{background:#f5f8f7}.cmdBody,.vegCmdBody{background:#f5f8f7}
-.inventoryAdminPage,.vegAdminPage{max-width:1500px;margin:0 auto;padding:22px 20px 34px}.inventoryAdminPage{display:block;width:auto;box-sizing:border-box}.inventoryAdminPage>.inventoryCard{display:block;width:100%;box-sizing:border-box}
+.inventoryAdminPage,.vegAdminPage{max-width:1500px;margin:0 auto;padding:22px 20px 34px}.inventoryAdminPage{display:block;width:auto;box-sizing:border-box}.inventoryAdminPage>.inventoryCard{display:block;width:100%;box-sizing:border-box}.inventoryAdminPage{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:0!important;width:100%!important;max-width:1500px!important;margin:0 auto!important;padding:22px 20px 34px!important;box-sizing:border-box!important}.inventoryAdminPage>*{width:100%!important;max-width:none!important;box-sizing:border-box!important;grid-column:1/-1!important;float:none!important}.inventoryAdminPage>.inventoryCard{display:block!important;flex:none!important}.inventoryAdminHead{display:flex!important;flex-direction:row!important;align-items:flex-end!important;justify-content:space-between!important}.inventoryAdminPage .invStockDashboard{display:block!important}.inventoryAdminPage .inventoryStockKpis{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important}.inventoryAdminPage .inventoryStockActions{display:flex!important}
 .inventoryAdminHead,.vegAdminHead{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;padding:0 2px 16px;margin:0 0 12px}
 .inventoryAdminHead h2,.vegAdminHead h2{font-size:24px;line-height:1.2;letter-spacing:-.3px;color:#0f172a;margin:3px 0 4px;font-weight:700}
 .inventoryAdminHead p,.vegAdminHead p{font-size:11px;line-height:1.6;color:#64748b;margin:0;max-width:720px}
@@ -129,6 +129,6 @@ body.adminPage{background:#f5f8f7;font-family:"Plus Jakarta Sans",Inter,system-u
 
 
 </main>
-<script defer src="./inventory.js?v=20261001-invtheme4"></script>
-<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20261001-invtheme4",{updateViaCache:"none"}).catch(console.warn));}</script>
+<script defer src="./inventory.js?v=20261001-invtheme5"></script>
+<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20261001-invtheme5",{updateViaCache:"none"}).catch(console.warn));}</script>
 </body></html>
