@@ -329,13 +329,15 @@ window.__adminNavigate=function(section){
   if(section==="reports"){if(typeof openReportDialog==="function")openReportDialog();return;}
   if(section==="settings"){document.getElementById("configuration")?.classList.remove("hidden");window.scrollTo({top:0,behavior:"smooth"});if(typeof loadAdminConfiguration==="function")void loadAdminConfiguration();return;}
 };
-document.getElementById("sideDashboard")?.addEventListener("click",()=>window.__adminNavigate("dashboard"),true);
-document.getElementById("sidePacking")?.addEventListener("click",()=>window.__adminNavigate("packing"),true);
-document.getElementById("sideDelivery")?.addEventListener("click",()=>window.__adminNavigate("delivery"),true);
-document.getElementById("sideInventory")?.addEventListener("click",()=>window.__adminNavigate("inventory"),true);
-document.getElementById("sideReports")?.addEventListener("click",()=>window.__adminNavigate("reports"),true);
-document.getElementById("sideSettings")?.addEventListener("click",()=>window.__adminNavigate("settings"),true);
-document.getElementById("cmdNewOrderBtn")?.addEventListener("click",()=>document.getElementById("orderFileInput")?.click(),true);
-document.getElementById("cmdManifestDrop")?.addEventListener("click",()=>document.getElementById("orderFileInput")?.click(),true);
+const safe=(id,fn)=>document.getElementById(id)?.addEventListener("click",e=>{e.preventDefault();e.stopImmediatePropagation();fn(e);},true);
+safe("sideDashboard",()=>window.__adminNavigate("dashboard"));
+safe("sidePacking",()=>window.__adminNavigate("packing"));
+safe("sideDelivery",()=>window.__adminNavigate("delivery"));
+safe("sideInventory",()=>window.__adminNavigate("inventory"));
+safe("sideReports",()=>window.__adminNavigate("reports"));
+safe("sideSettings",()=>window.__adminNavigate("settings"));
+safe("cmdNewOrderBtn",()=>document.getElementById("orderFileInput")?.click());
+safe("cmdManifestDrop",()=>document.getElementById("orderFileInput")?.click());
+safe("adminMenuBtn",()=>{const m=document.getElementById("adminMenu");m?.classList.toggle("hidden");});
 </script></body>
 </html>
