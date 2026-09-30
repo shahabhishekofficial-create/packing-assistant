@@ -1586,9 +1586,9 @@ function renderCommandCenter(deliveryData=null){
     }).join("")||'<div class="cmdStageHint">✓ No current-order exceptions require attention.</div>';
   }
   const totalReq=outlets.reduce((s,o)=>s+o.rows.reduce((a,r)=>a+Number(r.required||0),0),0);
-  const totalPacked=outlets.reduce((s,o)=>s+o.rows.reduce((a,r)=>a+Number(r.packed||0),0),0);
-  const totalMissing=outlets.reduce((s,o)=>s+o.rows.reduce((a,r)=>a+Number(r.missing||0),0),0);
-  const cyclePct=totalReq?Math.round((totalPacked+totalMissing)/totalReq*100):0;
+  const cyclePacked=outlets.reduce((s,o)=>s+o.rows.reduce((a,r)=>a+Number(r.packed||0),0),0);
+  const cycleMissing=outlets.reduce((s,o)=>s+o.rows.reduce((a,r)=>a+Number(r.missing||0),0),0);
+  const cyclePct=totalReq?Math.round((cyclePacked+cycleMissing)/totalReq*100):0;
   const readyCount=outlets.filter(o=>o.status==="completed"&&o.rows.every(r=>Number(r.missing||0)===0)).length + outlets.filter(o=>o.status==="in_progress"&&o.rows.every(r=>r.status)&&o.rows.every(r=>Number(r.missing||0)===0)&&o.driver).length;
   const blockedCount=outlets.filter(o=>!o.driver||o.driver==="Unassigned"||o.rows.some(r=>Number(r.missing||0)>0)).length;
   const up=(id,v)=>{const e=$(id);if(e)e.textContent=String(v);};
