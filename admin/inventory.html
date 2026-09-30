@@ -32,10 +32,9 @@ body.adminPage{background:#f5f8f7;font-family:"Plus Jakarta Sans",Inter,system-u
 .cmdBody{padding:20px;max-width:1600px;margin:auto}
 .baMobileMenu{display:none}
 @media(max-width:900px){.cmdSidebar{position:fixed;inset:0 auto 0 0;transform:translateX(-100%);transition:.2s;box-shadow:10px 0 30px rgba(15,23,42,.12)}.cmdSidebar.open{transform:none}.cmdShell{height:100dvh}.baMobileMenu{display:inline-flex;border:0;background:transparent;font-size:20px}.cmdHeader{padding:0 12px}.cmdProfile{display:none}.cmdBody{padding:12px}}
-<style>
 /* Operations Command Center module styling — shared by inventory workspaces */
 .cmdMain{background:#f5f8f7}.cmdBody,.vegCmdBody{background:#f5f8f7}
-.inventoryAdminPage,.vegAdminPage{max-width:1500px;margin:0 auto;padding:22px 20px 34px}
+.inventoryAdminPage,.vegAdminPage{max-width:1500px;margin:0 auto;padding:22px 20px 34px}.inventoryAdminPage{display:block;width:auto;box-sizing:border-box}.inventoryAdminPage>.inventoryCard{display:block;width:100%;box-sizing:border-box}
 .inventoryAdminHead,.vegAdminHead{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;padding:0 2px 16px;margin:0 0 12px}
 .inventoryAdminHead h2,.vegAdminHead h2{font-size:24px;line-height:1.2;letter-spacing:-.3px;color:#0f172a;margin:3px 0 4px;font-weight:700}
 .inventoryAdminHead p,.vegAdminHead p{font-size:11px;line-height:1.6;color:#64748b;margin:0;max-width:720px}
@@ -61,7 +60,7 @@ body.adminPage{background:#f5f8f7;font-family:"Plus Jakarta Sans",Inter,system-u
 .importActions{padding:0 14px 14px}.importSummary{margin:12px 14px;padding:10px;background:#f8faf9;border-radius:8px}
 .inventoryAlert{margin:0 0 12px;border-radius:9px;font-size:10px}
 @media(max-width:900px){.inventoryAdminHead,.vegAdminHead{display:block}.inventoryAdminActions,.vegAdminActions{justify-content:flex-start;margin-top:12px}.inventoryAdminPage,.vegAdminPage{padding:16px 12px 28px}}
-</style></style>
+</style>
 </head>
 <body class="adminPage">
 <div id="adminBootOverlay"><div class="bootCard">Loading Inventory<span class="bootSub">Starting secure session…</span></div></div>
