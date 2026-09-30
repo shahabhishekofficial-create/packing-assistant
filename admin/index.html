@@ -70,7 +70,7 @@ body.adminPage{background:var(--cmd-bg);font-family:"Plus Jakarta Sans",Inter,sy
   <div class="cmdHeaderLeft"><button id="baSidebarToggle" class="cmdHeaderBtn cmdMobileOnly" type="button">☰</button><span class="cmdCycle">Order Window · Active Cycle</span><span id="liveSyncStatus" class="cmdLiveStatus">LIVE · 3s fallback</span></div>
   <div class="cmdHeaderRight">
     <button id="adminRefreshBtn" class="cmdHeaderBtn" type="button">↻ Refresh</button>
-    <button id="cmdNewOrderBtn" class="cmdHeaderBtn primary" type="button" onclick="document.getElementById('orderFileInput')?.click()">+ New Order</button>
+    <button id="cmdNewOrderBtn" class="cmdHeaderBtn primary" type="button">+ New Order</button>
     <a href="../" target="_blank" rel="noopener" class="cmdHeaderBtn">Staff Packing Portal</a>
     <div class="cmdProfile"><b>Administrator</b><span>Secure session</span></div>
     <button id="adminMenuBtn" class="cmdHeaderBtn" type="button" aria-expanded="false">⋮</button>
@@ -101,7 +101,7 @@ body.adminPage{background:var(--cmd-bg);font-family:"Plus Jakarta Sans",Inter,sy
 
       <aside class="cmdRail">
         <section class="cmdPanel"><div class="cmdPanelHead"><div><h2>Active Fleet Workload</h2><p>Current route by driver</p></div></div><div id="cmdFleetWorkload" style="padding:0 12px"><div class="cmdEmpty">Loading…</div></div></section>
-        <section class="cmdPanel"><div class="cmdPanelHead"><div><h2>Drag &amp; Drop Manifest Parser</h2><p>Start a new order from Excel / CSV</p></div></div><div id="cmdManifestDrop" class="cmdDrop" onclick="document.getElementById('orderFileInput')?.click()"><b>Drop manifest here</b><span>or tap to choose .xlsx / .xls / .csv</span></div><input id="orderFileInput" type="file" accept=".xlsx,.xls,.csv" hidden><input id="exportLedgerBtn" type="button" hidden></section>
+        <section class="cmdPanel"><div class="cmdPanelHead"><div><h2>Drag &amp; Drop Manifest Parser</h2><p>Start a new order from Excel / CSV</p></div></div><div id="cmdManifestDrop" class="cmdDrop"><b>Drop manifest here</b><span>or tap to choose .xlsx / .xls / .csv</span></div><input id="orderFileInput" type="file" accept=".xlsx,.xls,.csv" hidden><input id="exportLedgerBtn" type="button" hidden></section>
         <section class="cmdPanel"><div class="cmdPanelHead"><div><h2>Real-Time Operations Audit Trail</h2><p>Protected source: operations_audit_v1</p></div></div><div id="cmdAuditBody" class="cmdAudit"><div class="cmdEmpty">Loading audit events…</div></div></section>
       </aside>
     </div>
