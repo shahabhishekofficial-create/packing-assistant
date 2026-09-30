@@ -7,15 +7,21 @@
 <title>Bigly Agro — Operations Dashboard</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="../icon-192.png">
-<link rel="stylesheet" href="../styles.css?v=20260930-stability2">
+<link rel="stylesheet" href="../styles.css?v=20261001-stability3">
 <script>
 (function(){
+  window.__PA_ADMIN_BOOT_ERRORS__=[];
   window.addEventListener("error",function(e){
+    const target=e.target;
+    const isScript=target&&target.tagName==="SCRIPT";
+    const detail=isScript ? ("Required script failed: "+(target.src||"inline script")) : (e.message||"Unknown startup error");
+    window.__PA_ADMIN_BOOT_ERRORS__.push(detail);
     const o=document.getElementById("adminBootOverlay"),m=o?.querySelector(".bootSub");
-    if(m)m.textContent="Admin startup failed. Please reload this page.";
-    console.error("Admin startup error:",e.error||e.message||e.filename);
+    if(m && !window.PA_ADMIN_SESSION)m.textContent=isScript ? "Loading required files… Please reload if this continues." : "Admin startup failed. Please reload this page.";
+    console.error("Admin startup error:",e.error||e.message||e.filename||target);
   });
   window.addEventListener("unhandledrejection",function(e){
+    window.__PA_ADMIN_BOOT_ERRORS__.push(String(e.reason?.message||e.reason||"Unhandled rejection"));
     console.error("Admin startup rejection:",e.reason);
   });
 })();
@@ -303,14 +309,18 @@ body.adminPage{background:var(--cmd-bg);font-family:"Plus Jakarta Sans",Inter,sy
   },true);
 })();
 </script>
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-<script>if(!window.supabase){document.write('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\\/script>')}</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+if(!window.supabase){
+  document.write('<script src="https://unpkg.com/@supabase/supabase-js@2"><\\/script>');
+}
+</script>
 <script defer src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script defer src="../config.js?v=20260927-touchfix1"></script>
-<script defer src="./auth.js?v=20260930-stability2"></script>
-<script defer src="../app.js?v=20260930-stability2"></script>
-<script defer src="./team.js?v=20260930-stability2"></script>
-<script defer src="./inventory-nav.js?v=20260930-stability2"></script>
-<script>window.PA_VERSION_URL="../version.json";</script><script defer src="../update.js?v=20260930-stability2"></script><script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20260930-stability2",{updateViaCache:"none"}).then(r=>r.update()).catch(console.warn));}</script>
+<script defer src="./auth.js?v=20261001-stability3"></script>
+<script defer src="../app.js?v=20261001-stability3"></script>
+<script defer src="./team.js?v=20261001-stability3"></script>
+<script defer src="./inventory-nav.js?v=20261001-stability3"></script>
+<script>window.PA_VERSION_URL="../version.json";</script><script defer src="../update.js?v=20261001-stability3"></script><script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20261001-stability3",{updateViaCache:"none"}).then(r=>r.update()).catch(console.warn));}</script>
 <script>fetch("../version.json?_"+Date.now(),{cache:"no-store"}).then(r=>r.json()).then(v=>{const e=document.getElementById("buildVersion");if(e)e.textContent="Build "+(v.build_id||"unknown")}).catch(()=>{});</script></body>
 </html>
