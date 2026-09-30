@@ -1545,32 +1545,33 @@ async function renderHomeOperationalKpis(){
 }
 
 let commandCenterAuditTimer=null;
-function commandCenterStatus(x){if(x.delivered)return["delivered","Delivered"];if(Number(x.packed||0)>0)return["packed","Ready to Deliver"];return["transit","Awaiting Packing"];}
+function commandCenterStatus(x){
+  if(x.delivered)return["delivered","Delivered"];
+  if(Number(x.packed||0)>0)return["packed","Ready to Deliver"];
+  return["transit","Awaiting Packing"];
+}
 function renderCommandCenter(deliveryData=null){
-  const outlets=[...state.outlets.values()].sort((a,b)=>a.rank-b.rank||String(a.name).localeCompare(String(b.name))),order=state.order||{};
-  const totalRequired=outlets.reduce((s,o)=>s+o.rows.reduce((a,r)=>a+Number(r.required||0),0),0),totalPacked=outlets.reduce((s,o)=>s+o.rows.reduce((a,r)=>a+Number(r.packed||0),0),0),totalMissing=outlets.reduce((s,o)=>s+o.rows.reduce((a,r)=>a+Number(r.missing||0),0),0),packedPct=totalRequired?Math.round(totalPacked/totalRequired*1000)/10:0,exceptions=outlets.reduce((s,o)=>s+o.rows.filter(r=>r.status==="MISSING"||r.status==="PARTIAL").length,0);
+  const outlets=[...state.outlets.values()].sort((a,b)=>a.rank-b.rank||String(a.name).localeCompare(String(b.name)));
+  const order=state.order||{};
+  const totalRequired=outlets.reduce((s,o)=>s+o.rows.reduce((a,r)=>a+Number(r.required||0),0),0);
+  const totalPacked=outlets.reduce((s,o)=>s+o.rows.reduce((a,r)=>a+Number(r.packed||0),0),0);
+  const totalMissing=outlets.reduce((s,o)=>s+o.rows.reduce((a,r)=>a+Number(r.missing||0),0),0);
+  const totalExceptions=outlets.reduce((s,o)=>s+o.rows.filter(r=>r.status==="MISSING"||r.status==="PARTIAL").length,0);
+  const packedPct=totalRequired?Math.round(totalPacked/totalRequired*1000)/10:0;
+  const liveOutlets=deliveryData?.live_outlets||[];
+  const liveMap=new Map(liveOutlets.map(x=>[String(x.id),x]));
+  const live=deliveryData?.live||{};
+  const delivered=Number(live.delivered||liveOutlets.filter(x=>x.delivered).length||0);
+  const pending=Number(live.pending_delivery||liveOutlets.filter(x=>!x.delivered&&Number(x.packed||0)>0).length||0);
+  const inTransit=Math.max(0,liveOutlets.filter(x=>!x.delivered&&Number(x.packed||0)>0).length);
+  const allocated=outlets.length;
   const set=(id,v)=>{const e=$(id);if(e)e.textContent=String(v??"—");};
-  set("currentOrderName",order.order_name||"No current order");set("cmdOrderBadge",order.order_name||"Current Order");set("cmdOrderCreated",formatDate(order.created_at)||"—");set("cmdStoreOutlets",outlets.length);set("cmdStoreAllocated",outlets.length);set("cmdPackedUnits",totalPacked);set("cmdIndentUnits",totalRequired);set("cmdPackedPct",packedPct+"%");set("cmdExceptionCount",exceptions);set("cmdExceptionDetail",totalMissing+" missing units · "+exceptions+" exception items");
-  const bar=$("cmdPackedBar");if(bar)bar.style.width=Math.min(100,packedPct)+"%";
-  const live=deliveryData?.live||{};set("cmdDelivered",Number(live.delivered||0));set("cmdInTransit",Math.max(0,Number(live.outlets||0)-Number(live.delivered||0)-Number(live.pending_delivery||0)));set("cmdDeliveryPending",Number(live.pending_delivery||0));
-  const matrix=$("cmdOutletMatrixBody");
-  if(matrix){
-    const liveMap=new Map((deliveryData?.live_outlets||[]).map(x=>[String(x.id),x]));
-    matrix.innerHTML=outlets.map((o,i)=>{
-      const x=liveMap.get(String(o.id))||{store_name:o.name,driver:o.driver||"Unassigned",required:o.rows.reduce((s,r)=>s+r.required,0),packed:o.rows.reduce((s,r)=>s+r.packed,0),missing:o.rows.reduce((s,r)=>s+r.missing,0),packing_done:o.status==="completed",delivered:false,delivery_charge:o.deliveryCharge||0};
-      const req=Number(x.required||0),pk=Number(x.packed||0),missing=Number(x.missing||0),pct=req?Math.round(pk/req*100):0,[statusClass,statusLabel]=commandCenterStatus(x),driver=String(x.driver||"Unassigned"),driverClass=driver==="Unassigned"?"unassigned":"assigned",phone=x.driver_phone||"",ready=pk>0&&!x.delivered,attention=missing>0||driver==="Unassigned";
-      return '<tr data-cmd-state="all" data-cmd-ready="'+String(ready)+'" data-cmd-attention="'+String(attention)+'"><td><span class="cmdRank">#'+String(i+1).padStart(2,"0")+'</span></td><td><div class="cmdOutletName">'+esc(x.store_name||o.name)+'</div><span class="cmdCluster">Ahmedabad</span></td><td><div class="cmdDriver">'+esc(driver)+'</div><div class="cmdTags"><span class="cmdTag '+driverClass+'">'+(driver==="Unassigned"?"UNASSIGNED":"ACTIVE")+'</span><span class="cmdPhone">'+(phone?esc(phone):"Phone —")+'</span></div></td><td><div class="cmdProgressMeta"><b>'+pk+'</b><span>/ '+req+'</span><em>'+pct+'%</em></div><div class="cmdProgress"><i style="width:'+Math.min(100,pct)+'%"></i></div></td><td><span class="cmdStatus '+statusClass+'">'+statusLabel+'</span></td><td class="cmdFee">₹'+Number(x.delivery_charge??o.deliveryCharge??0).toLocaleString("en-IN",{maximumFractionDigits:2})+'</td><td><div class="cmdActions"><button type="button" data-cmd-action="pack" data-outlet-id="'+esc(o.id)+'">Open</button><button type="button" data-cmd-action="setup" data-outlet-id="'+esc(o.id)+'">Setup</button></div></td></tr>';
-    }).join("")||'<tr><td colspan="7" class="cmdEmpty">No current-order outlets.</td></tr>';
-  }
-  const fleet=$("cmdFleetWorkload");
-  if(fleet){
-    const groups=new Map();for(const x of deliveryData?.live_outlets||[]){const d=String(x.driver||"Unassigned");if(!groups.has(d))groups.set(d,{name:d,total:0,delivered:0,pending:0});const g=groups.get(d);g.total++;if(x.delivered)g.delivered++;else if(x.packing_done)g.pending++;}
-    if(!groups.size)for(const o of outlets){const d=o.driver||"Unassigned";if(!groups.has(d))groups.set(d,{name:d,total:0,delivered:0,pending:0});groups.get(d).total++;}
-    fleet.innerHTML=[...groups.values()].sort((a,b)=>a.name.localeCompare(b.name)).map(g=>'<div class="cmdFleetRow"><div><b>'+esc(g.name)+'</b><small>'+g.total+' outlet'+(g.total===1?"":"s")+'</small></div><span>'+g.delivered+' delivered · '+g.pending+' ready</span></div>').join("")||'<div class="cmdEmpty">No fleet workload.</div>';
-  }
-  const health=$("liveSyncStatus");if(health){health.textContent="LIVE · 3s fallback";health.className="cmdLiveStatus";}
+  const bar=(id,p)=>{const e=$(id);if(e)e.style.width=Math.min(100,Math.max(0,p))+"%";};
 
-  const attention=$("cmdAttentionBody");
+  set("opsActiveOrder",(order.order_name||"No current order")+" · "+(formatDate(order.created_at)||"—"));
+  set("opsOutletCount",outlets.length);set("opsOutletAllocated",allocated);set("opsOutletSub",allocated?"100% allocated":"0% allocated");bar("opsOutletBar",allocated?100:0);
+  set("opsPacked",totalPacked);set("opsRequired",totalRequired);set("opsPackedPct",packedPct+"%");set("opsShort",totalMissing);bar("opsPackedBar",packedPct);
+  set("opsInTransit",inTransit);set("opsFleetTotal",outlets.length);set("opsDelivered",delivered);set("opsPending",pending);bar("opsFleetBar",outlets.length?(inTransit/outlets.length)*100:0);
   const attentionRows=outlets.map(o=>{
     const required=o.rows.reduce((s,r)=>s+Number(r.required||0),0);
     const packed=o.rows.reduce((s,r)=>s+Number(r.packed||0),0);
@@ -1578,46 +1579,77 @@ function renderCommandCenter(deliveryData=null){
     const incomplete=Math.max(0,required-(packed+missing));
     return {o,required,packed,missing,incomplete};
   }).filter(x=>x.missing>0||x.incomplete>0||!x.o.driver).sort((a,b)=>(b.missing*100+b.incomplete)-(a.missing*100+a.incomplete));
-  if(attention){
-    attention.innerHTML=attentionRows.slice(0,6).map(x=>{
-      const reason=x.missing>0 ? x.missing+" missing unit"+(x.missing===1?"":"s") : x.incomplete+" unit"+(x.incomplete===1?"":"s")+" still to pack";
-      const driver=!x.o.driver||x.o.driver==="Unassigned" ? "Driver unassigned" : x.o.driver;
-      return '<div class="cmdAttentionRow"><div><b>'+esc(x.o.name)+'</b><small>'+esc(reason)+' · '+esc(driver)+'</small></div><div class="cmdTriageActions"><span class="cmdAttentionMetric">'+(x.missing>0?x.missing+" short":Math.round((x.packed+ x.missing)/Math.max(1,x.required)*100)+"%")+'</span><button type="button" data-cmd-action="pack" data-outlet-id="'+esc(x.o.id)+'">Open</button><button type="button" data-cmd-action="setup" data-outlet-id="'+esc(x.o.id)+'">Setup</button></div></div>';
-    }).join("")||'<div class="cmdStageHint">✓ No current-order exceptions require attention.</div>';
+  set("opsAttention",attentionRows.length);
+  set("opsAttentionSub",attentionRows.length?attentionRows.reduce((s,x)=>s+x.missing,0)+" missing units · "+totalExceptions+" exception items":"No active exceptions");
+  set("opsStagePacking",packedPct>=100?"Complete":totalPacked>0?"In Progress":"Not Started");
+  set("opsStageDispatch",delivered>=outlets.length&&outlets.length?"Complete":inTransit?"Ongoing":totalPacked?"Ready":"Waiting");
+  set("opsStageCycle",order.status==="completed"||packedPct>=100?"Complete":"Active");
+
+  const priorities=$("opsPriorities");
+  if(priorities){
+    const unassigned=outlets.filter(o=>!o.driver||o.driver==="Unassigned").length;
+    const damage=outlets.reduce((s,o)=>s+o.rows.filter(r=>String(r.reason||"").toUpperCase().includes("DAMAGE")).length,0);
+    const invoicePending=liveOutlets.filter(x=>!x.delivered&&Number(x.packed||0)>0&&!x.invoice_uploaded).length;
+    const items=[
+      ["⚠",attentionRows.filter(x=>x.missing||x.incomplete).length,"Outlets needing attention (missing / partial)","issue"],
+      ["🚚",unassigned,"Unassigned outlets (driver)","warn"],
+      ["!",damage,"Items with damage reported","warn"],
+      ["▣",invoicePending,"Invoices pending upload","normal"]
+    ].filter(x=>x[1]>0);
+    priorities.innerHTML=items.map(x=>'<div class="opsPriority '+x[3]+'"><span class="opsPriorityIcon">'+x[0]+'</span><div><b>'+esc(x[2])+'</b><small>Current order</small></div><strong>'+x[1]+'</strong></div>').join("")||'<div class="opsPriority"><span class="opsPriorityIcon">✓</span><div><b>No immediate priorities</b><small>Operations are on track</small></div></div>';
   }
-  const totalReq=outlets.reduce((s,o)=>s+o.rows.reduce((a,r)=>a+Number(r.required||0),0),0);
-  const cyclePacked=outlets.reduce((s,o)=>s+o.rows.reduce((a,r)=>a+Number(r.packed||0),0),0);
-  const cycleMissing=outlets.reduce((s,o)=>s+o.rows.reduce((a,r)=>a+Number(r.missing||0),0),0);
-  const cyclePct=totalReq?Math.round((cyclePacked+cycleMissing)/totalReq*100):0;
-  const readyCount=outlets.filter(o=>o.rows.some(r=>Number(r.packed||0)>0)).length;
-  const attentionCount=outlets.filter(o=>!o.driver||o.driver==="Unassigned"||o.rows.some(r=>Number(r.missing||0)>0)).length;
-  const up=(id,v)=>{const e=$(id);if(e)e.textContent=String(v);};
-  up("cmdUrgencyProgress",cyclePct+"% packed");
-  up("cmdUrgencyAlerts",attentionRows.length+" alert"+(attentionRows.length===1?"":"s"));
-  up("cmdUrgencyFleet",Math.max(0,readyCount)+" ready for dispatch");
-  up("cmdAllCount",outlets.length);up("cmdReadyCount",readyCount);up("cmdBlockedCount",attentionCount);
-  const compact=$("cmdFleetCompact");
-  if(compact){
-    const compactMap=new Map();
-    for(const x of deliveryData?.live_outlets||[]){
-      const d=String(x.driver||"Unassigned");
-      if(!compactMap.has(d))compactMap.set(d,{name:d,total:0,delivered:0,ready:0});
-      const g=compactMap.get(d);g.total++;
-      if(x.delivered)g.delivered++;
-      else if(x.packing_done&&Number(x.missing||0)===0)g.ready++;
-    }
-    if(!compactMap.size) for(const o of outlets){
+
+  const driverBox=$("opsDriverReadiness");
+  if(driverBox){
+    const drivers=new Map();
+    for(const o of outlets){
       const d=String(o.driver||"Unassigned");
-      if(!compactMap.has(d))compactMap.set(d,{name:d,total:0,delivered:0,ready:0});
-      compactMap.get(d).total++;
-      if(o.status==="completed"&&o.rows.every(r=>Number(r.missing||0)===0))compactMap.get(d).ready++;
+      if(!drivers.has(d))drivers.set(d,{name:d,outlets:0,packed:0,total:0,delivered:0});
+      const g=drivers.get(d);g.outlets++;
+      g.total+=o.rows.reduce((s,r)=>s+Number(r.required||0),0);
+      g.packed+=o.rows.reduce((s,r)=>s+Number(r.packed||0),0);
     }
-    const compactGroups=[...compactMap.values()].sort((a,b)=>a.name.localeCompare(b.name));
-    compact.innerHTML=compactGroups.map(g=>{
-      const ready=g.ready;
-      return '<div class="cmdFleetCompactRow"><div><b>'+esc(g.name)+'</b><small>'+g.total+' outlet'+(g.total===1?"":"s")+' assigned</small></div><span class="cmdFleetReady">'+Math.max(0,ready)+' ready</span></div>';
-    }).join("")||'<div class="cmdStageHint">No driver workload loaded.</div>';
+    for(const x of liveOutlets){
+      const d=String(x.driver||"Unassigned");if(!drivers.has(d))drivers.set(d,{name:d,outlets:0,packed:0,total:0,delivered:0});
+      if(x.delivered)drivers.get(d).delivered++;
+    }
+    driverBox.innerHTML=[...drivers.values()].sort((a,b)=>a.name.localeCompare(b.name)).slice(0,6).map(g=>{
+      const pct=g.total?Math.round(g.packed/g.total*100):0;
+      const status=g.name==="Unassigned"?"Needs Setup":g.delivered===g.outlets&&g.outlets?"Complete":g.packed>0?"Packing":"Ready";
+      const cls=status==="Complete"?"":status==="Packing"?"packing":"transit";
+      return '<div class="opsDriverRow"><div><b>'+esc(g.name)+'</b><small>'+g.outlets+' outlet'+(g.outlets===1?"":"s")+'</small></div><span>'+g.outlets+'</span><span class="opsStatus '+cls+'">'+status+'</span><div><div class="opsMiniBar"><i style="width:'+pct+'%"></i></div><small>'+g.packed+' / '+g.total+'</small></div></div>';
+    }).join("")||'<div class="opsPriority"><div><b>No drivers assigned</b></div></div>';
   }
+
+  const attentionTable=$("opsAttentionTable");
+  if(attentionTable){
+    attentionTable.innerHTML=attentionRows.slice(0,5).map((x,i)=>'<tr><td>'+String(i+1)+'</td><td><b>'+esc(x.o.name)+'</b></td><td>'+esc(x.o.driver||"Unassigned")+'</td><td>'+x.packed+' / '+x.required+'</td><td><span class="opsMissing">'+x.missing+'</span></td></tr>').join("")||'<tr><td colspan="5">No outlets need attention.</td></tr>';
+  }
+
+  const category=$("opsCategoryChart");
+  if(category){
+    const cats=new Map();
+    for(const o of outlets)for(const r of o.rows){
+      const name=String(r.category||r.section||"All Items");
+      if(!cats.has(name))cats.set(name,{required:0,packed:0});
+      const g=cats.get(name);g.required+=Number(r.required||0);g.packed+=Number(r.packed||0);
+    }
+    const arr=[...cats.entries()].sort((a,b)=>b[1].required-a[1].required).slice(0,6);
+    category.innerHTML=arr.map(([name,g])=>'<div class="opsCatRow"><label>'+esc(name)+'</label><div class="opsCatBar"><i style="width:'+Math.min(100,g.required?g.packed/g.required*100:0)+'%"></i></div><span>'+g.packed+' / '+g.required+'</span></div>').join("")||'<div class="opsPriority">No category data available.</div>';
+    set("opsCategoryTotal",totalPacked+" / "+totalRequired);
+  }
+
+  const snapshot=$("opsDeliverySnapshot");
+  if(snapshot){
+    snapshot.dataset.rows=JSON.stringify(liveOutlets);
+    const rows=liveOutlets.slice().sort((a,b)=>Number(!!b.delivered)-Number(!!a.delivered)).slice(0,6);
+    snapshot.innerHTML=rows.map(x=>{
+      const status=x.delivered?"Delivered":Number(x.packed||0)>0?"In Transit":"Pending";
+      const cls=x.delivered?"delivered":status==="Pending"?"pending":"";
+      return '<div class="opsSnapshotRow"><div><b>'+esc(x.store_name||"Outlet")+'</b><small>'+esc(x.driver||"Unassigned")+'</small></div><span class="snapStatus '+cls+'">'+status+'</span><small>'+(x.delivered?formatDate(x.delivered_at):"—")+'</small></div>';
+    }).join("")||'<div class="opsPriority"><div><b>No delivery activity yet</b></div></div>';
+  }
+
   void loadCommandCenterAudit();
 }
 async function loadCommandCenterAudit(){
