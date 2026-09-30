@@ -194,8 +194,14 @@ function exportStockPDF(){
  doc.save("Bigly-Agro-"+section+"-Final-In-Hand-Stock-"+stamp+".pdf");
 }
 function wire(){
- const go=section=>location.assign("./index.html?section="+encodeURIComponent(section));$("backDashboard").onclick=()=>go("home");$("sideDashboard").onclick=()=>go("home");$("sidePacking").onclick=()=>go("packing");$("sideDelivery").onclick=()=>go("delivery");$("sideReports").onclick=()=>go("reports");$("sideSettings").onclick=()=>go("settings");
- $("baSidebarToggle").onclick=()=>document.querySelector(".baSidebar")?.classList.toggle("open");
+ const go=section=>location.assign("./index.html?section="+encodeURIComponent(section));
+ $("backDashboard")?.addEventListener("click",()=>go("home"));
+ $("sideDashboard")?.addEventListener("click",e=>{e.preventDefault();go("home")});
+ $("sidePacking")?.addEventListener("click",e=>{e.preventDefault();go("packing")});
+ $("sideDelivery")?.addEventListener("click",e=>{e.preventDefault();go("delivery")});
+ $("sideReports")?.addEventListener("click",e=>{e.preventDefault();go("reports")});
+ $("sideSettings")?.addEventListener("click",e=>{e.preventDefault();go("settings")});
+ $("baSidebarToggle")?.addEventListener("click",()=>document.querySelector(".cmdSidebar")?.classList.toggle("open"));
  document.querySelectorAll(".sectionTab").forEach(b=>b.onclick=async()=>{document.querySelectorAll(".sectionTab").forEach(x=>x.classList.remove("active"));b.classList.add("active");S.section=b.dataset.section;$("itemSearch").value="";const veg=S.section==="vegetable";$("restaurantTools").classList.toggle("hidden",veg);$("vegetableTools").classList.toggle("hidden",!veg);$("downloadTemplateBtn").classList.toggle("hidden",veg);$("importBtn").classList.toggle("hidden",veg);$("addItemBtn").textContent=veg?"+ Add Vegetable":"+ Add Restaurant Item";await loadItems()});
  $("stockRefreshBtn")?.addEventListener("click",()=>Promise.all([loadStockDashboard(),loadInventoryLog()]).catch(e=>alertBox(e.message||"Could not refresh stock.","error")));$("exportStockPdfBtn")?.addEventListener("click",exportStockPDF);$("inventoryLogRefresh")?.addEventListener("click",()=>loadInventoryLog().catch(e=>alertBox(e.message||"Could not refresh log.","error")));$("stockSection")?.addEventListener("change",()=>Promise.all([loadStockDashboard(),loadInventoryLog()]).catch(e=>alertBox(e.message||"Could not refresh stock.","error")));$("adjustConfirmBtn")?.addEventListener("click",saveAdjustment);$("addCategoryBtn").onclick=addCategory;$("itemSearch").oninput=renderItems;$("itemFilter").onchange=renderItems;$("addItemBtn").onclick=()=>S.section==="vegetable"?openVegetableDialog():openDialog();$("downloadTemplateBtn").onclick=downloadTemplate;
  $("importBtn").onclick=()=>$("fileInput").click();$("fileInput").onchange=e=>{const f=e.target.files?.[0];if(f)previewImport(f);e.target.value=""};
