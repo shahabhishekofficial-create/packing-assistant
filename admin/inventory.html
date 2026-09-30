@@ -1,17 +1,66 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#f6f8fb"><title>Bigly Agro — Inventory Item Master</title>
-<link rel="manifest" href="manifest.json"><link rel="stylesheet" href="../styles.css?v=20260927-touchfix2"><link rel="stylesheet" href="./inventory.css?v=veg-admin-1">
-<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script defer src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script><script defer src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script><script defer src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script><script defer src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script><script defer src="../config.js?v=20260927-touchfix1"></script><script defer src="./auth.js?v=veg-admin-1"></script>
-<script>window.PA_VERSION_URL="../version.json";</script><script defer src="../update.js?v=veg-admin-1"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f5f8f7">
+<title>Bigly Agro — Inventory</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="../icon-192.png">
+<link rel="stylesheet" href="../styles.css?v=20261001-ops1">
+<link rel="stylesheet" href="./inventory.css?v=20261001-inventory1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script defer src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>
+<script defer src="../config.js?v=20260927-touchfix1"></script>
+<script defer src="./auth.js?v=veg-admin-1"></script>
+<script>window.PA_VERSION_URL="../version.json";</script>
+<script defer src="../update.js?v=20261001-ops1"></script>
+<style>
+body.adminPage{background:#f5f8f7;font-family:"Plus Jakarta Sans",Inter,system-ui,sans-serif}
+.cmdShell{height:100vh;display:flex;overflow:hidden;background:#f5f8f7}
+.cmdSidebar{width:248px;background:#fff;border-right:1px solid #e2e8f0;display:flex;flex-direction:column;flex:none;z-index:30}
+.cmdBrand{padding:18px;border-bottom:1px solid #eef2f7;display:flex;gap:11px;align-items:center}.cmdLogo{width:40px;height:40px;border-radius:12px;background:#0f5132;color:#b7f7ce;display:grid;place-items:center;font-weight:800;box-shadow:0 6px 16px rgba(15,81,50,.15)}.cmdBrand h1{font-size:13px;margin:0;font-weight:800;color:#0f172a}.cmdBrand p{font-size:9px;margin:3px 0 0;color:#94a3b8;font-weight:800;letter-spacing:.12em}
+.cmdHealth{margin:10px 12px;padding:9px 10px;border:1px solid #dcfce7;background:#f0fdf4;border-radius:10px;font-size:10px;color:#166534;display:flex;justify-content:space-between}.cmdHealth i{width:7px;height:7px;border-radius:50%;background:#22c55e;display:inline-block;margin-right:6px}
+.cmdNav{padding:10px;overflow:auto;flex:1}.cmdNavLabel{font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#94a3b8;font-weight:800;padding:8px 10px 5px}.cmdNav a,.cmdNav button{width:100%;border:0;background:transparent;color:#475569;text-decoration:none;text-align:left;padding:9px 10px;border-radius:9px;font-size:11px;font-weight:700;display:flex;align-items:center;gap:9px;cursor:pointer}.cmdNav a:hover,.cmdNav button:hover{background:#f1f5f9;color:#0f172a}.cmdNav .active{background:#0f5132;color:#fff}.cmdNav .soon{color:#94a3b8;cursor:not-allowed}.cmdNav em{font-size:8px;margin-left:auto;background:#f1f5f9;color:#64748b;padding:3px 5px;border-radius:5px;font-style:normal}.cmdFooter{border-top:1px solid #eef2f7;padding:11px 14px;font-size:9px;color:#64748b}.cmdFooter b{color:#16a34a}
+.cmdMain{flex:1;min-width:0;overflow:auto}.cmdHeader{height:64px;background:#fff;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;padding:0 22px;position:sticky;top:0;z-index:20}.cmdHeaderLeft,.cmdHeaderRight{display:flex;align-items:center;gap:10px}.cmdCycle{font-size:10px;font-weight:700;color:#475569;background:#f8fafc;border:1px solid #e2e8f0;padding:7px 10px;border-radius:8px}.cmdLiveStatus{font-size:10px;font-weight:800;color:#15803d;background:#f0fdf4;border:1px solid #bbf7d0;padding:7px 9px;border-radius:8px}.cmdHeaderBtn{border:1px solid #dbe3eb;background:#fff;color:#334155;padding:7px 10px;border-radius:8px;font-size:10px;font-weight:800;text-decoration:none;cursor:pointer}.cmdHeaderBtn.primary{background:#0f5132;color:#fff;border-color:#0f5132}.cmdProfile{padding-left:10px;border-left:1px solid #e2e8f0;font-size:10px;text-align:right}.cmdProfile b{display:block;color:#0f172a}.cmdProfile span{color:#94a3b8}
+.cmdBody{padding:20px;max-width:1600px;margin:auto}
+.baMobileMenu{display:none}
+@media(max-width:900px){.cmdSidebar{position:fixed;inset:0 auto 0 0;transform:translateX(-100%);transition:.2s;box-shadow:10px 0 30px rgba(15,23,42,.12)}.cmdSidebar.open{transform:none}.cmdShell{height:100dvh}.baMobileMenu{display:inline-flex;border:0;background:transparent;font-size:20px}.cmdHeader{padding:0 12px}.cmdProfile{display:none}.cmdBody{padding:12px}}
+</style>
 </head>
 <body class="adminPage">
-<div id="adminBootOverlay"><div class="bootCard">Loading Item Master<span class="bootSub">Starting secure session…</span></div></div>
-<main id="app"><div class="baLayout">
-<aside class="baSidebar"><button class="baSideItem" id="sideDashboard" onclick="window.location.href='./index.html?section=home'">⌂ <span>Dashboard</span></button><button class="baSideItem" id="sidePacking" onclick="window.location.href='./index.html?section=packing'">▣ <span>Packing &amp; Dispatch</span><b>›</b></button><button class="baSideItem" id="sideDelivery" onclick="window.location.href='./index.html?section=delivery'">🚚 <span>Delivery &amp; Fleet</span><b>›</b></button><button class="baSideItem active" id="sideInventory">□ <span>Inventory</span><b>›</b></button><button class="baSideItem coming">🛒 <span>Purchase &amp; Suppliers</span></button><button class="baSideItem coming">♟ <span>Employees &amp; HR</span></button><button class="baSideItem" id="sideReports" onclick="window.location.href='./index.html?section=reports'">▥ <span>Reports &amp; Analytics</span><b>›</b></button><div class="baSideDivider"></div><button class="baSideItem" id="sideSettings" onclick="window.location.href='./index.html?section=settings'">⚙ <span>Settings</span><b>›</b></button></aside>
-<div class="baContent"><header class="appHeader baHeader"><div class="baBrand"><button id="baSidebarToggle" class="baMobileMenu" aria-label="Open menu">☰</button><div class="baLogo">BA</div><div><h1>Bigly Agro Private Limited</h1><p>Fresh Produce. Stronger Partnerships.</p></div></div><div class="headerActions"><span id="connection" class="liveBadge">● Online</span><span class="baHeaderDate" id="baHeaderDate"></span><button id="backDashboard" onclick="window.location.href='./index.html?section=home'" class="menuDots" title="Dashboard">⌂</button></div></header>
+<div id="adminBootOverlay"><div class="bootCard">Loading Inventory<span class="bootSub">Starting secure session…</span></div></div>
+<main id="app">
+<div class="cmdShell">
+<aside class="cmdSidebar" id="inventorySidebar">
+  <div class="cmdBrand"><div class="cmdLogo">BA</div><div><h1>Bigly Agro Private Limited</h1><p>OPS COMMAND CENTER</p></div></div>
+  <div class="cmdHealth"><span><i></i>Live Sync Active</span><span>5m sync</span></div>
+  <nav class="cmdNav">
+    <div class="cmdNavLabel">CORE OPERATIONS</div>
+    <a id="sideDashboard" href="./index.html?section=home">▦ <span>Operations Dashboard</span></a>
+    <a id="sidePacking" href="./index.html?section=packing">▣ <span>Packing &amp; Dispatch</span></a>
+    <a id="sideDelivery" href="./index.html?section=delivery">🚚 <span>Delivery &amp; Fleet</span></a>
+    <a id="sideInventory" class="active" href="./inventory.html">□ <span>Inventory &amp; Stock</span></a>
+    <div class="cmdNavLabel">PROCUREMENT &amp; TEAMS</div>
+    <a class="soon" href="javascript:void(0)">🛒 <span>Purchase &amp; Suppliers</span><em>Soon</em></a>
+    <a class="soon" href="javascript:void(0)">♟ <span>Employees &amp; HR</span><em>Soon</em></a>
+    <div class="cmdNavLabel">GOVERNANCE</div>
+    <a id="sideReports" href="./index.html?section=reports">▥ <span>Reports &amp; Analytics</span></a>
+    <a id="sideSettings" href="./index.html?section=settings">⚙ <span>Settings / Audit</span></a>
+  </nav>
+  <div class="cmdFooter">System status <b>Operational</b></div>
+</aside>
+<div class="cmdMain">
+<header class="cmdHeader">
+  <div class="cmdHeaderLeft"><button id="baSidebarToggle" class="baMobileMenu" aria-label="Open menu">☰</button><span class="cmdCycle">Inventory · Item Master</span><span id="connection" class="cmdLiveStatus">LIVE</span></div>
+  <div class="cmdHeaderRight"><a href="./index.html?section=home" class="cmdHeaderBtn">⌂ Dashboard</a><div class="cmdProfile"><b>Administrator</b><span>Secure session</span></div><a href="./index.html?section=home" class="cmdHeaderBtn">⋮</a></div>
+</header>
 <section class="inventoryAdminPage">
 <div class="inventoryAdminHead"><div><span class="eyebrow">ADMIN · INVENTORY</span><h2>Item Master</h2><p>Manage inventory master data. Warehouse staff use the separate counting workflow.</p></div><div class="inventoryAdminActions"><button id="downloadTemplateBtn" class="secondary">↓ Download Template</button><button id="importBtn" class="secondary">Import CSV / XLSX</button><input id="fileInput" type="file" accept=".csv,.xlsx,.xls" hidden><a href="./vegetable-inventory.html" class="secondary" style="text-decoration:none;display:inline-flex;align-items:center">🥬 Vegetable Inventory</a><button id="addItemBtn" class="primary">+ Add Item</button></div></div>
 <div id="inventoryAlert" class="inventoryAlert hidden" role="status"></div>
@@ -34,6 +83,9 @@
 <section class="inventoryCard"><div class="inventoryCardHead"><div><span class="eyebrow">ITEM MASTER</span><h3 id="itemsTitle">Restaurant Items</h3><p class="hint">Active and inactive items are retained. Nothing is overwritten or deleted.</p></div></div><div class="itemSearchRow"><input id="itemSearch" type="search" placeholder="Search item, alias, category or barcode…"><select id="itemFilter"><option value="active">Active</option><option value="all">All</option><option value="inactive">Inactive</option></select></div><div id="itemList" class="adminItemList"></div></section>
 <section id="importPreviewCard" class="inventoryCard hidden"><div class="inventoryCardHead"><div><span class="eyebrow">IMPORT PREVIEW</span><h3>Review before import</h3></div><button id="cancelImportBtn" class="secondary">Cancel</button></div><div id="importSummary" class="importSummary"></div><div class="tableWrap"><table class="importTable"><thead><tr><th>Row</th><th>Name</th><th>Section</th><th>Status</th><th>Error</th></tr></thead><tbody id="importRows"></tbody></table></div><div class="importActions"><button id="downloadErrorsBtn" class="secondary hidden">↓ Download Error CSV</button><button id="confirmImportBtn" class="primary" disabled>Import Valid Rows</button></div></section>
 </section>
+
+</div>
+</div>
 <dialog id="adjustInventoryDialog" class="inventoryDialog"><form method="dialog" id="adjustInventoryForm"><div class="dialogHead"><div><span class="eyebrow">ADMIN STOCK ADJUSTMENT</span><h3>Change Available Quantity</h3><p id="adjustItemLabel" class="hint"></p></div><button value="cancel" class="secondary">✕</button></div><label>Available quantity*<input id="adjustQty" type="number" min="0" step="any" inputmode="decimal" required></label><label>Reason*<textarea id="adjustReason" rows="4" required placeholder="Explain why the available quantity is being changed"></textarea><div id="adjustErrors" class="fieldErrors"></div><menu><button value="cancel" class="secondary">Cancel</button><button id="adjustConfirmBtn" value="default" class="primary">Save Adjustment</button></menu></form></dialog>
 <dialog id="itemDialog" class="inventoryDialog"><form method="dialog" id="itemForm"><div class="dialogHead"><div><span class="eyebrow">RESTAURANT ITEM MASTER</span><h3 id="dialogTitle">Add Restaurant Item</h3></div><button value="cancel" class="secondary">✕</button></div>
 <div class="itemCoreIntro"><b>Core item details</b><span>Name, barcode and UOM are the main fields used for inventory.</span></div>
@@ -53,6 +105,8 @@
 <label>Base UOM*<select id="vegetableUom"><option value="">Select</option><option value="kg">kg</option><option value="pcs">pcs</option></select></label>
 <div id="vegetableErrors" class="fieldErrors"></div>
 <menu><button value="cancel" class="secondary">Cancel</button><button id="vegetableSaveAnotherBtn" type="button" class="secondary">Save &amp; Add Another</button><button id="vegetableSaveBtn" value="default" class="primary">Save Vegetable</button></menu></form></dialog>
-</div></div></main>
-<script defer src="./inventory.js?v=20260926-team3"></script><script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20260926-team3",{updateViaCache:"none"}).catch(console.warn));}</script>
+
+</main>
+<script defer src="./inventory.js?v=20261001-inventory1"></script>
+<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20261001-inventory1",{updateViaCache:"none"}).catch(console.warn));}</script>
 </body></html>
