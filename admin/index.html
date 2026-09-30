@@ -118,7 +118,6 @@ body.adminPage{background:var(--cmd-bg);font-family:"Plus Jakarta Sans",Inter,sy
       <div class="cmdCard"><div class="cmdKpiLabel">Critical Variances</div><div class="cmdKpiNum cmdException"><span id="cmdExceptionCount">0</span></div><div class="cmdKpiSub"><span id="cmdExceptionDetail">0 missing units · 0 exception items</span></div></div>
     </div>
 
-    <div class="cmdManifestCollapsed"><button type="button" id="cmdImportManifestBtn">＋ Import Manifest</button></div>
 
     <div class="cmdTriageGrid">
       <section class="cmdTriagePanel">
@@ -216,6 +215,7 @@ body.adminPage{background:var(--cmd-bg);font-family:"Plus Jakarta Sans",Inter,sy
   </section>
 
   <div class="sectionHead packingOverviewHead">
+    <div class="sectionHeadActions"><button id="cmdImportManifestBtn" class="primary" type="button">＋ Import New Order</button></div>
     <div><span class="eyebrow">PACKING &amp; DISPATCH</span><h2>Packing Overview</h2><p class="hint">Monitor the current order and packing progress. Item-by-item packing controls remain on the separate staff packing screen.</p></div>
     <div class="sectionHeadActions"><button id="packingOverviewRefresh" class="secondary" type="button">↻ Refresh</button><button id="packingOverviewDashboardBack" class="secondary" type="button">← Dashboard</button></div>
   </div>
