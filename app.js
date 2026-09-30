@@ -1598,9 +1598,23 @@ function renderCommandCenter(deliveryData=null){
   up("cmdAllCount",outlets.length);up("cmdReadyCount",readyCount);up("cmdBlockedCount",blockedCount);
   const compact=$("cmdFleetCompact");
   if(compact){
-    const compactGroups=[...groups.values()].sort((a,b)=>a.name.localeCompare(b.name));
+    const compactMap=new Map();
+    for(const x of deliveryData?.live_outlets||[]){
+      const d=String(x.driver||"Unassigned");
+      if(!compactMap.has(d))compactMap.set(d,{name:d,total:0,delivered:0,ready:0});
+      const g=compactMap.get(d);g.total++;
+      if(x.delivered)g.delivered++;
+      else if(x.packing_done&&Number(x.missing||0)===0)g.ready++;
+    }
+    if(!compactMap.size) for(const o of outlets){
+      const d=String(o.driver||"Unassigned");
+      if(!compactMap.has(d))compactMap.set(d,{name:d,total:0,delivered:0,ready:0});
+      compactMap.get(d).total++;
+      if(o.status==="completed"&&o.rows.every(r=>Number(r.missing||0)===0))compactMap.get(d).ready++;
+    }
+    const compactGroups=[...compactMap.values()].sort((a,b)=>a.name.localeCompare(b.name));
     compact.innerHTML=compactGroups.map(g=>{
-      const ready=g.total-g.pending-g.delivered;
+      const ready=g.ready;
       return '<div class="cmdFleetCompactRow"><div><b>'+esc(g.name)+'</b><small>'+g.total+' outlet'+(g.total===1?"":"s")+' assigned</small></div><span class="cmdFleetReady">'+Math.max(0,ready)+' ready</span></div>';
     }).join("")||'<div class="cmdStageHint">No driver workload loaded.</div>';
   }
