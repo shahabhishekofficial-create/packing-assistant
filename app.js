@@ -1779,6 +1779,7 @@ document.getElementById("modulePacking")?.addEventListener("click",showPackingOv
 ["modulePurchase","moduleEmployees","sidePurchase","sideEmployees"].forEach(id=>document.getElementById(id)?.addEventListener("click",e=>{if(e.currentTarget.disabled)return;alert((e.currentTarget.dataset.comingSoon||({"modulePurchase":"Purchase & Suppliers","moduleEmployees":"Employees & HR","sidePurchase":"Purchase & Suppliers","sideEmployees":"Employees & HR"}[id]))+" is coming soon.")}));
 document.getElementById("moduleInventory")?.addEventListener("click",()=>{window.location.href="./inventory.html"});
 document.getElementById("sideInventory")?.addEventListener("click",()=>{window.location.href="./inventory.html"});
+document.getElementById("sideVegetableInventory")?.addEventListener("click",()=>{window.location.href="./vegetable-inventory.html"});
 async function runGlobalSearch(raw){
   const q=String(raw||"").trim().toLowerCase();
   if(!q)return;
