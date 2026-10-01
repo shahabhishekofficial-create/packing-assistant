@@ -33,3 +33,20 @@
   .vegAdminActions{grid-template-columns:1fr}
   .vegReportFilters{grid-template-columns:1fr}
 }
+
+
+/* Responsive closure: the workspace must stack before tablet widths so action
+   controls never become a narrow side column. */
+@media(max-width:900px){
+  .vegAdminPage{padding:16px 0 28px}
+  .vegAdminHead{display:block;align-items:initial}
+  .vegAdminActions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%;margin-top:14px;gap:8px}
+  .vegAdminActions>*{width:100%;min-width:0;box-sizing:border-box}
+}
+@media(max-width:560px){
+  .vegAdminActions{grid-template-columns:1fr}
+}
+@media(min-width:901px){
+  .vegAdminHead{display:flex;align-items:flex-end;justify-content:space-between;gap:20px}
+  .vegAdminActions{display:flex;width:auto;margin-top:0}
+}
