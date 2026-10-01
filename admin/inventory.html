@@ -61,7 +61,18 @@ body.adminPage{background:#f5f8f7;font-family:"Plus Jakarta Sans",Inter,system-u
 .inventoryAlert{margin:0 0 12px;border-radius:9px;font-size:10px}
 @media(max-width:900px){.inventoryAdminHead,.vegAdminHead{display:block}.inventoryAdminActions,.vegAdminActions{justify-content:flex-start;margin-top:12px}.inventoryAdminPage,.vegAdminPage{padding:16px 12px 28px}}
 </style>
-</head>
+<style>
+.inventoryStaffList{padding:12px 14px;display:grid;gap:8px}
+.inventoryStaffRow{display:flex;align-items:center;justify-content:space-between;gap:14px;border:1px solid #e7eeea;border-radius:10px;padding:12px;background:#fff}
+.inventoryStaffMain{min-width:0;display:flex;flex-direction:column;gap:4px}.inventoryStaffMain b{font-size:12px;color:#0f172a}.inventoryStaffMain span{font-size:9px;color:#64748b}
+.inventoryStaffActions{display:flex;align-items:center;justify-content:flex-end;gap:7px;flex-wrap:wrap}.inventoryStaffActions button{font-family:inherit;font-size:9px;font-weight:800;border-radius:8px;padding:7px 9px;border:1px solid #dbe3eb;background:#fff;color:#334155;cursor:pointer}
+.inventoryStaffActions .dangerBtn{border-color:#fecaca;background:#fff7f7;color:#b91c1c}
+.inventoryStaffDialog form{min-width:min(430px,calc(100vw - 32px))}
+.inventoryStaffDialog label{display:grid;gap:5px;margin:10px 0;font-size:10px;font-weight:800;color:#334155}
+.inventoryStaffDialog input{width:100%;box-sizing:border-box;padding:10px 11px;border:1px solid #dbe3eb;border-radius:8px;font:500 12px inherit}
+.inventoryStaffDialog .staffCredentialNote{padding:9px 10px;border-radius:8px;background:#f8faf9;color:#64748b;font-size:9px;line-height:1.5}
+@media(max-width:700px){.inventoryStaffRow{align-items:flex-start;flex-direction:column}.inventoryStaffActions{justify-content:flex-start}}
+</style></head>
 <body class="adminPage">
 <div id="adminBootOverlay"><div class="bootCard">Loading Inventory<span class="bootSub">Starting secure session…</span></div></div>
 <main id="app">
@@ -106,6 +117,10 @@ body.adminPage{background:#f5f8f7;font-family:"Plus Jakarta Sans",Inter,system-u
 <div class="inventoryCardHead"><div><span class="eyebrow">AUDIT LOG</span><h3>Inventory Changes</h3><p class="hint">Every staff count and admin quantity adjustment is recorded.</p></div><button id="inventoryLogRefresh" class="secondary">↻ Refresh Log</button></div>
 <div class="tableWrap"><table class="inventoryStockTable"><thead><tr><th>Date</th><th>Item</th><th>Action</th><th>Actor</th><th>Old</th><th>New</th><th>Change</th><th>Reason</th></tr></thead><tbody id="inventoryLogBody"></tbody></table></div>
 </section>
+<section class="inventoryCard inventoryStaffCard">
+<div class="inventoryCardHead"><div><span class="eyebrow">WAREHOUSE ACCESS · SHARED INVENTORY LOGIN</span><h3>Inventory Staff Credentials</h3><p class="hint">These staff credentials are used for both Restaurant Inventory and Vegetable Inventory counting. PINs are never displayed after saving.</p></div><div class="inventoryStockActions"><span id="inventoryStaffSummary" class="masterSummary">Loading…</span><button id="inventoryStaffRefresh" class="secondary">↻ Refresh</button><button id="inventoryStaffAdd" class="primary">+ Add Staff</button></div></div>
+<div class="inventoryStaffList" id="inventoryStaffList"></div>
+</section>
 <section class="inventoryCard"><div class="inventoryCardHead"><div><span class="eyebrow">ITEM MASTER</span><h3 id="itemsTitle">Restaurant Items</h3><p class="hint">Active and inactive items are retained. Nothing is overwritten or deleted.</p></div></div><div class="itemSearchRow"><input id="itemSearch" type="search" placeholder="Search item, alias, category or barcode…"><select id="itemFilter"><option value="active">Active</option><option value="all">All</option><option value="inactive">Inactive</option></select></div><div id="itemList" class="adminItemList"></div></section>
 <section id="importPreviewCard" class="inventoryCard hidden"><div class="inventoryCardHead"><div><span class="eyebrow">IMPORT PREVIEW</span><h3>Review before import</h3></div><button id="cancelImportBtn" class="secondary">Cancel</button></div><div id="importSummary" class="importSummary"></div><div class="tableWrap"><table class="importTable"><thead><tr><th>Row</th><th>Name</th><th>Section</th><th>Status</th><th>Error</th></tr></thead><tbody id="importRows"></tbody></table></div><div class="importActions"><button id="downloadErrorsBtn" class="secondary hidden">↓ Download Error CSV</button><button id="confirmImportBtn" class="primary" disabled>Import Valid Rows</button></div></section>
 </section>
@@ -126,7 +141,14 @@ body.adminPage{background:#f5f8f7;font-family:"Plus Jakarta Sans",Inter,system-u
 <menu><button value="cancel" class="secondary">Cancel</button><button id="saveAnotherBtn" type="button" class="secondary">Save &amp; Add Another</button><button id="saveItemBtn" value="default" class="primary">Save Item</button></menu></form></dialog>
 
 
-</main>
+<dialog id="inventoryStaffDialog" class="inventoryDialog inventoryStaffDialog"><form method="dialog" id="inventoryStaffForm">
+<div class="dialogHead"><div><span class="eyebrow">WAREHOUSE STAFF</span><h3 id="inventoryStaffDialogTitle">Add Inventory Staff</h3><p class="hint">One login works for both Restaurant and Vegetable Inventory counting.</p></div><button value="cancel" class="secondary">✕</button></div>
+<label>Staff name*<input id="inventoryStaffName" required autocomplete="off" placeholder="e.g. Vedu"></label>
+<label>PIN* <span class="fieldHint">4–6 digits. Leave blank when editing to keep the existing PIN.</span><input id="inventoryStaffPin" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password" placeholder="4–6 digit PIN"></label>
+<div class="staffCredentialNote">The PIN is hashed in the database and cannot be viewed by administrators after saving.</div>
+<div id="inventoryStaffErrors" class="fieldErrors"></div>
+<menu><button value="cancel" class="secondary">Cancel</button><button id="inventoryStaffSave" value="default" class="primary">Save Staff</button></menu>
+</form></dialog></main>
 <script defer src="./inventory.js?v=20261001-audit2"></script>
 <script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20261001-audit2",{updateViaCache:"none"}).catch(console.warn));}</script>
 </body></html>
