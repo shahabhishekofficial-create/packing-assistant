@@ -96,8 +96,6 @@ body.adminPage{background:#f5f8f7;font-family:"Plus Jakarta Sans",Inter,system-u
 <section class="inventoryCard itemMasterTools"><div class="inventorySectionBar"><span class="sectionTab active">🍽️ Restaurant Inventory</span><span id="masterSummary" class="masterSummary"></span></div>
 <div id="restaurantTools">
 <div class="adminScanBox"><div><span class="eyebrow">BARCODE LOOKUP</span><h3>Scan a barcode</h3><p class="hint">Restaurant items can be identified by barcode and enriched automatically.</p></div><div class="scanRow"><input id="adminBarcode" inputmode="numeric" autocomplete="off" placeholder="Scan / type barcode"><button id="cameraBtn" class="secondary">📷 Scan</button></div><div id="cameraBox" class="cameraBox hidden"><div id="qrReader"></div><button id="stopCameraBtn" class="secondary">Stop camera</button></div><button id="fetchLookupBtn" class="fetchLookupBtn" disabled>Fetch Details</button><p id="lookupStatus" class="hint"></p></div>
-</div>
-
 </div></section>
 <section class="inventoryCard invStockDashboard">
 <div class="inventoryCardHead"><div><span class="eyebrow">WAREHOUSE STOCK</span><h3>Available Inventory</h3><p class="hint">Latest physical counts and admin adjustments. Admin changes require a reason and are permanently logged.</p></div><div class="inventoryStockActions"><span class="stockScope">Restaurant Inventory</span><button id="stockRefreshBtn" class="secondary">↻ Refresh</button><button id="exportStockPdfBtn" class="primary">↓ Export Stock PDF</button></div></div>
