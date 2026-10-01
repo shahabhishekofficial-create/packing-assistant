@@ -29,8 +29,7 @@ _Last verified against GitHub main and live Supabase after the 2026-10-01 audit 
 
 The current GitHub `main` branch is the source of truth for application code.
 
-Current HEAD:
-`894d56081575402abf867567fcea5b7c21b09c2c`
+Current HEAD: see GitHub `main` directly.
 
 Recent audit closure commits are authoritative in Git history; this document must not be treated as a frozen commit snapshot.
 
