@@ -77,3 +77,29 @@
   .vegAdminHead h2{font-size:23px}
   .vegAdminHead p{font-size:12px;line-height:1.6}
 }
+
+/* ===== Vegetable admin operational dashboard ===== */
+.vegKpiGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:0 0 18px}
+.vegKpi{min-height:92px;padding:15px 16px;border:1px solid #dfe8e3;border-radius:15px;background:#fff;display:flex;flex-direction:column;justify-content:center}
+.vegKpi span{font-size:9px;font-weight:800;letter-spacing:.08em;color:#94a3b8}
+.vegKpi b{font-size:25px;line-height:1.15;color:#0f172a;margin:5px 0 3px}
+.vegKpi small{font-size:10px;color:#64748b}
+.vegMasterTools{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+.vegMasterTools button,.vegMasterTools a{min-height:38px;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box}
+.vegFixedUom{display:flex;justify-content:space-between;gap:12px;padding:11px 12px;border:1px solid #e4ebe7;border-radius:9px;background:#f8faf9;font-size:11px;color:#475569}
+.vegFixedUom span{color:#087443;font-weight:800}
+.vegAdminPage .inventoryCard{overflow:hidden}
+.vegAdminPage .inventoryCardHead{display:flex;justify-content:space-between;gap:14px;align-items:center}
+.vegAdminPage .vegAdminActions button,.vegAdminPage .vegAdminActions a{cursor:pointer}
+.vegAdminPage .vegAdminActions .secondary:hover,.vegMasterTools .secondary:hover{border-color:#b8c9bf;background:#f8faf9}
+.vegAdminPage .vegAdminRow{min-height:62px}
+.vegAdminPage .emptyState{padding:22px 12px;text-align:center;color:#64748b;font-size:11px}
+@media(max-width:1050px){.vegKpiGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){
+  .vegKpiGrid{grid-template-columns:1fr 1fr;gap:8px}
+  .vegKpi{min-height:82px;padding:12px}
+  .vegKpi b{font-size:21px}
+  .vegAdminPage .inventoryCardHead{display:block}
+  .vegMasterTools{justify-content:flex-start;margin-top:10px}
+}
+@media(max-width:520px){.vegKpiGrid{grid-template-columns:1fr}.vegFixedUom{display:block}.vegFixedUom span{display:block;margin-top:4px}}
