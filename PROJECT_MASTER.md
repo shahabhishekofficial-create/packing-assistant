@@ -1,5 +1,5 @@
 # PACKING ASSISTANT — MASTER SYSTEM BLUEPRINT
-_Last verified against GitHub main after the 2026-09-23 damage-evidence fix._
+_Last verified against GitHub main and live Supabase after the 2026-10-01 audit closure pass._
 
 > **Purpose:** This is the single recovery and continuity document for the Packing Assistant project.
 > Every meaningful future feature, bug fix, database change, deployment change, test result, and architectural decision MUST be recorded here.
@@ -30,8 +30,9 @@ _Last verified against GitHub main after the 2026-09-23 damage-evidence fix._
 The current GitHub `main` branch is the source of truth for application code.
 
 Current HEAD:
-`98301ef0e162aef0295e5ba73b13c62201ad19d9`
-Commit: **Bump driver cache for damage-photo fix**
+`894d56081575402abf867567fcea5b7c21b09c2c`
+
+Recent audit closure commits are authoritative in Git history; this document must not be treated as a frozen commit snapshot.
 
 Never rebuild an old version from memory when current repository code is available.
 
@@ -2211,3 +2212,16 @@ Admin service worker build/cache:
 `app.js` now derives command-center packing KPIs from the current order and uses the existing `admin_driver_dashboard` Edge Function response for live delivery/fleet state. Audit polling refreshes every 5 seconds while the dashboard is visible.
 
 No service-role or secret key is exposed to the browser.
+
+
+## 2026-10-01 AUDIT CLOSURE STATUS
+
+- Build/cache version standardized to `20261001-audit2` across active application pages and service workers.
+- Admin, Restaurant Inventory, and Vegetable Inventory HTML nesting was revalidated and corrected.
+- Mobile accidental pinch/page zoom was disabled on active PWA pages via the viewport policy requested for this project.
+- Driver invoice upload is separate from delivery completion; server-side delivery checks remain authoritative.
+- Driver rejection/damage evidence authorization is enforced server-side; damage evidence is required before delivery completion when configured.
+- Legacy permissive `drivers` RLS policies were removed. Anonymous/authenticated inserts are denied.
+- Confirmed-unused legacy admin payment RPC execution was revoked from public client roles.
+- Driver RPCs are server-side implementation details: anonymous/authenticated execution is denied and service-role execution is retained.
+- GitHub Pages and JavaScript validation must remain green before considering a release verified.
