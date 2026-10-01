@@ -63,7 +63,22 @@ body.adminPage{background:var(--cmd-bg);font-family:"Plus Jakarta Sans",Inter,sy
 @media(max-width:1050px){.cmdSidebar{width:210px}.cmdGrid{grid-template-columns:1fr}.cmdRail{display:grid;grid-template-columns:1fr 1fr}.cmdKpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:760px){.cmdMobileOnly{display:inline-flex}.cmdShell{height:auto;min-height:100vh;display:block}.cmdSidebar{width:100%;height:auto}.cmdNav{display:none}.cmdSidebar.open .cmdNav{display:block}.cmdHealth,.cmdFooter{display:none}.cmdHeader{position:sticky;top:0;padding:8px 12px;height:auto}.cmdHeaderRight .cmdProfile,.cmdHeaderRight .cmdHeaderBtn:not(.primary){display:none}.cmdBody{padding:12px}.cmdKpis{grid-template-columns:1fr 1fr}.cmdRail{display:block}.cmdCycle{display:none}.cmdTableWrap{margin:0}.cmdOrderBar{padding:11px}.cmdGrid{display:block}.cmdPanel{margin-bottom:12px}}
 </style>
-</head>
+<style>
+/* Final responsive touch-target pass for the main admin command center */
+@media(max-width:900px){
+  .cmdHeader{min-height:60px;height:auto;padding:8px 12px;box-sizing:border-box}
+  .cmdHeaderBtn{min-height:44px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;padding:9px 11px}
+  .cmdMobileOnly{width:44px!important;min-width:44px;min-height:44px!important;display:inline-flex!important;align-items:center;justify-content:center}
+  .cmdNav a,.cmdNav button{min-height:44px;font-size:13px;padding:10px 12px}
+  .opsHero{padding:16px}
+  .opsKpi{min-height:88px}
+  .cmdBody{padding:12px}
+}
+@media(max-width:560px){
+  .cmdCycle{display:none}
+  .cmdHeaderLeft,.cmdHeaderRight{gap:7px}
+}
+</style></head>
 <body class="adminPage"><div id="adminBootOverlay"><div class="bootCard">Loading Admin Dashboard<span class="bootSub">Starting secure session…</span></div></div>
 <main id="app">
 <div class="cmdShell">
