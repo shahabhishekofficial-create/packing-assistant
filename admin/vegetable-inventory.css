@@ -50,3 +50,30 @@
   .vegAdminHead{display:flex;align-items:flex-end;justify-content:space-between;gap:20px}
   .vegAdminActions{display:flex;width:auto;margin-top:0}
 }
+
+/* Final responsive accessibility pass */
+@media(max-width:900px){
+  .cmdHeader{min-height:64px;height:auto;padding:10px 12px;box-sizing:border-box}
+  .cmdHeaderLeft,.cmdHeaderRight{gap:7px}
+  .cmdHeaderBtn{min-height:44px;display:inline-flex;align-items:center;justify-content:center;padding:9px 12px;font-size:12px}
+  .baMobileMenu{width:44px;height:44px;min-width:44px;min-height:44px;align-items:center;justify-content:center;border-radius:10px}
+  .cmdCycle{font-size:11px;padding:8px 10px}
+  .cmdLiveStatus{font-size:11px;padding:8px 10px;white-space:nowrap}
+  .cmdNav a,.cmdNav button{min-height:44px;box-sizing:border-box;font-size:13px;padding:10px 12px}
+  .vegAdminPage input,.vegAdminPage select{min-height:44px;font-size:13px}
+  .vegAdminActions button,.vegAdminActions a{min-height:46px;font-size:12px;padding:10px 12px}
+  .vegAdminRow{min-height:64px}
+  .vegAdminActionsRow button{min-height:42px;font-size:12px}
+  .inventoryCardHead{padding:16px}
+  .inventoryCardHead h3{font-size:16px}
+  .vegReportFilters input,.vegReportFilters select{height:44px;font-size:13px}
+  .vegReportFilters button{height:44px;min-height:44px;font-size:12px}
+}
+@media(max-width:560px){
+  .cmdCycle{display:none}
+  .cmdHeaderLeft{min-width:0}
+  .cmdHeaderRight{margin-left:auto}
+  .cmdHeaderBtn{padding:9px 10px}
+  .vegAdminHead h2{font-size:23px}
+  .vegAdminHead p{font-size:12px;line-height:1.6}
+}
