@@ -1147,9 +1147,6 @@ function speakProduct(r,force=false){
   if(!r || r.status || !("speechSynthesis" in window))return;
   if(window.PA_CONFIG_ENABLED && !window.PA_CONFIG_ENABLED("packing.voice_narration"))return;
   const itemId=String(r.id||"");
-  // Never restart the same item because a background sync/render fired.
-  // Keep product-name speech isolated from the quantity language so Android
-  // does not try to pronounce an English SKU/product name with a Gujarati/Hindi engine.
   if(!force && state.narrationItemId===itemId &&
      (speechSynthesis.speaking||speechSynthesis.pending)) return;
 
@@ -1157,9 +1154,10 @@ function speakProduct(r,force=false){
   const generation=state.narrationGeneration;
   const lang=getVoiceLanguage();
   const qtyText=lang==="hi"?numberWordsHindi(r.required):lang==="gu"?numberWordsGujarati(r.required):numberWordsEnglish(r.required);
-  const productText=String(r.product||"").trim();
+  const productText=String(r.voice_text||r.product||"").trim();
+  const totalCycles=4;
   state.narrationItemId=itemId;
-  state.narrationCount=1;
+  state.narrationCount=0;
 
   state.narrationTimer=setTimeout(()=>{
     state.narrationTimer=null;
@@ -1179,31 +1177,37 @@ function speakProduct(r,force=false){
       if(state.narrationGeneration===generation && state.narrationItemId===itemId)
         state.narrationTimer=null;
     };
-    const speakQty=()=>{
+
+    const speakCycle=(cycle)=>{
       if(state.narrationGeneration!==generation || state.narrationItemId!==itemId || r.status)return;
-      const q=new SpeechSynthesisUtterance(qtyText);
-      q.lang=qtyLocale;
-      q.rate=.82;
-      q.pitch=.9;
-      q.volume=1;
-      if(qtyVoice)q.voice=qtyVoice;
-      q.onend=finish;
-      q.onerror=(e)=>{if(state.narrationGeneration===generation&&state.narrationItemId===itemId){finish();console.warn("Quantity narration error:",e?.error||"unknown");}};
-      speechSynthesis.speak(q);
+      state.narrationCount=cycle;
+      const speakQty=()=>{
+        if(state.narrationGeneration!==generation || state.narrationItemId!==itemId || r.status)return;
+        const q=new SpeechSynthesisUtterance(qtyText);
+        q.lang=qtyLocale;q.rate=.82;q.pitch=.9;q.volume=1;
+        if(qtyVoice)q.voice=qtyVoice;
+        q.onend=()=>{
+          if(cycle<totalCycles){
+            state.narrationTimer=setTimeout(()=>speakCycle(cycle+1),140);
+          }else finish();
+        };
+        q.onerror=(e)=>{if(state.narrationGeneration===generation&&state.narrationItemId===itemId){finish();console.warn("Quantity narration error:",e?.error||"unknown");}};
+        speechSynthesis.speak(q);
+      };
+
+      if(!productText){speakQty();return;}
+      const p=new SpeechSynthesisUtterance(productText);
+      p.lang="en-IN";p.rate=.82;p.pitch=.9;p.volume=1;
+      if(productVoice)p.voice=productVoice;
+      p.onend=speakQty;
+      p.onerror=(e)=>{if(state.narrationGeneration===generation&&state.narrationItemId===itemId){finish();console.warn("Product narration error:",e?.error||"unknown");}};
+      speechSynthesis.speak(p);
     };
 
-    if(!productText){speakQty();return;}
-    const p=new SpeechSynthesisUtterance(productText);
-    p.lang="en-IN";
-    p.rate=.82;
-    p.pitch=.9;
-    p.volume=1;
-    if(productVoice)p.voice=productVoice;
-    p.onend=speakQty;
-    p.onerror=(e)=>{if(state.narrationGeneration===generation&&state.narrationItemId===itemId){finish();console.warn("Product narration error:",e?.error||"unknown");}};
-    speechSynthesis.speak(p);
+    speakCycle(1);
   },120);
 }
+
 
 function speak(text, lang="en"){
   if(!("speechSynthesis" in window))return;
