@@ -77,7 +77,7 @@ const periodStats=stats.filter((x:any)=>{
  if(!startIso)return true;
  const created=o?.created_at?new Date(o.created_at).getTime():NaN;
  const delivered=x.delivered_at?new Date(x.delivered_at).getTime():NaN;
- const startMs=new Date(startIso).getTime(),endMs=new Date(endExclusive).getTime();
+ const startMs=new Date(startIso).getTime(),endMs=endExclusive?new Date(endExclusive).getTime():Date.now();
  return (Number.isFinite(created)&&created>=startMs&&created<endMs)||(Number.isFinite(delivered)&&delivered>=startMs&&delivered<endMs);
 });
 const liveStats=liveOrder?stats.filter((x:any)=>String(x.order_id)===String(liveOrder.id)):[];
