@@ -1834,7 +1834,7 @@ $("homeKpiDelivery")?.addEventListener("click",()=>document.getElementById("menu
 document.getElementById("dashOpenPacking")?.addEventListener("click",showPackingOverview);
 document.getElementById("dashOpenDelivery")?.addEventListener("click",()=>document.getElementById("menuDriverDashboard")?.click());
 document.getElementById("dashOpenReports")?.addEventListener("click",()=>document.getElementById("menuReportBtn")?.click());
-document.getElementById("dashCreateOrder")?.addEventListener("click",()=>document.getElementById("dashCreateOrderTools")?.classList.toggle("hidden"));
+document.getElementById("dashCreateOrder")?.addEventListener("click",()=>{showPackingOverview();document.getElementById("dashCreateOrderTools")?.classList.remove("hidden");});
 document.getElementById("packingOverviewDashboardBack")?.addEventListener("click",showAdminDashboard);
 document.getElementById("packingOverviewRefresh")?.addEventListener("click",async()=>{try{await syncFromServer();renderPackingOverview();}catch(e){alert("Refresh failed: "+e.message);}});
 document.getElementById("packingOverviewStaffBtn")?.addEventListener("click",()=>document.getElementById("menuPacking")?.click());
