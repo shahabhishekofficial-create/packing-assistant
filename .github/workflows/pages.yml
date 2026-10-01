@@ -24,6 +24,29 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Validate JavaScript
+        run: |
+          node --check app.js
+          node --check driver/driver.js
+          node --check admin/auth.js
+          node --check admin/team.js
+          node --check admin/inventory.js
+          node --check admin/inventory-nav.js
+          node --check admin/vegetable-inventory.js
+          node --check config.js
+          node --check update.js
+          node --check driver/sw.js
+          node --check admin/sw.js
+          node --check sw.js
+
+      - name: Set up Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Validate driver API
+        run: deno check --quiet supabase/functions/driver-api/index.ts
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
