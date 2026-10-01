@@ -198,13 +198,14 @@ async function createLiveOrder(rows){
 }
 
 function showShareLink(){
-  
+  const box=$("orderLinkBox"),link=$("orderLink");
+  if(!box||!link)return;
   const isAdmin=location.pathname.endsWith("/admin.html") || /\/admin\/?$/.test(location.pathname);
   const staffUrl=isAdmin && /\/admin\/?$/.test(location.pathname) ? new URL("../",location.href).href : new URL("./",location.href).href;
-  $("orderLink").value=staffUrl;
-  const label=$("orderLinkBox")?.querySelector("span");
+  link.value=staffUrl;
+  const label=box.querySelector("span");
   if(label) label.textContent=isAdmin ? "Packaging Staff Link" : "App Link";
-  $("orderLinkBox").classList.remove("hidden");
+  box.classList.remove("hidden");
 }
 
 async function loadCurrentOrder(){
@@ -1070,67 +1071,26 @@ async function prepareOrderFile(file,sourceInput){
   }
 }
 
-document.getElementById("cmdNewOrderBtn")?.addEventListener("click",()=>document.getElementById("orderFileInput")?.click());
-document.getElementById("cmdManifestDrop")?.addEventListener("click",()=>document.getElementById("orderFileInput")?.click());
-const commandOrderFile=$("orderFileInput"),commandManifestDrop=$("cmdManifestDrop");
-if(commandOrderFile)commandOrderFile.onchange=async e=>{
-  const file=e.target.files?.[0];
-  if(await prepareOrderFile(file,commandOrderFile)){
-    $("packingOverview")?.classList.remove("hidden");
-    $("dashCreateOrderTools")?.classList.remove("hidden");
-    $("home")?.classList.add("hidden");
-    window.scrollTo({top:0,behavior:"smooth"});
-  }
-};
-if(commandManifestDrop){
-  ["dragenter","dragover"].forEach(ev=>commandManifestDrop.addEventListener(ev,e=>{e.preventDefault();commandManifestDrop.style.borderColor="#137547";commandManifestDrop.style.background="#f0fdf4";}));
-  ["dragleave","drop"].forEach(ev=>commandManifestDrop.addEventListener(ev,e=>{e.preventDefault();commandManifestDrop.style.borderColor="";commandManifestDrop.style.background="";}));
-  commandManifestDrop.addEventListener("drop",async e=>{
-    const file=e.dataTransfer?.files?.[0];
-    if(!file)return;
-    await prepareOrderFile(file,null);
-    $("packingOverview")?.classList.remove("hidden");
-    $("dashCreateOrderTools")?.classList.remove("hidden");
-    $("home")?.classList.add("hidden");
-    window.scrollTo({top:0,behavior:"smooth"});
-  });
-}
-const normalOrderFile=$("fileInput");
-if(normalOrderFile)normalOrderFile.onchange=e=>prepareOrderFile(e.target.files?.[0],normalOrderFile);
-
-$("createOrderBtn").onclick=async()=>{
+document.getElementById("cmdNewOrderBtn")?.addEventListener("click",showPackingOverview);
+const orderImportInput=$("orderFileInput");
+const importOrderForCurrentPage=async file=>{
+  if(!file)return;
   try{
-    if(!state.pendingRows?.length) return alert("Choose an Excel/CSV file first.");
-    $("createOrderBtn").disabled=true;
-    $("createOrderBtn").textContent="Creating…";
+    if(!(await prepareOrderFile(file,orderImportInput)))return;
     await createLiveOrder(state.pendingRows);
-  }catch(err){alert(err.message)}
-  finally{
-    $("createOrderBtn").disabled=false;
-    $("createOrderBtn").textContent="Create Live Order";
-  }
+    if(IS_ADMIN_PAGE){showPackingOverview();await renderPackingOverview();}
+  }catch(err){alert(err?.message||"Could not create the live order.");}
+  finally{if(orderImportInput)orderImportInput.value="";}
 };
-
-$("loadDemo").onclick=async()=>{
-  const rows=[
-    {store:"Outlet A",code:"1025",product:"Broccoli",required:5,rank:1},
-    {store:"Outlet A",code:"1095",product:"Button Mushroom",required:12,rank:2},
-    {store:"Outlet B",code:"1025",product:"Broccoli",required:7,rank:1},
-    {store:"Outlet B",code:"4079",product:"Baby Corn",required:3,rank:3}
-  ];
-  try{await createLiveOrder(rows)}catch(e){alert(e.message)}
-};
-
-
-
-
-$("copyLink").onclick=async()=>{
+document.getElementById("dashCreateOrder")?.addEventListener("click",()=>orderImportInput?.click());
+orderImportInput?.addEventListener("change",e=>importOrderForCurrentPage(e.target.files?.[0]));
+$("copyLink")?.addEventListener("click",async()=>{
   try{
-    await navigator.clipboard.writeText($("orderLink").value);
+    await navigator.clipboard.writeText($("orderLink")?.value||"");
     $("copyLink").textContent="Copied";
     setTimeout(()=>$("copyLink").textContent="Copy",1200);
   }catch{alert("Copy failed. Select and copy the link manually.")}
-};
+});
 
 
 const VOICE_LANG_KEY = "packing_assistant_voice_language";
