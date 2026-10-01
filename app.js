@@ -30,7 +30,8 @@ const state = {
   deliveryChargesLoadedAt: 0
 };
 
-const $ = id => document.getElementById(id);\nif("speechSynthesis" in window){ try{ speechSynthesis.getVoices(); speechSynthesis.addEventListener("voiceschanged",()=>speechSynthesis.getVoices(),{once:false}); }catch(e){ console.warn("Voice initialization:",e); } }
+const $ = id => document.getElementById(id);
+if("speechSynthesis" in window){ try{ speechSynthesis.getVoices(); speechSynthesis.addEventListener("voiceschanged",()=>speechSynthesis.getVoices(),{once:false}); }catch(e){ console.warn("Voice initialization:",e); } }
 function getRankMap(){ return state.rankMap || {}; }
 function rankItem(code){ const n=Number(state.rankMap[String(code).trim()]); return Number.isFinite(n)?n:999999; }
 
