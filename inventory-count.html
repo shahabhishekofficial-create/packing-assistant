@@ -17,20 +17,7 @@
     <button id="logoutBtn" class="invIconBtn" type="button" aria-label="Logout">↪</button>
   </header>
 
-  <section id="login" class="screen invLogin">
-    <div class="invLoginCard">
-      <div class="invLoginIcon">▦</div>
-      <span class="invKicker">WAREHOUSE STAFF</span>
-      <h1>Sign in to count stock</h1>
-      <p>Use your staff ID/name and PIN to continue.</p>
-      <div class="invField"><label for="staffName">Staff ID</label><input id="staffName" autocomplete="username" placeholder="Enter staff ID"></div>
-      <div class="invField"><label for="staffPin">PIN</label><input id="staffPin" type="password" inputmode="numeric" maxlength="6" placeholder="4–6 digit PIN"></div>
-      <button id="loginBtn" class="invPrimary invFull">Sign In</button>
-      <p id="loginMsg" class="invMessage"></p>
-    </div>
-  </section>
-
-  <section id="count" class="screen hidden invWorkspace">
+  <section id="count" class="screen invWorkspace">
     <div class="invWelcome">
       <div><span class="invKicker">WAREHOUSE COUNT</span><h1 id="staffTitle"></h1><p>Count physical stock one item at a time.</p></div>
       <div class="invLive"><i></i> LIVE</div>
@@ -83,6 +70,6 @@
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/4.2.1/jspdf.umd.min.js"></script>
 <script src="config.js?v=20261001-audit2"></script>
-<script src="inventory-count.js?v=20261002-login2"></script>
+<script src="inventory-count.js?v=20261002-nologin1"></script>
 </body>
 </html>
