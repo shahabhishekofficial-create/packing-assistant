@@ -1,5 +1,5 @@
 (()=>{"use strict";
-const BUILD_ID="20261001-audit2",VERSION_URL=window.PA_VERSION_URL||"version.json";
+const BUILD_ID="20261002-nologin2",VERSION_URL=window.PA_VERSION_URL||"version.json";
 let checking=false,pendingBuild="";
 function removeNotice(){document.getElementById("paUpdateNotice")?.remove()}
 function showNotice(remote){
