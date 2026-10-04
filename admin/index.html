@@ -102,7 +102,7 @@ body.adminPage{background:var(--cmd-bg);font-family:"Plus Jakarta Sans",Inter,sy
 </aside>
 <div class="cmdMain">
 <header class="cmdHeader">
-  <div class="cmdHeaderLeft"><button id="baSidebarToggle" class="cmdHeaderBtn cmdMobileOnly" type="button">☰</button><span class="cmdCycle">Order Window · Active Cycle</span><span id="liveSyncStatus" class="cmdLiveStatus">LIVE · 3s fallback</span></div>
+  <div class="cmdHeaderLeft"><button id="baSidebarToggle" class="cmdHeaderBtn cmdMobileOnly" type="button">☰</button><span class="cmdCycle">Order Window · Active Cycle</span><span id="liveSyncStatus" class="b-status b-status--ok">LIVE · 3s fallback</span></div>
   <div class="cmdHeaderRight">
     <button id="adminRefreshBtn" class="cmdHeaderBtn" type="button">↻ Refresh</button>
     <button id="cmdNewOrderBtn" class="cmdHeaderBtn primary" type="button">+ New Order</button>
@@ -120,7 +120,7 @@ body.adminPage{background:var(--cmd-bg);font-family:"Plus Jakarta Sans",Inter,sy
       <div class="opsHeroTitle">
         <div class="opsHeroIcon">🚚</div>
         <div><span class="eyebrow">OPERATIONS COMMAND CENTER</span><h1>Operations Overview</h1><p id="opsActiveOrder">Active Order · —</p></div>
-        <span class="opsLivePill">● LIVE</span>
+        <span class="b-status b-status--ok">● LIVE</span>
       </div>
       <div class="opsStage">
         <div><span class="stageIcon done">✓</span><b>Order</b><small>Loaded</small></div><i></i>
