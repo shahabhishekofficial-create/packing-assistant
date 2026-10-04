@@ -1,0 +1,68 @@
+/* Driver Dashboard UX v2 */
+.driverEarningsHidden{display:none!important}
+.driverRouteHeading{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:10px;width:100%}
+.driverRouteHeading h2{margin:2px 0 0}
+.driverHeaderEarn{font-weight:900;font-size:16px;white-space:nowrap}
+.driverHeaderEarn span{font-size:11px;font-weight:700;color:#64748b}
+.driverRefreshBtn{min-height:42px}
+.driverRouteSection{margin-top:12px}
+.driverRouteSectionHead{display:flex;justify-content:space-between;align-items:end;gap:12px;padding:0 2px 9px}
+.driverRouteSectionHead h3{margin:2px 0 0;font-size:16px}
+.routeProgress{font-size:12px;color:#64748b;font-weight:800}
+.driverModernRow{display:block;margin:0 0 10px;border:1px solid #e2e8f0;border-radius:16px;background:#fff;box-shadow:0 3px 14px rgba(15,23,42,.06);overflow:hidden}
+.driverModernRow[open]{border-color:#cbd5e1}
+.driverModernRow>summary{list-style:none}
+.driverModernRow>summary::-webkit-details-marker{display:none}
+.driverModernSummary{display:grid;grid-template-columns:58px minmax(0,1fr) auto;align-items:center;gap:10px;padding:13px 14px;cursor:pointer}
+.driverStopNumber{font-size:10px;font-weight:900;letter-spacing:.06em;color:#475569}
+.driverModernMain{min-width:0}
+.driverModernTitleLine{display:flex;align-items:center;gap:8px;min-width:0}
+.driverModernTitleLine strong{font-size:15px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.modernStatus{flex:0 0 auto;border-radius:999px;padding:5px 8px;font-size:9px;font-weight:900;letter-spacing:.04em}
+.modernStatus.current{background:#2563eb;color:#fff}
+.modernStatus.upcoming{background:#64748b;color:#fff}
+.modernStatus.completed{background:#dcfce7;color:#15803d}
+.driverQuickMeta{margin-top:5px;color:#64748b;font-size:11px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.driverQuickActions{display:flex;align-items:center;gap:6px}
+.driverQuickBtn,.driverQuickIcon{height:36px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
+.driverQuickBtn{padding:0 9px;background:#eff6ff;color:#1d4ed8;font-size:11px;font-weight:850;white-space:nowrap}
+.driverQuickIcon{width:36px;background:#f1f5f9;color:#334155;font-size:15px}
+.driverChevron{font-size:22px;color:#94a3b8;line-height:1}
+.driverModernCardBody{padding:0 14px 14px;border-top:1px solid #f1f5f9}
+.driverModernMeta{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:11px 0;color:#475569;font-size:12px}
+.metaOk{color:#15803d;font-weight:800}.metaPending{color:#b45309;font-weight:800}
+.driverModernFooter{display:flex;justify-content:flex-end;align-items:center;margin-top:10px}
+.driverCompletedNote{color:#15803d;font-size:12px;font-weight:850}
+.driverWaitingNote{color:#64748b;font-size:12px;font-weight:750}
+.driverModernFooter .deliverBtn{min-height:44px;padding:0 18px}
+.driverCompletedDrawer{margin-top:16px;border:1px solid #e2e8f0;border-radius:16px;background:#f8fafc;overflow:hidden}
+.driverCompletedDrawer>summary{list-style:none;display:grid;grid-template-columns:1fr auto 18px;align-items:center;gap:10px;padding:14px;font-size:13px;font-weight:900;cursor:pointer}
+.driverCompletedDrawer>summary::-webkit-details-marker{display:none}
+.driverCompletedDrawer>summary b{color:#64748b;font-size:11px}
+.driverCompletedDrawer>summary span:last-child{font-size:20px;color:#94a3b8}
+.driverCompletedList{padding:0 10px 10px}
+.driverCompletedRow{opacity:.82;box-shadow:none;margin-bottom:8px}
+.driverCompletedRow .driverModernSummary{padding:11px}
+.driverCompletedRow .modernStatus.completed{background:#dcfce7;color:#15803d}
+.driverCompletedRow .driverQuickActions{opacity:.75}
+.driverCompletedRow .driverModernCardBody{padding-bottom:12px}
+.driverAllDone{text-align:center;padding:34px 20px;margin-top:12px;border:1px solid #dcfce7;border-radius:18px;background:#f0fdf4}
+.driverAllDoneIcon{width:48px;height:48px;margin:0 auto 10px;border-radius:50%;display:grid;place-items:center;background:#16a34a;color:#fff;font-size:24px;font-weight:900}
+.driverAllDone h3{margin:0 0 4px}.driverAllDone p{margin:0;color:#64748b;font-size:13px}
+@media(max-width:560px){
+  .driverRouteHeading{grid-template-columns:minmax(0,1fr) auto}
+  .driverHeaderEarn{grid-column:1/-1;grid-row:2;justify-self:start;font-size:14px}
+  .driverRefreshBtn{grid-column:2;grid-row:1}
+  .driverModernSummary{grid-template-columns:48px minmax(0,1fr);align-items:start;padding:12px}
+  .driverQuickActions{grid-column:2;justify-content:flex-start;margin-top:5px}
+  .driverQuickBtn{height:34px}
+  .driverQuickIcon{height:34px;width:34px}
+  .driverChevron{display:none}
+  .modernStatus{font-size:8px;padding:4px 7px}
+  .driverModernTitleLine{align-items:flex-start}
+}
+@media(max-width:380px){
+  .driverModernTitleLine{display:block}
+  .modernStatus{display:inline-block;margin-top:5px}
+  .driverQuickMeta{font-size:10px}
+}
