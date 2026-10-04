@@ -1677,12 +1677,12 @@ async function loadFleetManagement(){
   }catch(e){box.innerHTML='<div class="hint">Could not load fleet ledger: '+esc(e.message)+'</div>';}
 }
 function openDriverPayment(driverId,name){
-  $("paymentDriverId").value=driverId;$("paymentDriverTitle").textContent=name+" — Record Payment";$("paymentAmount").value="";$("paymentNote").value="";$("paymentScreenshot").value="";$("paymentMsg").textContent="";
+  $("paymentDriverId").value=driverId;$("paymentDriverTitle").textContent=name+" — Record Payment";$("paymentAmount").value="";$("paymentNote").value="";$("paymentReference").value="";$("paymentMode").value="UPI";$("paymentScreenshot").value="";$("paymentMsg").textContent="";
   const now=new Date();const d=new Date(now.getTime()-now.getTimezoneOffset()*60000);$("paymentDate").value=d.toISOString().slice(0,16);
   $("driverPaymentDialog").showModal();
 }
 async function saveDriverPayment(){
-  const driverId=$("paymentDriverId").value,amount=Number($("paymentAmount").value||0),paidAt=$("paymentDate").value,note=$("paymentNote").value.trim(),file=$("paymentScreenshot").files[0];
+  const driverId=$("paymentDriverId").value,amount=Number($("paymentAmount").value||0),paidAt=$("paymentDate").value,note=$("paymentNote").value.trim(),paymentMode=$("paymentMode").value,referenceNumber=$("paymentReference").value.trim(),file=$("paymentScreenshot").files[0];
   if(!driverId||amount<=0)return $("paymentMsg").textContent="Enter a valid payment amount.";
   if(!file)return $("paymentMsg").textContent="Add the payment screenshot.";
   const btn=$("saveDriverPayment");btn.disabled=true;btn.textContent="Saving…";$("paymentMsg").textContent="Uploading payment proof…";
@@ -1691,7 +1691,7 @@ async function saveDriverPayment(){
     const up=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_payment_upload_url",admin_session:session,driver_id:driverId,filename:file.name,mime_type:file.type,extension:"jpg"})});
     const ud=await up.json();if(!up.ok||!ud.ok)throw new Error(ud.message||"Could not prepare upload.");
     const {error}=await db.storage.from("driver-payments").uploadToSignedUrl(ud.path,ud.token,file);if(error)throw error;
-    const rec=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_record_payment",admin_session:session,driver_id:driverId,amount,paid_at:new Date(paidAt).toISOString(),note,screenshot_path:ud.path})});
+    const rec=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_record_payment",admin_session:session,driver_id:driverId,amount,paid_at:new Date(paidAt).toISOString(),note,payment_mode:paymentMode,reference_number:referenceNumber,screenshot_path:ud.path})});
     const rd=await rec.json();if(!rec.ok||!rd.ok)throw new Error(rd.message||"Could not save payment.");
     $("driverPaymentDialog").close();await loadFleetManagement();
   }catch(e){$("paymentMsg").textContent=e.message;}finally{btn.disabled=false;btn.textContent="Save Payment";}
