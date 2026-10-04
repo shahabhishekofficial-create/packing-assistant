@@ -232,7 +232,7 @@ async function previewImport(file){
 }
 
 async function confirmImport(){
- if(S.importErrors.length||!S.importValid.length)return;
+ if(!S.importValid.length)return;
  const importId=crypto.randomUUID(),btn=$("confirmImportBtn");
  btn.disabled=true;btn.textContent="Importing…";
  try{
