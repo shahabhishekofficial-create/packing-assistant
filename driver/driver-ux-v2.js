@@ -152,6 +152,7 @@
     if(typeof refresh==="function") return refresh();
   }
 
+  window.PA_DRIVER_RENDER_HOOK=renderDriverUx;
   window.render=renderDriverUx;
   window.addEventListener("load",()=>setTimeout(renderDriverUx,0));
   setTimeout(renderDriverUx,0);
