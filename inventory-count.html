@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#f7f8fc">
 <title>Warehouse Inventory Count</title>
-<link rel="stylesheet" href="styles.css?v=20261001-audit2">
+<link rel="stylesheet" href="styles.css?v=20261004-nologin3">
 </head>
 <body class="inventoryCountPage">
 <main id="inventoryApp">
@@ -14,9 +14,9 @@
       <div class="invBrandMark">▦</div>
       <div><strong>Warehouse Inventory</strong><span>Stock counting</span></div>
     </div>
-    <button id="logoutBtn" class="invIconBtn" type="button" aria-label="Logout">↪</button>
   </header>
 
+  <div id="inventoryStartupError" class="invMessage"></div>
   <section id="count" class="screen invWorkspace">
     <div class="invWelcome">
       <div><span class="invKicker">WAREHOUSE COUNT</span><h1 id="staffTitle"></h1><p>Count physical stock one item at a time.</p></div>
@@ -69,7 +69,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/4.2.1/jspdf.umd.min.js"></script>
-<script src="config.js?v=20261001-audit2"></script>
-<script src="inventory-count.js?v=20261002-nologin1"></script>
+<script src="config.js?v=20261004-nologin3"></script>
+<script src="inventory-count.js?v=20261004-nologin3"></script>
 </body>
 </html>
