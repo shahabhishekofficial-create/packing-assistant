@@ -66,3 +66,4 @@
   .modernStatus{display:inline-block;margin-top:5px}
   .driverQuickMeta{font-size:10px}
 }
+\n/* Hide development-only chrome from the driver primary surface */\n#driverBuildVersion{display:none!important}\n#driverHome>.sectionHead>.sectionHead> .hint, #driverHome>.sectionHead>.hint{display:none!important}\n
