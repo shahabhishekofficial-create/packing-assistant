@@ -234,4 +234,5 @@ $function$;
 
 revoke execute on function public.inv_v2_import_restaurant_template_v1(text,jsonb,uuid) from public;
 revoke execute on function public.inv_v2_import_restaurant_template_v1(text,jsonb,uuid) from anon;
+grant execute on function public.inv_v2_import_restaurant_template_v1(text,jsonb,uuid) to anon;
 grant execute on function public.inv_v2_import_restaurant_template_v1(text,jsonb,uuid) to authenticated;
