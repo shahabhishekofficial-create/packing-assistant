@@ -28,6 +28,10 @@ jobs:
         run: node --check admin/inventory-nav.js
       - name: Check admin vegetable-inventory.js
         run: node --check admin/vegetable-inventory.js
+      - name: Check inventory-count.js
+        run: node --check inventory-count.js
+      - name: Check vegetable-inventory.js
+        run: node --check vegetable-inventory.js
       - name: Check config.js
         run: node --check config.js
       - name: Check update.js
