@@ -292,11 +292,11 @@
  const b=$("driverMenuBtn");if(b)b.onclick=openV2;
  const oldMark=window.markDelivered;
  window.markDelivered=async function(outletId){
-   const before=Number(state.data?.all_time_earned||0);
+   const before=Number(ds.earned||state.data?.all_time_earned||0);
    await oldMark(outletId);
    try{
      const d=await api("payment_ledger",{from:null,to:null,search:""});
-     const after=Number(d?.all_time_earned||0),delta=after-before;
+     const after=Number(ds.earned||d?.all_time_earned||0),delta=after-before;
      if(delta>0)toast("🟢 Delivery Complete! +"+money(delta)+" added to your balance.","success");
      state.data=d;
      const earn=$("driverEarnings");if(earn){const h=earn.querySelector("h3");if(h){h.style.transition="transform .25s ease";h.style.transform="scale(1.08)";setTimeout(()=>h.style.transform="",350);h.textContent=money(after);}}
