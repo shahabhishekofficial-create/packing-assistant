@@ -14,7 +14,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-<script defer src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script defer src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script><script defer src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>
 <script defer src="../config.js?v=20261001-audit2"></script>
@@ -91,7 +91,7 @@ body.adminPage{background:#f5f8f7;font-family:"Plus Jakarta Sans",Inter,system-u
   <div class="cmdHeaderRight"><a href="./index.html?section=home" class="cmdHeaderBtn">⌂ Dashboard</a><div class="cmdProfile"><b>Administrator</b><span>Secure session</span></div><a href="./index.html?section=home" class="cmdHeaderBtn">⋮</a></div>
 </header>
 <section class="inventoryAdminPage">
-<div class="inventoryAdminHead"><div><span class="eyebrow">OPERATIONS · RESTAURANT INVENTORY</span><h2>Restaurant Inventory</h2><p>Manage restaurant grocery inventory. Warehouse staff use the separate counting workflow.</p></div><div class="inventoryAdminActions"><button id="downloadTemplateBtn" class="secondary">↓ Download Template</button><button id="importBtn" class="secondary">Import CSV / XLSX</button><input id="fileInput" type="file" accept=".csv,.xlsx,.xls" hidden><button id="addItemBtn" class="primary">+ Add Item</button></div></div>
+<div class="inventoryAdminHead"><div><span class="eyebrow">OPERATIONS · RESTAURANT INVENTORY</span><h2>Restaurant Inventory</h2><p>Manage restaurant grocery inventory. Warehouse staff use the separate counting workflow.</p></div><div class="inventoryAdminActions"><button id="downloadTemplateBtn" class="secondary">↓ Excel Template</button><button id="downloadCsvTemplateBtn" class="secondary">↓ CSV Template</button><button id="importBtn" class="secondary">Import CSV / XLSX</button><input id="fileInput" type="file" accept=".csv,.xlsx,.xls" hidden><button id="addItemBtn" class="primary">+ Add Item</button></div></div>
 <div id="inventoryAlert" class="inventoryAlert hidden" role="status"></div>
 <section class="inventoryCard itemMasterTools"><div class="inventorySectionBar"><span class="sectionTab active">🍽️ Restaurant Inventory</span><span id="masterSummary" class="masterSummary"></span></div>
 <div id="restaurantTools">
@@ -128,6 +128,6 @@ body.adminPage{background:#f5f8f7;font-family:"Plus Jakarta Sans",Inter,system-u
 
 
 </main>
-<script defer src="./inventory.js?v=20261005-restinv1"></script>
-<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20261005-restinv1",{updateViaCache:"none"}).catch(console.warn));}</script>
+<script defer src="./inventory.js?v=20261005-restinv2"></script>
+<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20261005-restinv2",{updateViaCache:"none"}).catch(console.warn));}</script>
 </body></html>
