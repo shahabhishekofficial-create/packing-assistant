@@ -103,25 +103,154 @@ async function startCamera(){if(!window.Html5Qrcode)return alertBox("Scanner lib
 async function stopCamera(){if(!S.scanner)return;$("cameraBox").classList.add("hidden");try{await S.scanner.stop()}catch{}try{S.scanner.clear()}catch{}S.scanner=null}
 async function saveItem(e,keepOpen=false){e?.preventDefault();const p=payloadFromForm(),errors=validateItem(p,S.items);$("fieldErrors").innerHTML=errors.length?errors.map(x=>"<div>"+esc(x)+"</div>").join(""):"";if(errors.length)return;const b=$("saveItemBtn");b.disabled=true;b.textContent="Saving…";try{const {data,error}=await db.rpc("inv_v2_save_item_v4",{p_session_token:token(),p_item_id:S.editId,p_payload:p,p_import_id:null});if(error)throw error;const wasEdit=!!S.editId;if(keepOpen){resetForm();$("itemDialog").showModal();}else $("itemDialog").close();alertBox(wasEdit?"Item updated.":"Item saved.","success");await loadItems()}catch(x){alertBox(x.message||"Could not save item.","error")}finally{b.disabled=false;b.textContent="Save Item"}}
 async function deactivate(id){if(!confirm("Deactivate this item? It will remain in history and cannot be deleted."))return;try{const {error}=await db.rpc("inv_v2_save_item_v4",{p_session_token:token(),p_item_id:id,p_payload:{operation:"deactivate"},p_import_id:null});if(error)throw error;alertBox("Item deactivated.","success");await loadItems()}catch(e){alertBox(e.message||"Could not deactivate item.","error")}}
-function templateRows(){return [["restaurant","EXAMPLE Barilla Pasta 1kg","Dry Goods","kg","packet","Box",1,"8076809571319",false,"barilla|pasta","Barilla","S-03","R-12"]]}
-function downloadTemplate(){const wb=XLSX.utils.book_new();const ws=XLSX.utils.aoa_to_sheet([["section","name","category","base_uom","count_mode","count_unit","default_pack_size","barcodes","no_barcode","aliases","brand","storage_shelf","storage_rack"],...templateRows()]);ws["!cols"]=[{wch:14},{wch:30},{wch:18},{wch:12},{wch:14},{wch:20},{wch:22},{wch:12},{wch:24},{wch:18}];XLSX.utils.book_append_sheet(wb,ws,"Items");const ins=[["Column","Required","Guidance"],["section","YES","restaurant only; vegetables use the separate Vegetable workflow"],["name","YES","Item name used for counting and search."],["category","YES","Operational category."],["base_uom","YES","kg, g, L, ml or pcs."],["count_mode","YES","unit = staff counts directly in UOM; packet = staff counts a physical pack/container."],["count_unit","YES for packet","Physical count label such as Box, Bag, Carton, Bottle."],["default_pack_size","YES for packet","Quantity contained in one count unit, expressed in the selected UOM. Leave blank for unit mode."],["barcodes","YES unless no_barcode=TRUE","One or more EAN-8, UPC-A or EAN-13 barcodes separated by |."],["no_barcode","YES","TRUE means there must be no barcode."],["aliases","NO","Optional search aliases separated by |."],["brand","NO","Optional brand/manufacturer."],["storage_shelf","NO","Shelf/location label."],["storage_rack","NO","Rack number/label."]];XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(ins),"Instructions");XLSX.writeFile(wb,"bigly-inventory-item-template.xlsx")}
-function parseFile(file){return new Promise((res,rej)=>{const rd=new FileReader();rd.onload=ev=>{try{const wb=XLSX.read(ev.target.result,{type:"array",cellText:false,cellDates:false});const name=wb.SheetNames.includes("Items")?"Items":wb.SheetNames[0];const rows=XLSX.utils.sheet_to_json(wb.Sheets[name],{header:1,defval:"",raw:false});if(!rows.length)return res([]);const headers=rows[0].map(x=>norm(x).toLowerCase());res(rows.slice(1).map((r,i)=>{const o={};headers.forEach((h,j)=>o[h]=norm(r[j]??""));return{row:i+2,raw:o}}))}catch(e){rej(e)}};rd.onerror=()=>rej(rd.error);rd.readAsArrayBuffer(file)})}
+function templateRows(){return [["restaurant","EXAMPLE Barilla Pasta 1kg","Dry Goods","kg","Box","packet","Box",1,"8076809571319",false,"barilla|pasta","Barilla","S-03","R-12"]]}
+
+function downloadTemplate(){
+ const wb=XLSX.utils.book_new();
+ const rows=[
+  ["section","name","category","base_uom","packaging_method","count_mode","count_unit","default_pack_size","barcodes","no_barcode","aliases","brand","storage_shelf","storage_rack"],
+  ...templateRows()
+ ];
+ const ws=XLSX.utils.aoa_to_sheet(rows);
+ ws["!cols"]=[{wch:14},{wch:30},{wch:22},{wch:12},{wch:20},{wch:14},{wch:18},{wch:20},{wch:18},{wch:14},{wch:24},{wch:18},{wch:18},{wch:18}];
+ XLSX.utils.book_append_sheet(wb,ws,"Items");
+ const lists=[
+  ["Categories","Base UOM","Packaging Method","Count Mode","Count Unit"],
+  ["Dry Goods","kg","Bottle","unit","Box"],
+  ["Produce","g","Packet","packet","Bag"],
+  ["Dairy & Eggs","L","Box","","Carton"],
+  ["Meat & Poultry","ml","Loose Packing","","Bottle"],
+  ["Seafood","pcs","Carton","","Crate"],
+  ["Frozen","","Pouch","","Sack"],
+  ["Bakery","","Sack","","Tray"],
+  ["Beverages","","Jar","","Drum"],
+  ["Spices & Condiments","","Can","","Pack"],
+  ["Oils & Fats","","Tray","","Pouch"],
+  ["Cleaning & Disposables","","Crate","","Jar"],
+  ["Packaging","","Drum","","Can"],
+  ["Other","","Bag","",""],
+  ["","","Bundle","",""]
+ ];
+ XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(lists),"Lists");
+ const ins=[
+  ["Column","Required","Guidance"],
+  ["section","YES","Hardcoded to restaurant in this template."],
+  ["name","YES","Item name used for counting and search."],
+  ["category","YES","Choose from the Lists sheet."],
+  ["base_uom","YES","kg, g, L, ml or pcs."],
+  ["packaging_method","YES","Bottle, Packet, Box, Loose Packing, Carton, Pouch, Sack, Jar, Can, Tray, Crate, Drum, Bag or Bundle."],
+  ["count_mode","NO","Legacy/optional. Backend derives the counting mode from packaging_method."],
+  ["count_unit","NO","Legacy/optional. Backend derives the physical count label from packaging_method."],
+  ["default_pack_size","CONDITIONAL","Required and positive unless packaging_method is Loose Packing."],
+  ["barcodes","NO","One or more EAN-8, UPC-A or EAN-13 barcodes separated by |."],
+  ["no_barcode","DERIVED","Excel convenience only. Backend recomputes this from barcodes."],
+  ["aliases","NO","Optional search aliases separated by |."],
+  ["brand","NO","Optional brand/manufacturer."],
+  ["storage_shelf","NO","Shelf/location label."],
+  ["storage_rack","NO","Rack number/label."]
+ ];
+ XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(ins),"Instructions");
+ XLSX.writeFile(wb,"bigly-inventory-item-template.xlsx");
+}
+
+function parseFile(file){
+ return new Promise((res,rej)=>{
+  const rd=new FileReader();
+  rd.onload=ev=>{
+   try{
+    const wb=XLSX.read(ev.target.result,{type:"array",cellText:false,cellDates:false});
+    const name=wb.SheetNames.includes("Items")?"Items":wb.SheetNames[0];
+    const rows=XLSX.utils.sheet_to_json(wb.Sheets[name],{header:1,defval:"",raw:false});
+    if(!rows.length)return res([]);
+    const headers=rows[0].map(x=>norm(x).toLowerCase());
+    res(rows.slice(1).map((r,i)=>{
+     const o={};headers.forEach((h,j)=>{if(h)o[h]=norm(r[j]??"")});
+     return{row:i+2,raw:o};
+    }));
+   }catch(e){rej(e)}
+  };
+  rd.onerror=()=>rej(rd.error);
+  rd.readAsArrayBuffer(file)
+ })
+}
+
 function validateImport(rows){
  const valid=[],errors=[],seenNames=new Set(),seenBarcodes=new Set();
- const required=["section","name","category","base_uom","count_mode","count_unit","default_pack_size","barcodes","no_barcode","aliases","brand"];
- rows.forEach(x=>{const r=x.raw;if(Object.keys(r).filter(Boolean).length===0)return;if(/^EXAMPLE\b/i.test(norm(r.name))){x.status="skipped";return}
- const packRaw=norm(r.default_pack_size),flag=norm(r.no_barcode).toUpperCase();const p={section:norm(r.section),name:norm(r.name),category:norm(r.category),base_uom:norm(r.base_uom),count_mode:norm(r.count_mode).toLowerCase(),count_unit:norm(r.count_unit),default_pack_size:packRaw===""?null:Number(packRaw),count_to_base:packRaw===""?null:Number(packRaw),storage_shelf:norm(r.storage_shelf)||null,storage_rack:norm(r.storage_rack)||null,barcodes:splitPipe(r.barcodes),no_barcode:flag==="TRUE",aliases:splitPipe(r.aliases),brand:norm(r.brand)||null};let e=[];if(p.section!=="restaurant")e.push("Restaurant import only: vegetable items must be managed in the Vegetable section.");if(packRaw!==""&&!Number.isFinite(p.default_pack_size))e.push("default_pack_size must be numeric.");if(!["TRUE","FALSE"].includes(flag))e.push("no_barcode must be TRUE or FALSE.");
- if(!required.every(k=>Object.prototype.hasOwnProperty.call(r,k)))e.push("Template columns are incomplete.");
- e=e.concat(validateItem({...p},S.items));
- const nk=p.section+"|"+p.name.toLowerCase();if(seenNames.has(nk))e.push("Duplicate name in import file.");seenNames.add(nk);
- p.barcodes.forEach(b=>{if(seenBarcodes.has(b))e.push("Duplicate barcode in import file: "+b);seenBarcodes.add(b)});
- x.payload=p;x.error=e.join(" ");x.status=e.length?"error":"valid";(e.length?errors:valid).push(x)});
+ const required=["section","name","category","base_uom","packaging_method"];
+ rows.forEach(x=>{
+  const r=x.raw;
+  if(Object.keys(r).length===0)return;
+  if(/^EXAMPLE\\b/i.test(norm(r.name))){x.status="skipped";return}
+  const missing=required.filter(k=>!norm(r[k]));
+  const packRaw=norm(r.default_pack_size);
+  const packaging=norm(r.packaging_method);
+  const pack=packRaw===""?null:Number(packRaw);
+  const barcodes=splitPipe(r.barcodes);
+  const flag=norm(r.no_barcode).toUpperCase();
+  const p={
+   operation:"create",section:norm(r.section),name:norm(r.name),category:norm(r.category),base_uom:norm(r.base_uom),
+   count_mode:packaging==="Loose Packing"?"unit":"packet",
+   count_unit:packaging==="Loose Packing"?(norm(r.base_uom)||"pcs"):packaging,
+   default_pack_size:packaging==="Loose Packing"?null:pack,
+   count_to_base:packaging==="Loose Packing"?1:pack,
+   storage_shelf:norm(r.storage_shelf)||null,storage_rack:norm(r.storage_rack)||null,
+   barcodes,no_barcode:barcodes.length===0,aliases:splitPipe(r.aliases),brand:norm(r.brand)||null
+  };
+  let e=[];
+  if(missing.length)e.push("Missing required column/value: "+missing.join(", ")+".");
+  if(p.section!=="restaurant")e.push("Restaurant import only: section must be restaurant.");
+  if(!["Dry Goods","Produce","Dairy & Eggs","Meat & Poultry","Seafood","Frozen","Bakery","Beverages","Spices & Condiments","Oils & Fats","Cleaning & Disposables","Packaging","Other"].includes(p.category))e.push("Invalid category.");
+  if(!["kg","g","L","ml","pcs"].includes(p.base_uom))e.push("Invalid base_uom.");
+  if(!["Bottle","Packet","Box","Loose Packing","Carton","Pouch","Sack","Jar","Can","Tray","Crate","Drum","Bag","Bundle"].includes(packaging))e.push("Invalid packaging_method.");
+  if(packaging!=="Loose Packing"&&(!Number.isFinite(pack)||pack<=0))e.push("default_pack_size is required and must be greater than 0 for packaged items.");
+  if(packaging==="Loose Packing"&&packRaw!=="")e.push("default_pack_size must be blank for Loose Packing.");
+  if(flag&& !["TRUE","FALSE"].includes(flag))e.push("no_barcode must be TRUE or FALSE.");
+  if(flag==="TRUE"&&barcodes.length)e.push("no_barcode=TRUE conflicts with populated barcodes.");
+  const nk=p.section+"|"+p.name.toLowerCase();
+  if(seenNames.has(nk))e.push("Duplicate name in import file.");
+  if(S.items.some(i=>i.section===p.section&&norm(i.name).toLowerCase()===p.name.toLowerCase()&&i.active))e.push("Item already exists in Restaurant Inventory.");
+  seenNames.add(nk);
+  p.barcodes.forEach(b=>{
+   if(seenBarcodes.has(b))e.push("Duplicate barcode in import file: "+b);
+   if(S.items.some(i=>(i.barcodes||[]).includes(b)))e.push("Barcode already linked: "+b);
+   seenBarcodes.add(b);
+  });
+  x.payload=p;x.error=e.join(" ");x.status=e.length?"error":"valid";(e.length?errors:valid).push(x);
+ });
  return{valid,errors,skipped:rows.filter(x=>x.status==="skipped")};
 }
-async function previewImport(file){try{const rows=await parseFile(file);if(!rows.length)throw new Error("No rows found.");S.importFile=file.name;const r=validateImport(rows);S.importRows=rows;S.importValid=r.valid;S.importErrors=r.errors;$("importPreviewCard").classList.remove("hidden");$("importSummary").textContent=r.valid.length+" valid · "+r.errors.length+" errors · "+r.skipped.length+" example rows skipped";$("importRows").innerHTML=rows.map(x=>'<tr><td>'+x.row+'</td><td>'+esc(x.raw.name)+'</td><td>'+esc(x.raw.section)+'</td><td><span class="statusPill '+(x.status==="valid"?"on":x.status==="skipped"?"skip":"off")+'">'+esc(x.status||"empty")+'</span></td><td>'+esc(x.error||"")+'</td></tr>').join("");$("confirmImportBtn").disabled=!r.valid.length||r.errors.length>0;$("downloadErrorsBtn").classList.toggle("hidden",!r.errors.length);$("importPreviewCard").scrollIntoView({behavior:"smooth"})}catch(e){alertBox(e.message||"Could not read import file.","error")}}
-async function confirmImport(){if(S.importErrors.length||!S.importValid.length)return;const importId=crypto.randomUUID();const btn=$("confirmImportBtn");btn.disabled=true;btn.textContent="Importing…";try{const {data,error}=await db.rpc("inv_v2_save_item_v5",{p_session_token:token(),p_item_id:null,p_payload:{operation:"batch_create",items:S.importValid.map(x=>x.payload)},p_import_id:importId});if(error)throw error;alertBox("Import complete: "+data.added+" items added.","success");$("importPreviewCard").classList.add("hidden");S.importRows=[];S.importValid=[];S.importErrors=[];await loadItems()}catch(e){alertBox(e.message||"Import failed. No rows were partially imported.","error")}finally{btn.disabled=false;btn.textContent="Import Valid Rows"}}
-function errorCsv(){const rows=[["row","name","error"],...S.importErrors.map(x=>[x.row,x.raw.name,x.error])];downloadText("inventory-import-errors.csv",rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(",")).join("\n"),"text/csv")}
-function downloadText(name,text,type){const a=document.createElement("a");const u=URL.createObjectURL(new Blob([text],{type}));a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
+
+async function previewImport(file){
+ try{
+  const rows=await parseFile(file);if(!rows.length)throw new Error("No rows found.");
+  S.importFile=file.name;
+  const r=validateImport(rows);S.importRows=rows;S.importValid=r.valid;S.importErrors=r.errors;
+  $("importPreviewCard").classList.remove("hidden");
+  $("importSummary").textContent=r.valid.length+" valid · "+r.errors.length+" errors · "+r.skipped.length+" example rows skipped";
+  $("importRows").innerHTML=rows.map(x=>'<tr><td>'+x.row+'</td><td>'+esc(x.raw.name)+'</td><td>'+esc(x.raw.packaging_method)+'</td><td>'+esc(x.raw.default_pack_size)+'</td><td><span class="statusPill '+(x.status==="valid"?"on":x.status==="skipped"?"skip":"off")+'">'+esc(x.status||"empty")+'</span></td><td>'+esc(x.error||"")+'</td></tr>').join("");
+  $("confirmImportBtn").disabled=!r.valid.length||r.errors.length>0;
+  $("downloadErrorsBtn").classList.toggle("hidden",!r.errors.length);
+  $("importPreviewCard").scrollIntoView({behavior:"smooth"});
+ }catch(e){alertBox(e.message||"Could not read import file.","error")}
+}
+
+async function confirmImport(){
+ if(S.importErrors.length||!S.importValid.length)return;
+ const importId=crypto.randomUUID(),btn=$("confirmImportBtn");
+ btn.disabled=true;btn.textContent="Importing…";
+ try{
+  const rows=S.importValid.map(x=>x.raw);
+  const {data,error}=await db.rpc("inv_v2_import_restaurant_template_v1",{p_session_token:token(),p_rows:rows,p_import_id:importId});
+  if(error)throw error;
+  if(!data?.ok){
+   const msg=(data?.errors||[]).map(x=>[x.name,x.field,x.error].filter(Boolean).join(": ")).join(" | ")||"Template validation failed.";
+   throw new Error(msg);
+  }
+  alertBox("Import complete: "+data.added+" restaurant items added.","success");
+  $("importPreviewCard").classList.add("hidden");S.importRows=[];S.importValid=[];S.importErrors=[];await loadItems();
+ }catch(e){alertBox(e.message||"Import failed. No rows were partially imported.","error")}
+ finally{btn.disabled=false;btn.textContent="Import Valid Rows"}
+}
 async function loadStockDashboard(){
  const section=$("stockSection")?.value||"restaurant";
  const {data,error}=await db.rpc("inv_admin_get_inventory",{p_admin_token:token(),p_section:section});
