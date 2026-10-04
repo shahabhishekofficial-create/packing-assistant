@@ -210,4 +210,97 @@
 
   console.info("[Driver UX v1] Linear delivery wizard loaded.");
 })();
+</script><script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
+<style id="driverLedgerV2">
+.driverMenuDialog.ledgerV2{width:min(96vw,1100px);max-width:1100px;max-height:92dvh;padding:0;overflow:hidden}
+.ledgerV2Wrap{padding:18px;max-height:92dvh;overflow:auto;background:#f5f6f4}
+.ledgerV2Head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.ledgerV2Head h2{margin:2px 0 4px}.ledgerV2Head .hint{margin:0}
+.ledgerV2Close{font-size:20px;min-width:44px;min-height:44px}
+.ledgerV2Summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0}
+.ledgerV2Card{background:#fff;border:1px solid #e4e7e4;border-radius:14px;padding:14px}.ledgerV2Card small{display:block;color:#6b7579;font-weight:700}.ledgerV2Card b{display:block;font-size:22px;margin-top:5px}.ledgerV2Card.due{border-color:#b45309;background:#fffaf0}.ledgerV2Card.due b{color:#b45309}
+.ledgerV2Tabs{display:flex;gap:8px;margin:4px 0 12px}.ledgerV2Tabs button{min-height:44px}.ledgerV2Tabs button.active{background:#1a6b3c;color:#fff}
+.ledgerV2Filters{display:grid;grid-template-columns:150px 1fr auto;gap:8px;align-items:end;margin-bottom:14px}
+.ledgerV2Filters label{font-size:12px;font-weight:800;color:#3c4548}.ledgerV2Filters input,.ledgerV2Filters select{width:100%;min-height:44px;margin-top:5px}
+.ledgerV2List{display:grid;gap:9px}.ledgerV2Day{font-size:12px;font-weight:900;color:#6b7579;margin-top:8px}
+.ledgerV2Item,.ledgerV2Pay{background:#fff;border:1px solid #e4e7e4;border-radius:14px;padding:13px;display:flex;justify-content:space-between;gap:12px}
+.ledgerV2Item strong{font-size:15px}.ledgerV2Item small,.ledgerV2Pay small{display:block;color:#6b7579;margin-top:4px}.ledgerV2Earn{font-weight:900;color:#1a6b3c;white-space:nowrap}.ledgerV2Empty{padding:28px;text-align:center;color:#6b7579;background:#fff;border-radius:14px}
+.ledgerV2Pdf{white-space:nowrap}.ledgerV2Actions{display:flex;gap:8px;align-items:center}
+@media(max-width:650px){.ledgerV2Summary{grid-template-columns:1fr}.ledgerV2Filters{grid-template-columns:1fr 1fr}.ledgerV2Filters label:nth-child(2){grid-column:1/-1}.ledgerV2Actions{flex-direction:column;align-items:stretch}.ledgerV2Head{flex-direction:column}.ledgerV2Item,.ledgerV2Pay{align-items:flex-start}.ledgerV2Earn{font-size:15px}}
+</style>
+<script>
+(function(){
+ const oldOpen=window.openDriverMenu;
+ const state={tab:"history",preset:"week",from:null,to:null,search:"",data:null};
+ function isoStart(d){const x=new Date(d);x.setHours(0,0,0,0);return x.toISOString();}
+ function isoEnd(d){const x=new Date(d);x.setHours(0,0,0,0);x.setDate(x.getDate()+1);return x.toISOString();}
+ function range(p){const now=new Date(),d=new Date(now);d.setHours(0,0,0,0);if(p==="today")return [isoStart(d),isoEnd(d)];if(p==="yesterday"){d.setDate(d.getDate()-1);return [isoStart(d),isoEnd(d)];}if(p==="week"){d.setDate(d.getDate()-6);return [isoStart(d),isoEnd(new Date())];}return [null,null];}
+ function money(v){return "₹"+Number(v||0).toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2});}
+ function esc2(v){return esc(v);}
+ async function loadV2(){
+   const d=await api("payment_ledger",{from:state.from,to:state.to,search:state.search});
+   if(!d?.ok)throw new Error(d?.message||"Could not load earnings ledger");
+   state.data=d;renderV2();
+ }
+ function renderV2(){
+   const dlg=$("driverMenuDialog");if(!dlg)return;
+   dlg.classList.add("ledgerV2");
+   dlg.innerHTML='<div class="ledgerV2Wrap"><div class="ledgerV2Head"><div><span class="eyebrow">DRIVER ACCOUNT</span><h2>'+esc2(state.data?.driver_name||ds.name||"Driver")+' · Earnings & Ledger</h2><p class="hint">Delivery earnings, company payments and current balance.</p></div><div class="ledgerV2Actions"><button class="primary ledgerV2Pdf">📑 Download PDF</button><button class="secondary ledgerV2Close">✕</button></div></div><div class="ledgerV2Summary"><div class="ledgerV2Card"><small>Total Earned</small><b>'+money(state.data?.all_time_earned)+'</b></div><div class="ledgerV2Card"><small>Paid by Company</small><b>'+money(state.data?.all_time_paid)+'</b></div><div class="ledgerV2Card due"><small>Remaining Due</small><b>'+money(state.data?.all_time_balance)+'</b></div></div><div class="ledgerV2Tabs"><button class="secondary '+(state.tab==="history"?"active":"")+'" data-tab="history">Delivery History</button><button class="secondary '+(state.tab==="payments"?"active":"")+'" data-tab="payments">Company Payouts Log</button></div><div class="ledgerV2Filters"><label>Period<select id="ledgerPreset"><option value="today">Today</option><option value="yesterday">Yesterday</option><option value="week">This Week</option><option value="custom">Custom Date Range</option></select></label><label>Search<input id="ledgerSearch" placeholder="Outlet / Invoice #"></label><button class="secondary" id="ledgerApply">Apply</button></div><div id="ledgerV2Custom" class="ledgerV2Filters" style="display:none;grid-template-columns:1fr 1fr;margin-top:-8px"><label>From<input id="ledgerFrom" type="date"></label><label>To<input id="ledgerTo" type="date"></label></div><div id="ledgerV2List" class="ledgerV2List"></div></div>';
+   $("ledgerPreset").value=state.preset;$("ledgerSearch").value=state.search;
+   dlg.querySelector(".ledgerV2Close").onclick=()=>dlg.close();
+   dlg.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{state.tab=b.dataset.tab;renderV2();});
+   $("ledgerPreset").onchange=()=>{$("ledgerV2Custom").style.display=$("ledgerPreset").value==="custom"?"grid":"none";};
+   $("ledgerApply").onclick=async()=>{const p=$("ledgerPreset").value;state.preset=p;state.search=$("ledgerSearch").value.trim();if(p==="custom"){const a=$("ledgerFrom").value,b=$("ledgerTo").value;if(!a||!b)return toast("Select both dates.","error");state.from=new Date(a+"T00:00:00").toISOString();const end=new Date(b+"T00:00:00");end.setDate(end.getDate()+1);state.to=end.toISOString();}else [state.from,state.to]=range(p);try{await loadV2();}catch(e){toast(e.message,"error");}};
+   $("ledgerV2Custom").style.display=state.preset==="custom"?"grid":"none";
+   const list=$("ledgerV2List");
+   if(state.tab==="history"){
+     const rows=state.data?.history||[];
+     list.innerHTML=rows.length?rows.map(r=>'<div class="ledgerV2Item"><div><strong>'+esc2(r.outlet_name)+'</strong><small>Inv #'+esc2(r.invoice_number||"—")+' · '+new Date(r.date).toLocaleString("en-IN",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"})+' · '+Number(r.item_count||0)+' items · '+Number(r.rejection_count||0)+' rejected</small><small>Status: '+esc2(r.status)+'</small></div><div class="ledgerV2Earn">+ '+money(r.earned)+'</div></div>').join(""):'<div class="ledgerV2Empty">No deliveries found for this period.</div>';
+   }else{
+     const rows=state.data?.payments||[];
+     list.innerHTML=rows.length?rows.map(p=>'<div class="ledgerV2Pay"><div><strong>'+esc2(p.payment_mode?({"UPI":"UPI","BANK_TRANSFER":"Bank Transfer","CASH":"Cash"}[p.payment_mode]||p.payment_mode):"Company payment")+'</strong><small>'+new Date(p.paid_at).toLocaleString("en-IN",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"})+' · Ref: '+esc2(p.reference_number||"—")+'</small><small>'+esc2(p.note||"")+(p.confirmed_at?" · ✓ Confirmed by you":"")+'</small></div><div><b>'+money(p.amount)+'</b></div></div>').join(""):'<div class="ledgerV2Empty">No company payments found for this period.</div>';
+   }
+   dlg.querySelector(".ledgerV2Pdf").onclick=downloadStatement;
+ }
+ async function openV2(){
+   state.tab="history";state.preset="week";state.search="";[state.from,state.to]=range("week");
+   const dlg=$("driverMenuDialog");dlg.showModal();dlg.classList.add("ledgerV2");
+   dlg.innerHTML='<div class="ledgerV2Wrap"><div class="ledgerV2Empty">Loading earnings & ledger…</div></div>';
+   try{await loadV2();}catch(e){dlg.querySelector(".ledgerV2Wrap").innerHTML='<div class="ledgerV2Empty">Could not load ledger: '+esc2(e.message)+'</div>';}
+ }
+ async function downloadStatement(){
+   const d=state.data;if(!d)return;
+   if(!window.jspdf?.jsPDF)return toast("PDF engine is still loading. Try again.","error");
+   const doc=new jspdf.jsPDF({unit:"mm",format:"a4"}),W=210,L=14;
+   const period=(state.from?new Date(state.from).toLocaleDateString("en-IN"):"All time")+" - "+(state.to?new Date(new Date(state.to).getTime()-1).toLocaleDateString("en-IN"):"Present");
+   doc.setFontSize(17);doc.text("BIGLY AGRO - DRIVER STATEMENT",W/2,15,{align:"center"});doc.setFontSize(9);
+   doc.text("Driver Name: "+(d.driver_name||ds.name||"Driver"),L,25);doc.text("Statement Date: "+new Date().toLocaleDateString("en-IN"),W-14,25,{align:"right"});doc.text("Period: "+period,L,31);
+   doc.line(L,35,W-L,35);doc.setFontSize(11);doc.text("FINANCIAL SUMMARY",L,42);doc.setFontSize(10);
+   doc.text("Total Earnings (A):",L,50);doc.text(money(d.earned),75,50);doc.text("Company Payments (B):",L,57);doc.text(money(d.paid),75,57);
+   doc.setFillColor(255,247,230);doc.roundedRect(L,63,W-28,15,3,3,"F");doc.setFontSize(12);doc.text("NET DUE AMOUNT (A - B): "+money(d.balance),L+5,72);
+   let y=87;doc.setFontSize(11);doc.text("SECTION 1: OUTLET DELIVERY BREAKDOWN",L,y);y+=7;doc.setFontSize(8);
+   doc.text("Date",L,y);doc.text("Outlet",36,y);doc.text("Invoice",112,y);doc.text("Status",139,y);doc.text("Earned",184,y,{align:"right"});y+=5;
+   (d.history||[]).forEach(r=>{if(y>275){doc.addPage();y=18;}doc.text(new Date(r.date).toLocaleDateString("en-IN"),L,y);doc.text(String(r.outlet_name||"").slice(0,35),36,y);doc.text("#"+String(r.invoice_number||"—"),112,y);doc.text(String(r.status||"").slice(0,16),139,y);doc.text(money(r.earned),196,y,{align:"right"});y+=5;});
+   doc.setFontSize(10);doc.text("Subtotal Deliveries:",139,y+3);doc.text(money(d.earned),196,y+3,{align:"right"});y+=14;
+   if(y>260){doc.addPage();y=18;}doc.setFontSize(11);doc.text("SECTION 2: COMPANY PAYMENTS RECORDED",L,y);y+=7;doc.setFontSize(8);doc.text("Date",L,y);doc.text("Mode",45,y);doc.text("Reference / Notes",90,y);doc.text("Amount",196,y,{align:"right"});y+=5;
+   (d.payments||[]).forEach(p=>{if(y>275){doc.addPage();y=18;}doc.text(new Date(p.paid_at).toLocaleDateString("en-IN"),L,y);doc.text(String(p.payment_mode||"—").replace("BANK_TRANSFER","Bank Transfer").replace("UPI","UPI").replace("CASH","Cash"),45,y);doc.text((String(p.reference_number||"—")+" "+String(p.note||"")).slice(0,48),90,y);doc.text(money(p.amount),196,y,{align:"right"});y+=5;});
+   doc.setFontSize(10);doc.text("Subtotal Payments Received:",139,y+3);doc.text(money(d.paid),196,y+3,{align:"right"});y+=14;
+   doc.setFontSize(13);doc.text("Balance Due to Driver: "+money(d.balance),L,y);doc.setFontSize(8);doc.text("Generated via Bigly Ops Command Center • System Verified",L,289);
+   doc.save("Bigly-Agro-Driver-Statement-"+(d.driver_name||"Driver").replace(/[^a-z0-9]+/gi,"-")+"-"+new Date().toISOString().slice(0,10)+".pdf");
+ }
+ window.openDriverMenu=openV2;
+ const b=$("driverMenuBtn");if(b)b.onclick=openV2;
+ const oldMark=window.markDelivered;
+ window.markDelivered=async function(outletId){
+   const before=Number(state.data?.all_time_earned||0);
+   await oldMark(outletId);
+   try{
+     const d=await api("payment_ledger",{from:null,to:null,search:""});
+     const after=Number(d?.all_time_earned||0),delta=after-before;
+     if(delta>0)toast("🟢 Delivery Complete! +"+money(delta)+" added to your balance.","success");
+     state.data=d;
+     const earn=$("driverEarnings");if(earn){const h=earn.querySelector("h3");if(h){h.style.transition="transform .25s ease";h.style.transform="scale(1.08)";setTimeout(()=>h.style.transform="",350);h.textContent=money(after);}}
+   }catch(_){}
+ };
+})();
 </script></body></html>
