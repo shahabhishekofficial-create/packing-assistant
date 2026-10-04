@@ -8,6 +8,19 @@ const norm=s=>String(s??"").trim().replace(/\s+/g," ");
 const bool=s=>String(s??"").trim().toUpperCase()==="TRUE";
 const barcodeValid=b=>{b=String(b).trim();if(!/^\d+$/.test(b)||![8,12,13].includes(b.length))return false;let sum=0,n=b.length;for(let i=0;i<n-1;i++)sum+=Number(b[i])*(((n-i-1)%2)?3:1);return ((10-sum%10)%10)===Number(b[n-1])};
 function alertBox(msg,type=""){const e=$("inventoryAlert");e.textContent=msg||"";e.className="inventoryAlert "+type;if(msg)e.classList.remove("hidden");else e.classList.add("hidden")}
+function expandScientificInteger(value){
+ const s=String(value??"").trim();
+ const m=s.match(/^([+-]?)(\\d+)(?:\\.(\\d+))?[eE]([+-]?\\d+)$/);
+ if(!m)return s;
+ const sign=m[1]||"",digits=(m[2]||"")+(m[3]||""),point=(m[2]||"").length+Number(m[4]);
+ if(point<=0)return sign+"0."+("0".repeat(-point))+digits;
+ if(point>=digits.length)return sign+digits+("0".repeat(point-digits.length));
+ return sign+digits.slice(0,point)+"."+digits.slice(point);
+}
+function normalizeBarcodeCell(value){
+ const s=String(value??"").trim();
+ return s.split("|").map(x=>expandScientificInteger(x)).join("|");
+}
 function splitPipe(v){return norm(v).split("|").map(norm).filter(Boolean)}
 function payloadFromForm(){return{operation:S.editId?"update":"create",section:S.section,name:norm($("itemName").value),category:norm($("itemCategory").value),base_uom:$("itemUom").value,count_mode:$("itemMode").value,count_unit:norm($("itemCountUnit").value),default_pack_size:$("itemPackSize").value.trim()===""?null:Number($("itemPackSize").value),count_to_base:$("itemPackSize").value.trim()===""?null:Number($("itemPackSize").value),storage_shelf:norm($("itemShelf").value)||null,storage_rack:norm($("itemRack").value)||null,barcodes:splitPipe($("itemBarcodes").value),no_barcode:$("itemNoBarcode").checked,aliases:splitPipe($("itemAliases").value),brand:norm($("itemBrand").value)||null}}
 function validateItem(p,existing=[]){
@@ -125,13 +138,13 @@ async function downloadTemplate(){
  const wb=new ExcelJS.Workbook();wb.creator="Bigly Agro Private Limited";wb.created=new Date();
  const ws=wb.addWorksheet("Items");
  ws.columns=[{header:"section",key:"section",width:14},{header:"name",key:"name",width:32},{header:"category",key:"category",width:24},{header:"base_uom",key:"base_uom",width:14},{header:"packaging_method",key:"packaging_method",width:22},{header:"default_pack_size",key:"default_pack_size",width:20},{header:"barcodes",key:"barcodes",width:24},{header:"aliases",key:"aliases",width:28},{header:"brand",key:"brand",width:20},{header:"storage_shelf",key:"storage_shelf",width:18},{header:"storage_rack",key:"storage_rack",width:18}];
- ws.addRow(templateRows()[0]);ws.getRow(1).eachCell(c=>{c.font={bold:true,color:{argb:"FFFFFFFF"}};c.fill={type:"pattern",pattern:"solid",fgColor:{argb:"FF0F5132"}};});ws.freezePanes={xSplit:0,ySplit:1};ws.autoFilter={from:"A1",to:"K5000"};
+ ws.addRow(templateRows()[0]);ws.getRow(1).eachCell(c=>{c.font={bold:true,color:{argb:"FFFFFFFF"}};c.fill={type:"pattern",pattern:"solid",fgColor:{argb:"FF0F5132"}};});ws.freezePanes={xSplit:0,ySplit:1};ws.autoFilter={from:"A1",to:"K5000"};ws.getColumn("G").numFmt="@";
  const lists=wb.addWorksheet("Lists");lists.columns=[{header:"Categories",key:"cat",width:26},{header:"Base UOM",key:"uom",width:14},{header:"Packaging Method",key:"pack",width:24},{header:"",width:4},{header:"Section",width:16}];
  const max=Math.max(TEMPLATE_CATEGORIES.length,TEMPLATE_UOMS.length,TEMPLATE_PACKAGING.length);for(let i=0;i<max;i++)lists.addRow([TEMPLATE_CATEGORIES[i]||"",TEMPLATE_UOMS[i]||"",TEMPLATE_PACKAGING[i]||""]);
  lists.getCell("E2").value="restaurant";lists.getRow(1).eachCell(c=>{c.font={bold:true,color:{argb:"FFFFFFFF"}};c.fill={type:"pattern",pattern:"solid",fgColor:{argb:"FF334155"}}});
  wb.definedNames.add("Lists!$A$2:$A$"+(TEMPLATE_CATEGORIES.length+1),"RestaurantCategories");wb.definedNames.add("Lists!$B$2:$B$"+(TEMPLATE_UOMS.length+1),"BaseUOMs");wb.definedNames.add("Lists!$C$2:$C$"+(TEMPLATE_PACKAGING.length+1),"PackagingMethods");wb.definedNames.add("Lists!$E$2","RestaurantSection");
  for(let r=2;r<=5000;r++){ws.getCell("A"+r).value="restaurant";ws.getCell("A"+r).dataValidation={type:"list",allowBlank:false,formulae:["RestaurantSection"],showErrorMessage:true,errorStyle:"stop",errorTitle:"Invalid section",error:"Section must be restaurant."};ws.getCell("C"+r).dataValidation={type:"list",allowBlank:false,formulae:["RestaurantCategories"],showErrorMessage:true,errorStyle:"stop",errorTitle:"Invalid category",error:"Choose a category from the dropdown."};ws.getCell("D"+r).dataValidation={type:"list",allowBlank:false,formulae:["BaseUOMs"],showErrorMessage:true,errorStyle:"stop",errorTitle:"Invalid UOM",error:"Choose kg, g, L, ml or pcs."};ws.getCell("E"+r).dataValidation={type:"list",allowBlank:false,formulae:["PackagingMethods"],showErrorMessage:true,errorStyle:"stop",errorTitle:"Invalid packaging",error:"Choose a packaging method from the dropdown."};ws.getCell("F"+r).dataValidation={type:"custom",allowBlank:true,formulae:["=OR($E"+r+"=\"Loose Packing\",AND(ISNUMBER($F"+r+"),$F"+r+">0))"],showErrorMessage:true,errorStyle:"stop",errorTitle:"Invalid pack size",error:"Pack size must be blank for Loose Packing, otherwise greater than 0."};}
- const ins=wb.addWorksheet("Instructions");ins.columns=[{header:"Column",width:22},{header:"Required",width:14},{header:"Guidance",width:90}];[["section","YES","Fixed to restaurant. Do not change."],["name","YES","Item name used for counting/search."],["category","YES","Use the dropdown."],["base_uom","YES","Use the dropdown: kg, g, L, ml or pcs."],["packaging_method","YES","Use the dropdown."],["default_pack_size","CONDITIONAL","Required and > 0 for packaged items; blank for Loose Packing."],["barcodes","NO","EAN-8, UPC-A or EAN-13 values separated by |."],["aliases","NO","Optional aliases separated by |."],["brand","NO","Optional brand."],["storage_shelf","NO","Optional shelf."],["storage_rack","NO","Optional rack."],["","IMPORTANT","count_mode, count_unit and no_barcode are derived by the backend and are not template columns."],["","IMPORTANT","CSV cannot carry native Excel dropdowns. Use XLSX when controlled dropdown entry is required."]].forEach(x=>ins.addRow(x));ins.getRow(1).eachCell(c=>{c.font={bold:true,color:{argb:"FFFFFFFF"}};c.fill={type:"pattern",pattern:"solid",fgColor:{argb:"FF0F5132"}}});
+ const ins=wb.addWorksheet("Instructions");ins.columns=[{header:"Column",width:22},{header:"Required",width:14},{header:"Guidance",width:90}];[["section","YES","Fixed to restaurant. Do not change."],["name","YES","Item name used for counting/search."],["category","YES","Use the dropdown."],["base_uom","YES","Use the dropdown: kg, g, L, ml or pcs."],["packaging_method","YES","Use the dropdown."],["default_pack_size","CONDITIONAL","Required and > 0 for packaged items; blank for Loose Packing."],["barcodes","NO","Enter barcode digits as text; EAN-8, UPC-A or EAN-13 values separated by |. The template keeps this column as Text to prevent scientific notation/precision changes."],["aliases","NO","Optional aliases separated by |."],["brand","NO","Optional brand."],["storage_shelf","NO","Optional shelf."],["storage_rack","NO","Optional rack."],["","IMPORTANT","count_mode, count_unit and no_barcode are derived by the backend and are not template columns."],["","IMPORTANT","CSV cannot carry native Excel dropdowns. Use XLSX when controlled dropdown entry is required."]].forEach(x=>ins.addRow(x));ins.getRow(1).eachCell(c=>{c.font={bold:true,color:{argb:"FFFFFFFF"}};c.fill={type:"pattern",pattern:"solid",fgColor:{argb:"FF0F5132"}}});
  const buf=await wb.xlsx.writeBuffer();downloadBlob(new Blob([buf],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}),"bigly-inventory-item-template.xlsx");
 }
 function downloadCsvTemplate(){const rows=[TEMPLATE_COLUMNS,templateRows()[0]];const csv="\uFEFF"+rows.map(row=>row.map(v=>{const s=String(v??"");return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s}).join(",")).join("\r\n")+"\r\n";downloadBlob(new Blob([csv],{type:"text/csv;charset=utf-8"}),"bigly-inventory-item-template.csv");}
@@ -143,11 +156,11 @@ function parseFile(file){
    try{
     const wb=XLSX.read(ev.target.result,{type:"array",cellText:false,cellDates:false});
     const name=wb.SheetNames.includes("Items")?"Items":wb.SheetNames[0];
-    const rows=XLSX.utils.sheet_to_json(wb.Sheets[name],{header:1,defval:"",raw:false});
+    const rows=XLSX.utils.sheet_to_json(wb.Sheets[name],{header:1,defval:"",raw:true});
     if(!rows.length)return res([]);
     const headers=rows[0].map(x=>norm(x).toLowerCase());
     res(rows.slice(1).map((r,i)=>{
-     const o={};headers.forEach((h,j)=>{if(h)o[h]=norm(r[j]??"")});
+     const o={};headers.forEach((h,j)=>{if(h)o[h]=h==="barcodes"?normalizeBarcodeCell(r[j]):norm(r[j]??"")});
      return{row:i+2,raw:o};
     }));
    }catch(e){rej(e)}
