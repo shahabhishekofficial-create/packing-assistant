@@ -45,7 +45,18 @@ async function addCategory(){
   alertBox("Category added: "+data.name,"success");
  }catch(e){alertBox(e.message||"Could not add category.","error")}
 }
-async function loadItems(){const r=await db.rpc("inv_v2_get_items_v5",{p_session_token:token(),p_section:S.section});if(r.error)throw r.error;S.items=(r.data||[]).map(x=>({...x,barcodes:Array.isArray(x.barcodes)?x.barcodes.filter(Boolean):[]}));renderItems()}
+async function loadItems(){
+ const r=await db.rpc("inv_v2_get_items_v5",{p_session_token:token(),p_section:S.section});
+ if(r.error)throw r.error;
+ let rows=r.data||[];
+ if(!rows.length){
+   const legacy=await db.rpc("inv_get_items",{p_session_token:token(),p_section:S.section});
+   if(legacy.error)throw legacy.error;
+   rows=(legacy.data||[]).map(x=>({...x,base_uom:x.base_uom||x.unit||"pcs",count_mode:x.count_mode||"unit",default_pack_size:x.default_pack_size??null,count_unit:x.count_unit||null,count_to_base:x.count_to_base??x.default_pack_size??1,no_barcode:!x.barcode,brand:x.brand||null,storage_shelf:x.storage_shelf||null,storage_rack:x.storage_rack||null,barcodes:x.barcodes||String(x.barcode||"").split("|").filter(Boolean)}));
+ }
+ S.items=rows.map(x=>({...x,barcodes:Array.isArray(x.barcodes)?x.barcodes.filter(Boolean):String(x.barcode||"").split("|").filter(Boolean)}));
+ renderItems();
+}
 function renderItems(){
  const q=norm($("itemSearch").value).toLowerCase(),filter=$("itemFilter").value;
  const arr=S.items.filter(i=>(filter==="all"||(filter==="active"&&i.active)||(filter==="inactive"&&!i.active))&&(!q||[i.name,i.category,i.brand,...(i.aliases||[]),...(i.barcodes||[])].join(" ").toLowerCase().includes(q)));
@@ -103,56 +114,28 @@ async function startCamera(){if(!window.Html5Qrcode)return alertBox("Scanner lib
 async function stopCamera(){if(!S.scanner)return;$("cameraBox").classList.add("hidden");try{await S.scanner.stop()}catch{}try{S.scanner.clear()}catch{}S.scanner=null}
 async function saveItem(e,keepOpen=false){e?.preventDefault();const p=payloadFromForm(),errors=validateItem(p,S.items);$("fieldErrors").innerHTML=errors.length?errors.map(x=>"<div>"+esc(x)+"</div>").join(""):"";if(errors.length)return;const b=$("saveItemBtn");b.disabled=true;b.textContent="Saving…";try{const {data,error}=await db.rpc("inv_v2_save_item_v4",{p_session_token:token(),p_item_id:S.editId,p_payload:p,p_import_id:null});if(error)throw error;const wasEdit=!!S.editId;if(keepOpen){resetForm();$("itemDialog").showModal();}else $("itemDialog").close();alertBox(wasEdit?"Item updated.":"Item saved.","success");await loadItems()}catch(x){alertBox(x.message||"Could not save item.","error")}finally{b.disabled=false;b.textContent="Save Item"}}
 async function deactivate(id){if(!confirm("Deactivate this item? It will remain in history and cannot be deleted."))return;try{const {error}=await db.rpc("inv_v2_save_item_v4",{p_session_token:token(),p_item_id:id,p_payload:{operation:"deactivate"},p_import_id:null});if(error)throw error;alertBox("Item deactivated.","success");await loadItems()}catch(e){alertBox(e.message||"Could not deactivate item.","error")}}
-function templateRows(){return [["restaurant","EXAMPLE Barilla Pasta 1kg","Dry Goods","kg","Box","packet","Box",1,"8076809571319",false,"barilla|pasta","Barilla","S-03","R-12"]]}
-
-function downloadTemplate(){
- const wb=XLSX.utils.book_new();
- const rows=[
-  ["section","name","category","base_uom","packaging_method","count_mode","count_unit","default_pack_size","barcodes","no_barcode","aliases","brand","storage_shelf","storage_rack"],
-  ...templateRows()
- ];
- const ws=XLSX.utils.aoa_to_sheet(rows);
- ws["!cols"]=[{wch:14},{wch:30},{wch:22},{wch:12},{wch:20},{wch:14},{wch:18},{wch:20},{wch:18},{wch:14},{wch:24},{wch:18},{wch:18},{wch:18}];
- XLSX.utils.book_append_sheet(wb,ws,"Items");
- const lists=[
-  ["Categories","Base UOM","Packaging Method","Count Mode","Count Unit"],
-  ["Dry Goods","kg","Bottle","unit","Box"],
-  ["Produce","g","Packet","packet","Bag"],
-  ["Dairy & Eggs","L","Box","","Carton"],
-  ["Meat & Poultry","ml","Loose Packing","","Bottle"],
-  ["Seafood","pcs","Carton","","Crate"],
-  ["Frozen","","Pouch","","Sack"],
-  ["Bakery","","Sack","","Tray"],
-  ["Beverages","","Jar","","Drum"],
-  ["Spices & Condiments","","Can","","Pack"],
-  ["Oils & Fats","","Tray","","Pouch"],
-  ["Cleaning & Disposables","","Crate","","Jar"],
-  ["Packaging","","Drum","","Can"],
-  ["Other","","Bag","",""],
-  ["","","Bundle","",""]
- ];
- XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(lists),"Lists");
- const ins=[
-  ["Column","Required","Guidance"],
-  ["section","YES","Hardcoded to restaurant in this template."],
-  ["name","YES","Item name used for counting and search."],
-  ["category","YES","Choose from the Lists sheet."],
-  ["base_uom","YES","kg, g, L, ml or pcs."],
-  ["packaging_method","YES","Bottle, Packet, Box, Loose Packing, Carton, Pouch, Sack, Jar, Can, Tray, Crate, Drum, Bag or Bundle."],
-  ["count_mode","NO","Legacy/optional. Backend derives the counting mode from packaging_method."],
-  ["count_unit","NO","Legacy/optional. Backend derives the physical count label from packaging_method."],
-  ["default_pack_size","CONDITIONAL","Required and positive unless packaging_method is Loose Packing."],
-  ["barcodes","NO","One or more EAN-8, UPC-A or EAN-13 barcodes separated by |."],
-  ["no_barcode","DERIVED","Excel convenience only. Backend recomputes this from barcodes."],
-  ["aliases","NO","Optional search aliases separated by |."],
-  ["brand","NO","Optional brand/manufacturer."],
-  ["storage_shelf","NO","Shelf/location label."],
-  ["storage_rack","NO","Rack number/label."]
- ];
- XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(ins),"Instructions");
- XLSX.writeFile(wb,"bigly-inventory-item-template.xlsx");
+function templateRows(){return [["restaurant","EXAMPLE Barilla Pasta 1kg","Dry Goods","kg","Box",1,"8076809571319","barilla|pasta","Barilla","S-03","R-12"]];}
+const TEMPLATE_CATEGORIES=["Dry Goods","Produce","Dairy & Eggs","Meat & Poultry","Seafood","Frozen","Bakery","Beverages","Spices & Condiments","Oils & Fats","Cleaning & Disposables","Packaging","Other"];
+const TEMPLATE_UOMS=["kg","g","L","ml","pcs"];
+const TEMPLATE_PACKAGING=["Bottle","Packet","Box","Loose Packing","Carton","Pouch","Sack","Jar","Can","Tray","Crate","Drum","Bag","Bundle"];
+const TEMPLATE_COLUMNS=["section","name","category","base_uom","packaging_method","default_pack_size","barcodes","aliases","brand","storage_shelf","storage_rack"];
+function downloadBlob(blob,name){const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+async function downloadTemplate(){
+ if(!window.ExcelJS)throw new Error("Excel template engine is still loading. Please wait a moment and try again.");
+ const wb=new ExcelJS.Workbook();wb.creator="Bigly Agro Private Limited";wb.created=new Date();
+ const ws=wb.addWorksheet("Items");
+ ws.columns=[{header:"section",key:"section",width:14},{header:"name",key:"name",width:32},{header:"category",key:"category",width:24},{header:"base_uom",key:"base_uom",width:14},{header:"packaging_method",key:"packaging_method",width:22},{header:"default_pack_size",key:"default_pack_size",width:20},{header:"barcodes",key:"barcodes",width:24},{header:"aliases",key:"aliases",width:28},{header:"brand",key:"brand",width:20},{header:"storage_shelf",key:"storage_shelf",width:18},{header:"storage_rack",key:"storage_rack",width:18}];
+ ws.addRow(templateRows()[0]);ws.getRow(1).eachCell(c=>{c.font={bold:true,color:{argb:"FFFFFFFF"}};c.fill={type:"pattern",pattern:"solid",fgColor:{argb:"FF0F5132"}};});ws.freezePanes={xSplit:0,ySplit:1};ws.autoFilter={from:"A1",to:"K5000"};
+ const lists=wb.addWorksheet("Lists");lists.columns=[{header:"Categories",key:"cat",width:26},{header:"Base UOM",key:"uom",width:14},{header:"Packaging Method",key:"pack",width:24},{header:"",width:4},{header:"Section",width:16}];
+ const max=Math.max(TEMPLATE_CATEGORIES.length,TEMPLATE_UOMS.length,TEMPLATE_PACKAGING.length);for(let i=0;i<max;i++)lists.addRow([TEMPLATE_CATEGORIES[i]||"",TEMPLATE_UOMS[i]||"",TEMPLATE_PACKAGING[i]||""]);
+ lists.getCell("E2").value="restaurant";lists.getRow(1).eachCell(c=>{c.font={bold:true,color:{argb:"FFFFFFFF"}};c.fill={type:"pattern",pattern:"solid",fgColor:{argb:"FF334155"}}});
+ wb.definedNames.add("RestaurantCategories","Lists!$A$2:$A$"+(TEMPLATE_CATEGORIES.length+1));wb.definedNames.add("BaseUOMs","Lists!$B$2:$B$"+(TEMPLATE_UOMS.length+1));wb.definedNames.add("PackagingMethods","Lists!$C$2:$C$"+(TEMPLATE_PACKAGING.length+1));wb.definedNames.add("RestaurantSection","Lists!$E$2");
+ for(let r=2;r<=5000;r++){ws.getCell("A"+r).value="restaurant";ws.getCell("A"+r).dataValidation={type:"list",allowBlank:false,formulae:["RestaurantSection"],showErrorMessage:true,errorStyle:"stop",errorTitle:"Invalid section",error:"Section must be restaurant."};ws.getCell("C"+r).dataValidation={type:"list",allowBlank:false,formulae:["RestaurantCategories"],showErrorMessage:true,errorStyle:"stop",errorTitle:"Invalid category",error:"Choose a category from the dropdown."};ws.getCell("D"+r).dataValidation={type:"list",allowBlank:false,formulae:["BaseUOMs"],showErrorMessage:true,errorStyle:"stop",errorTitle:"Invalid UOM",error:"Choose kg, g, L, ml or pcs."};ws.getCell("E"+r).dataValidation={type:"list",allowBlank:false,formulae:["PackagingMethods"],showErrorMessage:true,errorStyle:"stop",errorTitle:"Invalid packaging",error:"Choose a packaging method from the dropdown."};ws.getCell("F"+r).dataValidation={type:"custom",allowBlank:true,formulae:["=OR($E"+r+"=\"Loose Packing\",AND(ISNUMBER($F"+r+"),$F"+r+">0))"],showErrorMessage:true,errorStyle:"stop",errorTitle:"Invalid pack size",error:"Pack size must be blank for Loose Packing, otherwise greater than 0."};}
+ const ins=wb.addWorksheet("Instructions");ins.columns=[{header:"Column",width:22},{header:"Required",width:14},{header:"Guidance",width:90}];[["section","YES","Fixed to restaurant. Do not change."],["name","YES","Item name used for counting/search."],["category","YES","Use the dropdown."],["base_uom","YES","Use the dropdown: kg, g, L, ml or pcs."],["packaging_method","YES","Use the dropdown."],["default_pack_size","CONDITIONAL","Required and > 0 for packaged items; blank for Loose Packing."],["barcodes","NO","EAN-8, UPC-A or EAN-13 values separated by |."],["aliases","NO","Optional aliases separated by |."],["brand","NO","Optional brand."],["storage_shelf","NO","Optional shelf."],["storage_rack","NO","Optional rack."],["","IMPORTANT","count_mode, count_unit and no_barcode are derived by the backend and are not template columns."],["","IMPORTANT","CSV cannot carry native Excel dropdowns. Use XLSX when controlled dropdown entry is required."]].forEach(x=>ins.addRow(x));ins.getRow(1).eachCell(c=>{c.font={bold:true,color:{argb:"FFFFFFFF"}};c.fill={type:"pattern",pattern:"solid",fgColor:{argb:"FF0F5132"}}});
+ const buf=await wb.xlsx.writeBuffer();downloadBlob(new Blob([buf],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}),"bigly-inventory-item-template.xlsx");
 }
-
+function downloadCsvTemplate(){const rows=[TEMPLATE_COLUMNS,templateRows()[0]];const csv="\uFEFF"+rows.map(row=>row.map(v=>{const s=String(v??"");return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s}).join(",")).join("\r\n")+"\r\n";downloadBlob(new Blob([csv],{type:"text/csv;charset=utf-8"}),"bigly-inventory-item-template.csv");}
+function errorCsv(){const rows=[["Row","Name","Status","Error"]];S.importRows.filter(x=>x.status==="error").forEach(x=>rows.push([x.row,x.raw.name||"",x.status,x.error||""]));const csv="\uFEFF"+rows.map(row=>row.map(v=>{const s=String(v??"");return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s}).join(",")).join("\r\n")+"\r\n";downloadBlob(new Blob([csv],{type:"text/csv;charset=utf-8"}),"bigly-inventory-import-errors.csv");}
 function parseFile(file){
  return new Promise((res,rej)=>{
   const rd=new FileReader();
@@ -332,7 +315,7 @@ function wire(){
  $("sideSettings")?.addEventListener("click",e=>{e.preventDefault();go("settings")});
  $("baSidebarToggle")?.addEventListener("click",()=>document.querySelector(".cmdSidebar")?.classList.toggle("open"));
  document.querySelectorAll(".sectionTab").forEach(b=>b.onclick=async()=>{document.querySelectorAll(".sectionTab").forEach(x=>x.classList.remove("active"));b.classList.add("active");S.section=b.dataset.section;$("itemSearch").value="";const veg=S.section==="vegetable";$("restaurantTools").classList.toggle("hidden",veg);$("vegetableTools").classList.toggle("hidden",!veg);$("downloadTemplateBtn").classList.toggle("hidden",veg);$("importBtn").classList.toggle("hidden",veg);$("addItemBtn").textContent=veg?"+ Add Vegetable":"+ Add Restaurant Item";await loadItems()});
- $("stockRefreshBtn")?.addEventListener("click",()=>Promise.all([loadStockDashboard(),loadInventoryLog()]).catch(e=>alertBox(e.message||"Could not refresh stock.","error")));$("exportStockPdfBtn")?.addEventListener("click",exportStockPDF);$("inventoryLogRefresh")?.addEventListener("click",()=>loadInventoryLog().catch(e=>alertBox(e.message||"Could not refresh log.","error")));$("adjustConfirmBtn")?.addEventListener("click",saveAdjustment);$("addCategoryBtn").onclick=addCategory;$("itemSearch").oninput=renderItems;$("itemFilter").onchange=renderItems;$("addItemBtn").onclick=()=>openDialog();$("downloadTemplateBtn").onclick=downloadTemplate;
+ $("stockRefreshBtn")?.addEventListener("click",()=>Promise.all([loadStockDashboard(),loadInventoryLog()]).catch(e=>alertBox(e.message||"Could not refresh stock.","error")));$("exportStockPdfBtn")?.addEventListener("click",exportStockPDF);$("inventoryLogRefresh")?.addEventListener("click",()=>loadInventoryLog().catch(e=>alertBox(e.message||"Could not refresh log.","error")));$("adjustConfirmBtn")?.addEventListener("click",saveAdjustment);$("addCategoryBtn").onclick=addCategory;$("itemSearch").oninput=renderItems;$("itemFilter").onchange=renderItems;$("addItemBtn").onclick=()=>openDialog();$("downloadTemplateBtn").onclick=()=>downloadTemplate().catch(e=>alertBox(e.message||"Could not create Excel template.","error"));$("downloadCsvTemplateBtn")?.addEventListener("click",downloadCsvTemplate);
  $("importBtn").onclick=()=>$("fileInput").click();$("fileInput").onchange=e=>{const f=e.target.files?.[0];if(f)previewImport(f);e.target.value=""};
  $("cancelImportBtn").onclick=()=>{$("importPreviewCard").classList.add("hidden")};$("confirmImportBtn").onclick=confirmImport;$("downloadErrorsBtn").onclick=errorCsv;
  $("saveItemBtn").onclick=e=>saveItem(e,false);$("saveAnotherBtn").onclick=e=>saveItem(e,true);$("dialogFetchBtn").onclick=()=>lookup($("itemBarcodes").value.split("|")[0],$("dialogFetchBtn"),$("dialogFetchStatus"));
