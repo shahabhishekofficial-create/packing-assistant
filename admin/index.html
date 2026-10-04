@@ -191,7 +191,7 @@ body.adminPage{background:var(--cmd-bg);font-family:"Plus Jakarta Sans",Inter,sy
   <input id="paymentDriverId" type="hidden">
   <label>Amount paid <input id="paymentAmount" type="number" min="1" step="0.01" placeholder="₹"></label>
   <label>Payment date <input id="paymentDate" type="datetime-local"></label>
-  <label>Note <input id="paymentNote" placeholder="e.g. Monday payment"></label>
+  <label>Note <input id="paymentNote" placeholder="e.g. Monday payment"></label><label>Payment mode <select id="paymentMode"><option value="UPI">UPI</option><option value="BANK_TRANSFER">Bank Transfer</option><option value="CASH">Cash</option></select></label><label>Reference / Transaction ID <input id="paymentReference" placeholder="e.g. UTR / GPay reference"></label>
   <label>Payment screenshot <input id="paymentScreenshot" type="file" accept="image/*" capture="environment"></label>
   <button id="saveDriverPayment" class="primary">Save Payment</button>
   <p id="paymentMsg" class="hint"></p>
