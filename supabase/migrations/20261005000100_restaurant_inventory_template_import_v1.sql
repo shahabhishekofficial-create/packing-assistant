@@ -253,7 +253,7 @@ revoke execute on function public.inv_v2_import_restaurant_template_v1(text,json
 grant execute on function public.inv_v2_import_restaurant_template_v1(text,jsonb,uuid) to authenticated;
  or length(b) not in (8,12,13) then
           errors := errors || jsonb_build_array(jsonb_build_object('name',nm,'field','barcodes','error','Invalid barcode: '||b));
-        elsif not public.inv_v2_barcode_check_digit_valid(b) then
+        elsif ((10 - mod((select coalesce(sum(substring(b,i,1)::int * case when mod(length(b)-i,2)=1 then 3 else 1 end),0) from generate_series(1,length(b)-1) i),10)) % 10) <> substring(b,length(b),1)::int then
           errors := errors || jsonb_build_array(jsonb_build_object('name',nm,'field','barcodes','error','Invalid barcode check digit: '||b));
         end if;
         if b = any(seen_barcodes) then
