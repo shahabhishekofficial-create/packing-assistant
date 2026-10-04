@@ -50,6 +50,9 @@ async function sharePdf(){
 }
 async function finish(){const{data,error}=await db.rpc("inv_veg_staff_submit_session",{p_staff_token:token,p_session_id:sessionId});if(error)return $("vegFinishMsg").textContent=error.message;$("vegFinishMsg").textContent="Today's vegetable count is submitted.";$("vegSessionBadge").textContent="Submitted";$("vegSessionBadge")?.classList.add("done");$("vegFinishBtn").disabled=true;showEl("vegSubmittedActions");try{await loadSubmittedReport()}catch(e){$("vegFinishMsg").textContent="Submitted, but report is not ready yet: "+e.message}}async function boot(){
   try{
+    const required=["vegStartupError","vegWorkspace","vegStaffTitle","vegDateLabel","vegSessionBadge","vegSearch","vegItems","vegEntry","vegSelected","vegWeight","vegReason","vegSaveBtn","vegFinishBtn","vegPdfBtn","vegShareBtn","vegClearBtn","vegRecentList","vegCountedBadge","vegSubmittedActions","vegQuickCard","vegRecent","vegFinishMsg","vegSaveMsg"];
+    const missing=required.filter(id=>!$(id));
+    if(missing.length)throw new Error("Vegetable Inventory page is incomplete. Missing: "+missing.join(", "));
     setText();
     document.querySelectorAll(".vegLang button").forEach(b=>b.onclick=()=>{
       lang=b.dataset.lang;localStorage.setItem("veg_lang",lang);setText();renderItems();
@@ -65,11 +68,9 @@ async function finish(){const{data,error}=await db.rpc("inv_veg_staff_submit_ses
     $("vegWeight").onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();save()}};
     $("vegClearBtn").onclick=clearSelection;
     document.querySelectorAll(".vegGradeRow button").forEach(b=>b.onclick=()=>chooseGrade(b.dataset.grade));
-    token=sessionStorage.getItem("veg_token")||"";
-    staff=sessionStorage.getItem("veg_staff")||"";
-    if(token){showEl("vegWorkspace");$("vegStaffTitle").textContent=staff;start().catch(()=>initGuest())}
-    else{await initGuest()}
+    await initGuest();
   }catch(e){
+    hideEl("vegWorkspace");
     showStartupError(e.message||"Inventory page could not start.");
   }
 }
