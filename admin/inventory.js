@@ -209,9 +209,10 @@ async function previewImport(file){
   S.importFile=file.name;
   const r=validateImport(rows);S.importRows=rows;S.importValid=r.valid;S.importErrors=r.errors;
   $("importPreviewCard").classList.remove("hidden");
-  $("importSummary").textContent=r.valid.length+" valid · "+r.errors.length+" errors · "+r.skipped.length+" example rows skipped";
+  $("importSummary").textContent=r.valid.length+" valid · "+r.errors.length+" skipped · "+r.skipped.length+" example rows skipped";
   $("importRows").innerHTML=rows.map(x=>'<tr><td>'+x.row+'</td><td>'+esc(x.raw.name)+'</td><td>'+esc(x.raw.packaging_method)+'</td><td>'+esc(x.raw.default_pack_size)+'</td><td><span class="statusPill '+(x.status==="valid"?"on":x.status==="skipped"?"skip":"off")+'">'+esc(x.status||"empty")+'</span></td><td>'+esc(x.error||"")+'</td></tr>').join("");
-  $("confirmImportBtn").disabled=!r.valid.length||r.errors.length>0;
+  $("confirmImportBtn").disabled=!r.valid.length;
+  $("confirmImportBtn").textContent=r.valid.length?"Add "+r.valid.length+" Valid Items":"Add Valid Items";
   $("downloadErrorsBtn").classList.toggle("hidden",!r.errors.length);
   $("importPreviewCard").scrollIntoView({behavior:"smooth"});
  }catch(e){alertBox(e.message||"Could not read import file.","error")}
@@ -229,10 +230,11 @@ async function confirmImport(){
    const msg=(data?.errors||[]).map(x=>[x.name,x.field,x.error].filter(Boolean).join(": ")).join(" | ")||"Template validation failed.";
    throw new Error(msg);
   }
-  alertBox("Import complete: "+data.added+" restaurant items added.","success");
+  const skipped=Number(data?.skipped||0);
+  alertBox("Import complete: "+Number(data?.added||0)+" restaurant items added"+(skipped?" · "+skipped+" rows skipped":"")+".","success");
   $("importPreviewCard").classList.add("hidden");S.importRows=[];S.importValid=[];S.importErrors=[];await loadItems();
  }catch(e){alertBox(e.message||"Import failed. No rows were partially imported.","error")}
- finally{btn.disabled=false;btn.textContent="Import Valid Rows"}
+ finally{btn.disabled=false;btn.textContent=S.importValid.length?"Add "+S.importValid.length+" Valid Items":"Add Valid Items"}
 }
 async function loadStockDashboard(){
  const section=$("stockSection")?.value||"restaurant";
