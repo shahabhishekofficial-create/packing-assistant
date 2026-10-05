@@ -981,8 +981,10 @@ async function record(status,packed,missing,reason=""){
       completeScreen();
       return;
     }
-    state.index=persistedIndex;
-    showProduct();
+    if(persistedIndex!==state.index){
+      state.index=persistedIndex;
+      showProduct();
+    }
   }catch(error){
     $("syncStatus").textContent="Save failed";
     alert(error?.message||String(error));
