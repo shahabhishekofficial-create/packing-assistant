@@ -209,7 +209,7 @@ body.adminPage{background:var(--cmd-bg);font-family:"Plus Jakarta Sans",Inter,sy
   <div id="driverDashboardKpis" class="deliveryKpis"></div>
   <section class="deliveryDashSection"><div class="sectionHead"><div><span class="eyebrow">LIVE OUTLETS</span><h3>Current route</h3><p class="hint">What still needs to happen, outlet by outlet.</p></div></div><div class="tableWrap"><table class="deliveryDashTable"><thead><tr><th>Outlet</th><th>Driver</th><th>Status</th><th>Missing</th><th>Rejected</th><th>Last action</th><th>Evidence</th></tr></thead><tbody id="liveRouteBody"></tbody></table></div></section>
   <section id="driverExceptionsSection" class="deliveryDashSection hidden"><div class="sectionHead"><div><span class="eyebrow">EXCEPTIONS</span><h3>Needs attention</h3></div></div><div class="tableWrap"><table class="deliveryDashTable"><thead><tr><th>Order date</th><th>Driver</th><th>Outlet</th><th>Missing</th><th>Rejected</th><th>Invoice</th><th>Rejection check</th></tr></thead><tbody id="driverExceptionsBody"></tbody></table></div></section>
-  <section class="deliveryDashSection"><div class="sectionHead"><div><span class="eyebrow">RECENT DELIVERIES</span><h3>Latest completed</h3><p class="hint">Most recent completed outlets.</p></div></div><div class="tableWrap"><table class="deliveryDashTable"><thead><tr><th>Delivered at</th><th>Driver</th><th>Outlet</th><th>Delivery time</th><th>Charge</th><th>Missing</th><th>Rejected</th></tr></thead><tbody id="recentDeliveriesBody"></tbody></table></div></section>
+  <section class="deliveryDashSection"><div class="sectionHead"><div><span class="eyebrow">DELIVERY HISTORY</span><h3>Historical delivery transactions</h3><p class="hint">Edit a past delivery charge when extra cost or higher quantity required an adjustment. Outlet default configuration is not changed.</p></div></div><div class="tableWrap"><table class="deliveryDashTable"><thead><tr><th>Delivered at</th><th>Driver</th><th>Outlet / Order</th><th>Delivery time</th><th>Recorded charge</th><th>Missing</th><th>Rejected</th><th>Action</th></tr></thead><tbody id="recentDeliveriesBody"></tbody></table></div></section>
 </section>
 
 <section id="configuration" class="screen hidden">
@@ -326,7 +326,22 @@ body.adminPage{background:var(--cmd-bg);font-family:"Plus Jakarta Sans",Inter,sy
     <div id="reportHistoryList" class="reportHistoryList"></div>
   </dialog>
   <dialog id="deliveryEvidenceViewer" class="settingsDialog deliveryEvidenceViewer"><div class="settingsDialogHead"><div><span class="eyebrow">DELIVERY EVIDENCE</span><h3 id="deliveryEvidenceTitle">Invoice</h3></div><div class="dialogHeadActions"><button id="closeDeliveryEvidence" class="secondary">✕</button></div></div><div class="deliveryEvidenceViewerBody"><img id="deliveryEvidenceImage" alt="Delivery invoice"></div></dialog>
-  <dialog id="invoiceDialog" class="settingsDialog reportDialog"><div class="settingsDialogHead"><div><span class="eyebrow">DELIVERY INVOICES</span><h3 id="invoiceDialogTitle">Invoices</h3><p class="hint">Invoices remain available from previous orders as well as the current order.</p></div><div class="dialogHeadActions"><button id="invoiceDashboardBack" class="secondary">← Dashboard</button><button id="closeInvoiceDialog" class="secondary">✕</button></div></div><div id="invoiceList" class="reportHistoryList"></div></dialog>
+  <dialog id="deliveryChargeEditDialog" class="settingsDialog">
+ <div class="settingsDialogHead">
+  <div><span class="eyebrow">HISTORICAL TRANSACTION</span><h3>Adjust Delivery Charge</h3><p class="hint">This applies only to the selected past delivery and its recorded driver earning.</p></div>
+  <div class="dialogHeadActions"><button id="closeDeliveryChargeEdit" class="secondary">✕</button></div>
+ </div>
+ <div class="fleetPaymentForm">
+  <input id="deliveryChargeRecordId" type="hidden">
+  <label>Outlet<input id="deliveryChargeOutlet" readonly></label>
+  <label>Recorded charge<input id="deliveryChargeCurrent" type="number" readonly></label>
+  <label>New charge<input id="deliveryChargeNew" type="number" min="0" step="0.01" placeholder="₹"></label>
+  <label>Reason <input id="deliveryChargeReason" required placeholder="e.g. Extra transport / higher quantity"></label>
+  <button id="saveDeliveryChargeBtn" class="primary">Save Charge</button>
+  <p id="deliveryChargeMsg" class="hint"></p>
+ </div>
+</dialog>
+<dialog id="invoiceDialog" class="settingsDialog reportDialog"><div class="settingsDialogHead"><div><span class="eyebrow">DELIVERY INVOICES</span><h3 id="invoiceDialogTitle">Invoices</h3><p class="hint">Invoices remain available from previous orders as well as the current order.</p></div><div class="dialogHeadActions"><button id="invoiceDashboardBack" class="secondary">← Dashboard</button><button id="closeInvoiceDialog" class="secondary">✕</button></div></div><div id="invoiceList" class="reportHistoryList"></div></dialog>
 </div></div></main>
 <script>
 (function(){
