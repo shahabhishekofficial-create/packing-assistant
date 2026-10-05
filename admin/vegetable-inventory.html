@@ -99,7 +99,7 @@ body.adminPage{background:#f5f8f7;font-family:"Plus Jakarta Sans",Inter,system-u
     <label>Session<select id="reportSession"><option value="">All sessions</option></select></label>
     <button id="refreshReport" class="secondary">↻ Refresh</button>
   </div>
-  <div class="tableWrap"><table class="inventoryStockTable"><thead><tr><th>Date</th><th>Item</th><th>Grade</th><th>Weight kg</th><th>Counted By</th><th>Timestamp</th><th>Reason</th></tr></thead><tbody id="vegReportBody"></tbody></table></div>
+  <div class="tableWrap"><table class="inventoryStockTable"><thead><tr><th>Date</th><th>Item</th><th>Grade</th><th>Weight kg</th><th>Counted By</th><th>Timestamp</th><th>Reason</th><th>Action</th></tr></thead><tbody id="vegReportBody"></tbody></table></div>
 </section>
 <dialog id="vegEditDialog" class="inventoryDialog">
   <form method="dialog" id="vegEditForm">
@@ -111,8 +111,19 @@ body.adminPage{background:#f5f8f7;font-family:"Plus Jakarta Sans",Inter,system-u
     <div id="vegEditError" class="fieldErrors"></div>
     <menu><button value="cancel" class="secondary">Cancel</button><button id="vegSaveBtn" value="default" class="primary">Save Vegetable</button></menu>
   </form>
+</dialog>
+<dialog id="vegCountEditDialog" class="inventoryDialog">
+  <form method="dialog" id="vegCountEditForm">
+    <div class="dialogHead"><div><span class="eyebrow">ADMIN CORRECTION</span><h3>Correct Count Entry</h3><p class="hint">Original staff entry is retained. This correction becomes the effective value in reports.</p></div><button value="cancel" class="secondary">✕</button></div>
+    <label>Vegetable<select id="vegCountItem" required></select></label>
+    <label>Grade<select id="vegCountGrade" required><option value="A">A Grade</option><option value="B">B Grade</option><option value="DUMP">Dump</option></select></label>
+    <label>Weight (kg)<input id="vegCountWeight" type="number" min="0" step="0.001" inputmode="decimal" required></label>
+    <label>Correction reason*<textarea id="vegCountReason" rows="3" required placeholder="Why is this count being corrected?"></textarea></label>
+    <div id="vegCountEditError" class="fieldErrors"></div>
+    <menu><button value="cancel" class="secondary">Cancel</button><button id="vegCountSaveBtn" value="default" class="primary">Save Correction</button></menu>
+  </form>
 </dialog></section></div></div></div></main>
-<script defer src="./vegetable-inventory.js?v=20261001-audit2"></script>
-<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20261001-audit2",{updateViaCache:"none"}).catch(console.warn));}</script>
+<script defer src="./vegetable-inventory.js?v=20261006-vegadmin1"></script>
+<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20261006-vegadmin1",{updateViaCache:"none"}).catch(console.warn));}</script>
 <script>document.getElementById("baSidebarToggle")?.addEventListener("click",()=>document.querySelector(".cmdSidebar")?.classList.toggle("open"));</script>
 </body></html>
