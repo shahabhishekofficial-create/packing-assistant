@@ -1264,6 +1264,36 @@ function dashboardMoney(n){return "₹"+Number(n||0).toLocaleString("en-IN",{min
 function dashboardDate(v,withTime=true){if(!v)return "—";return new Date(v).toLocaleString("en-IN",withTime?{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}:{day:"2-digit",month:"short",year:"numeric"});}
 function dashboardDuration(m){if(m==null||!Number.isFinite(Number(m)))return "—";const n=Math.round(Number(m));if(n<60)return n+" min";const h=Math.floor(n/60),mm=n%60;return h+"h "+String(mm).padStart(2,"0")+"m";}
 function dashboardStatus(x){if(x.delivered)return ["delivered","✓ Delivered"];if(x.packing_done)return ["pending","Ready • Pending delivery"];return ["packing","Packing "+String(x.status||"available").replace("_"," ")];}
+function openHistoricalDeliveryCharge(recordId,outlet,currentCharge){
+  if(!recordId)return;
+  const dlg=$("deliveryChargeEditDialog");
+  if(!dlg)return;
+  $("deliveryChargeRecordId").value=recordId;
+  $("deliveryChargeOutlet").value=outlet||"";
+  $("deliveryChargeCurrent").value=Number(currentCharge||0).toFixed(2);
+  $("deliveryChargeNew").value=Number(currentCharge||0).toFixed(2);
+  $("deliveryChargeReason").value="";
+  $("deliveryChargeMsg").textContent="This changes only the historical delivery transaction and driver earning ledger. The outlet's default charge is not changed.";
+  dlg.showModal();
+}
+async function saveHistoricalDeliveryCharge(){
+  const recordId=$("deliveryChargeRecordId").value;
+  const newCharge=Number($("deliveryChargeNew").value||0);
+  const reason=$("deliveryChargeReason").value.trim();
+  const msg=$("deliveryChargeMsg"),btn=$("saveDeliveryChargeBtn");
+  if(!recordId||!Number.isFinite(newCharge)||newCharge<0)return msg.textContent="Enter a valid delivery charge.";
+  if(!reason)return msg.textContent="Reason is required.";
+  if(!window.PA_ADMIN_SESSION)return msg.textContent="Admin session expired. Please sign in again.";
+  btn.disabled=true;btn.textContent="Saving…";
+  try{
+    const r=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_adjust_delivery_charge",admin_session:window.PA_ADMIN_SESSION,delivery_record_id:recordId,new_charge:newCharge,reason})});
+    const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.message||"Could not update delivery charge.");
+    msg.textContent="Saved. Historical transaction and driver ledger updated.";
+    if(typeof toast==="function")toast("Historical delivery charge updated.","success");
+    setTimeout(()=>{$("deliveryChargeEditDialog")?.close();loadDriverAdminDashboard();},300);
+  }catch(e){msg.textContent=e.message||"Could not update delivery charge."}
+  finally{btn.disabled=false;btn.textContent="Save Charge";}
+}
 function renderDriverDashboard(data){
   const k=$("driverDashboardKpis"),live=$("liveRouteBody"),ex=$("driverExceptionsBody"),recent=$("recentDeliveriesBody"),exSection=$("driverExceptionsSection");
   if(!k||!live||!ex||!recent)return;
@@ -1308,7 +1338,8 @@ function renderDriverDashboard(data){
     finally{btn.disabled=false;btn.textContent=original;}
   });
 
-  recent.innerHTML=(data.recent||[]).slice(0,8).map(x=>'<tr><td>'+dashboardDate(x.delivered_at)+'</td><td>'+esc(x.driver)+'</td><td><b>'+esc(x.store_name)+'</b></td><td>'+dashboardDuration(x.delivery_minutes)+'</td><td>'+dashboardMoney(x.delivery_charge)+'</td><td>'+(x.missing?Number(x.missing):"—")+'</td><td>'+(x.rejections?Number(x.rejections):"—")+'</td></tr>').join("")||'<tr><td colspan="7" class="hint">No completed deliveries yet.</td></tr>';
+  recent.innerHTML=(data.recent||[]).slice(0,100).map(x=>'<tr><td>'+dashboardDate(x.delivered_at)+'</td><td>'+esc(x.driver)+'</td><td><b>'+esc(x.store_name)+'</b><small>'+esc(x.order_name||"")+'</small></td><td>'+dashboardDuration(x.delivery_minutes)+'</td><td><b>'+dashboardMoney(x.delivery_charge)+'</b></td><td>'+(x.missing?Number(x.missing):"—")+'</td><td>'+(x.rejections?Number(x.rejections):"—")+'</td><td><button type="button" class="secondary deliveryChargeEditBtn" data-record-id="'+esc(x.delivery_record_id||"")+'" data-outlet="'+esc(x.store_name||"")+'" data-charge="'+Number(x.delivery_charge||0).toFixed(2)+'">Edit charge</button></td></tr>').join("")||'<tr><td colspan="8" class="hint">No completed deliveries yet.</td></tr>';
+  recent.querySelectorAll(".deliveryChargeEditBtn").forEach(btn=>btn.onclick=()=>openHistoricalDeliveryCharge(btn.dataset.recordId,btn.dataset.outlet,btn.dataset.charge));
 
   const lo=data.live_order;
   $("liveOrderLabel").textContent=lo?(lo.order_name+" · "+dashboardDate(lo.created_at,false)):"No active order";
@@ -1746,7 +1777,9 @@ async function saveDriverPayment(){
   }catch(e){$("paymentMsg").textContent=e.message;}finally{btn.disabled=false;btn.textContent="Save Payment";}
 }
 document.getElementById("menuFleetManagement")?.addEventListener("click",async()=>{adminMenu.classList.add("hidden");setBAActive("sideDelivery");document.querySelector(".cmdSidebar")?.classList.remove("open");document.body.classList.remove("cmdSidebarOpen");document.getElementById("home")?.classList.add("hidden");document.getElementById("packing")?.classList.add("hidden");document.getElementById("packingOverview")?.classList.add("hidden");document.getElementById("driverDashboard")?.classList.add("hidden");document.getElementById("fleetManagement")?.classList.remove("hidden");await loadFleetManagement();});document.getElementById("fleetRefreshBtn")?.addEventListener("click",loadFleetManagement);document.getElementById("closeDriverPayment")?.addEventListener("click",()=>document.getElementById("driverPaymentDialog").close());document.getElementById("saveDriverPayment")?.addEventListener("click",saveDriverPayment);
-document.getElementById("closeDeliveryEvidence")?.addEventListener("click",()=>document.getElementById("deliveryEvidenceViewer")?.close());document.getElementById("menuDriverDashboard")?.addEventListener("click",async()=>{adminMenu.classList.add("hidden");setBAActive("sideDelivery");document.querySelector(".cmdSidebar")?.classList.remove("open");document.body.classList.remove("cmdSidebarOpen");document.getElementById("home")?.classList.add("hidden");document.getElementById("packing")?.classList.add("hidden");document.getElementById("packingOverview")?.classList.add("hidden");document.getElementById("fleetManagement")?.classList.add("hidden");document.getElementById("driverDashboard")?.classList.remove("hidden");await loadDriverAdminDashboard();});let driverDashboardTimer=null;function refreshDriverDashboardSoon(){clearInterval(driverDashboardTimer);driverDashboardTimer=setInterval(()=>{if(!document.getElementById("driverDashboard")?.classList.contains("hidden"))loadDriverAdminDashboard();},30000);}function syncDriverDashboardDateControls(){
+document.getElementById("closeDeliveryEvidence")?.addEventListener("click",()=>document.getElementById("deliveryEvidenceViewer")?.close());document.getElementById("closeDeliveryChargeEdit")?.addEventListener("click",()=>document.getElementById("deliveryChargeEditDialog")?.close());
+document.getElementById("saveDeliveryChargeBtn")?.addEventListener("click",saveHistoricalDeliveryCharge);
+document.getElementById("menuDriverDashboard")?.addEventListener("click",async()=>{adminMenu.classList.add("hidden");setBAActive("sideDelivery");document.querySelector(".cmdSidebar")?.classList.remove("open");document.body.classList.remove("cmdSidebarOpen");document.getElementById("home")?.classList.add("hidden");document.getElementById("packing")?.classList.add("hidden");document.getElementById("packingOverview")?.classList.add("hidden");document.getElementById("fleetManagement")?.classList.add("hidden");document.getElementById("driverDashboard")?.classList.remove("hidden");await loadDriverAdminDashboard();});let driverDashboardTimer=null;function refreshDriverDashboardSoon(){clearInterval(driverDashboardTimer);driverDashboardTimer=setInterval(()=>{if(!document.getElementById("driverDashboard")?.classList.contains("hidden"))loadDriverAdminDashboard();},30000);}function syncDriverDashboardDateControls(){
   const custom=$("driverDashboardPreset")?.value==="custom";
   ["driverDashboardFrom","driverDashboardTo","driverDashboardApply"].forEach(id=>$(id)?.classList.toggle("hidden",!custom));
   if($("driverDashboardApply"))$("driverDashboardApply").disabled=!custom||!($("driverDashboardFrom")?.value&&$("driverDashboardTo")?.value);
