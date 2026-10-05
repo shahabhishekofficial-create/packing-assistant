@@ -209,6 +209,22 @@ function showShareLink(){
   box.classList.remove("hidden");
 }
 
+async function resumeMyOutlet(){
+  if(IS_ADMIN_PAGE || !state.orderId || !state.token)return false;
+  const mine=[...state.outlets.values()].find(o=>o.status==="in_progress"&&o.lockedDeviceId===DEVICE_ID);
+  if(!mine)return false;
+  const next=mine.rows.findIndex(r=>!r.status);
+  if(next<0)return false;
+  state.current=mine.id;
+  state.index=next;
+  $("home")?.classList.add("hidden");
+  $("packing")?.classList.remove("hidden");
+  $("adminPackingChooser")?.classList.add("hidden");
+  $("packing")?.querySelector(".packingTop")?.classList.remove("hidden");
+  showProduct();
+  return true;
+}
+
 async function loadCurrentOrder(){
   const {data,error}=await db.rpc("get_current_order");
   if(error) throw error;
@@ -221,6 +237,7 @@ async function loadCurrentOrder(){
   showShareLink();
   startRealtime();
   startPolling();
+  await resumeMyOutlet();
   return true;
 }
 
