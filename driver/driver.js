@@ -242,7 +242,7 @@ async function processInvoiceFile(file,outletId,invoiceNumber){
     current.delivery.invoice_uploaded_at=new Date().toISOString();
     current.delivery.ocr_status=ocr?.status||"pending";
   }
-  toast("Invoice uploaded. Complete the delivery step to mark this outlet delivered.","success");
+  toast("Delivery completed. Invoice uploaded successfully.","success");
   await refresh();
  }catch(err){console.error("Invoice upload",{outletId,message:err?.message||String(err)});toast("Invoice upload failed: "+(err?.message||"Please try again."),"error");}
  finally{delete ds.busy[key];render();focusOutlet(outletId,true);}
