@@ -151,7 +151,7 @@ async function saveCountCorrection(e){
   finally{b.disabled=false;b.textContent="Save Correction"}
 }
 function exportReport(){
-  const rows=[["Date","Item (English)","Grade","Weight (kg)","Counted By","Timestamp","Reason"],...S.filtered.map(x=>[x.count_date,x.item_name,x.grade,x.weight_kg,x.counted_by,new Date(x.counted_at).toLocaleString("en-IN"),x.reason||""])];
+  const rows=[["Date","Item (English)","Grade","Weight (kg)","Counted By","Timestamp","Reason","Action"],...S.filtered.map(x=>[x.count_date,x.item_name,x.grade,x.weight_kg,x.counted_by,new Date(x.counted_at).toLocaleString("en-IN"),x.reason||"","Admin correction available"])];
   download("vegetable-count-report.csv",rows.map(r=>r.map(csvEscape).join(",")).join("\n"));
 }
 function wire(){
