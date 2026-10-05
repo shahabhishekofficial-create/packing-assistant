@@ -120,7 +120,35 @@ async function loadReport(){
 function applyReportFilter(){
   const sid=$("reportSession").value;
   S.filtered=sid?S.report.filter(x=>x.session_id===sid):S.report;
-  $("vegReportBody").innerHTML=S.filtered.map(x=>'<tr><td>'+esc(x.count_date)+'</td><td>'+esc(x.item_name)+'</td><td><b>'+esc(x.grade)+'</b></td><td>'+Number(x.weight_kg).toFixed(3)+'</td><td>'+esc(x.counted_by)+'</td><td>'+esc(new Date(x.counted_at).toLocaleString("en-IN"))+'</td><td>'+esc(x.reason||"—")+'</td></tr>').join("")||'<tr><td colspan="7" class="vegEmptyCell">No count entries for the selected filters.</td></tr>';
+  $("vegReportBody").innerHTML=S.filtered.map(x=>'<tr><td>'+esc(x.count_date)+'</td><td>'+esc(x.item_name)+'</td><td><b>'+esc(x.grade)+'</b></td><td>'+Number(x.weight_kg).toFixed(3)+'</td><td>'+esc(x.counted_by)+'</td><td>'+esc(new Date(x.counted_at).toLocaleString("en-IN"))+'</td><td>'+esc(x.reason||"—")+'</td><td><button type="button" class="secondary vegCountEdit" data-id="'+x.count_id+'">Edit</button></td></tr>').join("")||'<tr><td colspan="8" class="vegEmptyCell">No count entries for the selected filters.</td></tr>';
+document.querySelectorAll(".vegCountEdit").forEach(b=>b.onclick=()=>openCountEdit(b.dataset.id));
+}
+function openCountEdit(id){
+  const x=S.report.find(r=>String(r.count_id)===String(id));
+  if(!x)return;
+  $("vegCountItem").innerHTML=S.items.map(i=>'<option value="'+i.item_id+'">'+esc(i.name_en)+'</option>').join("");
+  $("vegCountItem").value=x.item_id;
+  $("vegCountGrade").value=x.grade;
+  $("vegCountWeight").value=Number(x.weight_kg||0).toFixed(3);
+  $("vegCountReason").value="";
+  $("vegCountEditError").textContent="";
+  $("vegCountEditDialog").dataset.countId=String(id);
+  $("vegCountEditDialog").showModal();
+}
+async function saveCountCorrection(e){
+  e.preventDefault();
+  const d=$("vegCountEditDialog"),countId=d.dataset.countId,itemId=$("vegCountItem").value,grade=$("vegCountGrade").value,weight=Number($("vegCountWeight").value),reason=$("vegCountReason").value.trim();
+  if(!countId||!itemId||!grade||!Number.isFinite(weight)||weight<0){$("vegCountEditError").textContent="Enter valid correction values.";return}
+  if(!reason){$("vegCountEditError").textContent="Correction reason is required.";return}
+  const b=$("vegCountSaveBtn");b.disabled=true;b.textContent="Saving…";
+  try{
+    const{error}=await db.rpc("inv_veg_admin_correct_count",{p_admin_token:token(),p_count_id:countId,p_item_id:itemId,p_grade:grade,p_weight_kg:weight,p_reason:reason});
+    if(error)throw error;
+    d.close();
+    await loadReport();
+    alertBox("Count corrected successfully. Original staff entry remains preserved.","success");
+  }catch(err){$("vegCountEditError").textContent=errorText(err)}
+  finally{b.disabled=false;b.textContent="Save Correction"}
 }
 function exportReport(){
   const rows=[["Date","Item (English)","Grade","Weight (kg)","Counted By","Timestamp","Reason"],...S.filtered.map(x=>[x.count_date,x.item_name,x.grade,x.weight_kg,x.counted_by,new Date(x.counted_at).toLocaleString("en-IN"),x.reason||""])];
@@ -137,6 +165,7 @@ function wire(){
   $("vegCsvFile").onchange=e=>{const f=e.target.files?.[0];e.target.value="";if(f)importItems(f).catch(x=>alertBox("CSV import failed: "+errorText(x),"error"))};
   $("refreshReport").onclick=()=>loadReport().catch(e=>alertBox("Could not load count report: "+errorText(e),"error"));
   $("exportReport").onclick=exportReport;
+  $("vegCountEditForm").onsubmit=saveCountCorrection;
   $("reportSession").onchange=applyReportFilter;
   ["reportFrom","reportTo","reportItem","reportGrade"].forEach(id=>$(id).onchange=()=>loadReport().catch(e=>alertBox("Could not load count report: "+errorText(e),"error")));
 }
