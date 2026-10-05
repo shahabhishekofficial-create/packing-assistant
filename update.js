@@ -1,5 +1,6 @@
 (()=>{"use strict";
-const BUILD_ID="20261005-vegfix2",VERSION_URL=window.PA_VERSION_URL||"version.json";
+const VERSION_URL=window.PA_VERSION_URL||"version.json";
+const BUILD_ID=(()=>{try{const s=document.currentScript?.src||"";return new URL(s,document.baseURI).searchParams.get("v")||window.PA_BUILD_ID||""}catch{return window.PA_BUILD_ID||""}})();
 let checking=false,pendingBuild="";
 function removeNotice(){document.getElementById("paUpdateNotice")?.remove()}
 function showNotice(remote){
