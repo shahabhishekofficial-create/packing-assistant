@@ -2,6 +2,9 @@
 const VERSION_URL=window.PA_VERSION_URL||"version.json";
 const BUILD_ID=(()=>{try{const s=document.currentScript?.src||"";return new URL(s,document.baseURI).searchParams.get("v")||window.PA_BUILD_ID||""}catch{return window.PA_BUILD_ID||""}})();
 let checking=false,pendingBuild="";
+const DISMISSED_KEY="pa_update_dismissed_build";
+function dismissedBuild(){try{return localStorage.getItem(DISMISSED_KEY)||""}catch{return""}}
+function rememberDismissed(build){try{localStorage.setItem(DISMISSED_KEY,String(build||""))}catch{}}
 function removeNotice(){document.getElementById("paUpdateNotice")?.remove()}
 function showNotice(remote){
   pendingBuild=remote;
@@ -11,7 +14,7 @@ function showNotice(remote){
   e.style.cssText="position:fixed;left:12px;right:12px;bottom:12px;z-index:2147483646;display:flex;align-items:center;gap:10px;justify-content:space-between;padding:12px 14px;border:1px solid #cbd5e1;border-radius:14px;background:#fff;color:#10203a;box-shadow:0 12px 35px rgba(15,23,42,.18);font:600 14px system-ui,-apple-system,sans-serif";
   e.innerHTML='<span>New app update available. Your current work will not be interrupted.</span><span style="display:flex;gap:8px;flex-shrink:0"><button id="paUpdateLater" type="button" style="padding:8px 11px;border:1px solid #cbd5e1;border-radius:9px;background:#fff;color:#334155;font-weight:700">Later</button><button id="paUpdateNow" type="button" style="padding:8px 11px;border:0;border-radius:9px;background:#0f766e;color:#fff;font-weight:800">Update</button></span>';
   document.body.appendChild(e);
-  e.querySelector("#paUpdateLater").onclick=removeNotice;
+  e.querySelector("#paUpdateLater").onclick=()=>{rememberDismissed(pendingBuild);removeNotice();};
   e.querySelector("#paUpdateNow").onclick=applyUpdate;
 }
 async function check(){
@@ -22,7 +25,7 @@ async function check(){
     const r=await fetch(u,{cache:"no-store",headers:{"Cache-Control":"no-cache"}});
     if(!r.ok)throw Error("version check failed");
     const remote=String((await r.json())?.build_id||"");
-    if(!remote||remote===BUILD_ID)return;
+    if(!remote||remote===BUILD_ID||dismissedBuild()===remote)return;
     showNotice(remote);
   }catch(e){console.warn("Version check:",e)}
   finally{checking=false}
@@ -31,7 +34,7 @@ async function applyUpdate(){
   const b=document.getElementById("paUpdateNow");
   if(b){b.disabled=true;b.textContent="Updating…"}
   try{
-    sessionStorage.setItem("pa_last_update",pendingBuild||"");
+    rememberDismissed(pendingBuild);sessionStorage.setItem("pa_last_update",pendingBuild||"");
     if("serviceWorker"in navigator){
       const regs=await navigator.serviceWorker.getRegistrations();
       await Promise.all(regs.map(reg=>reg.unregister().catch(()=>false)));
