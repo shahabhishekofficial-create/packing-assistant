@@ -23,6 +23,7 @@ const state = {
   poll: null,
   realtime: null,
   syncBusy: false,
+  recordBusy: false,
   rankMap: {},
   narrationTimer: null,
   narrationItemId: null,
@@ -321,7 +322,7 @@ function startRealtime(){
 }
 
 async function syncFromServer(){
-  if(state.syncBusy || !state.orderId || !state.token) return;
+  if(state.syncBusy || state.recordBusy || !state.orderId || !state.token) return;
   state.syncBusy=true;
   try{
     await loadOrder();
@@ -931,35 +932,64 @@ function showProduct(){
 }
 
 async function record(status,packed,missing,reason=""){
+  if(state.recordBusy)return;
   stopItemNarration();
-  const current=state.outlets.get(state.current)?.rows?.[state.index];
-  const required=Number(current?.required||0),packedN=Number(packed||0),missingN=Number(missing||0);
+  const outletId=state.current;
+  const o=state.outlets.get(outletId);
+  const r=o?.rows?.[state.index];
+  const required=Number(r?.required||0),packedN=Number(packed||0),missingN=Number(missing||0);
   if(!Number.isFinite(required)||Math.abs(required-(packedN+missingN))>1e-9){
     $("syncStatus").textContent="Quantity mismatch blocked";
     return alert("Quantity error: Required must equal Packed + Missing.");
   }
-  const o=state.outlets.get(state.current),r=o.rows[state.index];
   if(!r||r.status)return;
+
+  state.recordBusy=true;
+  ["packedBtn","partialBtn","missingBtn","repeatBtn"].forEach(id=>{const b=$(id);if(b)b.disabled=true;});
   $("syncStatus").textContent="Saving…";
-  const {data,error}=await db.rpc("update_item_status",{
-    p_order_id:state.orderId,p_item_id:r.id,p_access_token:state.token,
-    p_device_id:DEVICE_ID,p_status:status.toLowerCase(),
-    p_packed_qty:packed,p_missing_qty:missing,p_reason:reason
-  });
-  if(error){
+
+  try{
+    const {data,error}=await db.rpc("update_item_status",{
+      p_order_id:state.orderId,p_item_id:r.id,p_access_token:state.token,
+      p_device_id:DEVICE_ID,p_status:status.toLowerCase(),
+      p_packed_qty:packed,p_missing_qty:missing,p_reason:reason
+    });
+    if(error)throw error;
+    if(data!==true)throw new Error("The server did not confirm the item update.");
+
+    // Advance immediately from the confirmed item. Realtime sync is blocked
+    // until this transaction finishes, so it cannot restore the old index.
+    r.status=status;
+    r.packed=packedN;
+    r.missing=missingN;
+    r.reason=reason||"";
+    const nextIndex=o.rows.findIndex(x=>!x.status);
+    if(nextIndex===-1){
+      await loadOrder();
+      completeScreen();
+      return;
+    }
+    state.index=nextIndex;
+    showProduct();
+
+    // Confirm the persisted state after the UI has advanced.
+    await loadOrder();
+    const refreshed=state.outlets.get(outletId);
+    if(!refreshed)throw new Error("Outlet disappeared after save.");
+    const persistedIndex=refreshed.rows.findIndex(x=>!x.status);
+    if(persistedIndex===-1){
+      completeScreen();
+      return;
+    }
+    state.index=persistedIndex;
+    showProduct();
+  }catch(error){
     $("syncStatus").textContent="Save failed";
-    return alert(error.message);
+    alert(error?.message||String(error));
+  }finally{
+    state.recordBusy=false;
+    ["packedBtn","partialBtn","missingBtn","repeatBtn"].forEach(id=>{const b=$(id);if(b)b.disabled=false;});
   }
-  if(!data)return;
-  await loadOrder();
-  const updated=state.outlets.get(state.current);
-  const nextIndex=updated?.rows.findIndex(x=>!x.status) ?? -1;
-  if(nextIndex===-1){completeScreen();return;}
-  state.index=nextIndex;
-  if(window.PA_CONFIG_ENABLED && !window.PA_CONFIG_ENABLED("packing.auto_advance")){
-    $("nextItemBtn")?.classList.remove("hidden");
-    $("syncStatus").textContent="Saved. Tap Next Item when ready.";
-  }else showProduct();
 }
 
 function completeScreen(){
