@@ -1,0 +1,2 @@
+-- Admin manual delivery completion now requires a verified invoice number and invoice image.
+-- Applied to production via Supabase migration: admin_delivery_invoice_required.
