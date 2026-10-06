@@ -755,8 +755,8 @@ let liveDeliveryTimer=null;
 let liveDeliveryBusy=false;
 async function loadLiveDeliverySummary(){
   const section=$("deliverySummary"),kpis=$("deliverySummaryKpis"),body=$("deliverySummaryBody");
-  const commandCenter=document.getElementById("operationsDashboard");
-  if((!commandCenter&&!section)||liveDeliveryBusy)return;
+  const commandCenter=document.getElementById("home")||document.getElementById("operationsDashboard");
+  if(!commandCenter||liveDeliveryBusy)return;
   const adminSession=window.PA_ADMIN_SESSION||localStorage.getItem("packing_assistant_admin_session_token")||"";
   if(!adminSession){
     console.warn("Operations dashboard: admin session not available yet.");
