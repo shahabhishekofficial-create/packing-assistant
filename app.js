@@ -1820,18 +1820,54 @@ async function loadFleetManagement(){
     fleetDrivers=d.drivers||[];renderFleetManagement();
   }catch(e){box.innerHTML='<tr><td colspan="6" class="fleetEmpty">Could not load fleet ledger: '+esc(e.message)+'</td></tr>';}
 }
-function openDriverLedger(driverId){
+async function openDriverLedger(driverId){
   const d=fleetDrivers.find(x=>String(x.driver_id)===String(driverId));if(!d)return;
-  $("fleetDrawerTitle").textContent=d.driver_name||"Driver";
-  $("fleetDrawerFormula").textContent="Opening ₹"+Number(d.opening_balance||0).toLocaleString("en-IN",{minimumFractionDigits:2})+" + Earned ₹"+Number(d.earned||0).toLocaleString("en-IN",{minimumFractionDigits:2})+" − Paid ₹"+Number(d.paid||0).toLocaleString("en-IN",{minimumFractionDigits:2})+" = Due ₹"+Number(d.balance||0).toLocaleString("en-IN",{minimumFractionDigits:2});
-  const payments=d.payments||[];
-  $("fleetDrawerBody").innerHTML='<div class="fleetDrawerActions"><button class="primary" id="drawerPayDriver">+ Pay</button><button class="secondary" id="drawerEditOpening">Edit Opening Balance</button><button class="secondary" id="drawerPdfStatement">PDF Statement</button></div><div class="fleetFormula"><span>Opening</span><b>₹'+Number(d.opening_balance||0).toLocaleString("en-IN",{minimumFractionDigits:2})+'</b><span>+</span><span>Earned</span><b>₹'+Number(d.earned||0).toLocaleString("en-IN",{minimumFractionDigits:2})+'</b><span>−</span><span>Paid</span><b>₹'+Number(d.paid||0).toLocaleString("en-IN",{minimumFractionDigits:2})+'</b><span>=</span><b>₹'+Number(d.balance||0).toLocaleString("en-IN",{minimumFractionDigits:2})+'</b></div><div style="margin-top:18px"><span class="eyebrow">PAYMENT HISTORY</span>'+ (payments.length?payments.map(p=>'<div class="fleetLedgerItem"><div><b>₹'+Number(p.amount||0).toLocaleString("en-IN",{minimumFractionDigits:2})+'</b><small>'+new Date(p.paid_at).toLocaleString("en-IN")+(p.note?" · "+esc(p.note):"")+'</small></div><div>'+esc(p.payment_mode||"")+" "+(p.reference_number?esc(p.reference_number):"")+'</div></div>').join(""):'<div class="fleetEmpty">No payments recorded.</div>')+'</div>';
-  $("drawerPayDriver")?.addEventListener("click",()=>{ $("driverLedgerDialog").close();openDriverPayment(d.driver_id,d.driver_name); });$("drawerEditOpening")?.addEventListener("click",()=>{ $("driverLedgerDialog").close();openDriverOpeningBalance(d.driver_id,d.driver_name); });$("drawerPdfStatement")?.addEventListener("click",()=>printDriverStatement(d.driver_id));
+  $("fleetDrawerTitle").textContent=d.driver_name||"Driver";$("fleetDrawerIdentity").textContent="Driver ID: "+String(d.driver_id);
+  $("fleetDrawerStatus").innerHTML='<span>'+(d.active===false?"Inactive":"Active")+'</span>';
+  $("fleetDrawerBody").innerHTML='<div class="fleetEmpty">Loading driver ledger…</div>';
   $("driverLedgerDialog").showModal();
+  try{
+    const r=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_driver_ledger_detail",admin_session:window.PA_ADMIN_SESSION,driver_id:driverId})});
+    const x=await r.json();if(!r.ok||!x.ok)throw new Error(x.message||"Could not load driver ledger");
+    const trips=x.trips||[],payments=x.payments||[],audit=x.audit||[],opening=Number(d.opening_balance||0),earned=Number(d.earned||0),paid=Number(d.paid||0),due=Math.max(0,opening+earned-paid);
+    $("fleetDrawerIdentity").textContent="Driver ID: "+String(d.driver_id)+(x.driver.phone?" · Phone: "+x.driver.phone:"")+(x.driver.vehicle_type?" · "+x.driver.vehicle_type:"");
+    $("fleetDrawerFormula").textContent="";
+    const tabs='<div class="fleetKpiGrid"><div class="fleetKpiBox"><small>Opening Pending</small><b>₹'+opening.toLocaleString("en-IN",{minimumFractionDigits:2})+'</b></div><div class="fleetKpiBox"><small>+ App Earned</small><b>₹'+earned.toLocaleString("en-IN",{minimumFractionDigits:2})+'</b></div><div class="fleetKpiBox"><small>- Total Paid</small><b>₹'+paid.toLocaleString("en-IN",{minimumFractionDigits:2})+'</b></div><div class="fleetKpiBox due"><small>= Net Due</small><b>₹'+due.toLocaleString("en-IN",{minimumFractionDigits:2})+'</b></div></div><div class="fleetDrawerActions"><button class="primary" id="drawerPayDriver">+ Record Payout</button><button class="secondary" id="drawerEditOpening">✏ Edit Opening Bal</button><button class="secondary" id="drawerSync">↻ Sync Data</button></div><div class="fleetLedgerTabs"><button class="fleetLedgerTab active" data-tab="trips">📦 Delivery Trips ('+trips.length+')</button><button class="fleetLedgerTab" data-tab="payments">💳 Payment Logs ('+payments.length+')</button><button class="fleetLedgerTab" data-tab="audit">📜 Audit ('+audit.length+')</button></div><div id="fleetLedgerTabContent"></div>';
+    $("fleetDrawerBody").innerHTML=tabs;
+    const renderTab=(tab)=>{
+      const box=$("fleetLedgerTabContent");if(!box)return;
+      if(tab==="trips"){
+        box.innerHTML='<div class="fleetLedgerToolbar"><select id="fleetTripRange"><option value="all">All Time</option><option value="7">Last 7 Days</option><option value="30">Last 30 Days</option></select><input id="fleetTripSearch" type="search" placeholder="Search invoice / outlet"></div>'+ (trips.length?trips.map(t=>'<div class="fleetTripCard"><div class="fleetTripTop"><b>'+esc(t.outlet_name||"Outlet")+'</b><span class="fleetTripEarn">+ ₹'+Number(t.earned||0).toLocaleString("en-IN",{minimumFractionDigits:2})+'</span></div><div class="fleetTripMeta">Inv #'+esc(t.invoice_number||"—")+' · '+esc(new Date(t.delivered_at).toLocaleString("en-IN",{dateStyle:"medium",timeStyle:"short"}))+' · '+Number(t.items||0)+' Items</div>'+(Number(t.rejections||0)>0?'<span class="fleetTripBadge">⚠ '+Number(t.rejections)+' Rejection'+(Number(t.rejections)===1?"":"s")+(Array.isArray(t.rejection_photos)&&t.rejection_photos.length?" · Photo":"")+'</span>':"")+'</div>').join(""):'<div class="fleetEmpty">No completed delivery trips found.</div>');
+        const filter=()=>{const q=String($("fleetTripSearch")?.value||"").toLowerCase(),days=Number($("fleetTripRange")?.value||0),cut=days?Date.now()-days*86400000:0;box.querySelectorAll(".fleetTripCard").forEach((el,i)=>{const t=trips[i],txt=(t.outlet_name+" "+t.invoice_number).toLowerCase();el.style.display=(!q||txt.includes(q))&&(!cut||new Date(t.delivered_at).getTime()>=cut)?"":"none";});};$("fleetTripSearch")?.addEventListener("input",filter);$("fleetTripRange")?.addEventListener("change",filter);
+      }else if(tab==="payments"){
+        box.innerHTML=payments.length?payments.map(p=>'<div class="fleetLedgerItem"><div><b>- ₹'+Number(p.amount||0).toLocaleString("en-IN",{minimumFractionDigits:2})+'</b><small>'+new Date(p.paid_at).toLocaleString("en-IN")+' · '+esc(p.note||"")+'</small></div><div><b>'+esc(p.payment_mode||"")+'</b><small>'+esc(p.reference_number||"Cash handover")+'</small></div></div>').join(""):'<div class="fleetEmpty">No payment logs recorded.</div>';
+      }else{
+        box.innerHTML=audit.length?audit.map(a=>'<div class="fleetAuditRow"><b>'+esc(a.operation||"CHANGE")+' · '+esc(a.table_name||"")+'</b><small>'+new Date(a.created_at).toLocaleString("en-IN")+' · '+esc(a.actor||"Admin")+'</small><small>'+esc(a.old_data?.amount!=null?"Previous: ₹"+Number(a.old_data.amount).toFixed(2):"")+(a.new_data?.amount!=null?" · New: ₹"+Number(a.new_data.amount).toFixed(2):"")+'</small><small>'+esc(a.new_data?.note||a.old_data?.note||"")+'</small></div>').join(""):'<div class="fleetEmpty">No audit entries found for this driver.</div>';
+      }
+    };
+    renderTab("trips");
+    $("fleetDrawerBody").querySelectorAll(".fleetLedgerTab").forEach(b=>b.onclick=()=>{ $("fleetDrawerBody").querySelectorAll(".fleetLedgerTab").forEach(x=>x.classList.remove("active"));b.classList.add("active");renderTab(b.dataset.tab);});
+    $("drawerPayDriver")?.addEventListener("click",()=>openDriverPayment(d.driver_id,d.driver_name));
+    $("drawerEditOpening")?.addEventListener("click",()=>openDriverOpeningBalance(d.driver_id,d.driver_name));
+    $("drawerSync")?.addEventListener("click",()=>openDriverLedger(d.driver_id));
+    $("fleetDrawerPdf")?.addEventListener("click",()=>printDriverStatement(d.driver_id));
+  }catch(err){$("fleetDrawerBody").innerHTML='<div class="fleetEmpty">Could not load driver ledger: '+esc(err.message)+'</div>';}
+}
+function openDriverPayment(driverId,name){
+  const d=fleetDrivers.find(x=>String(x.driver_id)===String(driverId))||{};
+  $("paymentDriverId").value=driverId;$("paymentDriverTitle").textContent=(name||d.driver_name||"Driver")+" — Record Payout";$("paymentAmount").value="";$("paymentDate").value=new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,16);$("paymentNote").value="";$("paymentReference").value="";$("paymentMode").value="UPI";$("paymentScreenshot").value="";$("paymentMsg").textContent="";
+  $("driverPaymentDialog").showModal();
+}
+async function saveDriverPayment(){
+  const driverId=$("paymentDriverId").value,amount=Number($("paymentAmount").value),paidAt=$("paymentDate").value,note=$("paymentNote").value.trim(),mode=$("paymentMode").value,reference=$("paymentReference").value.trim(),btn=$("saveDriverPayment");
+  if(!driverId||!Number.isFinite(amount)||amount<=0)return $("paymentMsg").textContent="Enter a valid payout amount.";
+  if((mode==="UPI"||mode==="BANK_TRANSFER")&&!reference)return $("paymentMsg").textContent="Reference / UTR is required for this payment mode.";
+  btn.disabled=true;btn.textContent="Saving…";
+  try{const r=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_record_payment",admin_session:window.PA_ADMIN_SESSION,driver_id:driverId,amount,paid_at:paidAt?new Date(paidAt).toISOString():new Date().toISOString(),note,payment_mode:mode,reference_number:reference,screenshot_path:null})});const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.message||"Could not record payout");$("driverPaymentDialog").close();await loadFleetManagement();await openDriverLedger(driverId);}catch(e){$("paymentMsg").textContent=e.message||"Could not save payout.";}finally{btn.disabled=false;btn.textContent="Confirm & Disburse";}
 }
 function openDriverOpeningBalance(driverId,name){
   const d=fleetDrivers.find(x=>String(x.driver_id)===String(driverId))||{};
-  $("openingBalanceDriverId").value=driverId;$("openingBalanceTitle").textContent=(name||d.driver_name||"Driver")+" — Opening Balance";$("openingBalanceAmount").value=Number(d.opening_balance||0);$("openingBalanceNote").value="";$("openingBalanceMsg").textContent="";
+  $("openingBalanceDriverId").value=driverId;$("openingBalanceTitle").textContent=(name||d.driver_name||"Driver")+" — Opening Balance";$("openingBalanceAmount").value=Number(d.opening_balance||0);$("openingBalanceNote").value="";$("openingBalanceReason").value="Accounting Correction";$("openingBalanceMsg").textContent="";
   const raw=d.opening_balance_date?new Date(d.opening_balance_date):new Date(),local=new Date(raw.getTime()-raw.getTimezoneOffset()*60000);$("openingBalanceDate").value=local.toISOString().slice(0,16);
   $("driverOpeningBalanceDialog").showModal();
 }
@@ -1840,7 +1876,7 @@ async function saveDriverOpeningBalance(){
   if(!driverId||!Number.isFinite(amount)||amount<0)return $("openingBalanceMsg").textContent="Enter a valid opening balance.";
   if(!note)return $("openingBalanceMsg").textContent="Reason / note is required.";
   btn.disabled=true;btn.textContent="Saving…";
-  try{const r=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_set_opening_balance",admin_session:window.PA_ADMIN_SESSION,driver_id:driverId,amount,as_of_date:asOf?new Date(asOf).toISOString():new Date().toISOString(),note})});const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.message||"Could not save opening balance");$("driverOpeningBalanceDialog").close();await loadFleetManagement();}catch(e){$("openingBalanceMsg").textContent=e.message;}finally{btn.disabled=false;btn.textContent="Save Opening Balance";}
+  try{const r=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_set_opening_balance",admin_session:window.PA_ADMIN_SESSION,driver_id:driverId,amount,as_of_date:asOf?new Date(asOf).toISOString():new Date().toISOString(),note:$("openingBalanceReason").value+" — "+note})});const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.message||"Could not save opening balance");$("driverOpeningBalanceDialog").close();await loadFleetManagement();}catch(e){$("openingBalanceMsg").textContent=e.message;}finally{btn.disabled=false;btn.textContent="Save Opening Balance";}
 }
 function printDriverStatement(driverId){
   const d=fleetDrivers.find(x=>String(x.driver_id)===String(driverId));if(!d)return;
