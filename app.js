@@ -1789,7 +1789,7 @@ document.getElementById("reportAllDatesBtn")?.addEventListener("click",()=>{$("r
 document.getElementById("menuOutletSettings")?.addEventListener("click",async()=>{adminMenu.classList.add("hidden");setBAActive("sideSettings");await loadDrivers();renderOutletSettings([...state.outlets.values()].sort((a,b)=>a.rank-b.rank));document.getElementById("outletSettingsDialog").showModal()});
 
 async function ensureFleetAdminPassword(){if(window.PA_ADMIN_SESSION)return true;if(window.PA_REAUTH_ADMIN)return await window.PA_REAUTH_ADMIN();return false;}
-async let fleetDrivers=[];
+let fleetDrivers=[];
 function fleetRiskClass(v){v=Number(v||0);return v>10000?"fleetRiskHigh":v>=2000?"fleetRiskMedium":"fleetRiskLow";}
 function renderFleetManagement(){
   const body=$("fleetTableBody"),search=($("fleetSearch")?.value||"").trim().toLowerCase(),filter=$("fleetBalanceFilter")?.value||"all";
@@ -1813,7 +1813,7 @@ function renderFleetManagement(){
       '<td class="fleetMoney">₹'+Number(d.earned||0).toLocaleString("en-IN",{minimumFractionDigits:2})+'</td>'+
       '<td class="fleetMoney">₹'+Number(d.paid||0).toLocaleString("en-IN",{minimumFractionDigits:2})+'</td>'+
       '<td class="fleetMoney fleetDue '+risk+'">₹'+due.toLocaleString("en-IN",{minimumFractionDigits:2})+'</td>'+
-      '<td><div class="fleetActions"><button class="primary payDriverBtn" data-id="'+esc(d.driver_id)+'" data-name="'+esc(d.driver_name||"Driver")+'">+ Pay</button><button class="secondary fleetLedgerBtn" data-id="'+esc(d.driver_id)+'">Ledger</button><button class="secondary fleetStatementBtn" data-id="'+esc(d.driver_id)+'">PDF</button><button class="secondary fleetOpeningBtn data-id="'+esc(d.driver_id)+'" data-name="'+esc(d.driver_name||"Driver")+'">Opening Balance</button></div></td></tr>';
+      '<td><div class="fleetActions"><button class="primary payDriverBtn" data-id="'+esc(d.driver_id)+'" data-name="'+esc(d.driver_name||"Driver")+'">+ Pay</button><button class="secondary fleetLedgerBtn" data-id="'+esc(d.driver_id)+'">Ledger</button><button class="secondary fleetStatementBtn" data-id="'+esc(d.driver_id)+'">PDF</button><button class="secondary fleetOpeningBtn" data-id="'+esc(d.driver_id)+'" data-name="'+esc(d.driver_name||"Driver")+'">Opening Balance</button></div></td></tr>';
   }).join("")||'<tr><td colspan="6" class="fleetEmpty">No drivers match this filter.</td></tr>';
   body.querySelectorAll(".payDriverBtn").forEach(b=>b.onclick=()=>openDriverPayment(b.dataset.id,b.dataset.name));
   body.querySelectorAll(".fleetOpeningBtn").forEach(b=>b.onclick=()=>openDriverOpeningBalance(b.dataset.id,b.dataset.name));
