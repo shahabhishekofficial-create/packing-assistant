@@ -1350,13 +1350,24 @@ function renderDriverDashboard(data){
     finally{btn.disabled=false;btn.textContent=original;}
   });
 
-  recent.innerHTML=(data.recent||[]).slice(0,100).map(x=>'<tr><td>'+dashboardDate(x.delivered_at)+'</td><td>'+esc(x.driver)+'</td><td><b>'+esc(x.store_name)+'</b><small>'+esc(x.order_name||"")+'</small></td><td>'+dashboardDuration(x.delivery_minutes)+'</td><td><b>'+dashboardMoney(x.delivery_charge)+'</b></td><td>'+(x.missing?Number(x.missing):"—")+'</td><td>'+(x.rejections?Number(x.rejections):"—")+'</td><td><button type="button" class="secondary deliveryChargeEditBtn" data-record-id="'+esc(x.delivery_record_id||"")+'" data-outlet="'+esc(x.store_name||"")+'" data-charge="'+Number(x.delivery_charge||0).toFixed(2)+'">Edit charge</button></td></tr>').join("")||'<tr><td colspan="8" class="hint">No completed deliveries yet.</td></tr>';
+  const recentRows=Array.isArray(data.recent)?data.recent:[];
+  const visibleRecent=recentRows.slice(0,recentDeliveryVisibleCount);
+  recent.innerHTML=visibleRecent.map(x=>'<tr><td>'+dashboardDate(x.delivered_at)+'</td><td>'+esc(x.driver)+'</td><td><b>'+esc(x.store_name)+'</b><small>'+esc(x.order_name||"")+'</small></td><td>'+dashboardDuration(x.delivery_minutes)+'</td><td><b>'+dashboardMoney(x.delivery_charge)+'</b></td><td>'+ (x.missing?Number(x.missing):"—")+'</td><td>'+ (x.rejections?Number(x.rejections):"—")+'</td><td><button type="button" class="secondary deliveryChargeEditBtn" data-record-id="'+esc(x.delivery_record_id||"")+'" data-outlet="'+esc(x.store_name||"")+'" data-charge="'+Number(x.delivery_charge||0).toFixed(2)+'">Edit charge</button></td></tr>').join("")||'<tr><td colspan="8" class="hint">No completed deliveries yet.</td></tr>';
+  const oldMore=recent.parentElement.querySelector(".deliveryHistoryLoadMore");oldMore?.remove();
+  if(recentRows.length>recentDeliveryVisibleCount){
+    const more=document.createElement("div");more.className="deliveryHistoryLoadMore";more.innerHTML='<button type="button" class="secondary">Load more</button><span>Showing '+Math.min(recentDeliveryVisibleCount,recentRows.length)+' of '+recentRows.length+' transactions</span>';
+    more.querySelector("button").onclick=()=>{recentDeliveryVisibleCount=Math.min(recentDeliveryVisibleCount+10,recentRows.length);renderDriverDashboard(data);};
+    recent.parentElement.appendChild(more);
+  }else if(recentRows.length){
+    const count=document.createElement("div");count.className="deliveryHistoryLoadMore deliveryHistoryCount";count.textContent="Showing "+recentRows.length+" transaction"+(recentRows.length===1?"":"s");recent.parentElement.appendChild(count);
+  }
   recent.querySelectorAll(".deliveryChargeEditBtn").forEach(btn=>btn.onclick=()=>openHistoricalDeliveryCharge(btn.dataset.recordId,btn.dataset.outlet,btn.dataset.charge));
 
   const lo=data.live_order;
   $("liveOrderLabel").textContent=lo?(lo.order_name+" · "+dashboardDate(lo.created_at,false)):"No active order";
   $("driverDashboardPeriodLabel").textContent=data.live_order?"Current order":"No current order";
 }
+let recentDeliveryVisibleCount=10;
 let driverDashboardBusy=false;
 async function loadDriverAdminDashboard(){
   const box=$("driverDashboardKpis");if(!box||driverDashboardBusy)return;
