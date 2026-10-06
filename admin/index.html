@@ -208,7 +208,7 @@ body.adminPage{background:var(--cmd-bg);font-family:"Plus Jakarta Sans",Inter,sy
   <div class="liveRouteBanner"><div><span class="eyebrow">LIVE ROUTE</span><b id="liveOrderLabel">Loading…</b></div><span>Updates automatically</span></div>
   <div id="driverDashboardKpis" class="deliveryKpis"></div>
   <section class="deliveryDashSection"><div class="sectionHead"><div><span class="eyebrow">LIVE OUTLETS</span><h3>Current route</h3><p class="hint">What still needs to happen, outlet by outlet.</p></div></div><div class="tableWrap"><table class="deliveryDashTable"><thead><tr><th>Outlet</th><th>Driver</th><th>Status</th><th>Missing</th><th>Rejected</th><th>Last action</th><th>Evidence</th></tr></thead><tbody id="liveRouteBody"></tbody></table></div></section>
-  <section id="driverExceptionsSection" class="deliveryDashSection hidden"><div class="sectionHead"><div><span class="eyebrow">EXCEPTIONS</span><h3>Needs attention</h3></div></div><div class="tableWrap"><table class="deliveryDashTable"><thead><tr><th>Order date</th><th>Driver</th><th>Outlet</th><th>Missing</th><th>Rejected</th><th>Invoice</th><th>Rejection check</th></tr></thead><tbody id="driverExceptionsBody"></tbody></table></div></section>
+  <section id="driverExceptionsSection" class="deliveryDashSection hidden"><div class="sectionHead"><div><span class="eyebrow">EXCEPTIONS</span><h3>Needs attention</h3></div></div><div class="tableWrap"><table class="deliveryDashTable"><thead><tr><th>Order date</th><th>Driver</th><th>Outlet</th><th>Issue / Missing items</th><th>Rejected</th><th>Invoice</th><th>Rejection check</th></tr></thead><tbody id="driverExceptionsBody"></tbody></table></div></section>
   <section class="deliveryDashSection"><div class="sectionHead"><div><span class="eyebrow">DELIVERY HISTORY</span><h3>Historical delivery transactions</h3><p class="hint">Edit a past delivery charge when extra cost or higher quantity required an adjustment. Outlet default configuration is not changed.</p></div></div><div class="tableWrap"><table class="deliveryDashTable"><thead><tr><th>Delivered at</th><th>Driver</th><th>Outlet / Order</th><th>Delivery time</th><th>Recorded charge</th><th>Missing</th><th>Rejected</th><th>Action</th></tr></thead><tbody id="recentDeliveriesBody"></tbody></table></div></section>
 </section>
 
@@ -383,9 +383,9 @@ if(!window.supabase){
 <script defer src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script defer src="../config.js?v=20261001-audit2"></script>
 <script defer src="./auth.js?v=20261001-audit2"></script>
-<script defer src="../app.js?v=20261006-charge1"></script>
+<script defer src="../app.js?v=20261006-exceptions1"></script>
 <script defer src="./team.js?v=20261002-staffid3"></script>
 <script defer src="./inventory-nav.js?v=20261001-audit2"></script>
-<script>window.PA_VERSION_URL="../version.json";</script><script defer src="../update.js?v=20261006-charge1"></script><script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20261006-charge1",{updateViaCache:"none"}).then(r=>r.update()).catch(console.warn));}</script>
+<script>window.PA_VERSION_URL="../version.json";</script><script defer src="../update.js?v=20261006-exceptions1"></script><script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20261006-exceptions1",{updateViaCache:"none"}).then(r=>r.update()).catch(console.warn));}</script>
 <script>fetch("../version.json?_"+Date.now(),{cache:"no-store"}).then(r=>r.json()).then(v=>{const e=document.getElementById("buildVersion");if(e)e.textContent="Build "+(v.build_id||"unknown")}).catch(()=>{});</script></body>
 </html>
