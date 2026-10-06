@@ -1789,36 +1789,26 @@ document.getElementById("reportAllDatesBtn")?.addEventListener("click",()=>{$("r
 document.getElementById("menuOutletSettings")?.addEventListener("click",async()=>{adminMenu.classList.add("hidden");setBAActive("sideSettings");await loadDrivers();renderOutletSettings([...state.outlets.values()].sort((a,b)=>a.rank-b.rank));document.getElementById("outletSettingsDialog").showModal()});
 
 async function ensureFleetAdminPassword(){if(window.PA_ADMIN_SESSION)return true;if(window.PA_REAUTH_ADMIN)return await window.PA_REAUTH_ADMIN();return false;}
-let fleetDrivers=[];
+let fleetDrivers=[];let fleetSelectedIds=new Set();
 function fleetRiskClass(v){v=Number(v||0);return v>10000?"fleetRiskHigh":v>=2000?"fleetRiskMedium":"fleetRiskLow";}
 function renderFleetManagement(){
   const body=$("fleetTableBody"),search=($("fleetSearch")?.value||"").trim().toLowerCase(),filter=$("fleetBalanceFilter")?.value||"all";
   if(!body)return;
-  const rows=fleetDrivers.filter(d=>{
-    const name=String(d.driver_name||"").toLowerCase(),phone=String(d.phone||"").toLowerCase(),due=Number(d.balance||0);
-    if(search&&!name.includes(search)&&!phone.includes(search))return false;
-    if(filter==="due"&&due<=0)return false;
-    if(filter==="high"&&due<=10000)return false;
-    if(filter==="medium"&&(due<2000||due>10000))return false;
-    if(filter==="low"&&due>=2000)return false;
-    return true;
-  });
-  const totalDue=rows.reduce((s,d)=>s+Number(d.balance||0),0);
-  const totalPaid=rows.reduce((s,d)=>s+Number(d.paid||0),0);
+  const rows=fleetDrivers.filter(d=>{const name=String(d.driver_name||"").toLowerCase(),phone=String(d.phone||"").toLowerCase(),due=Number(d.balance||0);if(search&&!name.includes(search)&&!phone.includes(search))return false;if(filter==="due"&&due<=0)return false;if(filter==="high"&&due<=10000)return false;if(filter==="medium"&&(due<2000||due>10000))return false;if(filter==="low"&&due>=2000)return false;return true;});
+  fleetSelectedIds=new Set([...fleetSelectedIds].filter(id=>rows.some(d=>String(d.driver_id)===String(id))));
+  const totalDue=rows.reduce((s,d)=>s+Number(d.balance||0),0),totalPaid=rows.reduce((s,d)=>s+Number(d.paid||0),0);
   if($("fleetSummary"))$("fleetSummary").innerHTML="<span><b>"+rows.length+"</b> drivers</span><span><b>₹"+totalDue.toLocaleString("en-IN",{minimumFractionDigits:2})+"</b> total due</span><span><b>₹"+totalPaid.toLocaleString("en-IN",{minimumFractionDigits:2})+"</b> paid</span>";
   body.innerHTML=rows.map(d=>{
-    const due=Number(d.balance||0),risk=fleetRiskClass(due);
-    return '<tr><td><div class="fleetDriver">'+esc(d.driver_name||"Driver")+'</div></td>'+
-      '<td class="fleetMoney">₹'+Number(d.opening_balance||0).toLocaleString("en-IN",{minimumFractionDigits:2})+'</td>'+
-      '<td class="fleetMoney">₹'+Number(d.earned||0).toLocaleString("en-IN",{minimumFractionDigits:2})+'</td>'+
-      '<td class="fleetMoney">₹'+Number(d.paid||0).toLocaleString("en-IN",{minimumFractionDigits:2})+'</td>'+
-      '<td class="fleetMoney fleetDue '+risk+'">₹'+due.toLocaleString("en-IN",{minimumFractionDigits:2})+'</td>'+
-      '<td><div class="fleetActions"><button class="primary payDriverBtn" data-id="'+esc(d.driver_id)+'" data-name="'+esc(d.driver_name||"Driver")+'">+ Pay</button><button class="secondary fleetLedgerBtn" data-id="'+esc(d.driver_id)+'">Ledger</button><button class="secondary fleetStatementBtn" data-id="'+esc(d.driver_id)+'">PDF</button><button class="secondary fleetOpeningBtn" data-id="'+esc(d.driver_id)+'" data-name="'+esc(d.driver_name||"Driver")+'">Opening Balance</button></div></td></tr>';
-  }).join("")||'<tr><td colspan="6" class="fleetEmpty">No drivers match this filter.</td></tr>';
-  body.querySelectorAll(".payDriverBtn").forEach(b=>b.onclick=()=>openDriverPayment(b.dataset.id,b.dataset.name));
-  body.querySelectorAll(".fleetOpeningBtn").forEach(b=>b.onclick=()=>openDriverOpeningBalance(b.dataset.id,b.dataset.name));
-  body.querySelectorAll(".fleetLedgerBtn").forEach(b=>b.onclick=()=>openDriverLedger(b.dataset.id));
-  body.querySelectorAll(".fleetStatementBtn").forEach(b=>b.onclick=()=>printDriverStatement(b.dataset.id));
+    const id=String(d.driver_id),due=Number(d.balance||0),risk=fleetRiskClass(due),selected=fleetSelectedIds.has(id);
+    return '<tr class="'+(selected?"fleetRowSelected":"")+'" data-driver-id="'+esc(id)+'"><td><input class="fleetCheck fleetRowCheck" type="checkbox" data-id="'+esc(id)+'" '+(selected?"checked":"")+' aria-label="Select driver"></td><td><div class="fleetDriver">'+esc(d.driver_name||"Driver")+'<small>'+esc(d.phone||"")+'</small></div></td><td class="fleetMoney">₹'+Number(d.opening_balance||0).toLocaleString("en-IN",{minimumFractionDigits:2})+'</td><td class="fleetMoney">₹'+Number(d.earned||0).toLocaleString("en-IN",{minimumFractionDigits:2})+'</td><td class="fleetMoney">₹'+Number(d.paid||0).toLocaleString("en-IN",{minimumFractionDigits:2})+'</td><td class="fleetMoney fleetDue '+risk+'">₹'+due.toLocaleString("en-IN",{minimumFractionDigits:2})+'</td><td><div class="fleetActions"><button class="primary payDriverBtn" data-id="'+esc(id)+'" data-name="'+esc(d.driver_name||"Driver")+'">+ Pay</button><button class="secondary fleetLedgerBtn" data-id="'+esc(id)+'">Ledger</button><button class="secondary fleetStatementBtn" data-id="'+esc(id)+'">PDF</button></div></td></tr>';
+  }).join("")||'<tr><td colspan="7" class="fleetEmpty">No drivers match this filter.</td></tr>';
+  body.querySelectorAll(".payDriverBtn").forEach(b=>b.onclick=e=>{e.stopPropagation();openDriverPayment(b.dataset.id,b.dataset.name);});
+  body.querySelectorAll(".fleetLedgerBtn").forEach(b=>b.onclick=e=>{e.stopPropagation();openDriverLedger(b.dataset.id);});
+  body.querySelectorAll(".fleetStatementBtn").forEach(b=>b.onclick=e=>{e.stopPropagation();printDriverStatement(b.dataset.id);});
+  body.querySelectorAll(".fleetRowCheck").forEach(b=>b.onchange=e=>{e.stopPropagation();const id=String(b.dataset.id);b.checked?fleetSelectedIds.add(id):fleetSelectedIds.delete(id);renderFleetManagement();});
+  body.querySelectorAll("tr[data-driver-id]").forEach(row=>row.onclick=e=>{if(e.target.closest("button,input"))return;openDriverLedger(row.dataset.driverId);});
+  const n=fleetSelectedIds.size;if($("fleetSelectedCount"))$("fleetSelectedCount").textContent=String(n);$("fleetBulkBar")?.classList.toggle("hidden",n===0);
+  const sa=$("fleetSelectAll");if(sa){sa.checked=rows.length>0&&rows.every(d=>fleetSelectedIds.has(String(d.driver_id)));sa.indeterminate=n>0&&!sa.checked;}
 }
 async function loadFleetManagement(){
   const box=$("fleetTableBody");if(!box)return;
@@ -1863,7 +1853,7 @@ function exportFleetLedgerCsv(){
   const csv=[head,...rows].map(r=>r.map(v=>'"'+String(v??"").replace(/"/g,'""')+'"').join(",")).join("\n"),url=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"})),a=document.createElement("a");a.href=url;a.download="driver-ledger-"+new Date().toISOString().slice(0,10)+".csv";a.click();URL.revokeObjectURL(url);
 }
 document.getElementById("menuFleetManagement")?.addEventListener("click",async()=>{adminMenu.classList.add("hidden");setBAActive("sideDelivery");document.querySelector(".cmdSidebar")?.classList.remove("open");document.body.classList.remove("cmdSidebarOpen");document.getElementById("home")?.classList.add("hidden");document.getElementById("packing")?.classList.add("hidden");document.getElementById("packingOverview")?.classList.add("hidden");document.getElementById("driverDashboard")?.classList.add("hidden");document.getElementById("fleetManagement")?.classList.remove("hidden");await loadFleetManagement();});document.getElementById("fleetRefreshBtn")?.addEventListener("click",loadFleetManagement);document.getElementById("closeOpeningBalance")?.addEventListener("click",()=>document.getElementById("driverOpeningBalanceDialog").close());document.getElementById("saveOpeningBalance")?.addEventListener("click",saveDriverOpeningBalance);document.getElementById("closeDriverPayment")?.addEventListener("click",()=>document.getElementById("driverPaymentDialog").close());document.getElementById("saveDriverPayment")?.addEventListener("click",saveDriverPayment);
-document.getElementById("fleetSearch")?.addEventListener("input",renderFleetManagement);
+document.getElementById("fleetSearch")?.addEventListener("input",renderFleetManagement);document.getElementById("fleetSelectAll")?.addEventListener("change",e=>{const checked=e.target.checked;const q=($("fleetSearch")?.value||"").trim().toLowerCase(),f=$("fleetBalanceFilter")?.value||"all";fleetDrivers.filter(d=>{const n=String(d.driver_name||"").toLowerCase(),p=String(d.phone||"").toLowerCase(),v=Number(d.balance||0);return(!q||n.includes(q)||p.includes(q))&&(f==="all"||(f==="due"&&v>0)||(f==="high"&&v>10000)||(f==="medium"&&v>=2000&&v<=10000)||(f==="low"&&v<2000));}).forEach(d=>checked?fleetSelectedIds.add(String(d.driver_id)):fleetSelectedIds.delete(String(d.driver_id)));renderFleetManagement();});document.getElementById("fleetClearSelection")?.addEventListener("click",()=>{fleetSelectedIds.clear();renderFleetManagement();});
 document.getElementById("fleetBalanceFilter")?.addEventListener("change",renderFleetManagement);
 document.getElementById("fleetExportCsv")?.addEventListener("click",exportFleetLedgerCsv);
 document.getElementById("closeDriverLedger")?.addEventListener("click",()=>document.getElementById("driverLedgerDialog")?.close());
