@@ -784,7 +784,7 @@ async function loadLiveDeliverySummary(){
     renderCommandCenter(d);
   }catch(e){
     console.warn("Live delivery summary:",e.message);
-    section.classList.remove("hidden");
+    section?.classList.remove("hidden");
     ["opsOutletCount","opsOutletAllocated","opsPacked","opsRequired","opsInTransit","opsFleetTotal","opsDelivered","opsPending","opsAttention"].forEach(id=>{const el=$(id);if(el)el.textContent="—";});
     const active=$("opsActiveOrder");if(active)active.textContent="Live data unavailable";
     const priorities=$("opsPriorities");if(priorities)priorities.innerHTML='<div class="opsPriority issue"><span class="opsPriorityIcon">!</span><div><b>Live data connection failed</b><small>Refresh or check the admin session.</small></div></div>';
@@ -1638,11 +1638,12 @@ function renderCommandCenter(deliveryData=null){
   const bar=(id,p)=>{const e=$(id);if(e)e.style.width=Math.min(100,Math.max(0,p))+"%";};
 
   set("opsActiveOrder",(order.order_name||"No active order")+" · "+(formatDate(order.created_at)||"—"));
-  set("opsOutletCount",totalOutlets);set("opsOutletAllocated",totalOutlets);set("opsOutletSub",unassigned?unassigned+" unassigned":totalOutlets+" assigned");bar("opsOutletBar",totalOutlets?Math.max(0,100-(unassigned/totalOutlets*100)):0);
+  set("opsOutletCount",totalOutlets);set("opsOutletAllocated",Math.max(0,totalOutlets-unassigned));set("opsOutletSub",unassigned?((totalOutlets-unassigned)+" assigned · "+unassigned+" unassigned"):totalOutlets+" assigned");bar("opsOutletBar",totalOutlets?((totalOutlets-unassigned)/totalOutlets*100):0);
   set("opsPacked",packed);set("opsRequired",required);set("opsPackedPct",packedPct+"%");set("opsShort",missing);bar("opsPackedBar",packedPct);
-  set("opsInTransit",Math.max(0,totalOutlets-delivered-pendingDelivery));set("opsFleetTotal",totalOutlets);set("opsDelivered",delivered);set("opsPending",pendingDelivery);bar("opsFleetBar",deliveryPct);
+  set("opsInTransit",delivered);set("opsFleetTotal",totalOutlets);set("opsDelivered",delivered);set("opsPending",pendingDelivery);bar("opsFleetBar",deliveryPct);
   set("opsAttention",attentionRows.length);
-  set("opsAttentionSub",attentionRows.length?(missing+" missing · "+rejected+" rejected"):"No active exceptions");
+  const issueLines=issueItems.length;
+  set("opsAttentionSub",attentionRows.length?(missing+" missing · "+rejected+" rejected · "+issueLines+" item issues"):"No active exceptions");
 
   set("opsStagePacking",packingComplete===totalOutlets&&totalOutlets?"Complete":packed>0?"In Progress":"Not Started");
   set("opsStageDispatch",delivered===totalOutlets&&totalOutlets?"Complete":delivered?"In Progress":packed>0?"Ready":"Waiting");
