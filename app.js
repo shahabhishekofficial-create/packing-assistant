@@ -1370,6 +1370,7 @@ function renderDriverDashboard(data){
 let recentDeliveryVisibleCount=10;
 let driverDashboardBusy=false;
 async function loadDriverAdminDashboard(){
+  recentDeliveryVisibleCount=10;
   const box=$("driverDashboardKpis");if(!box||driverDashboardBusy)return;
   driverDashboardBusy=true;
   if(!(await ensureFleetAdminPassword())){driverDashboardBusy=false;return;}
