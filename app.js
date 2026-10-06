@@ -804,7 +804,10 @@ async function handleAdminAuthenticated(){try{if(IS_ADMIN_PAGE && (!state.orderI
 window.addEventListener("pa-admin-authenticated",handleAdminAuthenticated);
 window.addEventListener("pa-admin-authenticated",startCommandCenterAudit);
 window.addEventListener("pa-config-loaded",()=>{applyPackingConfig();renderStaffOutletList();if(IS_ADMIN_PAGE)renderAdminDashboard();});
-if(IS_ADMIN_PAGE && window.PA_ADMIN_SESSION)void handleAdminAuthenticated();
+if(IS_ADMIN_PAGE){
+  if(window.PA_ADMIN_SESSION)void handleAdminAuthenticated();
+  else if(window.PA_ADMIN_READY)void Promise.resolve(window.PA_ADMIN_READY).then(()=>{if(window.PA_ADMIN_SESSION)void handleAdminAuthenticated();});
+}
 document.getElementById("deliverySummaryRefresh")?.addEventListener("click",loadLiveDeliverySummary);
 function renderStaffOutletList(){
   if(IS_ADMIN_PAGE)return;
