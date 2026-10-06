@@ -320,6 +320,18 @@ body.adminPage{background:var(--cmd-bg);font-family:"Plus Jakarta Sans",Inter,sy
     <div class="reportHistoryHead"><b>Saved Orders</b><span>Newest first</span></div>
     <div id="reportHistoryList" class="reportHistoryList"></div>
   </dialog>
+  <dialog id="adminDeliveryCompleteDialog" class="settingsDialog">
+ <div class="settingsDialogHead"><div><span class="eyebrow">ADMIN DELIVERY COMPLETION</span><h3>Mark outlet delivered</h3><p class="hint">Invoice number and invoice image are mandatory.</p></div><div class="dialogHeadActions"><button id="closeAdminDeliveryComplete" class="secondary">✕</button></div></div>
+ <div class="fleetPaymentForm">
+  <input id="adminDeliveryOrderId" type="hidden"><input id="adminDeliveryOutletId" type="hidden">
+  <label>Outlet<input id="adminDeliveryOutletName" readonly></label>
+  <label>Invoice number<input id="adminDeliveryInvoiceNumber" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" placeholder="Enter invoice number" required></label>
+  <label>Invoice image<input id="adminDeliveryInvoiceFile" type="file" accept="image/*" required></label>
+  <label>Reason<input id="adminDeliveryReason" value="Driver unable to complete delivery" placeholder="Reason"></label>
+  <button id="adminDeliveryCompleteBtn" class="primary">Upload & Mark Delivered</button>
+  <p id="adminDeliveryCompleteMsg" class="hint"></p>
+ </div>
+</dialog>
   <dialog id="deliveryEvidenceViewer" class="settingsDialog deliveryEvidenceViewer"><div class="settingsDialogHead"><div><span class="eyebrow">DELIVERY EVIDENCE</span><h3 id="deliveryEvidenceTitle">Invoice</h3></div><div class="dialogHeadActions"><button id="closeDeliveryEvidence" class="secondary">✕</button></div></div><div class="deliveryEvidenceViewerBody"><img id="deliveryEvidenceImage" alt="Delivery invoice"></div></dialog>
   <dialog id="deliveryChargeEditDialog" class="settingsDialog">
  <div class="settingsDialogHead">
