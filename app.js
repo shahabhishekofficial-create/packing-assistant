@@ -1812,13 +1812,13 @@ function renderFleetManagement(){
 }
 async function loadFleetManagement(){
   const box=$("fleetTableBody");if(!box)return;
-  box.innerHTML='<tr><td colspan="6" class="fleetEmpty">Loading driver ledger…</td></tr>';
+  box.innerHTML='<tr><td colspan="7" class="fleetEmpty">Loading driver ledger…</td></tr>';
   try{
     if(!(await ensureFleetAdminPassword()))throw new Error("Admin session expired. Please sign in again.");
     const r=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_driver_fleet",admin_session:window.PA_ADMIN_SESSION})});
     const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.message||"Could not load fleet");
     fleetDrivers=d.drivers||[];renderFleetManagement();
-  }catch(e){box.innerHTML='<tr><td colspan="6" class="fleetEmpty">Could not load fleet ledger: '+esc(e.message)+'</td></tr>';}
+  }catch(e){box.innerHTML='<tr><td colspan="7" class="fleetEmpty">Could not load fleet ledger: '+esc(e.message)+'</td></tr>';}
 }
 async function openDriverLedger(driverId){
   const d=fleetDrivers.find(x=>String(x.driver_id)===String(driverId));if(!d)return;
@@ -1831,7 +1831,6 @@ async function openDriverLedger(driverId){
     const x=await r.json();if(!r.ok||!x.ok)throw new Error(x.message||"Could not load driver ledger");
     const trips=x.trips||[],payments=x.payments||[],audit=x.audit||[],opening=Number(d.opening_balance||0),earned=Number(d.earned||0),paid=Number(d.paid||0),due=Math.max(0,opening+earned-paid);
     $("fleetDrawerIdentity").textContent="Driver ID: "+String(d.driver_id)+(x.driver.phone?" · Phone: "+x.driver.phone:"")+(x.driver.vehicle_type?" · "+x.driver.vehicle_type:"");
-    $("fleetDrawerFormula").textContent="";
     const tabs='<div class="fleetKpiGrid"><div class="fleetKpiBox"><small>Opening Pending</small><b>₹'+opening.toLocaleString("en-IN",{minimumFractionDigits:2})+'</b></div><div class="fleetKpiBox"><small>+ App Earned</small><b>₹'+earned.toLocaleString("en-IN",{minimumFractionDigits:2})+'</b></div><div class="fleetKpiBox"><small>- Total Paid</small><b>₹'+paid.toLocaleString("en-IN",{minimumFractionDigits:2})+'</b></div><div class="fleetKpiBox due"><small>= Net Due</small><b>₹'+due.toLocaleString("en-IN",{minimumFractionDigits:2})+'</b></div></div><div class="fleetDrawerActions"><button class="primary" id="drawerPayDriver">+ Record Payout</button><button class="secondary" id="drawerEditOpening">✏ Edit Opening Bal</button><button class="secondary" id="drawerSync">↻ Sync Data</button></div><div class="fleetLedgerTabs"><button class="fleetLedgerTab active" data-tab="trips">📦 Delivery Trips ('+trips.length+')</button><button class="fleetLedgerTab" data-tab="payments">💳 Payment Logs ('+payments.length+')</button><button class="fleetLedgerTab" data-tab="audit">📜 Audit ('+audit.length+')</button></div><div id="fleetLedgerTabContent"></div>';
     $("fleetDrawerBody").innerHTML=tabs;
     const renderTab=(tab)=>{
