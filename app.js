@@ -1907,6 +1907,7 @@ document.getElementById("opsOpenReports")?.addEventListener("click",()=>document
 document.getElementById("opsViewFleet")?.addEventListener("click",()=>document.getElementById("menuDriverDashboard")?.click());
 document.getElementById("opsViewActivity")?.addEventListener("click",()=>document.getElementById("menuReportBtn")?.click());
 document.getElementById("opsAttentionKpi")?.addEventListener("click",()=>document.getElementById("opsViewAttention")?.click());
+document.getElementById("opsAttentionKpiLink")?.addEventListener("click",()=>document.getElementById("opsViewAttention")?.click());
 document.getElementById("opsViewAttention")?.addEventListener("click",()=>document.getElementById("menuDriverDashboard")?.click());
 document.querySelectorAll("[data-ops-delivery]").forEach(btn=>btn.addEventListener("click",()=>{
   document.querySelectorAll("[data-ops-delivery]").forEach(x=>x.classList.remove("active"));btn.classList.add("active");
