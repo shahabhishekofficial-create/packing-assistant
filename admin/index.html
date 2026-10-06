@@ -202,6 +202,59 @@ body.adminPage{background:var(--cmd-bg);font-family:"Plus Jakarta Sans",Inter,sy
 @media (min-width:801px){
   #baSidebarToggle{display:none}
 }
+</style><style id="mobileDriverDashboardRedesign">
+.driverOutletControls{display:flex;gap:10px;align-items:center;padding:10px 0 12px}
+.driverFilterTabs{display:flex;gap:5px;flex:1;min-width:0}
+.driverFilterTab{border:1px solid #dbe3eb;background:#fff;color:#64748b;border-radius:9px;padding:7px 10px;font-size:10px;font-weight:800;cursor:pointer;white-space:nowrap}
+.driverFilterTab.active{background:#0f5132;color:#fff;border-color:#0f5132}.driverFilterTab.exception.active{background:#b45309;border-color:#b45309}.driverFilterTab span{font-variant-numeric:tabular-nums}
+.driverOutletSearch{display:flex;align-items:center;gap:6px;border:1px solid #dbe3eb;border-radius:9px;background:#fff;padding:0 9px;min-width:190px;height:34px;color:#94a3b8}
+.driverOutletSearch input{border:0;outline:0;width:100%;font:inherit;font-size:11px;background:transparent}
+.driverLiveTableWrap{overflow:auto}
+@media(max-width:800px){
+  .driverDashboardHead{padding:8px 0;margin-bottom:3px}
+  .driverDashboardHead h2{font-size:19px}
+  .driverDashboardHead .eyebrow{font-size:8px}
+  .driverDashboardHead .sectionHeadActions{gap:5px}
+  .driverDashboardHead .sectionHeadActions button{padding:7px 9px;font-size:9px}
+  #driverDashboard .liveRouteBanner{margin:7px 0 9px;padding:10px 12px;border-radius:11px}
+  #driverDashboard .liveRouteBanner b{font-size:11px}
+  #driverDashboardKpis{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-bottom:9px}
+  #driverDashboardKpis .deliveryKpi{min-height:67px;padding:10px;border-radius:11px}
+  #driverDashboardKpis .deliveryKpi small{font-size:8px}
+  #driverDashboardKpis .deliveryKpi b{font-size:17px;margin-top:4px}
+  #driverDashboardKpis .deliveryKpi span{font-size:7px;margin-top:3px}
+  #driverDashboard .driverOutletControls{display:flex;flex-direction:column;align-items:stretch;gap:7px;padding:8px 0}
+  #driverDashboard .driverFilterTabs{width:100%}
+  #driverDashboard .driverFilterTab{flex:1;padding:8px 5px;font-size:8px}
+  #driverDashboard .driverOutletSearch{min-width:0;width:100%;height:36px}
+  #driverDashboard .driverLiveTableWrap{overflow:visible}
+  #driverDashboard .deliveryDashTable{display:block;min-width:0;width:100%}
+  #driverDashboard .deliveryDashTable thead{display:none}
+  #driverDashboard .deliveryDashTable tbody{display:block}
+  #driverDashboard .deliveryDashTable tr{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 8px;margin:6px 0;padding:10px;border:1px solid #e2e8f0;border-radius:11px;background:#fff}
+  #driverDashboard .deliveryDashTable tr.driverExceptionRow{background:#fff7ed;border-color:#f59e0b}
+  #driverDashboard .deliveryDashTable td{border:0!important;padding:0!important;white-space:normal!important;font-size:9px;min-width:0}
+  #driverDashboard .deliveryDashTable td:nth-child(1){grid-column:1;grid-row:1}
+  #driverDashboard .deliveryDashTable td:nth-child(2){grid-column:1;grid-row:1;margin-top:18px;color:#64748b}
+  #driverDashboard .deliveryDashTable td:nth-child(3){grid-column:2;grid-row:1;justify-self:end}
+  #driverDashboard .deliveryDashTable td:nth-child(4){grid-column:1;grid-row:2;color:#64748b}
+  #driverDashboard .deliveryDashTable td:nth-child(5){grid-column:1;grid-row:2;color:#64748b}
+  #driverDashboard .deliveryDashTable td:nth-child(6){grid-column:2;grid-row:2;justify-self:end}
+  #driverDashboard .deliveryDashTable td:nth-child(7){display:none}
+  #driverDashboard .deliveryDashTable td:nth-child(1) b{font-size:11px;color:#172033}
+  #driverDashboard .deliveryDashTable td:nth-child(1) small{display:none}
+  #driverDashboard .deliveryDashTable td:nth-child(2) b{font-size:9px}
+  #driverDashboard .deliveryDashTable td:nth-child(2) b:before{content:"Driver: ";color:#94a3b8;font-weight:700}
+  #driverDashboard .deliveryDashTable td:nth-child(4):before{content:"Rej: ";font-weight:700;color:#94a3b8}
+  #driverDashboard .deliveryDashTable td:nth-child(5):before{content:"Miss: ";font-weight:700;color:#94a3b8}
+  #driverDashboard .deliveryDashTable td:nth-child(6) .deliveryEvidenceBtn{font-size:8px;padding:6px 8px}
+  #driverDashboard .deliveryDashTable .deliveryStatus{font-size:8px;padding:5px 7px}
+  #driverDashboard .deliveryDashSection{padding:10px 10px}
+  #driverDashboard .deliveryDashSection .sectionHead{padding:0 0 3px}
+  #driverDashboard .deliveryDashSection .sectionHead h3{font-size:13px}
+  #driverDashboard .deliveryDashSection .sectionHead .eyebrow{font-size:8px}
+  #driverDashboard #driverExceptionsSection{display:none!important}
+}
 </style></head>
 <body class="adminPage"><div id="adminBootOverlay"><div class="bootCard">Loading Admin Dashboard<span class="bootSub">Starting secure session…</span></div></div>
 <main id="app">
@@ -341,7 +394,7 @@ body.adminPage{background:var(--cmd-bg);font-family:"Plus Jakarta Sans",Inter,sy
 <dialog id="fleetBulkPaymentDialog" class="settingsDialog"><div class="settingsDialogHead"><div><span class="eyebrow">BULK PAYOUT</span><h3>Record Bulk Payout</h3><p class="hint">Record the same payout details against all selected drivers.</p></div><div class="dialogHeadActions"><button id="closeFleetBulkPayment" class="secondary">✕</button></div></div><div class="fleetPaymentForm"><div id="fleetBulkPaymentDrivers" class="hint"></div><label>Amount per driver <input id="fleetBulkPaymentAmount" type="number" min="0.01" step="0.01" placeholder="₹"></label><label>Payment date <input id="fleetBulkPaymentDate" type="datetime-local"></label><label>Note <input id="fleetBulkPaymentNote" placeholder="e.g. Weekly payout"></label><label>Payment mode <select id="fleetBulkPaymentMode"><option value="UPI">UPI</option><option value="BANK_TRANSFER">Bank Transfer</option><option value="CASH">Cash</option></select></label><label>Reference / Transaction ID <input id="fleetBulkPaymentReference" placeholder="Optional"></label><button id="saveFleetBulkPayment" class="primary">Save Bulk Payout</button><p id="fleetBulkPaymentMsg" class="hint"></p></div></dialog>
 <section id="driverDashboard" class="screen hidden">
   <div class="sectionHead driverDashboardHead">
-    <div><span class="eyebrow">DELIVERY MANAGEMENT</span><h2>Driver Dashboard</h2><p class="hint">Live route control + historical driver performance. Packing exceptions are shown separately from driver delivery rejections.</p></div>
+    <div><span class="eyebrow">DELIVERY MANAGEMENT</span><h2>Driver Dashboard</h2></div>
     <div class="sectionHeadActions"><button id="driverDashboardBackBtn" class="secondary">← Dashboard</button><button id="driverDashboardRefresh" class="secondary">↻ Refresh</button></div>
   </div>
   <div class="deliveryDashboardControls">
@@ -349,7 +402,9 @@ body.adminPage{background:var(--cmd-bg);font-family:"Plus Jakarta Sans",Inter,sy
   </div>
   <div class="liveRouteBanner"><div><span class="eyebrow">LIVE ROUTE</span><b id="liveOrderLabel">Loading…</b></div><span>Updates automatically</span></div>
   <div id="driverDashboardKpis" class="deliveryKpis"></div>
-  <section class="deliveryDashSection"><div class="sectionHead"><div><span class="eyebrow">LIVE OUTLETS</span><h3>Current route</h3><p class="hint">What still needs to happen, outlet by outlet.</p></div></div><div class="tableWrap"><table class="deliveryDashTable"><thead><tr><th>Outlet</th><th>Driver</th><th>Status</th><th>Missing</th><th>Rejected</th><th>Last action</th><th>Evidence</th></tr></thead><tbody id="liveRouteBody"></tbody></table></div></section>
+  <section class="deliveryDashSection driverLiveOutletsSection"><div class="sectionHead"><div><span class="eyebrow">LIVE OUTLETS</span><h3>Current route</h3></div></div>
+  <div class="driverOutletControls"><div class="driverFilterTabs" role="tablist"><button type="button" class="driverFilterTab active" data-filter="all">All <span id="driverAllCount">0</span></button><button type="button" class="driverFilterTab" data-filter="pending">Pending <span id="driverPendingCount">0</span></button><button type="button" class="driverFilterTab exception" data-filter="exceptions">⚠ Exceptions <span id="driverExceptionCount">0</span></button></div><label class="driverOutletSearch">⌕<input id="driverOutletSearch" type="search" placeholder="Search outlet or driver…" autocomplete="off"></label></div>
+  <div class="tableWrap driverLiveTableWrap"><table class="deliveryDashTable"><thead><tr><th>Outlet</th><th>Driver</th><th>Status</th><th>Missing</th><th>Rejected</th><th>Last action</th><th>Evidence</th></tr></thead><tbody id="liveRouteBody"></tbody></table></div></section>
   <section id="driverExceptionsSection" class="deliveryDashSection hidden"><div class="sectionHead"><div><span class="eyebrow">EXCEPTIONS</span><h3>Needs attention</h3><p class="hint">Only outlets with an outstanding missing, rejection, invoice, or delivery-check issue are shown.</p></div></div><div class="tableWrap"><table class="deliveryDashTable"><thead><tr><th>Order date</th><th>Driver</th><th>Outlet</th><th>Issue / Missing items</th><th>Rejected</th><th>Invoice / Action</th></tr></thead><tbody id="driverExceptionsBody"></tbody></table></div></section>
   <section class="deliveryDashSection"><div class="sectionHead"><div><span class="eyebrow">DELIVERY HISTORY</span><h3>Historical delivery transactions</h3><p class="hint">Edit a past delivery charge when extra cost or higher quantity required an adjustment. Outlet default configuration is not changed.</p></div></div><div class="tableWrap"><table class="deliveryDashTable"><thead><tr><th>Delivered at</th><th>Driver</th><th>Outlet / Order</th><th>Delivery time</th><th>Recorded charge</th><th>Missing</th><th>Rejected</th><th>Action</th></tr></thead><tbody id="recentDeliveriesBody"></tbody></table></div></section>
 </section>
