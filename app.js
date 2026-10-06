@@ -779,8 +779,11 @@ async function loadLiveDeliverySummary(){
   }catch(e){
     console.warn("Live delivery summary:",e.message);
     section.classList.remove("hidden");
+    ["opsOutletCount","opsOutletAllocated","opsPacked","opsRequired","opsInTransit","opsFleetTotal","opsDelivered","opsPending","opsAttention"].forEach(id=>{const el=$(id);if(el)el.textContent="—";});
+    const active=$("opsActiveOrder");if(active)active.textContent="Live data unavailable";
+    const priorities=$("opsPriorities");if(priorities)priorities.innerHTML='<div class="opsPriority issue"><span class="opsPriorityIcon">!</span><div><b>Live data connection failed</b><small>Refresh or check the admin session.</small></div></div>';
     kpis.innerHTML='<div class="hint">Live delivery status could not be loaded. Use Refresh to retry.</div>';
-    body.innerHTML='<tr><td colspan="6" class="hint">Delivery status unavailable.</td></tr>';
+    body.innerHTML='<tr><td colspan="6" class="hint">Live data unavailable.</td></tr>';
   }finally{
     liveDeliveryBusy=false;
   }
