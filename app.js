@@ -755,10 +755,15 @@ let liveDeliveryTimer=null;
 let liveDeliveryBusy=false;
 async function loadLiveDeliverySummary(){
   const section=$("deliverySummary"),kpis=$("deliverySummaryKpis"),body=$("deliverySummaryBody");
-  if(!section||!kpis||!body||!window.PA_ADMIN_SESSION||liveDeliveryBusy)return;
+  if(!section||!kpis||!body||liveDeliveryBusy)return;
+  const adminSession=window.PA_ADMIN_SESSION||localStorage.getItem("packing_assistant_admin_session_token")||"";
+  if(!adminSession){
+    console.warn("Operations dashboard: admin session not available yet.");
+    return;
+  }
   liveDeliveryBusy=true;
   try{
-    const r=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_driver_dashboard",admin_session:window.PA_ADMIN_SESSION,preset:"today"})});
+    const r=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_driver_dashboard",admin_session:adminSession,preset:"today"})});
     const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.message||"Could not load delivery status");
     const l=d.live||{};
     section.classList.remove("hidden");
@@ -1718,6 +1723,8 @@ function showAdminDashboard(){
   ["reportDialog","invoiceDialog","outletSettingsDialog","driverPaymentDialog"].forEach(id=>document.getElementById(id)?.open&&document.getElementById(id).close());
   window.scrollTo({top:0,behavior:"smooth"});
   void renderHomeOperationalKpis();
+  void loadLiveDeliverySummary();
+  startLiveDeliverySummary();
 }
 const adminMenu=document.getElementById("adminMenu"),adminMenuBtn=document.getElementById("adminMenuBtn");
 adminMenuBtn?.addEventListener("click",e=>{e.stopPropagation();adminMenu.classList.toggle("hidden");adminMenuBtn.setAttribute("aria-expanded",String(!adminMenu.classList.contains("hidden")))});
