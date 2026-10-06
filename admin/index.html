@@ -180,6 +180,17 @@ body.adminPage{background:var(--cmd-bg);font-family:"Plus Jakarta Sans",Inter,sy
   <div id="fleetCards" class="fleetCards"></div>
 </section>
 <dialog id="manageTeamDialog" class="settingsDialog teamDialog"><div class="settingsDialogHead"><div><span class="eyebrow">OPTIONS · TEAM</span><h3>Manage Team</h3><p class="hint">All staff and driver credentials are managed here. Other sections cannot create or change credentials.</p></div><div class="dialogHeadActions"><button id="manageTeamDashboardBack" class="secondary">← Dashboard</button><button id="closeManageTeam" class="secondary">✕</button></div></div><div class="teamToolbar"><div class="teamTabs"><button data-team-type="warehouse_staff" class="primary teamTab active">Warehouse Staff</button><button data-team-type="driver" class="secondary teamTab">Drivers</button></div><button id="addTeamMember" class="primary">+ Add Member</button><button id="refreshTeam" class="secondary">↻ Refresh</button></div><div id="teamList" class="teamList"><div class="hint">Loading team…</div></div><div class="teamAuditHead"><span class="eyebrow">CREDENTIAL AUDIT</span><h4>Recent credential changes</h4></div><div id="teamAuditList" class="teamAuditList"></div></dialog>
+<dialog id="driverOpeningBalanceDialog" class="settingsDialog">
+ <div class="settingsDialogHead"><div><span class="eyebrow">OPENING BALANCE</span><h3 id="openingBalanceTitle">Set Opening Balance</h3><p class="hint">Pending amount owed before using this app. This is added to future app-earned deliveries.</p></div><div class="dialogHeadActions"><button id="closeOpeningBalance" class="secondary">✕</button></div></div>
+ <div class="fleetPaymentForm">
+  <input id="openingBalanceDriverId" type="hidden">
+  <label>Opening pending amount <input id="openingBalanceAmount" type="number" min="0" step="0.01" placeholder="₹"></label>
+  <label>As of date <input id="openingBalanceDate" type="datetime-local"></label>
+  <label>Note <input id="openingBalanceNote" placeholder="e.g. Pending before app start"></label>
+  <button id="saveOpeningBalance" class="primary">Save Opening Balance</button>
+  <p id="openingBalanceMsg" class="hint"></p>
+ </div>
+</dialog>
 <dialog id="driverPaymentDialog" class="settingsDialog">
  <div class="settingsDialogHead"><div><span class="eyebrow">DRIVER PAYMENT</span><h3 id="paymentDriverTitle">Record Payment</h3><p class="hint">Add the amount paid and payment screenshot.</p></div><div class="dialogHeadActions"><button id="driverPaymentDashboardBack" class="secondary">← Dashboard</button><button id="closeDriverPayment" class="secondary">✕</button></div></div>
  <div class="fleetPaymentForm">
