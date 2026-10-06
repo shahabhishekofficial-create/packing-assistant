@@ -78,7 +78,7 @@ body.adminPage{background:var(--cmd-bg);font-family:"Plus Jakarta Sans",Inter,sy
   .cmdCycle{display:none}
   .cmdHeaderLeft,.cmdHeaderRight{gap:7px}
 }
-</style><style id="deliveryExceptionIssueStyles">.exceptionIssueList{margin-top:5px;display:flex;flex-direction:column;gap:3px;min-width:220px}.exceptionIssueItem{display:flex;justify-content:space-between;gap:10px;padding:4px 6px;border-radius:6px;background:#fff7ed;font-size:12px}.exceptionIssueItem b{color:#1e293b}.exceptionIssueItem span{color:#b45309;white-space:nowrap}</style></head>
+</style><style id="deliveryExceptionIssueStyles">.exceptionIssueList{margin-top:5px;display:flex;flex-direction:column;gap:3px;min-width:220px}.exceptionIssueItem{display:flex;justify-content:space-between;gap:10px;padding:4px 6px;border-radius:6px;background:#fff7ed;font-size:12px}.exceptionIssueItem b{color:#1e293b}.exceptionIssueItem span{color:#b45309;white-space:nowrap}</style><style id="opsDashboardRefine">.opsActionGrid{grid-template-columns:1.15fr 1fr}.opsInsightGrid{grid-template-columns:1.25fr .8fr 1fr}.opsPriorityPanel,.opsDriverPanel{min-height:190px}.opsInventoryPulse{padding:4px 0}.opsPulseRow{display:flex;align-items:center;justify-content:space-between;padding:13px 4px;border-bottom:1px solid #edf2f7}.opsPulseRow:last-child{border-bottom:0}.opsPulseRow div{display:flex;flex-direction:column;gap:3px}.opsPulseRow b{font-size:14px}.opsPulseRow small{color:#64748b}.opsPulseValue{font-weight:800}.opsPulseValue.ok{color:#15803d}.opsPulseValue.warn{color:#b45309}.opsIssueLine{display:block;color:#b45309;font-size:11px;margin-top:3px}.opsQuickPanelCompact .opsQuickGrid{grid-template-columns:repeat(3,1fr)}</style></head>
 <body class="adminPage"><div id="adminBootOverlay"><div class="bootCard">Loading Admin Dashboard<span class="bootSub">Starting secure session…</span></div></div>
 <main id="app">
 <div class="cmdShell">
@@ -137,48 +137,43 @@ body.adminPage{background:var(--cmd-bg);font-family:"Plus Jakarta Sans",Inter,sy
       <button class="opsKpi red opsKpiButton" id="opsAttentionKpi" type="button"><span class="opsKpiIcon">!</span><div><small>Attention Required</small><strong><b id="opsAttention">0</b></strong><label id="opsAttentionSub">No active exceptions</label></div><span class="opsArrow">›</span></button>
     </section>
 
-    <section class="opsThreeGrid">
-      <div class="opsPanel">
-        <div class="opsPanelHead"><h2>Today's Priorities</h2><span>Action queue</span></div>
+    <section class="opsThreeGrid opsActionGrid">
+      <div class="opsPanel opsPriorityPanel">
+        <div class="opsPanelHead"><div><span class="eyebrow">ACTION CENTER</span><h2>What needs attention</h2></div><button id="opsAttentionKpiLink" type="button">View all</button></div>
         <div id="opsPriorities" class="opsList"></div>
       </div>
-      <div class="opsPanel">
-        <div class="opsPanelHead"><h2>Driver Readiness</h2><button id="opsViewFleet" type="button">View Fleet</button></div>
-        <div class="opsDriverHead"><span>DRIVER</span><span>OUTLETS</span><span>STATUS</span><span>PROGRESS</span></div>
+      <div class="opsPanel opsDriverPanel">
+        <div class="opsPanelHead"><div><span class="eyebrow">FLEET</span><h2>Driver readiness</h2></div><button id="opsViewFleet" type="button">View Fleet</button></div>
+        <div class="opsDriverHead"><span>DRIVER</span><span>OUTLETS</span><span>STATUS</span><span>PACKING</span></div>
         <div id="opsDriverReadiness"></div>
       </div>
-      <div class="opsPanel">
-        <div class="opsPanelHead"><h2>Live Activity Feed</h2><button id="opsViewActivity" type="button">View All</button></div>
-        <div id="opsActivityFeed" class="opsActivity"></div>
-      </div>
     </section>
 
-    <section class="opsPanel opsQuickPanel">
-      <div class="opsPanelHead"><h2>Quick Actions</h2><span>Jump directly to a workflow</span></div>
-      <div class="opsQuickGrid">
-        <button type="button" id="opsImportOrder"><b>☁ Import New Order</b><small>Open Packing &amp; Dispatch</small></button>
-        <button type="button" id="opsOpenPacking"><b>▣ Open Packing</b><small>View live packing status</small></button>
-        <button type="button" id="opsOpenFleet"><b>🚚 Driver / Fleet</b><small>Assign &amp; track deliveries</small></button>
-        <button type="button" id="opsOpenInventory"><b>▦ Inventory</b><small>Stock counts &amp; items</small></button>
-        <button type="button" id="opsOpenReports"><b>▥ Reports</b><small>View analytics &amp; exports</small></button>
-      </div>
-    </section>
-
-    <section class="opsBottomGrid">
+    <section class="opsBottomGrid opsInsightGrid">
       <div class="opsPanel">
-        <div class="opsPanelHead"><h2>Top Outlets Needing Attention</h2><button id="opsViewAttention" type="button">View All</button></div>
-        <div class="opsTableWrap"><table class="opsTable"><thead><tr><th>#</th><th>OUTLET</th><th>DRIVER</th><th>PACKED / INDENT</th><th>MISSING</th></tr></thead><tbody id="opsAttentionTable"></tbody></table></div>
+        <div class="opsPanelHead"><div><span class="eyebrow">PACKING</span><h2>Outlets needing attention</h2></div><button id="opsViewAttention" type="button">View all</button></div>
+        <div class="opsTableWrap"><table class="opsTable"><thead><tr><th>#</th><th>OUTLET / ISSUE</th><th>DRIVER</th><th>PACKED / INDENT</th><th>MISSING</th></tr></thead><tbody id="opsAttentionTable"></tbody></table></div>
       </div>
       <div class="opsPanel">
-        <div class="opsPanelHead"><h2>Packing Progress by Category</h2><span id="opsCategoryTotal">0 / 0</span></div>
-        <div id="opsCategoryChart" class="opsCategoryChart"></div>
+        <div class="opsPanelHead"><div><span class="eyebrow">INVENTORY</span><h2>Inventory pulse</h2></div><button id="opsOpenInventory" type="button">Open Inventory</button></div>
+        <div id="opsCategoryChart" class="opsInventoryPulse"></div>
       </div>
       <div class="opsPanel">
-        <div class="opsPanelHead"><h2>Delivery Snapshot</h2><div class="opsTabs"><button class="active" data-ops-delivery="all">All</button><button data-ops-delivery="transit">In Transit</button><button data-ops-delivery="pending">Pending</button></div></div>
+        <div class="opsPanelHead"><div><span class="eyebrow">DISPATCH</span><h2>Delivery pulse</h2></div><button id="opsOpenFleet" type="button">Open Fleet</button></div>
         <div id="opsDeliverySnapshot" class="opsSnapshot"></div>
       </div>
     </section>
+
+    <section class="opsQuickPanel opsQuickPanelCompact">
+      <div class="opsPanelHead"><div><span class="eyebrow">SHORTCUTS</span><h2>Quick actions</h2></div></div>
+      <div class="opsQuickGrid">
+        <button type="button" id="opsImportOrder"><b>☁ New Order</b><small>Import packing order</small></button>
+        <button type="button" id="opsOpenPacking"><b>▣ Packing</b><small>Open live packing</small></button>
+        <button type="button" id="opsOpenReports"><b>▥ Reports</b><small>Analytics &amp; exports</small></button>
+      </div>
+    </section>
   </div>
+</section>
 </section>
 <section id="fleetManagement" class="screen hidden">
   <div class="sectionHead"><div><span class="eyebrow">DELIVERY FLEET</span><h2>Delivery Fleet Management</h2><p class="hint">Track driver earnings, payments and outstanding balances.</p></div><div class="sectionHeadActions"><button id="fleetBackBtn" class="secondary">← Dashboard</button><button id="fleetRefreshBtn" class="secondary">↻ Refresh</button></div></div>
@@ -383,9 +378,9 @@ if(!window.supabase){
 <script defer src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script defer src="../config.js?v=20261001-audit2"></script>
 <script defer src="./auth.js?v=20261001-audit2"></script>
-<script defer src="../app.js?v=20261006-exceptions2"></script>
+<script defer src="../app.js?v=20261007-dashboard1"></script>
 <script defer src="./team.js?v=20261002-staffid3"></script>
 <script defer src="./inventory-nav.js?v=20261001-audit2"></script>
-<script>window.PA_VERSION_URL="../version.json";</script><script defer src="../update.js?v=20261006-exceptions2"></script><script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20261006-exceptions2",{updateViaCache:"none"}).then(r=>r.update()).catch(console.warn));}</script>
+<script>window.PA_VERSION_URL="../version.json";</script><script defer src="../update.js?v=20261007-dashboard1"></script><script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20261007-dashboard1",{updateViaCache:"none"}).then(r=>r.update()).catch(console.warn));}</script>
 <script>fetch("../version.json?_"+Date.now(),{cache:"no-store"}).then(r=>r.json()).then(v=>{const e=document.getElementById("buildVersion");if(e)e.textContent="Build "+(v.build_id||"unknown")}).catch(()=>{});</script></body>
 </html>
