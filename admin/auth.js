@@ -223,5 +223,5 @@
     document.addEventListener("visibilitychange",()=>{if(!document.hidden && !sessionValid())forceLogout(true);});
   }
   window.PA_ADMIN_START=init;
-  void init();
+  window.PA_ADMIN_READY=init();
 })();
