@@ -1670,14 +1670,15 @@ function renderCommandCenter(deliveryData=null){
 
   const category=$("opsCategoryChart");
   if(category){
-    const cats=new Map();
-    for(const o of outlets)for(const r of (o.issue_items||[])){
-      const name=String(r.section||r.category||"Issues");
-      if(!cats.has(name))cats.set(name,{required:0,packed:0});
-    }
-    if(!cats.size)cats.set("Overall",{required,packed});
-    const arr=[...cats.entries()].slice(0,5);
-    category.innerHTML=arr.map(([name,g])=>'<div class="opsCatRow"><label>'+esc(name)+'</label><div class="opsCatBar"><i style="width:'+Math.min(100,g.required?g.packed/g.required*100:packedPct)+'%"></i></div><span>'+packedPct+'%</span></div>').join("");
+    const inv=d.inventory||{},rest=inv.restaurant,veg=inv.vegetables;
+    const fmt=(x)=>x?String(x.status||"").replaceAll("_"," "):"No count yet";
+    const cls=(x)=>x&&String(x.status||"").toLowerCase().includes("submit")?"ok":x?"warn":"";
+    const balance=Number(d.driver_balance_total||0);
+    category.innerHTML=
+      '<div class="opsPulseRow"><div><b>Restaurant inventory</b><small>'+esc(rest?((rest.date||"")+" · "+fmt(rest)):"No recent count")+'</small></div><span class="opsPulseValue '+cls(rest)+'">'+esc(rest?String(rest.status||"").replaceAll("_"," "):"—")+'</span></div>'+
+      '<div class="opsPulseRow"><div><b>Vegetable inventory</b><small>'+esc(veg?((veg.count_date||"")+" · "+fmt(veg)):"No recent count")+'</small></div><span class="opsPulseValue '+cls(veg)+'">'+esc(veg?String(veg.status||"").replaceAll("_"," "):"—")+'</span></div>'+
+      '<div class="opsPulseRow"><div><b>Driver payout outstanding</b><small>Current recorded earning balance</small></div><span class="opsPulseValue '+(balance>0?"warn":"ok")+'">₹'+balance.toLocaleString("en-IN",{maximumFractionDigits:0})+'</span></div>'+
+      '<div class="opsPulseRow"><div><b>Current packing fill</b><small>'+packed+' packed of '+required+' required</small></div><span class="opsPulseValue '+(packedPct>=100?"ok":"warn")+'">'+packedPct+'%</span></div>';
     set("opsCategoryTotal",packed+" / "+required);
   }
 
