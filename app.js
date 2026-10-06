@@ -1294,7 +1294,7 @@ async function saveHistoricalDeliveryCharge(){
   }catch(e){msg.textContent=e.message||"Could not update delivery charge."}
   finally{btn.disabled=false;btn.textContent="Save Charge";}
 }
-function renderDriverDashboard(data){
+<style id="deliveryExceptionIssueStyles">.exceptionIssueList{margin-top:5px;display:flex;flex-direction:column;gap:3px;min-width:220px}.exceptionIssueItem{display:flex;justify-content:space-between;gap:10px;padding:4px 6px;border-radius:6px;background:#fff7ed;font-size:12px}.exceptionIssueItem b{color:#1e293b}.exceptionIssueItem span{color:#b45309;white-space:nowrap}</style>function renderDriverDashboard(data){
   const k=$("driverDashboardKpis"),live=$("liveRouteBody"),ex=$("driverExceptionsBody"),recent=$("recentDeliveriesBody"),exSection=$("driverExceptionsSection");
   if(!k||!live||!ex||!recent)return;
   const p=data.period||{},l=data.live||{};
@@ -1324,7 +1324,7 @@ function renderDriverDashboard(data){
   ex.innerHTML=exceptionRows.map(x=>{
     const invoice=x.invoice_path?'<button class="secondary deliveryEvidenceBtn" data-kind="invoice" data-path="'+esc(x.invoice_path)+'">View invoice</button>':'—';
     const photos=(Array.isArray(x.rejection_photos)?x.rejection_photos:[]).map((p,i)=>'<button class="secondary deliveryEvidenceBtn" data-kind="rejection" data-path="'+esc(p.path||"")+'">Photo '+(i+1)+'</button>').join(" ");
-    return '<tr><td>'+dashboardDate(x.order_created_at,false)+'</td><td>'+esc(x.driver)+'</td><td><b>'+esc(x.store_name)+'</b><small>'+esc(x.order_name)+'</small></td><td>'+Number(x.missing||0)+'</td><td>'+Number(x.rejections||0)+'</td><td>'+invoice+'</td><td>'+(x.invoice_ocr_mismatch?'<span class="deliveryFlag bad">Invoice mismatch</span>':x.rejection_confirmation_pending?'<span class="deliveryFlag warn">Pending check</span>':'✓ Confirmed')+(photos?'<div class="evidenceBtns">'+photos+'</div>':'')+'</td></tr>';
+    const issues=(Array.isArray(x.issue_items)?x.issue_items:[]).map(it=>{const st=String(it.status||"").toUpperCase();const miss=Number(it.missing_qty||0);const req=Number(it.required_qty||0);const packed=Number(it.packed_qty||0);let detail=st==="PARTIAL"|| (miss>0&&packed>0) ? 'Partial: '+packed+' / '+req+' · '+miss+' missing' : miss>0 ? miss+' missing' : st;return '<div class="exceptionIssueItem"><b>'+esc(it.product_name||"Unknown item")+'</b><span>'+esc(detail)+'</span></div>';}).join("");const issueBlock=issues?'<div class="exceptionIssueList">'+issues+'</div>':(Number(x.missing||0)?'<span class="hint">Missing item details unavailable</span>':'—');return '<tr><td>'+dashboardDate(x.order_created_at,false)+'</td><td>'+esc(x.driver)+'</td><td><b>'+esc(x.store_name)+'</b><small>'+esc(x.order_name)+'</small></td><td><b>'+Number(x.missing||0)+'</b>'+issueBlock+'</td><td>'+Number(x.rejections||0)+'</td><td>'+invoice+'</td><td>'+(x.invoice_ocr_mismatch?'<span class="deliveryFlag bad">Invoice mismatch</span>':x.rejection_confirmation_pending?'<span class="deliveryFlag warn">Pending check</span>':'✓ Confirmed')+(photos?'<div class="evidenceBtns">'+photos+'</div>':'')+'</td></tr>';
   }).join("");
 
   [...live.querySelectorAll(".deliveryEvidenceBtn"),...ex.querySelectorAll(".deliveryEvidenceBtn")].forEach(btn=>btn.onclick=async()=>{
