@@ -1355,7 +1355,7 @@ document.getElementById("adminDeliveryCompleteBtn")?.addEventListener("click",as
  btn.disabled=true;btn.textContent="Preparing upload…";msg.textContent="";
  try{const api=window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",headers={apikey:window.SUPABASE_CONFIG.key,"Content-Type":"application/json"};
   const u=await fetch(api,{method:"POST",headers,body:JSON.stringify({action:"admin_delivery_invoice_upload_url",admin_session:window.PA_ADMIN_SESSION,order_id:orderId,outlet_id:outletId})}),ud=await u.json();if(!u.ok||!ud.ok||!ud.token)throw new Error(ud.message||"Could not prepare invoice upload");
-  btn.textContent="Uploading invoice…";const up=await supabase.storage.from("delivery-invoices").uploadToSignedUrl(ud.path,ud.token,file);if(up.error)throw new Error(up.error.message||"Invoice upload failed");
+  btn.textContent="Uploading invoice…";const up=await db.storage.from("delivery-invoices").uploadToSignedUrl(ud.path,ud.token,file);if(up.error)throw new Error(up.error.message||"Invoice upload failed");
   btn.textContent="Marking delivered…";const rr=await fetch(api,{method:"POST",headers,body:JSON.stringify({action:"admin_approve_outlet_delivered",admin_session:window.PA_ADMIN_SESSION,order_id:orderId,outlet_id:outletId,invoice_number:invoiceNumber,invoice_path:ud.path,reason:reason||"Driver unable to complete delivery"})}),d=await rr.json();if(!rr.ok||!d.ok)throw new Error(d.message||"Could not mark delivery");
   dlg.close();if(typeof toast==="function")toast("Invoice uploaded and outlet marked delivered.","success");await loadDriverAdminDashboard();
  }catch(e){msg.textContent=e.message||"Could not complete delivery";if(typeof toast==="function")toast(msg.textContent,"error");}
