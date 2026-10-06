@@ -1813,11 +1813,12 @@ function renderFleetManagement(){
       '<td class="fleetMoney">₹'+Number(d.earned||0).toLocaleString("en-IN",{minimumFractionDigits:2})+'</td>'+
       '<td class="fleetMoney">₹'+Number(d.paid||0).toLocaleString("en-IN",{minimumFractionDigits:2})+'</td>'+
       '<td class="fleetMoney fleetDue '+risk+'">₹'+due.toLocaleString("en-IN",{minimumFractionDigits:2})+'</td>'+
-      '<td><div class="fleetActions"><button class="primary payDriverBtn" data-id="'+esc(d.driver_id)+'" data-name="'+esc(d.driver_name||"Driver")+'">+ Pay</button><button class="secondary fleetLedgerBtn" data-id="'+esc(d.driver_id)+'">Ledger</button><button class="secondary fleetOpeningBtn" data-id="'+esc(d.driver_id)+'" data-name="'+esc(d.driver_name||"Driver")+'">Opening Balance</button></div></td></tr>';
+      '<td><div class="fleetActions"><button class="primary payDriverBtn" data-id="'+esc(d.driver_id)+'" data-name="'+esc(d.driver_name||"Driver")+'">+ Pay</button><button class="secondary fleetLedgerBtn" data-id="'+esc(d.driver_id)+'">Ledger</button><button class="secondary fleetStatementBtn" data-id="'+esc(d.driver_id)+'">PDF</button><button class="secondary fleetOpeningBtn data-id="'+esc(d.driver_id)+'" data-name="'+esc(d.driver_name||"Driver")+'">Opening Balance</button></div></td></tr>';
   }).join("")||'<tr><td colspan="6" class="fleetEmpty">No drivers match this filter.</td></tr>';
   body.querySelectorAll(".payDriverBtn").forEach(b=>b.onclick=()=>openDriverPayment(b.dataset.id,b.dataset.name));
   body.querySelectorAll(".fleetOpeningBtn").forEach(b=>b.onclick=()=>openDriverOpeningBalance(b.dataset.id,b.dataset.name));
   body.querySelectorAll(".fleetLedgerBtn").forEach(b=>b.onclick=()=>openDriverLedger(b.dataset.id));
+  body.querySelectorAll(".fleetStatementBtn").forEach(b=>b.onclick=()=>printDriverStatement(b.dataset.id));
 }
 async function loadFleetManagement(){
   const box=$("fleetTableBody");if(!box)return;
@@ -1849,6 +1850,13 @@ async function saveDriverOpeningBalance(){
   if(!note)return $("openingBalanceMsg").textContent="Reason / note is required.";
   btn.disabled=true;btn.textContent="Saving…";
   try{const r=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_set_opening_balance",admin_session:window.PA_ADMIN_SESSION,driver_id:driverId,amount,as_of_date:asOf?new Date(asOf).toISOString():new Date().toISOString(),note})});const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.message||"Could not save opening balance");$("driverOpeningBalanceDialog").close();await loadFleetManagement();}catch(e){$("openingBalanceMsg").textContent=e.message;}finally{btn.disabled=false;btn.textContent="Save Opening Balance";}
+}
+function printDriverStatement(driverId){
+  const d=fleetDrivers.find(x=>String(x.driver_id)===String(driverId));if(!d)return;
+  const rows=(d.payments||[]).map(p=>'<tr><td>'+new Date(p.paid_at).toLocaleString("en-IN")+'</td><td>₹'+Number(p.amount||0).toLocaleString("en-IN",{minimumFractionDigits:2})+'</td><td>'+esc(p.payment_mode||"")+'</td><td>'+esc(p.reference_number||"")+'</td><td>'+esc(p.note||"")+'</td></tr>').join("")||'<tr><td colspan="5">No payments recorded.</td></tr>';
+  const w=window.open("","_blank","noopener");if(!w)return;
+  w.document.write('<!doctype html><html><head><title>Driver Statement - '+esc(d.driver_name)+'</title><style>body{font:14px Arial;color:#172033;padding:30px}h1{margin-bottom:4px}table{width:100%;border-collapse:collapse;margin-top:20px}th,td{border:1px solid #ddd;padding:8px;text-align:left}th{background:#f5f7fa}.summary{display:flex;gap:28px;margin-top:18px}.summary b{display:block;font-size:18px}</style></head><body><h1>Bigly Agro — Driver Statement</h1><div>'+esc(d.driver_name)+'</div><div class="summary"><span>Opening Pending<b>₹'+Number(d.opening_balance||0).toFixed(2)+'</b></span><span>App Earned<b>₹'+Number(d.earned||0).toFixed(2)+'</b></span><span>Total Paid<b>₹'+Number(d.paid||0).toFixed(2)+'</b></span><span>Remaining Due<b>₹'+Number(d.balance||0).toFixed(2)+'</b></span></div><table><thead><tr><th>Date</th><th>Amount</th><th>Mode</th><th>Reference</th><th>Note</th></tr></thead><tbody>'+rows+'</tbody></table><script>window.onload=()=>window.print()<\/script></body></html>');
+  w.document.close();
 }
 function exportFleetLedgerCsv(){
   const head=["Driver","Opening Pending","App Earned","Total Paid","Remaining Due"],rows=fleetDrivers.map(d=>[d.driver_name,Number(d.opening_balance||0).toFixed(2),Number(d.earned||0).toFixed(2),Number(d.paid||0).toFixed(2),Number(d.balance||0).toFixed(2)]);
