@@ -13,7 +13,7 @@ begin
  if not exists(select 1 from storage.objects so where so.bucket_id='delivery-invoices' and so.name=trim(p_invoice_path)) then return jsonb_build_object('ok',false,'message','Invoice image upload could not be verified'); end if;
  select * into v_order from public.orders where id=p_order_id;if not found then return jsonb_build_object('ok',false,'message','Order not found');end if;
  v_cutoff=((v_order.created_at at time zone 'Asia/Kolkata')::date+interval '1 day'+interval '12 hours') at time zone 'Asia/Kolkata';
- if v_now<v_cutoff then return jsonb_build_object('ok',false,'message','Admin approval is available only after 12:00 PM on the day after order creation','cutoff_at',v_cutoff);end if;
+ -- Admin may complete a delivery at any time when the driver cannot do so. The 12 PM cutoff only locks the driver workflow.
  select * into v_outlet from public.outlets where id=p_outlet_id and order_id=p_order_id;if not found then return jsonb_build_object('ok',false,'message','Outlet not found in this order');end if;
  if lower(coalesce(v_outlet.status,''))<>'completed' then return jsonb_build_object('ok',false,'message','Outlet packing is not completed');end if;
  select * into v_rec from public.delivery_records where order_id=p_order_id and outlet_id=p_outlet_id for update;
