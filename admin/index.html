@@ -324,7 +324,7 @@ body.adminPage{background:var(--cmd-bg);font-family:"Plus Jakarta Sans",Inter,sy
  <div class="settingsDialogHead"><div><span class="eyebrow">ADMIN DELIVERY COMPLETION</span><h3>Mark outlet delivered</h3><p class="hint">Invoice number and invoice image are mandatory.</p></div><div class="dialogHeadActions"><button id="closeAdminDeliveryComplete" class="secondary">✕</button></div></div>
  <div class="fleetPaymentForm">
   <input id="adminDeliveryOrderId" type="hidden"><input id="adminDeliveryOutletId" type="hidden">
-  <label>Outlet<input id="adminDeliveryOutletName" readonly></label>
+  <div class="adminDeliveryOutletDisplay"><span class="eyebrow">OUTLET</span><strong id="adminDeliveryOutletName">—</strong></div>
   <label>Invoice number<input id="adminDeliveryInvoiceNumber" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" placeholder="Enter invoice number" required></label>
   <label>Invoice image<input id="adminDeliveryInvoiceFile" type="file" accept="image/*" required></label>
   <label>Reason<input id="adminDeliveryReason" value="Driver unable to complete delivery" placeholder="Reason"></label>
