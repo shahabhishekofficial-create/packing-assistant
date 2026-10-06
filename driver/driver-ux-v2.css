@@ -67,3 +67,4 @@
   .driverQuickMeta{font-size:10px}
 }
 \n/* Hide development-only chrome from the driver primary surface */\n#driverBuildVersion{display:none!important}\n#driverHome>.sectionHead>.sectionHead> .hint, #driverHome>.sectionHead>.hint{display:none!important}\n
+.markExceptionPackedBtn{display:inline-flex;align-items:center;justify-content:center;margin-top:6px;padding:6px 9px;border:1px solid #0b7a45;border-radius:8px;background:#fff;color:#0b7a45;font-size:11px;font-weight:800;cursor:pointer}.markExceptionPackedBtn:disabled{opacity:.55;cursor:wait}
