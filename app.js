@@ -1323,7 +1323,7 @@ function renderDriverDashboard(data){
 
   live.innerHTML=(data.live_outlets||[]).map(x=>{
     const st=dashboardStatus(x),photos=Array.isArray(x.rejection_photos)?x.rejection_photos:[],evidence=x.invoice_path?'<button class="secondary deliveryEvidenceBtn" data-kind="invoice" data-path="'+esc(x.invoice_path)+'">Invoice</button>':"";
-    const action=x.delivered?dashboardDate(x.delivered_at):x.packing_done?(sessionEnded?'<button type="button" class="secondary adminApproveDeliveredBtn" data-order-id="'+esc(x.order_id||"")+'" data-outlet-id="'+esc(x.id||"")+'">Approve delivered</button>':(x.invoice_uploaded?"Invoice uploaded":"Invoice pending")):"Packing in progress";
+    const action=x.delivered?dashboardDate(x.delivered_at):x.packing_done?'<button type="button" class="secondary adminApproveDeliveredBtn" data-order-id="'+esc(x.order_id||"")+'" data-outlet-id="'+esc(x.id||"")+'">Admin delivery</button>':"Packing in progress";
     const photoButtons=photos.length?'<div class="evidenceBtns">'+photos.map((p,i)=>'<button class="secondary deliveryEvidenceBtn" data-kind="rejection" data-path="'+esc(p.path||"")+'">Photo '+(i+1)+'</button>').join("")+'</div>':"";
     return '<tr><td><b>'+esc(x.store_name)+'</b><small>Rank '+Number(x.outlet_rank||0)+'</small></td><td><b>'+esc(x.driver||"Unassigned")+'</b></td><td><span class="deliveryStatus '+st[0]+'">'+esc(st[1])+'</span></td><td>'+Number(x.missing||0)+'</td><td>'+Number(x.rejections||0)+'</td><td>'+action+'</td><td>'+evidence+photoButtons+'</td></tr>';
   }).join("")||'<tr><td colspan="7" class="hint">No active live order.</td></tr>';
