@@ -1306,27 +1306,59 @@ async function saveHistoricalDeliveryCharge(){
   }catch(e){msg.textContent=e.message||"Could not update delivery charge."}
   finally{btn.disabled=false;btn.textContent="Save Charge";}
 }
+let driverDashboardLiveData=[];
+let driverDashboardFilter="all";
+let driverDashboardSearch="";
+function applyDriverOutletFilter(){
+  const live=$("liveRouteBody"); if(!live)return;
+  const rows=Array.isArray(driverDashboardLiveData)?driverDashboardLiveData:[];
+  const q=driverDashboardSearch.trim().toLowerCase();
+  const filtered=rows.filter(x=>{
+    const exception=Number(x.missing||0)>0||Number(x.rejections||0)>0;
+    if(driverDashboardFilter==="pending" && !!x.delivered)return false;
+    if(driverDashboardFilter==="exceptions" && !exception)return false;
+    if(q && !(String(x.store_name||"").toLowerCase().includes(q)||String(x.driver||"").toLowerCase().includes(q)))return false;
+    return true;
+  });
+  live.innerHTML=filtered.map(x=>{
+    const st=dashboardStatus(x),evidence=x.invoice_path?'<button class="secondary deliveryEvidenceBtn" data-kind="invoice" data-path="'+esc(x.invoice_path)+'">📄 Invoice</button>':"";
+    const action=x.delivered?"":x.packing_done?'<button type="button" class="secondary adminApproveDeliveredBtn" data-order-id="'+esc(x.order_id||"")+'" data-outlet-id="'+esc(x.id||"")+'" data-outlet-name="'+esc(x.store_name||"")+'">Admin delivery</button>':"";
+    return '<tr class="'+((Number(x.missing||0)>0||Number(x.rejections||0)>0)?"driverExceptionRow":"")+'"><td><b>'+esc(x.store_name)+'</b><small>Rank '+Number(x.outlet_rank||0)+'</small></td><td><b>'+esc(x.driver||"Unassigned")+'</b></td><td><span class="deliveryStatus '+st[0]+'">'+esc(st[1])+'</span></td><td>'+Number(x.rejections||0)+'</td><td>'+Number(x.missing||0)+'</td><td>'+evidence+action+'</td><td></td></tr>';
+  }).join("")||'<tr><td colspan="7" class="hint">No outlets match this filter.</td></tr>';
+  live.querySelectorAll(".adminApproveDeliveredBtn").forEach(btn=>btn.onclick=()=>{
+    const dlg=$("adminDeliveryCompleteDialog");if(!dlg)return;
+    $("adminDeliveryOrderId").value=btn.dataset.orderId||"";$("adminDeliveryOutletId").value=btn.dataset.outletId||"";
+    $("adminDeliveryOutletName").textContent=btn.dataset.outletName||"";$("adminDeliveryInvoiceNumber").value="";$("adminDeliveryInvoiceFile").value="";
+    $("adminDeliveryReason").value="Driver unable to complete delivery";$("adminDeliveryCompleteMsg").textContent="";dlg.showModal();
+  });
+  live.querySelectorAll(".deliveryEvidenceBtn").forEach(bindDriverEvidenceButton);
+}
+function bindDriverEvidenceButton(btn){
+  btn.onclick=async()=>{
+    btn.disabled=true;const original=btn.textContent;btn.textContent="Opening…";
+    try{
+      const r=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_delivery_evidence_url",admin_session:window.PA_ADMIN_SESSION,kind:btn.dataset.kind,path:btn.dataset.path})});
+      const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.message||"Could not open evidence");
+      const viewer=$("deliveryEvidenceViewer"),img=$("deliveryEvidenceImage"),title=$("deliveryEvidenceTitle");
+      if(viewer&&img){img.src=d.url;img.alt=btn.dataset.kind==="rejection"?"Rejection evidence":"Delivery invoice";if(title)title.textContent=btn.dataset.kind==="rejection"?"Rejection Photo":"Delivery Invoice";viewer.showModal();}else window.open(d.url,"_blank","noopener");
+    }catch(e){if(typeof toast==="function")toast(e.message||"Could not open evidence.","error");}
+    finally{btn.disabled=false;btn.textContent=original;}
+  };
+}
 function renderDriverDashboard(data){
   const k=$("driverDashboardKpis"),live=$("liveRouteBody"),ex=$("driverExceptionsBody"),recent=$("recentDeliveriesBody"),exSection=$("driverExceptionsSection");
   if(!k||!live||!ex||!recent)return;
   const p=data.period||{},l=data.live||{},session=data.session||null,sessionEnded=!!session?.session_ended;
   k.innerHTML=[
-    ["Live route",Number(l.delivered||0)+" / "+Number(l.outlets||0),"delivered now"],
-    ["Pending delivery",Number(l.pending_delivery||0),"current route"],
-    ["Invoices",Number(l.invoice_uploaded||0),"uploaded on current route"],
-    ["Unassigned",Number(l.unassigned||0),"current route"],
-    ["Delivered",Number(p.delivered||0),"selected period"],
-    ["Missing qty",Number(p.missing||0),"packing exceptions"],
+    ["Live route",Number(l.delivered||0)+" / "+Number(l.outlets||0),""],
     ["Rejected qty",Number(p.rejections||0),"driver-reported"],
+    ["Invoices uploaded",Number(l.invoice_uploaded||0),""],
     ["Driver payout",dashboardMoney(data.cumulative_earnings),"all orders"]
   ].map(x=>'<div class="deliveryKpi"><small>'+esc(x[0])+'</small><b>'+esc(x[1])+'</b><span>'+esc(x[2])+'</span></div>').join("");
-
-  live.innerHTML=(data.live_outlets||[]).map(x=>{
-    const st=dashboardStatus(x),photos=Array.isArray(x.rejection_photos)?x.rejection_photos:[],evidence=x.invoice_path?'<button class="secondary deliveryEvidenceBtn" data-kind="invoice" data-path="'+esc(x.invoice_path)+'">Invoice</button>':"";
-    const action=x.delivered?dashboardDate(x.delivered_at):x.packing_done?'<button type="button" class="secondary adminApproveDeliveredBtn" data-order-id="'+esc(x.order_id||"")+'" data-outlet-id="'+esc(x.id||"")+'" data-outlet-name="'+esc(x.store_name||"")+'">Admin delivery</button>':"Packing in progress";
-    const photoButtons=photos.length?'<div class="evidenceBtns">'+photos.map((p,i)=>'<button class="secondary deliveryEvidenceBtn" data-kind="rejection" data-path="'+esc(p.path||"")+'">Photo '+(i+1)+'</button>').join("")+'</div>':"";
-    return '<tr><td><b>'+esc(x.store_name)+'</b><small>Rank '+Number(x.outlet_rank||0)+'</small></td><td><b>'+esc(x.driver||"Unassigned")+'</b></td><td><span class="deliveryStatus '+st[0]+'">'+esc(st[1])+'</span></td><td>'+Number(x.missing||0)+'</td><td>'+Number(x.rejections||0)+'</td><td>'+action+'</td><td>'+evidence+photoButtons+'</td></tr>';
-  }).join("")||'<tr><td colspan="7" class="hint">No active live order.</td></tr>';
+  driverDashboardLiveData=Array.isArray(data.live_outlets)?data.live_outlets:[];
+  const allCount=driverDashboardLiveData.length,pendingCount=driverDashboardLiveData.filter(x=>!x.delivered).length,exceptionCount=driverDashboardLiveData.filter(x=>Number(x.missing||0)>0||Number(x.rejections||0)>0).length;
+  $("driverAllCount")?.replaceChildren(document.createTextNode(allCount));$("driverPendingCount")?.replaceChildren(document.createTextNode(pendingCount));$("driverExceptionCount")?.replaceChildren(document.createTextNode(exceptionCount));
+  applyDriverOutletFilter();
 
   const exceptionRows=[...(data.exceptions||[])].sort((a,b)=>{
     const score=x=>Number(x.invoice_ocr_mismatch)*100+Number(x.invoice_pending)*50+Number(x.rejection_confirmation_pending)*30+Number(x.missing||0)+Number(x.rejections||0);
@@ -1361,16 +1393,7 @@ document.getElementById("adminDeliveryCompleteBtn")?.addEventListener("click",as
  }catch(e){msg.textContent=e.message||"Could not complete delivery";if(typeof toast==="function")toast(msg.textContent,"error");}
  finally{btn.disabled=false;btn.textContent="Upload & Mark Delivered";}
 });
-ex.querySelectorAll(".adminMarkPackedBtn").forEach(btn=>btn.onclick=async()=>{    if(btn.disabled)return;    btn.disabled=true;const original=btn.textContent;btn.textContent="Saving…";    try{      const r=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_mark_item_packed",admin_session:window.PA_ADMIN_SESSION,order_id:btn.dataset.orderId,item_id:btn.dataset.itemId})});      const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.message||"Could not mark item packed");      if(typeof toast==="function")toast("Item marked as packed.","success");      await loadDriverAdminDashboard();    }catch(e){if(typeof toast==="function")toast(e.message||"Could not mark item packed.","error");else alert(e.message||e);}    finally{btn.disabled=false;btn.textContent=original;}  });  [...live.querySelectorAll(".deliveryEvidenceBtn"),...ex.querySelectorAll(".deliveryEvidenceBtn")].forEach(btn=>btn.onclick=async()=>{
-    btn.disabled=true;
-    const original=btn.textContent;btn.textContent="Opening…";
-    try{
-      const r=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_delivery_evidence_url",admin_session:window.PA_ADMIN_SESSION,kind:btn.dataset.kind,path:btn.dataset.path})});
-      const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.message||"Could not open evidence");
-      window.open(d.url,"_blank","noopener");
-    }catch(e){if(typeof toast==="function")toast(e.message||"Could not open evidence.","error");else console.warn(e);}
-    finally{btn.disabled=false;btn.textContent=original;}
-  });
+ex.querySelectorAll(".adminMarkPackedBtn").forEach(btn=>btn.onclick=async()=>{    if(btn.disabled)return;    btn.disabled=true;const original=btn.textContent;btn.textContent="Saving…";    try{      const r=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_mark_item_packed",admin_session:window.PA_ADMIN_SESSION,order_id:btn.dataset.orderId,item_id:btn.dataset.itemId})});      const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.message||"Could not mark item packed");      if(typeof toast==="function")toast("Item marked as packed.","success");      await loadDriverAdminDashboard();    }catch(e){if(typeof toast==="function")toast(e.message||"Could not mark item packed.","error");else alert(e.message||e);}    finally{btn.disabled=false;btn.textContent=original;}  });  ex.querySelectorAll(".deliveryEvidenceBtn").forEach(bindDriverEvidenceButton);
 
   const recentRows=Array.isArray(data.recent)?data.recent:[];
   const visibleRecent=recentRows.slice(0,recentDeliveryVisibleCount);
@@ -1389,6 +1412,8 @@ ex.querySelectorAll(".adminMarkPackedBtn").forEach(btn=>btn.onclick=async()=>{  
   $("liveOrderLabel").textContent=lo?(lo.order_name+" · "+dashboardDate(lo.created_at,false)):"No active order";
   $("driverDashboardPeriodLabel").textContent=data.live_order?"Current order":"No current order";
 }
+document.querySelectorAll(".driverFilterTab").forEach(tab=>tab.onclick=()=>{driverDashboardFilter=tab.dataset.filter||"all";document.querySelectorAll(".driverFilterTab").forEach(t=>t.classList.toggle("active",t===tab));applyDriverOutletFilter();});
+$("driverOutletSearch")?.addEventListener("input",e=>{driverDashboardSearch=e.target.value||"";applyDriverOutletFilter();});
 let recentDeliveryVisibleCount=10;
 let driverDashboardBusy=false;
 async function loadDriverAdminDashboard(){
