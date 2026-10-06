@@ -755,7 +755,8 @@ let liveDeliveryTimer=null;
 let liveDeliveryBusy=false;
 async function loadLiveDeliverySummary(){
   const section=$("deliverySummary"),kpis=$("deliverySummaryKpis"),body=$("deliverySummaryBody");
-  if(!section||!kpis||!body||liveDeliveryBusy)return;
+  const commandCenter=document.getElementById("operationsDashboard");
+  if((!commandCenter&&!section)||liveDeliveryBusy)return;
   const adminSession=window.PA_ADMIN_SESSION||localStorage.getItem("packing_assistant_admin_session_token")||"";
   if(!adminSession){
     console.warn("Operations dashboard: admin session not available yet.");
@@ -766,10 +767,10 @@ async function loadLiveDeliverySummary(){
     const r=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_driver_dashboard",admin_session:adminSession,preset:"today"})});
     const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.message||"Could not load delivery status");
     const l=d.live||{};
-    section.classList.remove("hidden");
+    section?.classList.remove("hidden");
     const deliveryKpis=[["Delivered",Number(l.delivered||0)],["Pending Delivery",Number(l.pending_delivery||0)],["Packing",Number(l.packing_in_progress||0)],["Unassigned",Number(l.unassigned||0)],["Delivery Issues",Number(l.rejections||0)+Number(l.missing||0)]];
-    kpis.innerHTML=deliveryKpis.map(x=>'<div class="deliverySummaryKpi"><small>'+esc(x[0])+'</small><b>'+esc(String(x[1]))+'</b></div>').join("");
-    body.innerHTML=(d.live_outlets||[]).map(x=>{const st=dashboardStatus(x);return '<tr><td><b>'+esc(x.store_name)+'</b></td><td>'+esc(x.driver||"Unassigned")+'</td><td><span class="deliveryStatus '+st[0]+'">'+esc(st[1])+'</span></td><td>'+Number(x.missing||0)+'</td><td>'+Number(x.rejections||0)+'</td><td>'+esc(x.delivered?dashboardDate(x.delivered_at):x.packing_done?(x.invoice_uploaded?"Invoice uploaded":"Invoice pending"):"Packing in progress")+'</td></tr>';}).join("")||'<tr><td colspan="6" class="hint">No live delivery data.</td></tr>';
+    if(kpis)kpis.innerHTML=deliveryKpis.map(x=>'<div class="deliverySummaryKpi"><small>'+esc(x[0])+'</small><b>'+esc(String(x[1]))+'</b></div>').join("");
+    if(body)body.innerHTML=(d.live_outlets||[]).map(x=>{const st=dashboardStatus(x);return '<tr><td><b>'+esc(x.store_name)+'</b></td><td>'+esc(x.driver||"Unassigned")+'</td><td><span class="deliveryStatus '+st[0]+'">'+esc(st[1])+'</span></td><td>'+Number(x.missing||0)+'</td><td>'+Number(x.rejections||0)+'</td><td>'+esc(x.delivered?dashboardDate(x.delivered_at):x.packing_done?(x.invoice_uploaded?"Invoice uploaded":"Invoice pending"):"Packing in progress")+'</td></tr>';}).join("")||'<tr><td colspan="6" class="hint">No live delivery data.</td></tr>';
     const delivered=deliveryKpis[0][1],pendingDelivery=deliveryKpis[1][1],packing=deliveryKpis[2][1],unassigned=deliveryKpis[3][1],issues=deliveryKpis[4][1];
     if($("dashPendingDelivery"))$("dashPendingDelivery").textContent=String(pendingDelivery);
     if($("dashDeliveryIssues"))$("dashDeliveryIssues").textContent=String(issues);
@@ -787,8 +788,8 @@ async function loadLiveDeliverySummary(){
     ["opsOutletCount","opsOutletAllocated","opsPacked","opsRequired","opsInTransit","opsFleetTotal","opsDelivered","opsPending","opsAttention"].forEach(id=>{const el=$(id);if(el)el.textContent="—";});
     const active=$("opsActiveOrder");if(active)active.textContent="Live data unavailable";
     const priorities=$("opsPriorities");if(priorities)priorities.innerHTML='<div class="opsPriority issue"><span class="opsPriorityIcon">!</span><div><b>Live data connection failed</b><small>Refresh or check the admin session.</small></div></div>';
-    kpis.innerHTML='<div class="hint">Live delivery status could not be loaded. Use Refresh to retry.</div>';
-    body.innerHTML='<tr><td colspan="6" class="hint">Live data unavailable.</td></tr>';
+    if(kpis)kpis.innerHTML='<div class="hint">Live delivery status could not be loaded. Use Refresh to retry.</div>';
+    if(body)body.innerHTML='<tr><td colspan="6" class="hint">Live data unavailable.</td></tr>';
   }finally{
     liveDeliveryBusy=false;
   }
