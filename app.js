@@ -1294,7 +1294,7 @@ async function saveHistoricalDeliveryCharge(){
   }catch(e){msg.textContent=e.message||"Could not update delivery charge."}
   finally{btn.disabled=false;btn.textContent="Save Charge";}
 }
-<style id="deliveryExceptionIssueStyles">.exceptionIssueList{margin-top:5px;display:flex;flex-direction:column;gap:3px;min-width:220px}.exceptionIssueItem{display:flex;justify-content:space-between;gap:10px;padding:4px 6px;border-radius:6px;background:#fff7ed;font-size:12px}.exceptionIssueItem b{color:#1e293b}.exceptionIssueItem span{color:#b45309;white-space:nowrap}</style>function renderDriverDashboard(data){
+function renderDriverDashboard(data){
   const k=$("driverDashboardKpis"),live=$("liveRouteBody"),ex=$("driverExceptionsBody"),recent=$("recentDeliveriesBody"),exSection=$("driverExceptionsSection");
   if(!k||!live||!ex||!recent)return;
   const p=data.period||{},l=data.live||{};
