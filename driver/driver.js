@@ -432,13 +432,36 @@ function fallbackToNativeInvoiceCamera(outletId,invoiceNumber,error){
 }
 async function openInvoiceScanner(outletId,invoiceNumber){
  pendingInvoiceUpload={outletId,invoiceNumber};const modal=$("invoiceScanner"),video=$("invoiceCamera");
- modal.classList.remove("hidden");modal.setAttribute("aria-hidden","false");$("invoiceScanStatus").textContent="Starting camera…";$("invoiceCaptureBtn").disabled=true;$("invoiceCaptureBtn").textContent="Hold steady…";
+ modal.classList.remove("hidden");modal.setAttribute("aria-hidden","false");$("invoiceScanStatus").textContent="Starting camera…";$("invoiceCaptureBtn").disabled=true;$("invoiceCaptureBtn").textContent="Starting camera…";
  try{
   if(!window.isSecureContext||!navigator.mediaDevices?.getUserMedia)throw new Error("Camera API unavailable");
   invoiceCameraStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"},width:{ideal:1920},height:{ideal:1080}},audio:false});
   video.srcObject=invoiceCameraStream;await video.play();
+  $("invoiceCaptureBtn").disabled=false;
+  $("invoiceCaptureBtn").textContent="📸 Tap to capture";
+  $("invoiceScanStatus").textContent="✓ Camera ready — tap Capture, or hold the bill steady for auto-capture.";
   const probe=document.createElement("canvas"),pc=probe.getContext("2d",{willReadFrequently:true});probe.width=96;probe.height=54;
-  invoiceScanTimer=setInterval(()=>{if(video.readyState<2)return;pc.drawImage(video,0,0,96,54);const data=pc.getImageData(0,0,96,54).data;let diff=999;if(invoicePrevFrame){diff=0;for(let i=0;i<data.length;i+=16)diff+=Math.abs(data[i]-invoicePrevFrame[i]);diff/=data.length/16;}invoicePrevFrame=data;const motion=diff;if(motion<8){if(!invoiceStableSince)invoiceStableSince=Date.now();}else invoiceStableSince=0;const stable=invoiceStableSince&&Date.now()-invoiceStableSince>900;if(stable){$("invoiceScanStatus").textContent="✓ Steady — capturing…";$("invoiceCaptureBtn").disabled=false;$("invoiceCaptureBtn").textContent="Capture invoice";if(!invoiceScannerBusy)captureInvoiceFrame();}else{$("invoiceScanStatus").textContent="Keep the entire bill inside the frame and hold steady";$("invoiceCaptureBtn").disabled=true;$("invoiceCaptureBtn").textContent="Hold steady…";}},150);
+  invoiceStableSince=0;
+  invoiceScanTimer=setInterval(()=>{
+   if(video.readyState<2||invoiceScannerBusy)return;
+   pc.drawImage(video,0,0,96,54);
+   const data=pc.getImageData(0,0,96,54).data;
+   let diff=999;
+   if(invoicePrevFrame){diff=0;for(let i=0;i<data.length;i+=16)diff+=Math.abs(data[i]-invoicePrevFrame[i]);diff/=data.length/16;}
+   invoicePrevFrame=data;
+   if(diff<8){if(!invoiceStableSince)invoiceStableSince=Date.now();}else invoiceStableSince=0;
+   const stable=invoiceStableSince&&Date.now()-invoiceStableSince>1800;
+   if(stable){
+    $("invoiceScanStatus").textContent="✓ Steady — tap Capture, or wait for auto-capture…";
+    $("invoiceCaptureBtn").disabled=false;
+    $("invoiceCaptureBtn").textContent="📸 Capture invoice";
+    if(!invoiceScannerBusy&&invoiceStableSince&&Date.now()-invoiceStableSince>2600)captureInvoiceFrame();
+   }else{
+    $("invoiceScanStatus").textContent="Keep the entire bill inside the green frame — or tap Capture";
+    $("invoiceCaptureBtn").disabled=false;
+    $("invoiceCaptureBtn").textContent="📸 Tap to capture";
+   }
+  },150);
  }catch(e){fallbackToNativeInvoiceCamera(outletId,invoiceNumber,e);}
 }
 $("invoiceScannerClose").onclick=()=>{pendingInvoiceUpload={outletId:"",invoiceNumber:""};closeInvoiceScanner();};
@@ -447,7 +470,15 @@ $("damageCaptureBtn").onclick=captureDamageFrame;
 $("damageGalleryBtn").onclick=()=>{const outletId=pendingDamagePhoto.outletId,itemId=pendingDamagePhoto.itemId;closeDamageCamera();const input=$("damagePhotoInput");if(!input)return toast("Photo picker unavailable.","error");input.value="";input.removeAttribute("capture");input.dataset.outletId=outletId;input.dataset.itemId=itemId;input.click();};
 
 $("invoiceCaptureBtn").onclick=captureInvoiceFrame;
-$("invoiceGalleryBtn").onclick=()=>{const outletId=pendingInvoiceUpload.outletId,invoiceNumber=pendingInvoiceUpload.invoiceNumber;closeInvoiceScanner();$("invoiceInput").value="";$("invoiceInput").dataset.outletId=outletId;$("invoiceInput").dataset.mode="invoice";$("invoiceInput").dataset.invoiceNumber=invoiceNumber;$("invoiceInput").click();};
+$("invoiceGalleryBtn").onclick=()=>{
+ const outletId=pendingInvoiceUpload.outletId,invoiceNumber=pendingInvoiceUpload.invoiceNumber;
+ closeInvoiceScanner();
+ const input=$("invoiceInput");
+ if(!input)return toast("Gallery picker unavailable. Please refresh the app.","error");
+ input.value="";input.accept="image/*";input.removeAttribute("capture");
+ input.dataset.outletId=String(outletId);input.dataset.mode="invoice";input.dataset.invoiceNumber=String(invoiceNumber||"");input.dataset.cameraFallback="";
+ input.click();
+};
 $("invoiceInput").onchange=async e=>{const input=e.target,file=input.files[0],outletId=input.dataset.outletId,mode=input.dataset.mode||"invoice",invoiceNumber=mode==="invoice"?String(pendingInvoiceUpload.invoiceNumber||input.dataset.invoiceNumber||"").trim():String(input.dataset.invoiceNumber||"").trim();input.value="";if(!file||!outletId)return;if(mode==="invoice"){pendingInvoiceUpload={outletId:"",invoiceNumber:""};input.removeAttribute("capture");applyDriverConfig();return processInvoiceFile(file,outletId,invoiceNumber);}};
  $("damagePhotoInput").onchange=async e=>{const input=e.target,file=input.files?.[0],outletId=input.dataset.outletId,itemId=input.dataset.itemId;input.value="";input.removeAttribute("capture");input.dataset.cameraFallback="";if(!file||!outletId||!itemId)return;await uploadDamagePhoto(file,outletId,itemId);};async function saveRejections(outletId){
  const outlet=ds.outlets.find(o=>String(o.outlet_id)===String(outletId)); if(!outlet)return;
