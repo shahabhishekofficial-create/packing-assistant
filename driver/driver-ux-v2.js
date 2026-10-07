@@ -3,7 +3,7 @@
   "use strict";
 
   function esc2(s){
-    return String(s ?? "").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",""":"&quot;","'":"&#39;"}[m]));
+    return String(s ?? "").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]));
   }
   function cfg(key,fallback=true){
     return window.PA_CONFIG_ENABLED ? window.PA_CONFIG_ENABLED(key) : fallback;
