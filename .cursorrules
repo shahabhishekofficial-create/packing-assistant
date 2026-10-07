@@ -1,0 +1,42 @@
+# STRICT DEVELOPER GUARDRAILS & CODE PRESERVATION RULES
+
+## RULE 1: NO CODE STRIPPING / NO SILENT REMOVALS
+- NEVER replace existing function logic, UI elements, or styling with placeholder comments like `// ... rest of code stays same` or remove features unless EXPLICITLY instructed.
+- When modifying a component, preserve all existing state variables, event handlers, and child sub-components.
+- Every code output MUST be complete and functional.
+
+## RULE 2: MANDATORY REAL-TIME CAMERA INTEGRATION
+- Any UI step requiring proof, bills, or rejection photos MUST use a dedicated camera trigger.
+- NEVER rely solely on a generic `<input type="file">`.
+- Always provide both live HTML5 Camera Viewfinder access (`navigator.mediaDevices.getUserMedia`) AND native mobile camera fallback (`capture="environment"`).
+
+## RULE 3: DEFENSIVE CODING (ZERO RUNTIME CRASHES)
+- ALWAYS use optional chaining (`?.`) when accessing nested properties (e.g., `outlet?.driver?.name`).
+- Provide fallback values for every financial or numeric operation (e.g., `(item.qty || 0) * (item.price || 0)`).
+- Every async API call MUST be wrapped in a try/catch block with explicit user-facing error toasts instead of raw browser crashes.
+
+## RULE 4: COMPONENT MODULARITY
+- Do NOT write 1,000-line monolithic page files.
+- Break views into isolated, reusable sub-components:
+  * `<CameraScannerModal />`
+  * `<DriverStopCard />`
+  * `<EarningsLedgerDrawer />`
+  * `<StickyFilterBar />`
+
+## REGRESSION CONTROL
+- Before changing a file, inspect the existing implementation and dependencies.
+- Make the smallest targeted change that solves the requested issue.
+- Never rewrite an entire file when a surgical edit is sufficient.
+- Preserve existing IDs, routes, database contracts, RPCs, event handlers, CSS classes, and working features unless explicitly instructed otherwise.
+- After every change, verify that the modified feature still exists and that adjacent functionality has not been removed.
+- For UI fixes, inspect both desktop and mobile CSS and the native browser behavior of the affected element before changing layout architecture.
+
+## REQUIRED QA SWEEP
+1. Test at 360px viewport width.
+2. Test normal desktop viewport.
+3. Verify body scrolling and modal scrolling independently.
+4. Verify existing buttons and workflows around the changed component.
+5. Verify camera/bill/rejection upload triggers.
+6. Verify financial values and ledger mutations.
+7. Verify async failures produce visible errors rather than blank screens.
+8. Check service-worker/cache versioning after frontend deployment.
