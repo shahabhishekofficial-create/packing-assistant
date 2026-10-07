@@ -73,6 +73,30 @@ body.adminPage{min-height:100%;height:auto;overflow-x:hidden;overflow-y:auto;-we
 body.modal-open{overflow:hidden!important;height:100dvh!important;overscroll-behavior:none}
 .inventoryDialog{max-height:90dvh!important;overflow:hidden!important}
 .inventoryDialog form{max-height:90dvh!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;touch-action:pan-y!important}
+</style><style id="mobileInventoryGridArchitecture">
+@media(max-width:768px){
+  .inventoryStockKpis,.vegKpiGrid,.formGrid,.vegReportFilters,.packingFilterGrid{
+    display:flex!important;flex-direction:column!important;width:100%!important;gap:12px!important;
+  }
+  .inventoryStockKpis>*,.vegKpiGrid>*,.formGrid>*,.vegReportFilters>*{
+    width:100%!important;min-width:0!important;grid-column:auto!important;
+  }
+  .inventoryAdminHead,.vegAdminHead{
+    min-width:0!important;
+  }
+  .inventoryAdminActions,.vegAdminActions,.vegMasterTools{
+    width:100%!important;min-width:0!important;
+  }
+  .inventoryAdminActions button,.vegAdminActions button,.vegMasterTools button,
+  .inventoryAdminActions a,.vegAdminActions a{
+    flex:1 1 auto!important;min-width:0!important;
+  }
+  .inventoryCard,.inventoryCardHead,.adminScanBox,.vegetableIntro,
+  .itemSearchRow,.adminItemList,.vegAdminList{
+    overflow:visible!important;
+    min-width:0!important;
+  }
+}
 </style></head><body class="adminPage"><div id="adminBootOverlay"><div class="bootCard">Loading Vegetable Inventory<span class="bootSub">Starting secure session…</span></div></div>
 <main id="app"><div class="cmdShell">
 <aside class="cmdSidebar" id="inventorySidebar">
