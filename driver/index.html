@@ -51,7 +51,36 @@ window.__DRIVER_BUILD__="20261008-deliveryflow9";
     }
   }catch(_){}
 })();
-</script><script src="https://unpkg.com/@supabase/supabase-js@2"></script><script src="../config.js?v=20261008-deliveryflow9"></script><script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script><script src="driver.js?v=20261008-deliveryflow9"></script><script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20261008-deliveryflow9").catch(console.warn));}</script><script>window.PA_VERSION_URL="../version.json";</script><script src="../update.js?v=20261008-deliveryflow9"></script><script>fetch("../version.json?_"+Date.now(),{cache:"no-store"}).then(r=>r.json()).then(v=>{const e=document.getElementById("driverBuildVersion");if(e)e.textContent="Build "+(v.build_id||"unknown")}).catch(()=>{});</script><style id="driverUxV1">
+</script><script src="https://unpkg.com/@supabase/supabase-js@2"></script><script src="../config.js?v=20261008-deliveryflow9"></script><script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script><script src="driver.js?v=20261008-deliveryflow9"></script><script>
+(function(){
+"use strict";
+function call(name,args){try{if(typeof window[name]==="function")return window[name](...args);}catch(e){console.error("Driver control",name,e);}}
+document.addEventListener("click",function(e){
+ const b=e.target.closest?.("button,a");if(!b)return;
+ if(b.id==="driverLoginBtn"){e.preventDefault();call("login",[]);return;}
+ if(b.id==="driverLogout"){e.preventDefault();e.stopPropagation();call("logout",[]);return;}
+ if(b.id==="driverRefresh"){e.preventDefault();call("refresh",[]);return;}
+ if(b.id==="driverMenuBtn"){e.preventDefault();call("openDriverMenu",[]);return;}
+ if(b.id==="driverMenuClose"){e.preventDefault();document.getElementById("driverMenuDialog")?.close();return;}
+ if(b.id==="invoiceScannerClose"){e.preventDefault();call("closeInvoiceScanner",[]);return;}
+ if(b.id==="invoiceCaptureBtn"){e.preventDefault();call("captureInvoiceFrame",[]);return;}
+ if(b.id==="invoiceGalleryBtn"){e.preventDefault();const input=document.getElementById("invoiceInput");if(input){input.value="";input.accept="image/*";input.removeAttribute("capture");input.dataset.outletId=window.__pendingInvoiceOutlet||"";input.dataset.mode="invoice";input.dataset.invoiceNumber=window.__pendingInvoiceNumber||"";input.click();}return;}
+ if(b.id==="damageCameraClose"){e.preventDefault();call("closeDamageCamera",[]);return;}
+ if(b.id==="damageCaptureBtn"){e.preventDefault();call("captureDamageFrame",[]);return;}
+ if(b.id==="damageGalleryBtn"){e.preventDefault();const input=document.getElementById("damagePhotoInput");if(input){input.value="";input.removeAttribute("capture");input.dataset.outletId=window.__pendingDamageOutlet||"";input.dataset.itemId=window.__pendingDamageItem||"";input.click();}return;}
+ const save=b.closest?.(".saveRejectionsBtn");if(save){e.preventDefault();call("saveRejections",[save.dataset.id]);return;}
+ const inv=b.closest?.(".invoiceBtn,.nextInvoiceBtn");if(inv){e.preventDefault();call("chooseInvoice",[inv.dataset.id]);return;}
+ const photo=b.closest?.(".photoBtn,.nextDamagePhoto");if(photo){e.preventDefault();call("chooseRejectedPhoto",[photo.dataset.outletId,photo.dataset.itemId]);return;}
+ const deliver=b.closest?.(".deliverBtn,.deliverNowBtn");if(deliver){e.preventDefault();call("markDelivered",[deliver.dataset.id]);return;}
+ const packed=b.closest?.(".markExceptionPackedBtn");if(packed){e.preventDefault();call("markExceptionPacked",[packed.dataset.outletId,packed.dataset.itemId]);return;}
+});
+document.addEventListener("change",function(e){
+ const input=e.target;
+ if(input?.id==="invoiceInput"){const file=input.files?.[0],outletId=input.dataset.outletId,number=input.dataset.invoiceNumber||"";if(file&&outletId)call("processInvoiceFile",[file,outletId,number]);input.value="";return;}
+ if(input?.id==="damagePhotoInput"){const file=input.files?.[0],outletId=input.dataset.outletId,itemId=input.dataset.itemId;if(file&&outletId&&itemId)call("uploadDamagePhoto",[file,outletId,itemId]);input.value="";}
+});
+})();
+</script><script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20261008-deliveryflow9").catch(console.warn));}</script><script>window.PA_VERSION_URL="../version.json";</script><script src="../update.js?v=20261008-deliveryflow9"></script><script>fetch("../version.json?_"+Date.now(),{cache:"no-store"}).then(r=>r.json()).then(v=>{const e=document.getElementById("driverBuildVersion");if(e)e.textContent="Build "+(v.build_id||"unknown")}).catch(()=>{});</script><style id="driverUxV1">
 .driverWizard{margin-top:12px;padding:16px;border:1px solid var(--border,#e4e7e4);border-radius:16px;background:#fff;box-shadow:0 6px 20px rgba(15,61,39,.07)}
 .driverWizardSteps{display:flex;gap:6px;margin-bottom:14px;overflow:auto}
 .driverWizardStep{flex:1;min-width:74px;text-align:center;font-size:11px;font-weight:800;color:#6b7579;padding:8px 5px;border-radius:10px;background:#f5f6f4}
