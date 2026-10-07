@@ -255,6 +255,32 @@ body.adminPage{background:var(--cmd-bg);font-family:"Plus Jakarta Sans",Inter,sy
   #driverDashboard .deliveryDashSection .sectionHead .eyebrow{font-size:8px}
   #driverDashboard #driverExceptionsSection{display:none!important}
 }
+</style><style id="mobileDriverScrollFix">
+@media(max-width:800px){
+  html,body,#app,.cmdShell,.cmdMain,#driverDashboard,.driverLiveOutletsSection{
+    height:auto!important;min-height:0!important;overflow:visible!important;
+    touch-action:pan-y!important;
+  }
+  #driverDashboard{
+    position:relative!important;
+    -webkit-overflow-scrolling:auto!important;
+  }
+  #driverDashboard .driverLiveTableWrap,
+  #driverDashboard .driverLiveTableWrap.tableWrap,
+  #driverDashboard .driverLiveTableWrap .deliveryDashTable,
+  #driverDashboard .driverLiveTableWrap tbody{
+    overflow:visible!important;
+    max-height:none!important;
+    height:auto!important;
+    touch-action:pan-y!important;
+  }
+  #driverDashboard .deliveryDashTable tr{
+    touch-action:pan-y!important;
+  }
+  #driverDashboard .driverLiveOutletsSection{
+    contain:none!important;
+  }
+}
 </style></head>
 <body class="adminPage"><div id="adminBootOverlay"><div class="bootCard">Loading Admin Dashboard<span class="bootSub">Starting secure session…</span></div></div>
 <main id="app">
