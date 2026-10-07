@@ -1570,6 +1570,34 @@ function renderPackingOverview(){
     return '<tr><td><b>'+esc(d.driver)+'</b></td><td>'+d.outlets.size+'</td><td>'+d.required+'</td><td>'+d.packed+'</td><td class="'+(d.missing?"dangerText":"")+'">'+d.missing+'</td><td><div class="packingOverviewProgress"><i style="width:'+progress+'%"></i><span>'+progress+'%</span></div></td></tr>';
   }).join("")||'<tr><td colspan="6" class="hint">No driver data matches the selected filters.</td></tr>';
 
+  const exceptionBox=$("packingExceptionBody");
+  if(exceptionBox){
+    const exceptions=rows.filter(r=>r.status==="MISSING"||r.status==="PARTIAL").sort((a,b)=>Number(b.missing||0)-Number(a.missing||0));
+    exceptionBox.innerHTML=exceptions.map(r=>{
+      const status=String(r.status||"").toUpperCase();
+      return '<tr><td><b>'+esc(r.outlet)+'</b></td><td>'+esc(r.driver)+'</td><td><b>'+esc(r.product)+'</b><small>'+esc(r.code||"")+'</small></td><td>'+Number(r.required||0)+'</td><td>'+Number(r.packed||0)+'</td><td class="dangerText">'+Number(r.missing||0)+'</td><td><span class="miniStatus '+String(status).toLowerCase()+'">'+esc(status)+'</span></td><td><button type="button" class="secondary packingAdminMarkPackedBtn" data-order-id="'+esc(state.orderId||"")+'" data-item-id="'+esc(r.id||"")+'">Mark packed</button></td></tr>';
+    }).join("")||'<tr><td colspan="8" class="hint">No missing or partial items.</td></tr>';
+    exceptionBox.querySelectorAll(".packingAdminMarkPackedBtn").forEach(btn=>btn.onclick=async()=>{
+      if(btn.disabled)return;
+      btn.disabled=true;
+      const original=btn.textContent;
+      btn.textContent="Saving…";
+      try{
+        const rr=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_mark_item_packed",admin_session:window.PA_ADMIN_SESSION,order_id:btn.dataset.orderId,item_id:btn.dataset.itemId})});
+        const dd=await rr.json();
+        if(!rr.ok||!dd.ok)throw new Error(dd.message||"Could not mark item packed");
+        if(typeof toast==="function")toast("Item marked as packed.","success");
+        await syncFromServer();
+        renderPackingOverview();
+      }catch(e){
+        if(typeof toast==="function")toast(e.message||"Could not mark item packed.","error");else alert(e.message||e);
+      }finally{
+        btn.disabled=false;
+        btn.textContent=original;
+      }
+    });
+  }
+
   box.innerHTML=selected.map(o=>{
     const itemRows=o.rows.filter(r=>!iq||String(r.product||"").toLowerCase().includes(iq)||String(r.code||"").toLowerCase().includes(iq));
     if(!itemRows.length)return "";
