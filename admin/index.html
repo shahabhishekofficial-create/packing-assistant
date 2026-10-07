@@ -924,17 +924,40 @@ body.adminPage{background:var(--cmd-bg);font-family:"Plus Jakarta Sans",Inter,sy
   <p id="openingBalanceMsg" class="hint"></p>
  </div>
 </dialog>
-<dialog id="driverPaymentDialog" class="settingsDialog">
- <div class="settingsDialogHead"><div><span class="eyebrow">DRIVER PAYMENT</span><h3 id="paymentDriverTitle">Record Payment</h3><p class="hint">Add the amount paid and payment screenshot.</p></div><div class="dialogHeadActions"><button id="driverPaymentDashboardBack" class="secondary">← Dashboard</button><button id="closeDriverPayment" class="secondary">✕</button></div></div>
- <div class="fleetPaymentForm">
-  <input id="paymentDriverId" type="hidden">
-  <label>Amount paid <input id="paymentAmount" type="number" min="1" step="0.01" placeholder="₹"></label>
-  <label>Payment date <input id="paymentDate" type="datetime-local"></label>
-  <label>Payment mode <select id="paymentMode"><option value="UPI">UPI / GPay</option><option value="BANK_TRANSFER">Bank Transfer (NEFT/IMPS)</option><option value="CASH">Cash</option><option value="CHEQUE">Cheque</option></select></label><label>Reference / UTR No. <input id="paymentReference" placeholder="Required for UPI / Bank Transfer"></label><label>Note / Remarks <textarea id="paymentNote" rows="3" placeholder="Optional internal note"></textarea>
-  <label>Payment screenshot <input id="paymentScreenshot" type="file" accept="image/*" capture="environment"></label>
-  <button id="saveDriverPayment" class="primary">Save Payment</button>
-  <p id="paymentMsg" class="hint"></p>
- </div>
+<dialog id="driverPaymentDialog" class="settingsDialog driverPaymentModal">
+  <div class="driverPaymentModalHead">
+    <div class="driverPaymentTitleWrap">
+      <span class="driverPaymentBadge">DRIVER PAYOUT</span>
+      <h3 id="paymentDriverTitle">Lux — Record Payout</h3>
+      <p class="hint">Record the payment and attach proof for the ledger.</p>
+    </div>
+    <button id="closeDriverPayment" class="driverPaymentClose" type="button" aria-label="Close payment form">✕</button>
+  </div>
+  <div class="driverPaymentBody">
+    <input id="paymentDriverId" type="hidden">
+    <div class="driverPaymentField">
+      <label for="paymentAmount">Amount paid (₹)</label>
+      <div class="driverPaymentAmountWrap"><span>₹</span><input id="paymentAmount" type="number" min="1" step="0.01" placeholder="Enter amount" inputmode="decimal"></div>
+    </div>
+    <div class="driverPaymentGrid">
+      <div class="driverPaymentField"><label for="paymentDate">Payment date</label><input id="paymentDate" type="datetime-local"></div>
+      <div class="driverPaymentField"><label for="paymentMode">Payment mode</label><select id="paymentMode"><option value="UPI">UPI / GPay</option><option value="BANK_TRANSFER">Bank Transfer</option><option value="CASH">Cash</option><option value="CHEQUE">Cheque</option></select></div>
+    </div>
+    <div class="driverPaymentField"><label for="paymentReference">Reference / UTR No.</label><input id="paymentReference" type="text" placeholder="Required for UPI / Bank Transfer" autocomplete="off"></div>
+    <div class="driverPaymentField">
+      <label for="paymentScreenshot">Payment screenshot</label>
+      <label class="driverPaymentUpload" for="paymentScreenshot">
+        <span class="driverPaymentUploadIcon">⌁</span>
+        <strong id="paymentScreenshotLabel">Tap to attach payment proof</strong>
+        <small>PNG, JPG or WEBP · up to 5MB</small>
+        <input id="paymentScreenshot" type="file" accept="image/png,image/jpeg,image/webp" capture="environment">
+      </label>
+      <div id="paymentScreenshotPreview" class="driverPaymentPreview hidden"><img id="paymentScreenshotPreviewImg" alt="Payment screenshot preview"><button id="paymentScreenshotClear" type="button">Remove</button></div>
+    </div>
+    <div class="driverPaymentField"><label for="paymentNote">Notes / Remarks</label><textarea id="paymentNote" rows="2" placeholder="Optional internal note"></textarea></div>
+    <p id="paymentMsg" class="driverPaymentMsg" role="status"></p>
+  </div>
+  <div class="driverPaymentFooter"><button id="saveDriverPayment" class="primary driverPaymentSave" type="button"><span>Save Payment</span><span>→</span></button></div>
 </dialog>
 <dialog id="fleetBulkPaymentDialog" class="settingsDialog"><div class="settingsDialogHead"><div><span class="eyebrow">BULK PAYOUT</span><h3>Record Bulk Payout</h3><p class="hint">Record the same payout details against all selected drivers.</p></div><div class="dialogHeadActions"><button id="closeFleetBulkPayment" class="secondary">✕</button></div></div><div class="fleetPaymentForm"><div id="fleetBulkPaymentDrivers" class="hint"></div><label>Amount per driver <input id="fleetBulkPaymentAmount" type="number" min="0.01" step="0.01" placeholder="₹"></label><label>Payment date <input id="fleetBulkPaymentDate" type="datetime-local"></label><label>Note <input id="fleetBulkPaymentNote" placeholder="e.g. Weekly payout"></label><label>Payment mode <select id="fleetBulkPaymentMode"><option value="UPI">UPI</option><option value="BANK_TRANSFER">Bank Transfer</option><option value="CASH">Cash</option></select></label><label>Reference / Transaction ID <input id="fleetBulkPaymentReference" placeholder="Optional"></label><button id="saveFleetBulkPayment" class="primary">Save Bulk Payout</button><p id="fleetBulkPaymentMsg" class="hint"></p></div></dialog>
 <section id="driverDashboard" class="screen hidden">
