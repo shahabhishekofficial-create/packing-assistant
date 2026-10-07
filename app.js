@@ -1910,11 +1910,36 @@ function openDriverPayment(driverId,name){
   $("driverPaymentDialog").showModal();
 }
 async function saveDriverPayment(){
-  const driverId=$("paymentDriverId").value,amount=Number($("paymentAmount").value),paidAt=$("paymentDate").value,note=$("paymentNote").value.trim(),mode=$("paymentMode").value,reference=$("paymentReference").value.trim(),btn=$("saveDriverPayment");
-  if(!driverId||!Number.isFinite(amount)||amount<=0)return $("paymentMsg").textContent="Enter a valid payout amount.";
-  if((mode==="UPI"||mode==="BANK_TRANSFER")&&!reference)return $("paymentMsg").textContent="Reference / UTR is required for this payment mode.";
-  btn.disabled=true;btn.textContent="Saving…";
-  try{const r=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_record_payment",admin_session:window.PA_ADMIN_SESSION,driver_id:driverId,amount,paid_at:paidAt?new Date(paidAt).toISOString():new Date().toISOString(),note,payment_mode:mode,reference_number:reference,screenshot_path:null})});const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.message||"Could not record payout");$("driverPaymentDialog").close();await loadFleetManagement();await openDriverLedger(driverId);}catch(e){$("paymentMsg").textContent=e.message||"Could not save payout.";}finally{btn.disabled=false;btn.textContent="Save Payment";}
+  const driverId=$("paymentDriverId").value,amount=Number($("paymentAmount").value),paidAt=$("paymentDate").value,note=$("paymentNote").value.trim(),mode=$("paymentMode").value,reference=$("paymentReference").value.trim(),file=$("paymentScreenshot")?.files?.[0],btn=$("saveDriverPayment"),msg=$("paymentMsg");
+  if(!driverId||!Number.isFinite(amount)||amount<=0){msg.textContent="Enter a valid payout amount.";return;}
+  if((mode==="UPI"||mode==="BANK_TRANSFER")&&!reference){msg.textContent="Reference / UTR is required for this payment mode.";return;}
+  if(file&&(!file.type.startsWith("image/")||file.size>5*1024*1024)){msg.textContent="Payment proof must be an image up to 5MB.";return;}
+  btn.disabled=true;btn.textContent="Preparing upload…";msg.textContent="";
+  try{
+    const api=window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",headers={"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"};
+    let screenshotPath=null;
+    if(file){
+      const ext=(file.type.split("/")[1]||"jpg").toLowerCase();
+      const u=await fetch(api,{method:"POST",headers,body:JSON.stringify({action:"admin_payment_upload_url",admin_session:window.PA_ADMIN_SESSION,driver_id:driverId,extension:ext})});
+      const ud=await u.json();
+      if(!u.ok||!ud.ok||!ud.path||!ud.token)throw new Error(ud.message||"Could not prepare payment proof upload");
+      btn.textContent="Uploading proof…";
+      const up=await db.storage.from("driver-payments").uploadToSignedUrl(ud.path,ud.token,file);
+      if(up.error)throw new Error(up.error.message||"Payment proof upload failed");
+      screenshotPath=ud.path;
+    }
+    btn.textContent="Saving payment…";
+    const r=await fetch(api,{method:"POST",headers,body:JSON.stringify({action:"admin_record_payment",admin_session:window.PA_ADMIN_SESSION,driver_id:driverId,amount,paid_at:paidAt?new Date(paidAt).toISOString():new Date().toISOString(),note,payment_mode:mode,reference_number:reference,screenshot_path:screenshotPath})});
+    const d=await r.json();
+    if(!r.ok||!d.ok)throw new Error(d.message||"Could not record payout");
+    $("driverPaymentDialog").close();
+    await loadFleetManagement();
+    await openDriverLedger(driverId);
+  }catch(e){
+    msg.textContent=e.message||"Could not save payout.";
+  }finally{
+    btn.disabled=false;btn.textContent="Save Payment";
+  }
 }
 function openDriverOpeningBalance(driverId,name){
   const d=fleetDrivers.find(x=>String(x.driver_id)===String(driverId))||{};
