@@ -61,7 +61,29 @@ body.adminPage{background:#f5f8f7;font-family:"Plus Jakarta Sans",Inter,system-u
 .inventoryAlert{margin:0 0 12px;border-radius:9px;font-size:10px}
 @media(max-width:900px){.inventoryAdminHead,.vegAdminHead{display:block}.inventoryAdminActions,.vegAdminActions{justify-content:flex-start;margin-top:12px}.inventoryAdminPage,.vegAdminPage{padding:16px 12px 28px}}
 </style>
-</head>
+<style id="globalLayoutScrollRefactor">
+html{height:100%;box-sizing:border-box;scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+*,*:before,*:after{box-sizing:inherit}
+body.adminPage{min-height:100%;height:auto;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:manipulation}
+#app,.cmdShell,.cmdMain{height:auto!important;min-height:100dvh!important;overflow:visible!important}
+@media(max-width:768px){
+  html,body.adminPage,#app,.cmdShell,.cmdMain{
+    height:auto!important;min-height:100%!important;max-height:none!important;
+    overflow-x:hidden!important;overflow-y:visible!important;touch-action:pan-y!important;
+  }
+  body.adminPage{overflow-y:auto!important;-webkit-overflow-scrolling:touch!important}
+  .inventoryAdminPage,.vegAdminPage{width:100%!important;max-width:none!important;min-width:0!important}
+  .inventoryCard,.inventoryCardHead,.inventoryAdminHead,.vegAdminHead,.vegAdminActions,
+  .inventoryAdminActions,.itemSearchRow,.adminItemList,.vegAdminList,.tableWrap{
+    min-width:0!important;
+  }
+  .tableWrap{height:auto!important;max-height:none!important;overflow:visible!important;touch-action:pan-y!important}
+  .cmdSidebar.open .cmdNav{overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;touch-action:pan-y!important}
+}
+body.modal-open{overflow:hidden!important;height:100dvh!important;overscroll-behavior:none}
+.inventoryDialog{max-height:90dvh!important;overflow:hidden!important}
+.inventoryDialog form{max-height:90dvh!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;touch-action:pan-y!important}
+</style></head>
 <body class="adminPage">
 <div id="adminBootOverlay"><div class="bootCard">Loading Inventory<span class="bootSub">Starting secure session…</span></div></div>
 <main id="app">
@@ -130,4 +152,10 @@ body.adminPage{background:#f5f8f7;font-family:"Plus Jakarta Sans",Inter,system-u
 </main>
 <script defer src="./inventory.js?v=20261005-restinv4"></script>
 <script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20261005-restinv4",{updateViaCache:"none"}).catch(console.warn));}</script>
-</body></html>
+<script>
+(function(){
+ const sync=()=>document.body.classList.toggle("modal-open",!!document.querySelector("dialog[open]"));
+ const init=()=>{document.querySelectorAll("dialog").forEach(d=>{d.addEventListener("close",sync);d.addEventListener("cancel",()=>setTimeout(sync,0));});new MutationObserver(sync).observe(document.body,{subtree:true,attributes:true,attributeFilter:["open"]});sync();};
+ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
+})();
+</script></body></html>
