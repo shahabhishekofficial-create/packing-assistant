@@ -1323,7 +1323,7 @@ function applyDriverOutletFilter(){
   live.innerHTML=filtered.map(x=>{
     const st=dashboardStatus(x),evidence=x.invoice_path?'<button class="secondary deliveryEvidenceBtn" data-kind="invoice" data-path="'+esc(x.invoice_path)+'">📄 Invoice</button>':"";
     const action=x.delivered?"":x.packing_done?'<button type="button" class="secondary adminApproveDeliveredBtn" data-order-id="'+esc(x.order_id||"")+'" data-outlet-id="'+esc(x.id||"")+'" data-outlet-name="'+esc(x.store_name||"")+'">Admin delivery</button>':"";
-    return '<tr class="'+((Number(x.missing||0)>0||Number(x.rejections||0)>0)?"driverExceptionRow":"")+'"><td><b>'+esc(x.store_name)+'</b><small>Rank '+Number(x.outlet_rank||0)+'</small></td><td><b>'+esc(x.driver||"Unassigned")+'</b></td><td><span class="deliveryStatus '+st[0]+'">'+esc(st[1])+'</span></td><td class="driverRejectionCell" data-missing="${Number(x.missing||0)}">'+Number(x.rejections||0)+'</td><td>'+Number(x.missing||0)+'</td><td>'+evidence+action+'</td><td></td></tr>';
+    return '<tr class="'+((Number(x.missing||0)>0||Number(x.rejections||0)>0)?"driverExceptionRow":"")+'"><td><b>'+esc(x.store_name)+'</b><small>Rank '+Number(x.outlet_rank||0)+'</small></td><td><b>'+esc(x.driver||"Unassigned")+'</b></td><td><span class="deliveryStatus '+st[0]+'">'+esc(st[1])+'</span></td><td class="driverRejectionCell" data-missing="'+Number(x.missing||0)+'">'+Number(x.rejections||0)+'</td><td>'+Number(x.missing||0)+'</td><td>'+evidence+action+'</td><td></td></tr>';
   }).join("")||'<tr><td colspan="7" class="hint">No outlets match this filter.</td></tr>';
   live.querySelectorAll(".adminApproveDeliveredBtn").forEach(btn=>btn.onclick=()=>{
     const dlg=$("adminDeliveryCompleteDialog");if(!dlg)return;
