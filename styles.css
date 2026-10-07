@@ -1414,3 +1414,44 @@ body.modal-open{
 .flex,.flex-row,.flex-col{min-width:0}
 .flex>*{min-width:0}
 .status-badge,.badge,.action-button{flex-shrink:0}
+
+/* DRIVER PAYOUT MODAL — HARD LAYOUT FIX 2026-10-08 */
+.driverPaymentModal.driverPaymentModal{
+  box-sizing:border-box!important;
+  width:min(520px,calc(100vw - 24px))!important;
+  height:min(760px,calc(100dvh - 24px))!important;
+  max-height:none!important;
+  min-height:0!important;
+  padding:0!important;
+  overflow:hidden!important;
+  display:grid!important;
+  grid-template-rows:auto minmax(0,1fr) auto!important;
+}
+.driverPaymentModal.driverPaymentModal > .driverPaymentModalHead{
+  min-height:0!important;
+  flex:none!important;
+}
+.driverPaymentModal.driverPaymentModal > .driverPaymentBody{
+  min-height:0!important;
+  height:auto!important;
+  max-height:none!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  overscroll-behavior:contain!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+.driverPaymentModal.driverPaymentModal > .driverPaymentFooter{
+  min-height:0!important;
+  height:auto!important;
+  flex:none!important;
+  position:relative!important;
+  z-index:2!important;
+}
+@media(max-width:600px){
+  .driverPaymentModal.driverPaymentModal{
+    width:calc(100vw - 24px)!important;
+    height:calc(100dvh - 24px)!important;
+    max-height:none!important;
+    border-radius:20px!important;
+  }
+}
