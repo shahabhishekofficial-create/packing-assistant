@@ -900,6 +900,89 @@ body.adminPage{background:var(--cmd-bg);font-family:"Plus Jakarta Sans",Inter,sy
   .driverPaymentFooter{padding:12px 17px 16px!important}
   .driverPaymentUpload{min-height:100px!important}
 }
+</style><style id="globalLayoutScrollRefactorAdmin">
+/* Global layout refactor: document owns page scrolling. */
+.cmdShell{
+  height:auto!important;
+  min-height:100dvh!important;
+  overflow:visible!important;
+}
+.cmdMain{
+  height:auto!important;
+  min-height:100dvh!important;
+  overflow:visible!important;
+}
+@media(min-width:801px){
+  .cmdSidebar{
+    position:sticky!important;
+    top:0!important;
+    height:100dvh!important;
+    max-height:100dvh!important;
+    overflow:hidden!important;
+  }
+  .cmdSidebar .cmdNav{
+    min-height:0!important;
+    overflow-y:auto!important;
+    -webkit-overflow-scrolling:touch!important;
+  }
+}
+@media(max-width:800px){
+  html,body,#app,.cmdShell,.cmdMain{
+    height:auto!important;
+    min-height:100%!important;
+    max-height:none!important;
+    overflow-x:hidden!important;
+    overflow-y:visible!important;
+  }
+  body.adminPage{
+    overflow-y:auto!important;
+    -webkit-overflow-scrolling:touch!important;
+    touch-action:pan-y!important;
+  }
+  .screen{
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    overflow:visible!important;
+  }
+  .opsHome,.opsActionGrid,.opsInsightGrid,.opsThreeGrid{
+    min-width:0!important;
+  }
+  .opsKpiGrid,.opsQuickGrid{
+    width:100%!important;
+  }
+  .cmdSidebar{
+    height:100dvh!important;
+    max-height:100dvh!important;
+    overflow:hidden!important;
+  }
+  .cmdSidebar.open .cmdNav{
+    overflow-y:auto!important;
+    -webkit-overflow-scrolling:touch!important;
+    touch-action:pan-y!important;
+  }
+  /* All delivery/inventory dashboard content flows in the document. */
+  #driverDashboard,#fleetManagement,#packingOverview,#packing,
+  #home,#configuration{
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    overflow:visible!important;
+  }
+  #driverDashboard .tableWrap,
+  #driverDashboard .driverLiveTableWrap,
+  #driverDashboard .deliveryHistoryTableWrap,
+  #driverDashboard .deliveryDashSection{
+    height:auto!important;
+    max-height:none!important;
+    overflow:visible!important;
+    touch-action:pan-y!important;
+  }
+  /* Avoid squeezed desktop grids on narrow screens. */
+  .cmdRail,.cmdKpis,.fleetCards,.packingFilterGrid{
+    width:100%!important;
+  }
+}
 </style></head>
 <body class="adminPage"><div id="adminBootOverlay"><div class="bootCard">Loading Admin Dashboard<span class="bootSub">Starting secure session…</span></div></div>
 <main id="app">
