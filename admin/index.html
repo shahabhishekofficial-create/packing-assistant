@@ -801,6 +801,10 @@ body.adminPage{background:var(--cmd-bg);font-family:"Plus Jakarta Sans",Inter,sy
   }
 }
 </style><style id="driverPaymentModalProductionFix">
+/* Critical: the author display:grid rule must never override native dialog closed state */
+.driverPaymentModal:not([open]){
+  display:none!important;
+}
 /* DRIVER PAYOUT — deterministic viewport layout */
 .driverPaymentModal{
   position:fixed!important;
