@@ -983,6 +983,58 @@ body.adminPage{background:var(--cmd-bg);font-family:"Plus Jakarta Sans",Inter,sy
     width:100%!important;
   }
 }
+</style><style id="mobileGridAndTableArchitecture">
+@media(max-width:768px){
+  /* Desktop multi-column dashboard grids become readable vertical stacks. */
+  .opsKpiGrid,.opsThreeGrid,.opsBottomGrid,.opsActionGrid,.opsInsightGrid,
+  .opsQuickGrid,.fleetCards,.fleetKpis,.cmdKpis,.cmdRail,.packingFilterGrid,
+  .analysisKpis,.analysisGrid,.dashboardSummary{
+    display:flex!important;
+    flex-direction:column!important;
+    width:100%!important;
+    gap:12px!important;
+  }
+  .opsKpiGrid>*,.opsThreeGrid>*,.opsBottomGrid>*,.opsQuickGrid>*,
+  .fleetCards>*,.fleetKpis>*,.cmdKpis>*,.cmdRail>*,.packingFilterGrid>*,
+  .analysisKpis>*,.analysisGrid>*,.dashboardSummary>*{
+    width:100%!important;
+    min-width:0!important;
+    grid-column:auto!important;
+  }
+  .opsKpiGrid .opsKpi,.opsQuickGrid button{min-width:0!important}
+  .opsStage{overflow:visible!important;min-width:0!important}
+  .opsStage>div{min-width:0!important}
+  .opsStage{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important}
+  .cmdGrid{display:block!important}
+  .cmdGrid>*{min-width:0!important}
+  .cmdTableWrap,.cmdTableWrap table,
+  .driverLiveTableWrap .deliveryDashTable{
+    min-width:0!important;
+    width:100%!important;
+  }
+  .driverLiveTableWrap .deliveryDashTable{
+    display:block!important;
+  }
+  .driverLiveTableWrap .deliveryDashTable tbody{
+    display:block!important;width:100%!important;
+  }
+  .driverLiveTableWrap .deliveryDashTable tr{
+    width:100%!important;min-width:0!important;
+  }
+  .fleetTableWrap,.tableWrap{
+    max-width:100%!important;
+  }
+  .sectionHead,.opsPanelHead,.inventoryCardHead{
+    min-width:0!important;
+  }
+  .sectionHead>*,.opsPanelHead>*{
+    min-width:0!important;
+  }
+  .sectionHeadActions{
+    flex-shrink:0!important;
+    max-width:100%!important;
+  }
+}
 </style></head>
 <body class="adminPage"><div id="adminBootOverlay"><div class="bootCard">Loading Admin Dashboard<span class="bootSub">Starting secure session…</span></div></div>
 <main id="app">
