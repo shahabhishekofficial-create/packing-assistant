@@ -1807,7 +1807,6 @@ document.getElementById("packingDashboardBackBtn")?.addEventListener("click",sho
 document.getElementById("reportDashboardBack")?.addEventListener("click",showAdminDashboard);
 document.getElementById("invoiceDashboardBack")?.addEventListener("click",showAdminDashboard);
 document.getElementById("outletSettingsDashboardBack")?.addEventListener("click",showAdminDashboard);
-document.getElementById("driverPaymentDashboardBack")?.addEventListener("click",showAdminDashboard);
 document.getElementById("closeInvoiceDialog")?.addEventListener("click",()=>document.getElementById("invoiceDialog")?.close());
 document.getElementById("exportReportBtn")?.addEventListener("click",exportHistoricalReport);
 document.getElementById("reportAllDatesBtn")?.addEventListener("click",()=>{$("reportFromDate").value="";$("reportToDate").value="";loadReportHistory();});
@@ -1887,7 +1886,7 @@ async function saveDriverPayment(){
   if(!driverId||!Number.isFinite(amount)||amount<=0)return $("paymentMsg").textContent="Enter a valid payout amount.";
   if((mode==="UPI"||mode==="BANK_TRANSFER")&&!reference)return $("paymentMsg").textContent="Reference / UTR is required for this payment mode.";
   btn.disabled=true;btn.textContent="Saving…";
-  try{const r=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_record_payment",admin_session:window.PA_ADMIN_SESSION,driver_id:driverId,amount,paid_at:paidAt?new Date(paidAt).toISOString():new Date().toISOString(),note,payment_mode:mode,reference_number:reference,screenshot_path:null})});const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.message||"Could not record payout");$("driverPaymentDialog").close();await loadFleetManagement();await openDriverLedger(driverId);}catch(e){$("paymentMsg").textContent=e.message||"Could not save payout.";}finally{btn.disabled=false;btn.textContent="Confirm & Disburse";}
+  try{const r=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_record_payment",admin_session:window.PA_ADMIN_SESSION,driver_id:driverId,amount,paid_at:paidAt?new Date(paidAt).toISOString():new Date().toISOString(),note,payment_mode:mode,reference_number:reference,screenshot_path:null})});const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.message||"Could not record payout");$("driverPaymentDialog").close();await loadFleetManagement();await openDriverLedger(driverId);}catch(e){$("paymentMsg").textContent=e.message||"Could not save payout.";}finally{btn.disabled=false;btn.textContent="Save Payment";}
 }
 function openDriverOpeningBalance(driverId,name){
   const d=fleetDrivers.find(x=>String(x.driver_id)===String(driverId))||{};
