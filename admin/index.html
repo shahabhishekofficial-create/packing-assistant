@@ -281,6 +281,138 @@ body.adminPage{background:var(--cmd-bg);font-family:"Plus Jakarta Sans",Inter,sy
     contain:none!important;
   }
 }
+</style><style id="mobileOutletCardLayoutFix">
+@media(max-width:800px){
+  /* Native page scroll only: no nested outlet scrolling. */
+  html,body,#app,.cmdShell,.cmdMain,#driverDashboard,.driverLiveOutletsSection,
+  #driverDashboard .driverLiveTableWrap,#driverDashboard .driverLiveTableWrap.tableWrap{
+    height:auto!important;min-height:0!important;max-height:none!important;
+    overflow:visible!important;touch-action:pan-y!important;
+  }
+
+  /* One compact, deterministic mobile card. Never use the desktop column geometry. */
+  #driverDashboard .driverLiveTableWrap .deliveryDashTable{
+    display:block!important;width:100%!important;min-width:0!important;
+    border-collapse:separate!important;
+  }
+  #driverDashboard .driverLiveTableWrap .deliveryDashTable thead{display:none!important}
+  #driverDashboard .driverLiveTableWrap .deliveryDashTable tbody{display:block!important;width:100%!important}
+  #driverDashboard .driverLiveTableWrap .deliveryDashTable tr{
+    position:relative!important;
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) auto!important;
+    grid-template-rows:auto auto auto!important;
+    align-items:center!important;
+    gap:5px 8px!important;
+    width:100%!important;
+    box-sizing:border-box!important;
+    min-height:0!important;
+    margin:7px 0!important;
+    padding:10px 10px!important;
+    border:1px solid #e2e8f0!important;
+    border-radius:12px!important;
+    background:#fff!important;
+  }
+  #driverDashboard .driverLiveTableWrap .deliveryDashTable tr.driverExceptionRow{
+    background:#fff8ed!important;border-color:#f0ad1a!important;
+  }
+  #driverDashboard .driverLiveTableWrap .deliveryDashTable td{
+    display:block!important;
+    position:static!important;
+    grid-column:auto!important;
+    grid-row:auto!important;
+    width:auto!important;
+    min-width:0!important;
+    margin:0!important;
+    padding:0!important;
+    border:0!important;
+    white-space:normal!important;
+    overflow:visible!important;
+    font-size:9px!important;
+    line-height:1.25!important;
+  }
+
+  /* Row 1: outlet + status */
+  #driverDashboard .driverLiveTableWrap .deliveryDashTable td:nth-child(1){
+    grid-column:1!important;grid-row:1!important;
+    min-width:0!important;
+  }
+  #driverDashboard .driverLiveTableWrap .deliveryDashTable td:nth-child(1) b{
+    display:block!important;
+    max-width:100%!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    white-space:nowrap!important;
+    font-size:11px!important;
+    line-height:1.25!important;
+    color:#172033!important;
+  }
+  #driverDashboard .driverLiveTableWrap .deliveryDashTable td:nth-child(1) small{display:none!important}
+
+  #driverDashboard .driverLiveTableWrap .deliveryDashTable td:nth-child(3){
+    grid-column:2!important;grid-row:1!important;
+    justify-self:end!important;
+    align-self:start!important;
+  }
+  #driverDashboard .driverLiveTableWrap .deliveryDashTable .deliveryStatus{
+    display:inline-flex!important;
+    align-items:center!important;
+    white-space:nowrap!important;
+    font-size:8px!important;
+    line-height:1!important;
+    padding:6px 8px!important;
+  }
+
+  /* Row 2: driver */
+  #driverDashboard .driverLiveTableWrap .deliveryDashTable td:nth-child(2){
+    grid-column:1 / -1!important;grid-row:2!important;
+    color:#64748b!important;
+  }
+  #driverDashboard .driverLiveTableWrap .deliveryDashTable td:nth-child(2) b{
+    display:block!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    white-space:nowrap!important;
+    font-size:9px!important;
+    color:#64748b!important;
+  }
+  #driverDashboard .driverLiveTableWrap .deliveryDashTable td:nth-child(2) b:before{
+    content:"Driver: "!important;
+    color:#94a3b8!important;font-weight:700!important;
+  }
+
+  /* Row 3: rejection/missing summary + invoice/action */
+  #driverDashboard .driverLiveTableWrap .deliveryDashTable td:nth-child(4){
+    grid-column:1!important;grid-row:3!important;
+    color:#64748b!important;
+    white-space:nowrap!important;
+  }
+  #driverDashboard .driverLiveTableWrap .deliveryDashTable td:nth-child(4):before{
+    content:"Rej: "!important;
+    color:#94a3b8!important;font-weight:700!important;
+  }
+  #driverDashboard .driverLiveTableWrap .deliveryDashTable td:nth-child(4):after{
+    content:"  ·  Miss: " attr(data-missing)!important;
+    color:#64748b!important;font-weight:500!important;
+  }
+  #driverDashboard .driverLiveTableWrap .deliveryDashTable td:nth-child(5){
+    display:none!important;
+  }
+  #driverDashboard .driverLiveTableWrap .deliveryDashTable td:nth-child(6){
+    grid-column:2!important;grid-row:3!important;
+    justify-self:end!important;
+    align-self:end!important;
+    text-align:right!important;
+  }
+  #driverDashboard .driverLiveTableWrap .deliveryDashTable td:nth-child(6) .deliveryEvidenceBtn{
+    font-size:8px!important;
+    padding:6px 8px!important;
+    white-space:nowrap!important;
+  }
+  #driverDashboard .driverLiveTableWrap .deliveryDashTable td:nth-child(7){
+    display:none!important;
+  }
+}
 </style></head>
 <body class="adminPage"><div id="adminBootOverlay"><div class="bootCard">Loading Admin Dashboard<span class="bootSub">Starting secure session…</span></div></div>
 <main id="app">
