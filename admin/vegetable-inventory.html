@@ -51,7 +51,29 @@ body.adminPage{background:#f5f8f7;font-family:"Plus Jakarta Sans",Inter,system-u
 .vegCmdBody{padding:20px;max-width:1600px;margin:auto}.vegAdminPage{max-width:1500px!important;margin:0 auto!important;padding:22px 20px 34px!important;display:block;width:auto;box-sizing:border-box}.vegAdminPage>.inventoryCard{display:block;width:100%;box-sizing:border-box}.vegAdminPage{display:flex;flex-direction:column;align-items:stretch;gap:0;width:100%;max-width:1500px;margin:0 auto;padding:22px 20px 34px;box-sizing:border-box}.vegAdminPage>*{width:100%;max-width:none;box-sizing:border-box;grid-column:1/-1;float:none}.vegAdminPage>.inventoryCard{display:block;flex:none}.vegAdminHead{display:flex;flex-direction:row;align-items:flex-end;justify-content:space-between}.vegAdminHead{background:#fff;border:1px solid #dfe8e3;border-radius:15px;padding:18px 20px;margin-bottom:12px}.vegAdminHead h2{font-size:22px;margin:4px 0}.vegAdminHead p{font-size:11px;color:#64748b;margin:0}.vegAdminActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.vegAdminActions button,.vegAdminActions a{font-family:inherit}.vegAdminActions .primary{background:#0f5132!important;border-color:#0f5132!important}.vegAdminActions .secondary{background:#fff;border:1px solid #dbe3eb;border-radius:8px;padding:8px 11px;font-size:10px;font-weight:800;color:#334155;text-decoration:none}.vegAdminPage .inventoryCard{border:1px solid #dfe8e3;border-radius:15px;box-shadow:none;background:#fff;margin-top:12px}.vegAdminPage .itemSearchRow{padding:14px;border-bottom:1px solid #eef2f0}.vegAdminPage input,.vegAdminPage select{font-family:inherit;border:1px solid #dbe3eb;border-radius:8px;padding:9px 10px}.vegAdminPage .inventoryCardHead{padding:14px 16px}.vegAdminPage h3{font-size:14px}.vegAdminPage .hint{font-size:10px;color:#64748b}.vegAdminPage .tableWrap{border-top:1px solid #eef2f0}.vegAdminPage .inventoryAlert{margin-bottom:10px}.cmdSectionLabel{font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#94a3b8;font-weight:800;margin:0 0 7px}
 @media(min-width:901px){.vegAdminHead{display:flex;align-items:center;justify-content:space-between;gap:20px}.vegAdminActions{margin-top:0;justify-content:flex-end}}
 </style>
-</head><body class="adminPage"><div id="adminBootOverlay"><div class="bootCard">Loading Vegetable Inventory<span class="bootSub">Starting secure session…</span></div></div>
+<style id="globalLayoutScrollRefactor">
+html{height:100%;box-sizing:border-box;scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+*,*:before,*:after{box-sizing:inherit}
+body.adminPage{min-height:100%;height:auto;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:manipulation}
+#app,.cmdShell,.cmdMain{height:auto!important;min-height:100dvh!important;overflow:visible!important}
+@media(max-width:768px){
+  html,body.adminPage,#app,.cmdShell,.cmdMain{
+    height:auto!important;min-height:100%!important;max-height:none!important;
+    overflow-x:hidden!important;overflow-y:visible!important;touch-action:pan-y!important;
+  }
+  body.adminPage{overflow-y:auto!important;-webkit-overflow-scrolling:touch!important}
+  .inventoryAdminPage,.vegAdminPage{width:100%!important;max-width:none!important;min-width:0!important}
+  .inventoryCard,.inventoryCardHead,.inventoryAdminHead,.vegAdminHead,.vegAdminActions,
+  .inventoryAdminActions,.itemSearchRow,.adminItemList,.vegAdminList,.tableWrap{
+    min-width:0!important;
+  }
+  .tableWrap{height:auto!important;max-height:none!important;overflow:visible!important;touch-action:pan-y!important}
+  .cmdSidebar.open .cmdNav{overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;touch-action:pan-y!important}
+}
+body.modal-open{overflow:hidden!important;height:100dvh!important;overscroll-behavior:none}
+.inventoryDialog{max-height:90dvh!important;overflow:hidden!important}
+.inventoryDialog form{max-height:90dvh!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;touch-action:pan-y!important}
+</style></head><body class="adminPage"><div id="adminBootOverlay"><div class="bootCard">Loading Vegetable Inventory<span class="bootSub">Starting secure session…</span></div></div>
 <main id="app"><div class="cmdShell">
 <aside class="cmdSidebar" id="inventorySidebar">
 <div class="cmdBrand"><div class="cmdLogo">BA</div><div><h1>Bigly Agro Private Limited</h1><p>OPS COMMAND CENTER</p></div></div>
@@ -126,4 +148,10 @@ body.adminPage{background:#f5f8f7;font-family:"Plus Jakarta Sans",Inter,system-u
 <script defer src="./vegetable-inventory.js?v=20261006-vegadmin2"></script>
 <script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20261006-vegadmin2",{updateViaCache:"none"}).catch(console.warn));}</script>
 <script>document.getElementById("baSidebarToggle")?.addEventListener("click",()=>document.querySelector(".cmdSidebar")?.classList.toggle("open"));</script>
-</body></html>
+<script>
+(function(){
+ const sync=()=>document.body.classList.toggle("modal-open",!!document.querySelector("dialog[open]"));
+ const init=()=>{document.querySelectorAll("dialog").forEach(d=>{d.addEventListener("close",sync);d.addEventListener("cancel",()=>setTimeout(sync,0));});new MutationObserver(sync).observe(document.body,{subtree:true,attributes:true,attributeFilter:["open"]});sync();};
+ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
+})();
+</script></body></html>
