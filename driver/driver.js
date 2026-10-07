@@ -95,7 +95,7 @@ function lockDeliveredRows(){
  const invoiceNumberInput=$("invoiceNumber");
  const invoiceOutlet=String(invoiceNumberInput?.dataset.outletId||"");
  if(invoiceOutlet&&deliveredIds.has(invoiceOutlet)){const dlg=$("invoiceDialog");if(dlg?.open)dlg.close();invoiceNumberInput.value="";invoiceNumberInput.dataset.outletId="";}
- if(pendingInvoiceUpload.outletId&&deliveredIds.has(String(pendingInvoiceUpload.outletId))){pendingInvoiceUpload={outletId:"",invoiceNumber:""};closeInvoiceScanner();}
+ if(pendingInvoiceUpload.outletId&&deliveredIds.has(String(pendingInvoiceUpload.outletId))){pendingInvoiceUpload={outletId:"",invoiceNumber:""};window.__pendingInvoiceOutlet="";window.__pendingInvoiceNumber="";closeInvoiceScanner();}
  if(pendingDamagePhoto.outletId&&deliveredIds.has(String(pendingDamagePhoto.outletId))){closeDamageCamera();}
 }
 document.addEventListener("click",e=>{const summary=e.target.closest?.(".driverOutletRow.deliveredRow > summary");if(!summary)return;e.preventDefault();const row=summary.closest("details");if(row)row.open=false;},true);
@@ -279,7 +279,7 @@ async function captureDamageFrame(){
  }
 }
 async function openDamageCamera(outletId,itemId){
- pendingDamagePhoto={outletId:String(outletId),itemId:String(itemId)};
+ pendingDamagePhoto={outletId:String(outletId),itemId:String(itemId)};window.__pendingDamageOutlet=String(outletId);window.__pendingDamageItem=String(itemId);
  const modal=$("damageCameraModal"),video=$("damageCamera");
  if(!modal||!video)return fallbackToNativeDamageCamera(outletId,itemId,new Error("Damage camera UI unavailable"));
  modal.classList.remove("hidden");modal.setAttribute("aria-hidden","false");
@@ -477,7 +477,7 @@ function fallbackToNativeInvoiceCamera(outletId,invoiceNumber,error){
  input.click();
 }
 async function openInvoiceScanner(outletId,invoiceNumber){
- pendingInvoiceUpload={outletId,invoiceNumber};
+ pendingInvoiceUpload={outletId,invoiceNumber};window.__pendingInvoiceOutlet=String(outletId);window.__pendingInvoiceNumber=String(invoiceNumber||"");
  const modal=$("invoiceScanner"),video=$("invoiceCamera"),capture=$("invoiceCaptureBtn"),status=$("invoiceScanStatus");
  if(!modal||!video||!capture||!status)return fallbackToNativeInvoiceCamera(outletId,invoiceNumber,new Error("Invoice camera UI unavailable"));
  modal.classList.remove("hidden");modal.setAttribute("aria-hidden","false");
