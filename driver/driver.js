@@ -288,13 +288,13 @@ async function openDamageCamera(outletId,itemId){
  if(capture){capture.disabled=true;capture.textContent="Starting camera…";}
  try{
   if(!window.isSecureContext||!navigator.mediaDevices?.getUserMedia)throw new Error("Camera API unavailable");
-  damageCameraStream=await navigator.mediaDevices.getUserMedia({
-   video:{facingMode:{ideal:"environment"},width:{ideal:1920},height:{ideal:1080}},
-   audio:false
-  });
-  video.srcObject=damageCameraStream;
-  await video.play();
-  if(status)status.textContent="✓ Camera ready. Frame the damaged item clearly.";
+  damageCameraStream=await Promise.race([
+    navigator.mediaDevices.getUserMedia({video:{facingMode:"environment",width:{ideal:1920},height:{ideal:1080}},audio:false}),
+    new Promise((_,reject)=>setTimeout(()=>reject(new Error("Camera startup timeout")),6500))
+   ]);
+   video.srcObject=damageCameraStream;
+   try{await video.play();}catch(e){console.warn("Damage video play:",e);}
+   if(status)status.textContent="✓ Camera ready. Frame the damaged item clearly.";
   if(capture){capture.disabled=false;capture.textContent="Capture damage photo";}
  }catch(e){
   console.warn("Damage camera unavailable:",e);
@@ -477,38 +477,36 @@ function fallbackToNativeInvoiceCamera(outletId,invoiceNumber,error){
  input.click();
 }
 async function openInvoiceScanner(outletId,invoiceNumber){
- pendingInvoiceUpload={outletId,invoiceNumber};const modal=$("invoiceScanner"),video=$("invoiceCamera");
- modal.classList.remove("hidden");modal.setAttribute("aria-hidden","false");$("invoiceScanStatus").textContent="Starting camera…";$("invoiceCaptureBtn").disabled=true;$("invoiceCaptureBtn").textContent="Starting camera…";
+ pendingInvoiceUpload={outletId,invoiceNumber};
+ const modal=$("invoiceScanner"),video=$("invoiceCamera"),capture=$("invoiceCaptureBtn"),status=$("invoiceScanStatus");
+ if(!modal||!video||!capture||!status)return fallbackToNativeInvoiceCamera(outletId,invoiceNumber,new Error("Invoice camera UI unavailable"));
+ modal.classList.remove("hidden");modal.setAttribute("aria-hidden","false");
+ status.textContent="Starting camera…";capture.disabled=true;capture.textContent="Starting camera…";
+ let fallbackTimer=setTimeout(()=>{if(!invoiceCameraStream){status.textContent="Camera startup timed out. Opening phone camera…";fallbackToNativeInvoiceCamera(outletId,invoiceNumber,new Error("Camera startup timeout"));}},7000);
  try{
   if(!window.isSecureContext||!navigator.mediaDevices?.getUserMedia)throw new Error("Camera API unavailable");
-  invoiceCameraStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"},width:{ideal:1920},height:{ideal:1080}},audio:false});
-  video.srcObject=invoiceCameraStream;await video.play();
-  $("invoiceCaptureBtn").disabled=false;
-  $("invoiceCaptureBtn").textContent="📸 Tap to capture";
-  $("invoiceScanStatus").textContent="✓ Camera ready — tap Capture, or hold the bill steady for auto-capture.";
+  const stream=await Promise.race([
+   navigator.mediaDevices.getUserMedia({video:{facingMode:"environment",width:{ideal:1920},height:{ideal:1080}},audio:false}),
+   new Promise((_,reject)=>setTimeout(()=>reject(new Error("Camera startup timeout")),6500))
+  ]);
+  clearTimeout(fallbackTimer);invoiceCameraStream=stream;video.srcObject=stream;
+  try{await video.play();}catch(e){console.warn("Invoice video play:",e);}
+  if(!invoiceCameraStream)throw new Error("Camera stream ended unexpectedly");
+  capture.disabled=false;capture.textContent="📸 Tap to capture";status.textContent="✓ Camera ready — tap Capture. Gallery is also available.";
   const probe=document.createElement("canvas"),pc=probe.getContext("2d",{willReadFrequently:true});probe.width=96;probe.height=54;
-  invoiceStableSince=0;
+  invoiceStableSince=0;invoicePrevFrame=null;
   invoiceScanTimer=setInterval(()=>{
-   if(video.readyState<2||invoiceScannerBusy)return;
-   pc.drawImage(video,0,0,96,54);
-   const data=pc.getImageData(0,0,96,54).data;
-   let diff=999;
-   if(invoicePrevFrame){diff=0;for(let i=0;i<data.length;i+=16)diff+=Math.abs(data[i]-invoicePrevFrame[i]);diff/=data.length/16;}
-   invoicePrevFrame=data;
-   if(diff<8){if(!invoiceStableSince)invoiceStableSince=Date.now();}else invoiceStableSince=0;
-   const stable=invoiceStableSince&&Date.now()-invoiceStableSince>1800;
-   if(stable){
-    $("invoiceScanStatus").textContent="✓ Steady — tap Capture, or wait for auto-capture…";
-    $("invoiceCaptureBtn").disabled=false;
-    $("invoiceCaptureBtn").textContent="📸 Capture invoice";
-    if(!invoiceScannerBusy&&invoiceStableSince&&Date.now()-invoiceStableSince>2600)captureInvoiceFrame();
-   }else{
-    $("invoiceScanStatus").textContent="Keep the entire bill inside the green frame — or tap Capture";
-    $("invoiceCaptureBtn").disabled=false;
-    $("invoiceCaptureBtn").textContent="📸 Tap to capture";
-   }
+   if(!invoiceCameraStream||video.readyState<2||invoiceScannerBusy)return;
+   try{
+    pc.drawImage(video,0,0,96,54);const data=pc.getImageData(0,0,96,54).data;let diff=999;
+    if(invoicePrevFrame){diff=0;for(let i=0;i<data.length;i+=16)diff+=Math.abs(data[i]-invoicePrevFrame[i]);diff/=data.length/16;}
+    invoicePrevFrame=data;if(diff<8){if(!invoiceStableSince)invoiceStableSince=Date.now();}else invoiceStableSince=0;
+    const stable=invoiceStableSince&&Date.now()-invoiceStableSince>1800;
+    if(stable){status.textContent="✓ Steady — tap Capture, or wait for auto-capture…";capture.disabled=false;capture.textContent="📸 Capture invoice";if(Date.now()-invoiceStableSince>2600)captureInvoiceFrame();}
+    else{status.textContent="Keep the entire bill inside the green frame — or tap Capture";capture.disabled=false;capture.textContent="📸 Tap to capture";}
+   }catch(e){console.warn("Invoice camera preview:",e);}
   },150);
- }catch(e){fallbackToNativeInvoiceCamera(outletId,invoiceNumber,e);}
+ }catch(e){clearTimeout(fallbackTimer);console.warn("Invoice camera startup:",e);fallbackToNativeInvoiceCamera(outletId,invoiceNumber,e);}
 }
 $("invoiceScannerClose").onclick=()=>{pendingInvoiceUpload={outletId:"",invoiceNumber:""};closeInvoiceScanner();};
 $("damageCameraClose").onclick=()=>closeDamageCamera();
