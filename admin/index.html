@@ -800,6 +800,106 @@ body.adminPage{background:var(--cmd-bg);font-family:"Plus Jakarta Sans",Inter,sy
     touch-action:pan-y!important;
   }
 }
+</style><style id="driverPaymentModalProductionFix">
+.driverPaymentModal{
+  width:min(520px,calc(100vw - 24px))!important;
+  max-width:520px!important;
+  max-height:min(92dvh,760px)!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:22px!important;
+  overflow:hidden!important;
+  background:#fff!important;
+  color:#172033!important;
+}
+.driverPaymentModal::backdrop{background:rgba(15,23,42,.52);backdrop-filter:blur(5px)}
+.driverPaymentModalHead{
+  display:flex;align-items:flex-start;justify-content:space-between;gap:16px;
+  padding:20px 22px 16px!important;border-bottom:1px solid #eef2f7!important;
+}
+.driverPaymentTitleWrap{min-width:0;flex:1}
+.driverPaymentBadge{
+  display:inline-flex;align-items:center;padding:5px 8px;border-radius:7px;
+  background:#ecfdf5;color:#047857;font-size:10px;font-weight:900;letter-spacing:.09em;
+}
+.driverPaymentModalHead h3{
+  margin:7px 0 3px!important;font-size:22px!important;line-height:1.2!important;
+  font-weight:850!important;color:#0f172a!important;white-space:nowrap!important;
+  overflow:hidden!important;text-overflow:ellipsis!important;
+}
+.driverPaymentModalHead .hint{margin:0!important;font-size:11px!important;line-height:1.45!important;color:#64748b!important}
+.driverPaymentClose{
+  flex:0 0 40px!important;width:40px!important;height:40px!important;padding:0!important;
+  display:grid!important;place-items:center!important;border:1px solid #e2e8f0!important;
+  border-radius:12px!important;background:#f8fafc!important;color:#475569!important;
+  font-size:20px!important;font-weight:500!important;box-shadow:none!important;
+}
+.driverPaymentClose:hover{transform:none!important;background:#f1f5f9!important}
+.driverPaymentBody{
+  padding:20px 22px 18px!important;overflow-y:auto!important;min-height:0!important;
+  display:flex!important;flex-direction:column!important;gap:15px!important;
+}
+.driverPaymentField{display:flex;flex-direction:column;gap:6px;min-width:0}
+.driverPaymentField>label:first-child{
+  color:#475569;font-size:12px;font-weight:800;line-height:1.2;
+}
+.driverPaymentField input,.driverPaymentField select,.driverPaymentField textarea{
+  width:100%;box-sizing:border-box!important;min-height:44px!important;
+  padding:11px 13px!important;border:1px solid #dbe3eb!important;border-radius:12px!important;
+  background:#f8fafc!important;color:#172033!important;font:600 14px/1.2 "Plus Jakarta Sans",Inter,system-ui,sans-serif!important;
+  outline:none!important;box-shadow:none!important;
+}
+.driverPaymentField textarea{resize:vertical;min-height:72px!important}
+.driverPaymentField input:focus,.driverPaymentField select:focus,.driverPaymentField textarea:focus{
+  background:#fff!important;border-color:#10b981!important;box-shadow:0 0 0 3px rgba(16,185,129,.12)!important;
+}
+.driverPaymentAmountWrap{position:relative}
+.driverPaymentAmountWrap>span{
+  position:absolute;left:14px;top:50%;transform:translateY(-50%);z-index:1;
+  color:#94a3b8;font-size:15px;font-weight:850;pointer-events:none;
+}
+.driverPaymentAmountWrap input{padding-left:32px!important;font-size:16px!important}
+.driverPaymentGrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+.driverPaymentGrid input,.driverPaymentGrid select{font-size:12px!important}
+.driverPaymentUpload{
+  min-height:108px!important;box-sizing:border-box!important;padding:17px 12px!important;
+  display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;
+  gap:4px!important;border:2px dashed #cbd5e1!important;border-radius:14px!important;
+  background:#f8fafc!important;color:#475569!important;cursor:pointer!important;text-align:center!important;
+}
+.driverPaymentUpload:hover{background:#f1f5f9!important;border-color:#94a3b8!important}
+.driverPaymentUploadIcon{font-size:25px;line-height:1;color:#94a3b8}
+.driverPaymentUpload strong{font-size:12px;color:#334155}
+.driverPaymentUpload small{font-size:10px;color:#94a3b8}
+.driverPaymentUpload input{display:none!important}
+.driverPaymentPreview{
+  margin-top:7px;padding:7px;border:1px solid #e2e8f0;border-radius:12px;
+  display:flex;align-items:center;gap:9px;background:#fff;
+}
+.driverPaymentPreview img{width:52px;height:52px;object-fit:cover;border-radius:8px}
+.driverPaymentPreview button{
+  margin-left:auto;padding:7px 10px!important;border:1px solid #fecaca!important;
+  background:#fff1f2!important;color:#b91c1c!important;font-size:10px!important;
+}
+.driverPaymentMsg{min-height:16px;margin:0!important;color:#b42318;font-size:11px;font-weight:700}
+.driverPaymentFooter{
+  padding:13px 22px 18px!important;border-top:1px solid #eef2f7!important;background:#fff!important;
+}
+.driverPaymentSave{
+  width:100%!important;min-height:48px!important;padding:12px 16px!important;
+  border-radius:13px!important;display:flex!important;align-items:center!important;
+  justify-content:center!important;gap:9px!important;font-size:14px!important;
+  background:linear-gradient(135deg,#059669,#047857)!important;box-shadow:0 8px 20px rgba(5,150,105,.18)!important;
+}
+@media(max-width:600px){
+  .driverPaymentModal{width:calc(100vw - 24px)!important;max-height:92dvh!important;border-radius:20px!important}
+  .driverPaymentModalHead{padding:17px 17px 14px!important}
+  .driverPaymentModalHead h3{font-size:19px!important}
+  .driverPaymentBody{padding:17px!important;gap:13px!important}
+  .driverPaymentGrid{grid-template-columns:1fr!important;gap:13px!important}
+  .driverPaymentFooter{padding:12px 17px 16px!important}
+  .driverPaymentUpload{min-height:100px!important}
+}
 </style></head>
 <body class="adminPage"><div id="adminBootOverlay"><div class="bootCard">Loading Admin Dashboard<span class="bootSub">Starting secure session…</span></div></div>
 <main id="app">
