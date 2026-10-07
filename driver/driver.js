@@ -137,12 +137,133 @@ function render(){$("driverLogin").classList.toggle("hidden",!!ds.token);$("driv
     return {status:"ocr_error",error:e?.message||String(e)};
   }
 }
+let damageCameraStream=null,damageCaptureBusy=false,pendingDamagePhoto={outletId:"",itemId:""};
+
+function stopDamageCamera(){
+ if(damageCameraStream){
+  damageCameraStream.getTracks().forEach(t=>{try{t.stop();}catch(_){}});
+  damageCameraStream=null;
+ }
+ damageCaptureBusy=false;
+}
+function closeDamageCamera(){
+ stopDamageCamera();
+ $("damageCamera")?.pause?.();
+ const modal=$("damageCameraModal");
+ if(modal){modal.classList.add("hidden");modal.setAttribute("aria-hidden","true");}
+ pendingDamagePhoto={outletId:"",itemId:""};
+}
+function fallbackToNativeDamageCamera(outletId,itemId,error){
+ closeDamageCamera();
+ const input=$("damagePhotoInput");
+ if(!input){
+  toast("Camera is unavailable and the photo picker could not be opened. Please refresh the app.","error");
+  return;
+ }
+ input.value="";
+ input.accept="image/*";
+ input.setAttribute("capture","environment");
+ input.dataset.outletId=String(outletId);
+ input.dataset.itemId=String(itemId);
+ input.dataset.cameraFallback="1";
+ toast(error?.name==="NotAllowedError"?"Opening the phone camera…":"Using the phone camera instead…","info");
+ try{input.click();}catch(e){toast("Could not open the phone camera. Please use Choose photo and try again.","error");}
+}
+async function uploadDamagePhoto(file,outletId,itemId){
+ if(!file||!outletId||!itemId)return false;
+ if(!file.type.startsWith("image/")){toast("Please select an image.","error");return false;}
+ if(file.size>15*1024*1024){toast("Image must be under 15 MB.","error");return false;}
+ const key=String(outletId);
+ if(ds.busy[key])return false;
+ ds.busy[key]=true;render();
+ try{
+  const liveOutlet=ds.outlets.find(o=>String(o.outlet_id)===key);
+  if(!liveOutlet)throw new Error("Outlet is no longer assigned to this driver. Refresh and try again.");
+  const prepared=await compressImage(file);
+  const d=await api("rejection_photo_url",{order_id:ds.orderId,outlet_id:outletId,item_id:itemId,filename:prepared.name,mime_type:prepared.type,extension:"jpg"});
+  if(!d?.path||!d?.token)throw new Error("Could not prepare the damage-photo upload.");
+  let uploadError=null;
+  for(let attempt=1;attempt<=3;attempt++){
+   const result=await getSB().storage.from("delivery-evidence").uploadToSignedUrl(d.path,d.token,prepared,{contentType:prepared.type});
+   if(!result.error){uploadError=null;break;}
+   uploadError=result.error;
+   if(attempt<3)await new Promise(r=>setTimeout(r,700*attempt));
+  }
+  if(uploadError)throw uploadError;
+  const saved=await api("save_rejection_photo",{order_id:ds.orderId,outlet_id:outletId,item_id:itemId,path:d.path,filename:prepared.name,mime_type:prepared.type});
+  if(!saved?.ok)throw new Error(saved?.message||"Damage photo was uploaded but could not be recorded.");
+  toast("✓ Damage photo saved.","success");
+  await refresh();
+  const confirmed=ds.outlets.find(o=>String(o.outlet_id)===key);
+  const confirmedPhotos=Array.isArray(confirmed?.delivery?.rejection_photos)?confirmed.delivery.rejection_photos:[];
+  if(!confirmedPhotos.some(p=>String(p?.item_id)===String(itemId))){
+   throw new Error("Photo upload completed, but the saved evidence was not confirmed. Please refresh and retry.");
+  }
+  return true;
+ }catch(err){
+  console.error("Damage photo upload",err);
+  toast("Damage photo upload failed: "+(err?.message||"Please try again."),"error");
+  return false;
+ }finally{
+  delete ds.busy[key];render();focusOutlet(outletId,true);
+ }
+}
+async function captureDamageFrame(){
+ if(damageCaptureBusy)return;
+ const video=$("damageCamera"),canvas=document.createElement("canvas");
+ const w=video?.videoWidth||0,h=video?.videoHeight||0;
+ if(!w||!h)return toast("Camera is not ready. Hold steady and try again.","error");
+ damageCaptureBusy=true;
+ try{
+  canvas.width=w;canvas.height=h;
+  const ctx=canvas.getContext("2d",{alpha:false});
+  if(!ctx)throw new Error("Camera capture is unavailable.");
+  ctx.drawImage(video,0,0,w,h);
+  const blob=await new Promise(resolve=>canvas.toBlob(resolve,"image/jpeg",0.92));
+  if(!blob)throw new Error("Could not capture the damage photo.");
+  const file=new File([blob],"damage-"+Date.now()+".jpg",{type:"image/jpeg",lastModified:Date.now()});
+  const {outletId,itemId}=pendingDamagePhoto;
+  closeDamageCamera();
+  if(!outletId||!itemId)throw new Error("Damage photo target was lost. Please reopen the item.");
+  await uploadDamagePhoto(file,outletId,itemId);
+ }catch(e){
+  console.error("Damage camera capture",e);
+  toast(e?.message||"Could not capture the damage photo.","error");
+  damageCaptureBusy=false;
+ }
+}
+async function openDamageCamera(outletId,itemId){
+ pendingDamagePhoto={outletId:String(outletId),itemId:String(itemId)};
+ const modal=$("damageCameraModal"),video=$("damageCamera");
+ if(!modal||!video)return fallbackToNativeDamageCamera(outletId,itemId,new Error("Damage camera UI unavailable"));
+ modal.classList.remove("hidden");modal.setAttribute("aria-hidden","false");
+ const status=$("damageCameraStatus"),capture=$("damageCaptureBtn");
+ if(status)status.textContent="Starting camera…";
+ if(capture){capture.disabled=true;capture.textContent="Starting camera…";}
+ try{
+  if(!window.isSecureContext||!navigator.mediaDevices?.getUserMedia)throw new Error("Camera API unavailable");
+  damageCameraStream=await navigator.mediaDevices.getUserMedia({
+   video:{facingMode:{ideal:"environment"},width:{ideal:1920},height:{ideal:1080}},
+   audio:false
+  });
+  video.srcObject=damageCameraStream;
+  await video.play();
+  if(status)status.textContent="✓ Camera ready. Frame the damaged item clearly.";
+  if(capture){capture.disabled=false;capture.textContent="Capture damage photo";}
+ }catch(e){
+  console.warn("Damage camera unavailable:",e);
+  fallbackToNativeDamageCamera(outletId,itemId,e);
+ }
+}
 async function chooseRejectedPhoto(outletId,itemId){
  const input=$("damagePhotoInput");
- if(!input)return toast("Damage photo picker is unavailable. Please refresh the app.","error");
- input.value="";input.dataset.outletId=String(outletId);input.dataset.itemId=String(itemId);
- try{if(typeof input.showPicker==="function")input.showPicker();else input.click();}
- catch(e){try{input.click();}catch(_){toast("Could not open the photo picker. Please tap again.","error");}}
+ if(!input)return toast("Damage photo input is unavailable. Please refresh the app.","error");
+ try{
+  await openDamageCamera(outletId,itemId);
+ }catch(e){
+  console.error("Damage photo camera launch",e);
+  fallbackToNativeDamageCamera(outletId,itemId,e);
+ }
 }
 async function chooseInvoice(outletId){
  const outlet=ds.outlets.find(o=>String(o.outlet_id)===String(outletId)); if(!outlet)return;
@@ -321,10 +442,14 @@ async function openInvoiceScanner(outletId,invoiceNumber){
  }catch(e){fallbackToNativeInvoiceCamera(outletId,invoiceNumber,e);}
 }
 $("invoiceScannerClose").onclick=()=>{pendingInvoiceUpload={outletId:"",invoiceNumber:""};closeInvoiceScanner();};
+$("damageCameraClose").onclick=()=>closeDamageCamera();
+$("damageCaptureBtn").onclick=captureDamageFrame;
+$("damageGalleryBtn").onclick=()=>{const outletId=pendingDamagePhoto.outletId,itemId=pendingDamagePhoto.itemId;closeDamageCamera();const input=$("damagePhotoInput");if(!input)return toast("Photo picker unavailable.","error");input.value="";input.removeAttribute("capture");input.dataset.outletId=outletId;input.dataset.itemId=itemId;input.click();};
+
 $("invoiceCaptureBtn").onclick=captureInvoiceFrame;
 $("invoiceGalleryBtn").onclick=()=>{const outletId=pendingInvoiceUpload.outletId,invoiceNumber=pendingInvoiceUpload.invoiceNumber;closeInvoiceScanner();$("invoiceInput").value="";$("invoiceInput").dataset.outletId=outletId;$("invoiceInput").dataset.mode="invoice";$("invoiceInput").dataset.invoiceNumber=invoiceNumber;$("invoiceInput").click();};
 $("invoiceInput").onchange=async e=>{const input=e.target,file=input.files[0],outletId=input.dataset.outletId,mode=input.dataset.mode||"invoice",invoiceNumber=mode==="invoice"?String(pendingInvoiceUpload.invoiceNumber||input.dataset.invoiceNumber||"").trim():String(input.dataset.invoiceNumber||"").trim();input.value="";if(!file||!outletId)return;if(mode==="invoice"){pendingInvoiceUpload={outletId:"",invoiceNumber:""};input.removeAttribute("capture");applyDriverConfig();return processInvoiceFile(file,outletId,invoiceNumber);}};
- $("damagePhotoInput").onchange=async e=>{const input=e.target,file=input.files[0],outletId=input.dataset.outletId,itemId=input.dataset.itemId;input.value="";if(!file||!outletId||!itemId)return;if(!file.type.startsWith("image/"))return toast("Please select an image.","error");if(file.size>15*1024*1024)return toast("Image must be under 15 MB.","error");const key=String(outletId);ds.busy[key]=true;render();try{const liveOutlet=ds.outlets.find(o=>String(o.outlet_id)===key);if(!liveOutlet)throw new Error("Outlet is no longer assigned to this driver. Refresh and try again.");const prepared=await compressImage(file);const d=await api("rejection_photo_url",{order_id:ds.orderId,outlet_id:outletId,item_id:itemId,filename:prepared.name,mime_type:prepared.type,extension:"jpg"});if(!d?.path||!d?.token)throw new Error("Could not prepare the damage-photo upload.");const {error}=await getSB().storage.from("delivery-evidence").uploadToSignedUrl(d.path,d.token,prepared,{contentType:prepared.type});if(error)throw error;await api("save_rejection_photo",{order_id:ds.orderId,outlet_id:outletId,item_id:itemId,path:d.path,filename:prepared.name,mime_type:prepared.type});toast("✓ Damage photo uploaded.","success");}catch(err){console.error("Damage photo upload",err);toast("Upload failed: "+(err?.message||"Please try again."),"error");}finally{delete ds.busy[key];render();focusOutlet(outletId,true);}};async function saveRejections(outletId){
+ $("damagePhotoInput").onchange=async e=>{const input=e.target,file=input.files?.[0],outletId=input.dataset.outletId,itemId=input.dataset.itemId;input.value="";input.removeAttribute("capture");input.dataset.cameraFallback="";if(!file||!outletId||!itemId)return;await uploadDamagePhoto(file,outletId,itemId);};async function saveRejections(outletId){
  const outlet=ds.outlets.find(o=>String(o.outlet_id)===String(outletId)); if(!outlet)return;
  const rows=[...document.querySelectorAll('.driverRejectionRow[data-outlet-id="'+outletId+'"]')];
  const rejections=rows.map(row=>({item_id:row.dataset.itemId,qty:Number(row.querySelector(".rejectQty")?.value||0),reason:row.querySelector(".rejectReason")?.value||""})).filter(x=>x.qty>0||x.reason).filter(x=>{const item=outlet.items.find(i=>String(i.item_id)===String(x.item_id));return item&&Number(item.packed_qty||0)>0;});
