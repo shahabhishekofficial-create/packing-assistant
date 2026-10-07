@@ -2108,3 +2108,22 @@ document.querySelectorAll("[data-cmd-matrix-filter]").forEach(btn=>btn.addEventL
   document.addEventListener("touchcancel",()=>{active=null;},{passive:true});
 })();
 
+
+
+/* Global modal scroll isolation: lock document only while a native dialog is open. */
+(function installModalScrollIsolation(){
+  const sync=()=>{
+    const open=document.querySelector("dialog[open]");
+    document.body.classList.toggle("modal-open",!!open);
+  };
+  const init=()=>{
+    document.querySelectorAll("dialog").forEach(d=>{
+      d.addEventListener("close",sync);
+      d.addEventListener("cancel",()=>setTimeout(sync,0));
+    });
+    new MutationObserver(sync).observe(document.body,{subtree:true,attributes:true,attributeFilter:["open"]});
+    sync();
+  };
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",init,{once:true});
+  else init();
+})();
