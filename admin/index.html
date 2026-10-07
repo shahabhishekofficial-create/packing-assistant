@@ -567,6 +567,173 @@ body.adminPage{background:var(--cmd-bg);font-family:"Plus Jakarta Sans",Inter,sy
     white-space:nowrap!important;
   }
 }
+</style><style id="mobileDeliveryHistoryCardFix">
+@media(max-width:800px){
+  /* Historical delivery rows must not inherit desktop 8-column geometry. */
+  #driverDashboard .deliveryHistoryTableWrap{
+    width:100%!important;
+    overflow:visible!important;
+  }
+  #driverDashboard .deliveryHistoryTable{
+    display:block!important;
+    width:100%!important;
+    min-width:0!important;
+    border-collapse:separate!important;
+  }
+  #driverDashboard .deliveryHistoryTable thead{
+    display:none!important;
+  }
+  #driverDashboard .deliveryHistoryTable tbody{
+    display:block!important;
+    width:100%!important;
+  }
+  #driverDashboard .deliveryHistoryTable tr{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+    grid-template-rows:auto auto auto auto!important;
+    gap:10px 16px!important;
+    width:100%!important;
+    min-height:0!important;
+    box-sizing:border-box!important;
+    margin:8px 0!important;
+    padding:13px!important;
+    border:1px solid #e2e8f0!important;
+    border-radius:14px!important;
+    background:#fff!important;
+    overflow:hidden!important;
+  }
+  #driverDashboard .deliveryHistoryTable td{
+    display:block!important;
+    width:auto!important;
+    min-width:0!important;
+    margin:0!important;
+    padding:0!important;
+    border:0!important;
+    white-space:normal!important;
+    overflow:visible!important;
+    font-size:10px!important;
+    line-height:1.25!important;
+  }
+  #driverDashboard .deliveryHistoryTable td::before,
+  #driverDashboard .deliveryHistoryTable td::after{
+    box-sizing:border-box!important;
+  }
+
+  /* Delivered at */
+  #driverDashboard .deliveryHistoryTable td:nth-child(1){
+    grid-column:1!important;grid-row:1!important;
+  }
+  /* Driver */
+  #driverDashboard .deliveryHistoryTable td:nth-child(2){
+    grid-column:1!important;grid-row:2!important;
+  }
+  /* Outlet */
+  #driverDashboard .deliveryHistoryTable td:nth-child(3){
+    grid-column:2!important;grid-row:1 / span 2!important;
+    align-self:start!important;
+  }
+  /* Delivery duration */
+  #driverDashboard .deliveryHistoryTable td:nth-child(4){
+    grid-column:1!important;grid-row:3!important;
+  }
+  /* Recorded charge */
+  #driverDashboard .deliveryHistoryTable td:nth-child(5){
+    grid-column:2!important;grid-row:3!important;
+  }
+  /* Missing */
+  #driverDashboard .deliveryHistoryTable td:nth-child(6){
+    grid-column:1!important;grid-row:4!important;
+  }
+  /* Rejected */
+  #driverDashboard .deliveryHistoryTable td:nth-child(7){
+    grid-column:2!important;grid-row:4!important;
+  }
+  /* Action */
+  #driverDashboard .deliveryHistoryTable td:nth-child(8){
+    grid-column:1 / -1!important;grid-row:5!important;
+    justify-self:start!important;
+    padding-top:2px!important;
+  }
+
+  #driverDashboard .deliveryHistoryTable td:nth-child(1)::before{
+    content:"DELIVERED"!important;
+    display:block!important;
+    margin-bottom:4px!important;
+    color:#94a3b8!important;font-size:8px!important;font-weight:800!important;
+    letter-spacing:.04em!important;
+  }
+  #driverDashboard .deliveryHistoryTable td:nth-child(2)::before{
+    content:"DRIVER"!important;
+    display:block!important;
+    margin-bottom:4px!important;
+    color:#94a3b8!important;font-size:8px!important;font-weight:800!important;
+  }
+  #driverDashboard .deliveryHistoryTable td:nth-child(3)::before{
+    content:"OUTLET"!important;
+    display:block!important;
+    margin-bottom:4px!important;
+    color:#94a3b8!important;font-size:8px!important;font-weight:800!important;
+  }
+  #driverDashboard .deliveryHistoryTable td:nth-child(4)::before{
+    content:"DELIVERY TIME"!important;
+    display:block!important;
+    margin-bottom:4px!important;
+    color:#94a3b8!important;font-size:8px!important;font-weight:800!important;
+  }
+  #driverDashboard .deliveryHistoryTable td:nth-child(5)::before{
+    content:"RECORDED CHARGE"!important;
+    display:block!important;
+    margin-bottom:4px!important;
+    color:#94a3b8!important;font-size:8px!important;font-weight:800!important;
+  }
+  #driverDashboard .deliveryHistoryTable td:nth-child(6)::before{
+    content:"MISSING"!important;
+    display:block!important;
+    margin-bottom:4px!important;
+    color:#94a3b8!important;font-size:8px!important;font-weight:800!important;
+  }
+  #driverDashboard .deliveryHistoryTable td:nth-child(7)::before{
+    content:"REJECTED"!important;
+    display:block!important;
+    margin-bottom:4px!important;
+    color:#94a3b8!important;font-size:8px!important;font-weight:800!important;
+  }
+
+  #driverDashboard .deliveryHistoryTable td:nth-child(1),
+  #driverDashboard .deliveryHistoryTable td:nth-child(2),
+  #driverDashboard .deliveryHistoryTable td:nth-child(3){
+    color:#172033!important;
+    font-weight:600!important;
+  }
+  #driverDashboard .deliveryHistoryTable td:nth-child(3) b{
+    display:block!important;
+    font-size:11px!important;
+    line-height:1.25!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  #driverDashboard .deliveryHistoryTable td:nth-child(3) small{
+    display:block!important;
+    margin-top:3px!important;
+    color:#94a3b8!important;
+    font-size:8px!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+
+  #driverDashboard .deliveryHistoryTable td:nth-child(8) .deliveryChargeEditBtn{
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    min-height:38px!important;
+    padding:7px 16px!important;
+    border-radius:20px!important;
+    font-size:10px!important;
+    white-space:nowrap!important;
+  }
+}
 </style></head>
 <body class="adminPage"><div id="adminBootOverlay"><div class="bootCard">Loading Admin Dashboard<span class="bootSub">Starting secure session…</span></div></div>
 <main id="app">
@@ -718,7 +885,7 @@ body.adminPage{background:var(--cmd-bg);font-family:"Plus Jakarta Sans",Inter,sy
   <div class="driverOutletControls"><div class="driverFilterTabs" role="tablist"><button type="button" class="driverFilterTab active" data-filter="all">All <span id="driverAllCount">0</span></button><button type="button" class="driverFilterTab" data-filter="pending">Pending <span id="driverPendingCount">0</span></button><button type="button" class="driverFilterTab exception" data-filter="exceptions">⚠ Exceptions <span id="driverExceptionCount">0</span></button></div><label class="driverOutletSearch">⌕<input id="driverOutletSearch" type="search" placeholder="Search outlet or driver…" autocomplete="off"></label></div>
   <div class="tableWrap driverLiveTableWrap"><table class="deliveryDashTable"><thead><tr><th>Outlet</th><th>Driver</th><th>Status</th><th>Missing</th><th>Rejected</th><th>Last action</th><th>Evidence</th></tr></thead><tbody id="liveRouteBody"></tbody></table></div></section>
   <section id="driverExceptionsSection" class="deliveryDashSection hidden"><div class="sectionHead"><div><span class="eyebrow">EXCEPTIONS</span><h3>Needs attention</h3><p class="hint">Only outlets with an outstanding missing, rejection, invoice, or delivery-check issue are shown.</p></div></div><div class="tableWrap"><table class="deliveryDashTable"><thead><tr><th>Order date</th><th>Driver</th><th>Outlet</th><th>Issue / Missing items</th><th>Rejected</th><th>Invoice / Action</th></tr></thead><tbody id="driverExceptionsBody"></tbody></table></div></section>
-  <section class="deliveryDashSection"><div class="sectionHead"><div><span class="eyebrow">DELIVERY HISTORY</span><h3>Historical delivery transactions</h3><p class="hint">Edit a past delivery charge when extra cost or higher quantity required an adjustment. Outlet default configuration is not changed.</p></div></div><div class="tableWrap"><table class="deliveryDashTable"><thead><tr><th>Delivered at</th><th>Driver</th><th>Outlet / Order</th><th>Delivery time</th><th>Recorded charge</th><th>Missing</th><th>Rejected</th><th>Action</th></tr></thead><tbody id="recentDeliveriesBody"></tbody></table></div></section>
+  <section class="deliveryDashSection"><div class="sectionHead"><div><span class="eyebrow">DELIVERY HISTORY</span><h3>Historical delivery transactions</h3><p class="hint">Edit a past delivery charge when extra cost or higher quantity required an adjustment. Outlet default configuration is not changed.</p></div></div><div class="tableWrap deliveryHistoryTableWrap"><table class="deliveryDashTable deliveryHistoryTable"><thead><tr><th>Delivered at</th><th>Driver</th><th>Outlet / Order</th><th>Delivery time</th><th>Recorded charge</th><th>Missing</th><th>Rejected</th><th>Action</th></tr></thead><tbody id="recentDeliveriesBody"></tbody></table></div></section>
 </section>
 
 <section id="configuration" class="screen hidden">
@@ -904,7 +1071,7 @@ if(!window.supabase){
 <script defer src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script defer src="../config.js?v=20261001-audit2"></script>
 <script defer src="./auth.js?v=20261001-audit2"></script>
-<script defer src="../app.js?v=20261007-mobile-delivery3"></script>
+<script defer src="../app.js?v=20261007-mobile-delivery4"></script>
 <script defer src="./team.js?v=20261002-staffid3"></script>
 <script defer src="./inventory-nav.js?v=20261001-audit2"></script>
 <script>window.PA_VERSION_URL="../version.json";</script><script defer src="../update.js?v=20261007-mobile-driver2"></script><script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20261007-mobile-driver2",{updateViaCache:"none"}).then(r=>r.update()).catch(console.warn));}</script>
