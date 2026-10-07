@@ -1318,3 +1318,99 @@ dialog,.tableWrap,[class*="scroll"],[class*="Scroller"]{touch-action:pan-x pan-y
 
 /* Team credentials dialog — dedicated form layout */
 .teamMemberDialog{width:min(560px,calc(100vw - 24px))!important;max-width:560px!important;max-height:90vh!important;padding:24px!important;overflow:auto!important}.teamMemberForm{display:block!important;margin:0!important;padding:0!important}.teamMemberHead{align-items:flex-start!important;margin-bottom:22px!important}.teamMemberHead h3{font-size:22px!important;margin:5px 0 4px!important;color:#101828!important}.teamMemberHead .hint{max-width:430px;margin:0!important;line-height:1.45}.teamCloseBtn{min-width:40px!important;width:40px;height:40px;padding:0!important;border-radius:10px!important;display:grid;place-items:center;font-size:18px;flex:0 0 auto}.teamFormFields{display:grid;gap:16px;margin-top:4px}.teamField{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:7px!important;margin:0!important;color:#344054!important;font-size:13px!important;font-weight:800!important;line-height:1.2}.teamField span{display:block!important}.teamField span em{font-style:normal;color:#98a2b3;font-weight:600}.teamField input{display:block!important;width:100%!important;min-width:0!important;height:44px!important;box-sizing:border-box!important;padding:0 13px!important;border:1px solid #d0d5dd!important;border-radius:10px!important;background:#fff!important;color:#101828!important;font:500 14px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;outline:none!important;box-shadow:none!important}.teamField input::placeholder{color:#98a2b3;font-weight:500}.teamField input:focus{border-color:#155eef!important;box-shadow:0 0 0 3px #155eef1a!important}.teamField small{display:block!important;margin:0!important;color:#667085!important;font-size:11px!important;font-weight:500!important;line-height:1.4!important}.teamMemberError{min-height:18px;margin:12px 0 0!important;color:#b42318!important;font-size:12px!important}.teamFormActions{display:flex;justify-content:flex-end;gap:8px;margin-top:10px;padding-top:16px;border-top:1px solid #eaecf0}.teamFormActions button{min-width:100px!important;height:42px!important}@media(max-width:600px){.teamMemberDialog{width:calc(100vw - 16px)!important;padding:18px!important}.teamMemberHead h3{font-size:20px!important}.teamFormActions{position:sticky;bottom:0;background:#fff;padding-bottom:2px}.teamFormActions button{flex:1}.teamField input{height:46px!important}}
+
+
+/* =========================================================
+   GLOBAL VIEWPORT / SCROLL ARCHITECTURE — 2026-10-07
+   Single document scroll on mobile; bounded scroll only for
+   intentional modal/drawer bodies.
+   ========================================================= */
+html{
+  height:100%;
+  box-sizing:border-box;
+  scroll-behavior:smooth;
+  -webkit-text-size-adjust:100%;
+}
+body{
+  min-height:100%;
+  height:auto;
+  overflow-x:hidden;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  touch-action:manipulation;
+}
+*,*:before,*:after{box-sizing:inherit}
+#app{
+  min-height:100vh;
+  height:auto;
+  overflow:visible;
+}
+
+/* Main application wrappers must never become a page-level scroll trap. */
+.cmdShell,.baLayout,.baShell{
+  min-height:100vh;
+  height:auto;
+  overflow:visible;
+}
+.cmdMain,.baMain{
+  min-width:0;
+  height:auto;
+  min-height:100vh;
+  overflow:visible;
+}
+
+/* Explicitly supported generic grids. */
+@media(max-width:768px){
+  .grid-container,.desktop-grid,.data-card-grid{
+    display:flex!important;
+    flex-direction:column!important;
+    width:100%!important;
+    gap:12px!important;
+  }
+  .grid-container>* ,.desktop-grid>* ,.data-card-grid>*{min-width:0!important}
+  .grid-container .status-badge,.desktop-grid .status-badge,.data-card-grid .status-badge,
+  .grid-container button,.desktop-grid button,.data-card-grid button{flex-shrink:0}
+}
+
+/* Mobile: cards/lists/tables flow with the document. */
+@media(max-width:768px){
+  .dashboard-card,.outlet-list-container,.table-wrapper,.section-container,
+  .tableWrap,.opsTableWrap,.cmdTableWrap,.liveDeliverySummary .tableWrap{
+    height:auto!important;
+    max-height:none!important;
+    overflow:visible!important;
+    touch-action:pan-y!important;
+  }
+}
+
+/* Intentional modal/drawer isolation. */
+body.modal-open{
+  overflow:hidden!important;
+  height:100dvh!important;
+  overscroll-behavior:none;
+}
+.modal-container{
+  display:flex;
+  flex-direction:column;
+  max-height:90dvh;
+  overflow:hidden;
+}
+.modal-header,.modal-footer{flex-shrink:0}
+.modal-body{
+  flex:1 1 auto;
+  min-height:0;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  touch-action:pan-y;
+  padding:16px;
+}
+@supports(padding:max(0px)){
+  .modal-footer{
+    padding-bottom:max(16px,env(safe-area-inset-bottom));
+  }
+}
+
+/* Flex text safety. */
+.flex,.flex-row,.flex-col{min-width:0}
+.flex>*{min-width:0}
+.status-badge,.badge,.action-button{flex-shrink:0}
