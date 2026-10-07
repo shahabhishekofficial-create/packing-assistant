@@ -734,6 +734,72 @@ body.adminPage{background:var(--cmd-bg);font-family:"Plus Jakarta Sans",Inter,sy
     white-space:nowrap!important;
   }
 }
+</style><style id="mobileNativeScrollFinalFix">
+@media(max-width:800px){
+  html{
+    height:auto!important;
+    min-height:100%!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    touch-action:pan-y!important;
+  }
+  body.adminPage{
+    height:auto!important;
+    min-height:100vh!important;
+    max-height:none!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    touch-action:pan-y!important;
+    -webkit-overflow-scrolling:touch!important;
+    overscroll-behavior-y:auto!important;
+  }
+  #app{
+    height:auto!important;
+    min-height:100vh!important;
+    max-height:none!important;
+    overflow:visible!important;
+    touch-action:pan-y!important;
+  }
+  .cmdShell{
+    display:block!important;
+    height:auto!important;
+    min-height:100vh!important;
+    max-height:none!important;
+    overflow:visible!important;
+    touch-action:pan-y!important;
+  }
+  .cmdMain{
+    display:block!important;
+    width:100%!important;
+    height:auto!important;
+    min-height:100vh!important;
+    max-height:none!important;
+    overflow:visible!important;
+    touch-action:pan-y!important;
+  }
+  .screen{
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    overflow:visible!important;
+    touch-action:pan-y!important;
+  }
+  #driverDashboard{
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    overflow:visible!important;
+    touch-action:pan-y!important;
+  }
+  /* Prevent table/card containers from becoming accidental scroll parents. */
+  #driverDashboard .tableWrap,
+  #driverDashboard .deliveryDashSection,
+  #driverDashboard .deliveryHistoryTableWrap{
+    max-height:none!important;
+    overflow:visible!important;
+    touch-action:pan-y!important;
+  }
+}
 </style></head>
 <body class="adminPage"><div id="adminBootOverlay"><div class="bootCard">Loading Admin Dashboard<span class="bootSub">Starting secure session…</span></div></div>
 <main id="app">
