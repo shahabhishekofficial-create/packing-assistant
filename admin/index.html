@@ -1251,6 +1251,11 @@ body.adminPage{background:var(--cmd-bg);font-family:"Plus Jakarta Sans",Inter,sy
   </section>
 
   <section class="analysisCard">
+    <div class="sectionHead"><div><span class="eyebrow">ADMIN EXCEPTIONS</span><h3>Missing / Partial Items</h3><p class="hint">Admin can resolve a missing or partial item as fully packed when the physical packing has been completed.</p></div></div>
+    <div class="tableWrap"><table><thead><tr><th>Outlet</th><th>Driver</th><th>Item</th><th>Required</th><th>Packed</th><th>Missing</th><th>Status</th><th>Action</th></tr></thead><tbody id="packingExceptionBody"></tbody></table></div>
+  </section>
+
+  <section class="analysisCard">
     <div class="sectionHead"><div><span class="eyebrow">CURRENT ORDER</span><h3 id="packingOverviewOrderName">Loading…</h3></div><button id="packingOverviewStaffBtn" class="secondary" type="button">Open Staff Packing Screen</button></div>
     <div class="tableWrap"><table><thead><tr><th>Rank</th><th>Outlet</th><th>Driver</th><th>Products</th><th>Required</th><th>Packed</th><th>Missing</th><th>Progress</th><th>Status</th></tr></thead><tbody id="packingOverviewBody"></tbody></table></div>
   </section>
@@ -1395,7 +1400,7 @@ if(!window.supabase){
 <script defer src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script defer src="../config.js?v=20261001-audit2"></script>
 <script defer src="./auth.js?v=20261001-audit2"></script>
-<script defer src="../app.js?v=20261007-scroll1"></script>
+<script defer src="../app.js?v=20261007-packadmin1"></script>
 <script defer src="./team.js?v=20261002-staffid3"></script>
 <script defer src="./inventory-nav.js?v=20261001-audit2"></script>
 <script>window.PA_VERSION_URL="../version.json";</script><script defer src="../update.js?v=20261007-mobile-driver2"></script><script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20261007-mobile-driver2",{updateViaCache:"none"}).then(r=>r.update()).catch(console.warn));}</script>
