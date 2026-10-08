@@ -57,7 +57,6 @@ window.__DRIVER_BUILD__="20261008-deliveryflow10";
 function call(name,args){try{if(typeof window[name]==="function")return window[name](...args);}catch(e){console.error("Driver control",name,e);}}
 document.addEventListener("click",function(e){
  const b=e.target.closest?.("button,a");if(!b)return;
- if(b.id==="driverLoginBtn"){e.preventDefault();call("login",[]);return;}
  if(b.id==="driverLogout"){e.preventDefault();e.stopPropagation();call("logout",[]);return;}
  if(b.id==="driverRefresh"){e.preventDefault();call("refresh",[]);return;}
  if(b.id==="driverMenuBtn"){e.preventDefault();call("openDriverMenu",[]);return;}
