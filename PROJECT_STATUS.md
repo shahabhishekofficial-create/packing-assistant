@@ -1,10 +1,10 @@
 # PROJECT STATUS — Packing Assistant V2
 
-_Last audited: 2026-10-08 (IST)_
+_Last audited: 2026-10-09 (IST)_
 _Repository: `shahabhishekofficial-create/packing-assistant`_
 _Current branch: `main`_
-_Current repository HEAD at completion of this audit: `c2122fa44f4ea4d64937bd9be1503840357a2e1f`_
-_Current declared frontend build: `20261008-deliveryflow10`_
+_Current repository HEAD at completion of this audit: `d0faf0b702b5cade43afe89ba1760acbdb7af9df`_
+_Current declared frontend build: `20261009-bugB-cachefix`_
 
 > **This is an honest state report, not a roadmap.**
 >
@@ -1810,3 +1810,16 @@ The most dangerous areas to touch casually are:
 - Backend was not changed.
 - **Phone verification pending:** user must test one Login tap and confirm the dashboard loads on the first attempt.
 - Bug A (refresh dead-end) and camera initialization remain unresolved and are intentionally not changed in this step.
+
+
+## Finding 6 — Driver infinite refresh loop
+
+**Status: Fixed — awaiting full phone verification.**
+
+Root cause: `driver/index.html` had a stale `window.__DRIVER_BUILD__` value (`20261008-deliveryflow10`) while `version.json` and `driver/sw.js` were already on `20261009-bugB-cachefix`. The startup build guard treated every load as a version mismatch, cleared driver caches/service workers, and redirected back to the same page repeatedly.
+
+Fix: synchronized only `window.__DRIVER_BUILD__` in `driver/index.html` to `20261009-bugB-cachefix`. No camera, OCR, login, Supabase, service-worker logic, or other application behavior was changed for this finding.
+
+Commit: `d0faf0b702b5cade43afe89ba1760acbdb7af9df`
+
+Required live verification: clear site data → close Chrome → reopen → driver login with five separate single taps.
