@@ -1,3 +1,5 @@
+> ⚠️ DEPRECATED: This document is superseded by `PROJECT_STATUS.md`. Do not use `PROJECT_MASTER.md` as the current project source of truth.
+
 # PACKING ASSISTANT — MASTER SYSTEM BLUEPRINT
 _Last verified against GitHub main and live Supabase after the 2026-10-01 audit closure pass._
 
