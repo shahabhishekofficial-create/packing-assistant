@@ -1011,7 +1011,11 @@ The repository contains many current migrations, but the current `main` tree doe
 
 The master document was last described as verified around 2026-10-01, but current `main` is hundreds of commits newer.
 
-The current repository is ahead of the October 1 master audit by **529 commits**.
+The current repository is ahead of the October 1 master audit by **532 commits**.
+
+Verified baseline SHA: `6c99d7f39e00903d23d9e1d97fe535077180b4d8`.
+Verified `main` before Item 2: `2dd4d68dfef43da52ef551dbe42a9b4776f14e5c`.
+The reproducible comparison reports `ahead_by: 532`.
 
 This is a major documentation-control problem.
 
@@ -1200,6 +1204,138 @@ Recent work addressed:
 
 **Status: implemented, but high regression risk.**
 
+---
+
+### F. Service-worker version alignment — 2026-10-09
+
+The admin service worker was aligned from build `20261007-fleet-ledger-redesign` to `20261008-deliveryflow10`.
+
+- Only `admin/sw.js` changed.
+- Cache invalidation logic was unchanged.
+- Commit: `bcd196271ba10a621480aaf11cd64dfcdeffc28e`
+
+**Status: Fully working** for the approved version-string change; repository diff verified as exactly one line changed.
+
+---
+
+### G. Item 1 commit-count verification — 2026-10-09
+
+The October 1 audit baseline was verified as `6c99d7f39e00903d23d9e1d97fe535077180b4d8`.
+
+The verified comparison to `main` reported:
+
+- `ahead_by: 532`
+- `behind_by: 0`
+- `total_commits: 532`
+
+The previous **529** claim was incorrect.
+
+---
+
+### H. Live-verification pass — 2026-10-09
+
+The requested live verification was attempted against the deployed GitHub Pages URLs. The available browser/web endpoint and runtime network environment could not access the deployed Pages site, so no false live-device result is recorded.
+
+**Vegetable Inventory startup — Partially working**
+
+- Current source contains the nologin8 defensive boot path, required-DOM preflight, controlled guest session startup, workspace hiding on failure, and explicit startup error.
+- Live deployed startup could not be executed in this environment.
+
+**Driver camera flow — Partially working**
+
+- Current source contains invoice camera UI, native/gallery fallback, damage camera, capture handlers, and evidence upload paths.
+- Physical camera permission, tap capture, and actual evidence upload could not be verified here.
+
+**Driver invoice OCR — Partially working**
+
+- Current source contains Tesseract.js v5 integration and invoice-number OCR/mismatch handling.
+- A live browser OCR run against a sample invoice image could not be executed here; no sample invoice image was available for an actual run.
+
+**Restaurant Inventory staff counting — Partially working**
+
+- Current source contains manual name/barcode search, BarcodeDetector camera scanning, quantity save, IndexedDB offline queue, automatic online flush, and submit gating.
+- Live barcode-camera behavior and true offline/airplane-mode queue synchronization could not be verified here.
+
+No application source, database schema, RPC, or service-worker logic was changed as part of this verification pass.
+
+#### Phone verification checklist
+
+1. **Vegetable Inventory startup**
+   - Open the Vegetable Inventory PWA on the phone in a normal browser session.
+   - Expected first screen: `Vegetable Inventory` → `In-hand counting` → `Quick count`.
+   - Expected: staff name and today's date appear; `Session open` is shown; vegetable search/list loads.
+   - PASS: no blank page, no startup error, no missing-element error, and the search field is usable.
+   - FAIL: blank page, `Vegetable Inventory page is incomplete...`, `Inventory access could not start`, or the workspace never appears.
+
+2. **Driver invoice camera**
+   - Open Driver PWA → log in → open an assigned outlet.
+   - Start the invoice step and reach `Scan Invoice`.
+   - Tap the camera capture control.
+   - PASS: camera preview opens, permission prompt appears if needed, live video is visible, capture completes, and the invoice preview/processing step appears.
+   - FAIL: permission is repeatedly requested, preview remains black, capture button stays disabled, or capture returns to the previous screen without an image.
+
+3. **Driver invoice gallery fallback**
+   - In `Scan Invoice`, tap `Choose from gallery`.
+   - Select an invoice image.
+   - PASS: selected image enters the same invoice-processing/verification path as camera capture.
+   - FAIL: gallery selection does nothing, wrong outlet/invoice context is used, or the workflow resets.
+
+4. **Driver damage camera**
+   - Create/enter a rejection requiring damage evidence.
+   - Reach `Take damage photo` → allow camera → frame the damaged item.
+   - Tap the capture button.
+   - PASS: photo is captured and the workflow proceeds to upload/save evidence; the outlet remains in the rejection workflow.
+   - FAIL: camera does not start, capture does nothing, upload fails, or the app incorrectly returns to the outlet list.
+
+5. **Driver damage gallery fallback**
+   - From `Take damage photo`, tap `Choose photo`.
+   - Select a damage image.
+   - PASS: image is uploaded/saved as damage evidence for the correct outlet and rejected item.
+   - FAIL: no upload, wrong item/outlet association, or evidence is lost after leaving the dialog.
+
+6. **Driver invoice OCR — match**
+   - Use a clear invoice whose numeric invoice number is known.
+   - Enter the numeric invoice number in `Enter invoice number`.
+   - Capture/upload the same invoice.
+   - PASS: OCR extracts a matching numeric candidate and the result is recorded as a match/no-mismatch result.
+   - FAIL: the correct number is consistently missed on a clear image or the result is associated with the wrong invoice.
+
+7. **Driver invoice OCR — mismatch**
+   - Enter a deliberately different numeric invoice number from the number printed on the test invoice.
+   - Upload/capture that invoice.
+   - PASS: OCR detects the printed number and records a mismatch/flag without falsely treating it as a match.
+   - FAIL: mismatch is silently treated as a match or the OCR result is not recorded.
+
+8. **Restaurant Inventory manual search/count**
+   - Open Restaurant Inventory staff → `Start Count` → `Restaurant Grocery`.
+   - In `Find an item`, search by item name.
+   - Select an item, enter a physical count, tap `Save Count`.
+   - PASS: saved confirmation appears with the correct count/unit and the item remains associated with the current session.
+   - FAIL: item cannot be found, save errors, wrong quantity/unit is displayed, or the count disappears.
+
+9. **Restaurant Inventory barcode scan**
+   - Tap `Scan` beside the search field.
+   - Allow camera permission.
+   - Point at a supported EAN/UPC barcode and tap `Scan barcode`.
+   - PASS: barcode is detected, the matching item is selected, and its count-entry field becomes active.
+   - FAIL: camera cannot start, barcode is detected but no matching item is selected, or scan closes without result.
+
+10. **Restaurant Inventory offline queue**
+    - Start a count session and select an item.
+    - Turn on Airplane Mode before tapping `Save Count`.
+    - Enter a valid quantity and tap `Save Count`.
+    - PASS: UI says `Saved offline. It will sync automatically when connection returns.` and the count is retained locally.
+    - Re-enable network; wait for automatic sync, then reopen/refresh the session.
+    - PASS: the queued count appears in the server session/report and is not duplicated.
+    - FAIL: count is lost, never synchronizes, duplicates, or submit incorrectly reports pending data.
+
+11. **Restaurant Inventory submit gate**
+    - With a queued offline count still pending, tap `Submit Count` before synchronization completes.
+    - PASS: submission is blocked with a message that offline counts are still syncing.
+    - After synchronization completes, tap `Submit Count` again.
+    - PASS: `Count submitted successfully.` appears and the export card becomes available.
+
+This verification section intentionally does not upgrade any of the four flagged workflows to `Fully working` without the missing live/device evidence.
 ---
 
 # 18. RECENT HISTORY — LAST ~10–15 DEVELOPMENT WORKSTREAMS
