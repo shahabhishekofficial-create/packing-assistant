@@ -3,7 +3,7 @@
 _Last audited: 2026-10-08 (IST)_
 _Repository: `shahabhishekofficial-create/packing-assistant`_
 _Current branch: `main`_
-_Current repository HEAD at completion of this audit: `f8cb03ee`_
+_Current repository HEAD at completion of this audit: `c2122fa44f4ea4d64937bd9be1503840357a2e1f`_
 _Current declared frontend build: `20261008-deliveryflow10`_
 
 > **This is an honest state report, not a roadmap.**
@@ -1800,3 +1800,13 @@ The most dangerous areas to touch casually are:
 9. admin authentication/session code.
 
 **This document is now the operational status baseline.**
+
+
+## Latest targeted verification — Driver Bug B
+
+- **Bug B: duplicate driver login handler / session race — code fix implemented.**
+- Root cause confirmed: driver/driver.js has the guarded capture-phase login binding and driver/index.html had a second document-level click handler that independently called login().
+- Fix: removed only the competing driver/index.html Login-button branch. The existing driver/driver.js capture-phase binding remains the single login click path.
+- Backend was not changed.
+- **Phone verification pending:** user must test one Login tap and confirm the dashboard loads on the first attempt.
+- Bug A (refresh dead-end) and camera initialization remain unresolved and are intentionally not changed in this step.
