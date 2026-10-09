@@ -137,6 +137,10 @@
       html+='<section class="driverRouteSection"><div class="driverRouteSectionHead"><div><span class="eyebrow">ACTIVE & UPCOMING</span><h3>'+active.length+' stop'+(active.length===1?"":"s")+' remaining</h3></div><span class="routeProgress">'+completed.length+' / '+sorted.length+' complete</span></div>';
       html+=active.map((o,i)=>card(o,i,false)).join("");
       html+='</section>';
+    }else if(ds.routeLoadState!=="loaded"){
+      html+='<section class="driverAllDone"><div class="driverAllDoneIcon">↻</div><h3>Route unavailable</h3><p>We could not confirm your delivery status. Tap Refresh to try again.</p></section>';
+    }else if(sorted.length===0){
+      html+='<section class="driverAllDone"><div class="driverAllDoneIcon">!</div><h3>No outlets loaded</h3><p>No assigned outlets were returned for the current order. Tap Refresh or contact Admin.</p></section>';
     }else{
       html+='<section class="driverAllDone"><div class="driverAllDoneIcon">✓</div><h3>Route complete</h3><p>All assigned deliveries are completed.</p></section>';
     }
