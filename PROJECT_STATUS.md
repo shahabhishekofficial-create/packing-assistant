@@ -1,10 +1,10 @@
 # PROJECT STATUS — Packing Assistant V2
 
-_Last audited: 2026-10-09 (IST)_
+_Last audited: 2026-10-10 (IST)_
 _Repository: `shahabhishekofficial-create/packing-assistant`_
 _Current branch: `main`_
-_Current repository HEAD at completion of this audit: `d0faf0b702b5cade43afe89ba1760acbdb7af9df`_
-_Current declared frontend build: `20261009-bugB-cachefix`_
+_Current repository HEAD at completion of this audit: `0359367326f599faf167c757ccac7bcd7840031e`_
+_Current declared frontend build: `20261010-driveraudit2`_
 
 > **This is an honest state report, not a roadmap.**
 >
@@ -1823,3 +1823,22 @@ Fix: synchronized only `window.__DRIVER_BUILD__` in `driver/index.html` to `2026
 Commit: `d0faf0b702b5cade43afe89ba1760acbdb7af9df`
 
 Required live verification: clear site data → close Chrome → reopen → driver login with five separate single taps.
+
+
+## Finding 7 — False “Route complete” state after refresh
+
+**Status: Code fix committed — awaiting live phone verification.**
+
+Root cause: the driver UX rendered “Route complete” whenever the active outlet list was empty, without checking whether dashboard data had loaded successfully. A failed/empty dashboard response could therefore appear as successful completion.
+
+Fix:
+- `driver/driver.js`: track route load state as `not-loaded`, `loading`, `loaded`, or `error`.
+- `driver/driver-ux-v2.js`: show “Route unavailable” if route data did not load successfully; show “No outlets loaded” if a successful response contains no outlets; show “Route complete” only when loaded outlet data exists and all returned outlets are delivered.
+
+No database, Supabase RPC, login, camera, OCR, service-worker, or update logic was changed for this finding. The duplicate Refresh handler was intentionally left untouched.
+
+Commits:
+- `22822ef1fae660c573323ca26f576a9677c120ff` — route load-state tracking
+- `0359367326f599faf167c757ccac7bcd7840031e` — false-completion UI guard
+
+Required verification: clear site data, close Chrome, reopen the Driver PWA, log in once, and confirm that assigned outlets appear. If dashboard loading fails, the UI must show a retry message instead of “Route complete”.
