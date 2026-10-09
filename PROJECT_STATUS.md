@@ -3,7 +3,7 @@
 _Last audited: 2026-10-10 (IST)_
 _Repository: `shahabhishekofficial-create/packing-assistant`_
 _Current branch: `main`_
-_Current repository HEAD at completion of this audit: `6bd61df296e40be2326403c9f8541640e150bb02`_
+_Current repository HEAD at completion of this audit: `e7e65468b78e2bcb0041e84e2c03f6e885c0393a`_
 _Current declared frontend build: `20261010-driveraudit2`_
 
 > **This is an honest state report, not a roadmap.**
@@ -1842,3 +1842,16 @@ Commits:
 - `0359367326f599faf167c757ccac7bcd7840031e` — false-completion UI guard
 
 Required verification: clear site data, close Chrome, reopen the Driver PWA, log in once, and confirm that assigned outlets appear. If dashboard loading fails, the UI must show a retry message instead of “Route complete”.
+
+
+## Driver refresh initialization and viewport stability
+
+**Status: Source fix committed; live deployment/cache verification pending.**
+
+- Moved the `refreshPromise` declaration beside the driver state declarations so it is initialized before any refresh callback can access it, eliminating the temporal-dead-zone error shown after login.
+- Added `renderPreservingViewport()` and used it during dashboard refresh/page loading/error rendering to preserve the current vertical scroll position during passive refresh updates. Explicit workflow-driven outlet focus/scroll behavior remains unchanged.
+- Changed file: `driver/driver.js` only for application logic.
+- Commit: `e7e65468b78e2bcb0041e84e2c03f6e885c0393a`.
+- Static verification: exactly one `refreshPromise` declaration remains, placed before refresh handlers; refresh function contains no direct `render()` calls, only viewport-preserving renders.
+- Limitation: `driver/index.html`, `driver/sw.js`, and `version.json` still use build `20261010-driveraudit2`; cache-busting was not changed in this commit. A separate approved release-version bump may be required before an already-installed PWA receives this JavaScript.
+- Live Android viewport stability and deployment behavior are not yet verified.
