@@ -40,11 +40,11 @@ window.__DRIVER_BUILD__="20261010-driveraudit1";
     if(serverBuild && serverBuild!==window.__DRIVER_BUILD__){
       if("serviceWorker" in navigator){
         const regs=await navigator.serviceWorker.getRegistrations();
-        await Promise.all(regs.filter(x=>x.scope.includes("/driver/")||x.scope.endsWith("/packing-assistant/")).map(x=>x.unregister()));
+        await Promise.all(regs.filter(x=>x.scope.includes("/driver/")).map(x=>x.unregister()));
       }
       if("caches" in window){
         const keys=await caches.keys();
-        await Promise.all(keys.filter(k=>k.startsWith("pa-driver-")||k.startsWith("packing-assistant-")).map(k=>caches.delete(k)));
+        await Promise.all(keys.filter(k=>k.startsWith("pa-driver-")).map(k=>caches.delete(k)));
       }
       location.replace(location.pathname+"?driver_build="+encodeURIComponent(serverBuild));
       return;
