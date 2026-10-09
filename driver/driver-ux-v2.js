@@ -81,7 +81,10 @@
 
     function card(o,index,isCompleted){
       const d=o.delivery||{};
-      const delivered=String(d.status||"").toLowerCase()==="delivered";
+      const deliveryState=String(d.delivery_state||"").toUpperCase();
+      const delivered=deliveryState==="DELIVERED"||String(d.status||"").toLowerCase()==="delivered";
+      const rejectionConfirmed=deliveryState==="REJECTIONS_CONFIRMED"||(!deliveryState&&d.rejections_confirmed===true);
+      const rejectionData={...d,rejections_confirmed:rejectionConfirmed};
       const packed=o.status==="completed";
       const items=o.items||[];
       const busy=!!ds.busy[o.outlet_id];
@@ -94,7 +97,7 @@
       const damagePhotoRequired=cfg("driver.damage_photo_required",true);
       const damageRows=(Array.isArray(d.item_rejections)?d.item_rejections:[]).filter(r=>Number(r.rejected_qty||0)>0&&String(r.reason||"").toUpperCase()==="DAMAGE");
       const damagePending=damagePhotoRequired&&damageRows.some(r=>!rejectionPhotos.some(p=>String(p.item_id)===String(r.item_id)));
-      const deliveryReady=(!invoiceRequired||!!d.invoice_path)&&(!invoiceNumberRequired||/^\d+$/.test(String(d.invoice_number||"")))&&(!rejectionRequired||!!d.rejections_confirmed)&&!damagePending;
+      const deliveryReady=(!invoiceRequired||!!d.invoice_path)&&(!invoiceNumberRequired||/^\d+$/.test(String(d.invoice_number||"")))&&(!rejectionRequired||rejectionConfirmed)&&!damagePending;
       const activeIndex=active.findIndex(x=>String(x.outlet_id)===String(o.outlet_id));
       const sequence=(Number(o.outlet_rank)||0)>0 ? Number(o.outlet_rank) : sorted.indexOf(o)+1;
       const label=statusLabel(o,activeIndex,delivered,packed);
@@ -108,7 +111,7 @@
       }).join("");
 
       const rejection=cfg("driver.rejection_confirmation",true)
-        ? (d.rejections_confirmed ? postRejectionHtml(o,d,items) : rejectionHtml(o,d,items))
+        ? (rejectionConfirmed ? postRejectionHtml(o,rejectionData,items) : rejectionHtml(o,rejectionData,items))
         : postRejectionHtml(o,d,items);
 
       const cardBody='<div class="driverModernCardBody">'
@@ -141,10 +144,31 @@
       html+='<details class="driverCompletedDrawer"><summary><span>Completed Deliveries</span><b>'+completed.length+' / '+sorted.length+'</b><span>›</span></summary><div class="driverCompletedList">'+completed.map(o=>card(o,sorted.indexOf(o),true)).join("")+'</div></details>';
     }
     box.innerHTML=html;
+    if(!box.dataset.completedLockBound){
+      box.dataset.completedLockBound="1";
+      box.addEventListener("click",e=>{
+        const summary=e.target.closest("summary");
+        const row=summary?.closest(".driverCompletedRow");
+        if(!row)return;
+        e.preventDefault();
+        e.stopPropagation();
+        row.open=false;
+      },true);
+      box.addEventListener("keydown",e=>{
+        if(e.key!=="Enter"&&e.key!==" ")return;
+        const summary=e.target.closest("summary");
+        const row=summary?.closest(".driverCompletedRow");
+        if(!row)return;
+        e.preventDefault();
+        e.stopPropagation();
+        row.open=false;
+      },true);
+    }
 
     box.querySelectorAll(".saveRejectionsBtn").forEach(b=>b.onclick=()=>saveRejections(b.dataset.id));
     box.querySelectorAll(".invoiceBtn,.nextInvoiceBtn").forEach(b=>{b.onclick=()=>chooseInvoice(b.dataset.id);if(ds.busy[b.dataset.id])b.disabled=true;});
     box.querySelectorAll(".photoBtn").forEach(b=>b.onclick=()=>chooseRejectedPhoto(b.dataset.outletId,b.dataset.itemId));
+    box.querySelectorAll(".markExceptionPackedBtn").forEach(b=>{b.onclick=()=>markExceptionPacked(b.dataset.outletId,b.dataset.itemId);if(ds.busy["pack:"+String(b.dataset.itemId)])b.disabled=true;});
     box.querySelectorAll(".deliverBtn,.deliverNowBtn").forEach(b=>{b.onclick=()=>markDelivered(b.dataset.id);if(ds.busy[b.dataset.id])b.disabled=true;});
   }
 
