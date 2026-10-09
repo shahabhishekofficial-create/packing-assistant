@@ -1455,3 +1455,86 @@ body.modal-open{
     border-radius:20px!important;
   }
 }
+
+
+/* Bigly Agro Bento UI — progressive visual layer; preserves existing DOM, IDs and workflows */
+:root{
+ --bento-bg:#f4f7f5;--bento-surface:#fff;--bento-line:#e2e9e4;--bento-ink:#14231b;
+ --bento-muted:#68776e;--bento-green:#087443;--bento-green-soft:#e8f6ed;
+ --bento-shadow:0 8px 24px rgba(16,42,28,.045);--bento-radius:18px;
+}
+body.adminPage{background:var(--bento-bg);color:var(--bento-ink)}
+#home .cmdBody,.opsHome{max-width:1600px}
+#home .cmdExecutiveBar,.cmdTriagePanel,.cmdMatrixPanel,.opsHero,.opsPanel,.opsKpi,.opsQuickGrid button,
+#home .cmdManifestCollapsed button{border-color:var(--bento-line);border-radius:var(--bento-radius);box-shadow:var(--bento-shadow)}
+#home .cmdExecutiveBar{padding:18px 20px;background:linear-gradient(115deg,#f0faf3 0%,#fff 68%);gap:18px}
+.cmdTriageGrid{grid-template-columns:minmax(0,1.7fr) minmax(290px,.8fr);gap:16px}
+.cmdTriagePanel,.cmdMatrixPanel,.opsPanel{background:var(--bento-surface);overflow:hidden}
+.cmdTriageHead,.cmdMatrixToolbar,.opsPanelHead{padding:17px 19px;border-bottom:1px solid #edf1ee}
+.cmdTriageBody{padding:13px 19px}
+.cmdAttentionRow{padding:13px 0}
+.cmdAttentionRow:hover,.cmdFleetCompactRow:hover{background:#fafcfb}
+.cmdMatrixPanel{margin-top:16px}
+.cmdMatrixToolbar{flex-wrap:wrap}
+.cmdMatrixTools button{border-radius:10px;padding:8px 11px}
+.cmdMatrixTools button.active{background:var(--bento-green);border-color:var(--bento-green)}
+.opsHome{padding:8px 0 34px}
+.opsHero{padding:22px 24px;background:linear-gradient(118deg,#e6f6eb 0%,#f8fcf9 47%,#fff 100%);margin-bottom:16px}
+.opsHeroIcon{border-radius:16px;background:#d6efdf}
+.opsHero h1{letter-spacing:-.65px;font-size:clamp(22px,2vw,29px)}
+.opsKpiGrid{grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:16px}
+.opsKpi{position:relative;min-width:0;padding:18px;border-radius:18px;box-shadow:var(--bento-shadow);transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease}
+.opsKpi:hover{transform:translateY(-2px);border-color:#c7ddce;box-shadow:0 12px 30px rgba(16,42,28,.075)}
+.opsKpi strong{font-size:clamp(23px,2vw,30px);letter-spacing:-.6px}
+.opsKpiIcon{width:40px;height:40px;border-radius:13px}
+.opsThreeGrid{grid-template-columns:minmax(0,1.05fr) minmax(0,1.3fr) minmax(260px,.9fr);gap:14px;margin-bottom:16px}
+.opsPanelHead h2,.cmdTriageHead h2,.cmdMatrixToolbar h2{font-size:14px;letter-spacing:-.15px}
+.opsList,.opsActivity{padding-left:17px;padding-right:17px}
+.opsQuickPanel{margin-bottom:16px}
+.opsQuickGrid{grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;padding:14px}
+.opsQuickGrid button{min-height:88px;border-radius:14px;padding:14px;background:linear-gradient(145deg,#fff,#fbfdfb);transition:transform .15s ease,border-color .15s ease}
+.opsQuickGrid button:hover{transform:translateY(-2px);border-color:#a9cfb7;background:#f5fbf7}
+.opsBottomGrid{grid-template-columns:minmax(0,1.2fr) minmax(0,.9fr) minmax(0,1fr);gap:14px}
+.opsTable th{background:#f6f9f7}
+.opsTable th,.opsTable td{padding:10px 12px}
+.opsStatus,.opsMissing,.opsKpiIcon{letter-spacing:.1px}
+.adminCard,.card{border-color:var(--bento-line);border-radius:18px;box-shadow:var(--bento-shadow)}
+button,input,select,textarea{transition:background-color .15s ease,border-color .15s ease,box-shadow .15s ease}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid rgba(8,116,67,.2);outline-offset:2px}
+@media(min-width:1500px){
+ .opsThreeGrid{grid-template-columns:minmax(0,1.05fr) minmax(0,1.35fr) minmax(300px,.85fr)}
+ .opsBottomGrid{grid-template-columns:minmax(0,1.25fr) minmax(0,.9fr) minmax(0,1fr)}
+}
+@media(max-width:1100px){
+ .opsThreeGrid,.opsBottomGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .opsThreeGrid>.opsPanel:last-child,.opsBottomGrid>.opsPanel:last-child{grid-column:1/-1}
+ .opsQuickGrid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:760px){
+ #app{padding:12px 12px 26px}
+ .opsHome{padding-top:2px}
+ .opsHero{padding:17px;align-items:flex-start;flex-direction:column;gap:15px}
+ .opsHeroTitle{align-items:flex-start}
+ .opsHeroIcon{width:44px;height:44px;flex:0 0 auto}
+ .opsStage{min-width:0;width:100%;gap:5px;overflow-x:auto;padding:2px 0 4px}
+ .opsStage>div{min-width:60px}
+ .opsKpiGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+ .opsKpi{padding:13px;min-height:108px;border-radius:15px;gap:9px}
+ .opsKpiIcon{width:32px;height:32px;border-radius:10px}
+ .opsKpi strong{font-size:23px}
+ .opsThreeGrid,.opsBottomGrid{grid-template-columns:minmax(0,1fr);gap:10px}
+ .opsThreeGrid>.opsPanel:last-child,.opsBottomGrid>.opsPanel:last-child{grid-column:auto}
+ .opsPanel{border-radius:16px}
+ .opsPanelHead{padding:14px 15px}
+ .opsQuickGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:10px}
+ .opsQuickGrid button{min-height:78px;padding:11px}
+ .cmdTriageGrid{grid-template-columns:minmax(0,1fr);gap:10px}
+ .cmdExecutiveBar{padding:14px;border-radius:15px}
+ .cmdMatrixToolbar{padding:13px;gap:10px}
+ .cmdMatrixTools{width:100%}
+ .cmdMatrixTools button{flex:1}
+}
+@media(prefers-reduced-motion:reduce){
+ .opsKpi,.opsQuickGrid button,button{transition:none!important}
+ .opsKpi:hover,.opsQuickGrid button:hover{transform:none}
+}
