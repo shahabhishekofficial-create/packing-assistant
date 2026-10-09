@@ -63,3 +63,17 @@ Whenever the user asks to implement, change, fix, redesign, or add something:
   - Review and remediation of remaining backend/storage consistency and security findings.
   - Browser-level verification of the two overlapping service-worker scopes and update behavior.
 - **Important:** This is pass 1, not a declaration that the entire app is bug-free. Continue the audit, update this log after every implementation, and record each remaining issue with a concrete status.
+
+
+### Audit pass 1 — follow-up hardening
+
+- **Additional confirmed issue:** the Driver build guard could unregister the root app service worker and delete `packing-assistant-*` caches when it detected a build mismatch. That cleanup was broader than the Driver scope and could disrupt offline behavior in the rest of the app.
+- **Fix:** build cleanup now unregisters only registrations whose scope contains `/driver/` and deletes only `pa-driver-*` caches.
+- **Build/cache alignment:** bumped all Driver asset references and Driver service-worker build to `20261010-driveraudit2` after the cleanup change.
+- **Commits:**
+  - Scope cache cleanup to Driver only: `cbfbf4b3825694e7f2d333cc2168eeb8108841f4`
+  - Driver HTML/build bump: `1327a8caeb95c6c499ef35a9d8624e5ae133092a`
+  - Driver service-worker build bump: `1654ac7b78d03efb06395b661ebeae02989102dd`
+  - Root service-worker asset version alignment: `a3b787e46eae9e06c143aee4142c2ec5b6656448`
+  - Version manifest: `2aa013e355df4a77143cc99c1f1e9ee24a860671`
+- **Repository drift found:** the current `supabase/migrations` directory does not contain a clearly named migration for the recent rejection-workflow state repair described in earlier work. This needs reconciliation against the live Supabase schema before calling backend migration coverage complete. No speculative SQL migration was added.
