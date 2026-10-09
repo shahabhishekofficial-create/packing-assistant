@@ -3,8 +3,8 @@
 _Last audited: 2026-10-10 (IST)_
 _Repository: `shahabhishekofficial-create/packing-assistant`_
 _Current branch: `main`_
-_Current repository HEAD at completion of this audit: `e7e65468b78e2bcb0041e84e2c03f6e885c0393a`_
-_Current declared frontend build: `20261010-driveraudit2`_
+_Current repository HEAD at completion of this audit: `8dc9eb0be88e4c457e23c8def7255ab16e9d635e`_
+_Current declared frontend build: `20261010-driverrefreshfix1`_
 
 > **This is an honest state report, not a roadmap.**
 >
@@ -1855,3 +1855,23 @@ Required verification: clear site data, close Chrome, reopen the Driver PWA, log
 - Static verification: exactly one `refreshPromise` declaration remains, placed before refresh handlers; refresh function contains no direct `render()` calls, only viewport-preserving renders.
 - Limitation: `driver/index.html`, `driver/sw.js`, and `version.json` still use build `20261010-driveraudit2`; cache-busting was not changed in this commit. A separate approved release-version bump may be required before an already-installed PWA receives this JavaScript.
 - Live Android viewport stability and deployment behavior are not yet verified.
+
+
+## Driver refresh regression — retain last successful route
+
+**Status: Source fix and cache-version bump committed; awaiting live Android verification.**
+
+The reported repeat-refresh failure showed the route becoming unavailable after a successful list load. The refresh error path now snapshots the last successfully loaded outlets/order/earnings and restores them if a later refresh request fails. The UX displays a warning above the retained route so a transient request failure does not erase the driver's usable list or imply completion.
+
+Build/cache rollout was coordinated to `20261010-driverrefreshfix1` across `driver/index.html`, `driver/sw.js`, and `version.json`. Driver JS and UX assets are versioned with that build so the PWA can fetch the corrected source.
+
+Files changed for this fix: `driver/driver.js`, `driver/driver-ux-v2.js`, `driver/index.html`, `driver/sw.js`, `version.json`; this status entry updates `PROJECT_STATUS.md`.
+
+Commits:
+- `fcdfa558135b2c1779c5545324dcb5d5dea6fd1c` — preserve last route on refresh failure
+- `f0a075eb3d1d52632d96847e30545614cb978c8f` — display refresh warning
+- `7a4ba7c63298fb585b92c0c3ca7c5cd8e846a31f` — driver asset version bump
+- `5530b0964f6bda06c913ecf99fda022d1b4298e9` — service-worker cache bump
+- `8dc9eb0be88e4c457e23c8def7255ab16e9d635e` — version.json bump
+
+Verification from source: all driver build markers and cache/resource query strings use `20261010-driverrefreshfix1`; the refresh error path restores the previous route when one exists. Live deployment and phone testing are still required. If a refresh request fails, the expected behavior is to retain the list and show a warning, not replace the list with “Route unavailable”.
