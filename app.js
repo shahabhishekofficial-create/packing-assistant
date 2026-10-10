@@ -579,7 +579,7 @@ function renderOutletSettings(all){
     const response=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_get_outlet_locations",admin_session:window.PA_ADMIN_SESSION,order_id:state.orderId})});
     const result=await response.json().catch(()=>({}));
     if(!response.ok||!result.ok)throw new Error(result.message||"Could not load outlet locations");
-    const byName=new Map((result.locations||[]).map(x=>[String(x.store_name||"").trim().toLowerCase().replace(/[\\s]+/g," "),x]));
+    const byName=new Map((result.locations||[]).map(x=>[String(x.store_name||"").trim().toLowerCase().replace(/\\s+/g," "),x]));
     box.querySelectorAll(".outletSettingRow").forEach(row=>{
       const id=row.dataset.id,o=state.outlets.get(id);if(!o)return;
       const loc=byName.get(String(o.name||"").trim().toLowerCase().replace(/\\s+/g," "));if(!loc)return;
