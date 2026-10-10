@@ -68,5 +68,6 @@ begin
 end $$;
 revoke all on function public.get_outlet_locations_v1(uuid,text) from public;
 revoke all on function public.save_outlet_location_v1(uuid,text,text,text,double precision,double precision,text) from public;
-grant execute on function public.get_outlet_locations_v1(uuid,text) to anon,authenticated;
+revoke all on function public.get_outlet_locations_v1(uuid,text) from anon,authenticated;
+grant execute on function public.get_outlet_locations_v1(uuid,text) to service_role;
 grant execute on function public.save_outlet_location_v1(uuid,text,text,text,double precision,double precision,text) to anon,authenticated;
