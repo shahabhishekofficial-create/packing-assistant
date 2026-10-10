@@ -1928,3 +1928,11 @@ Verification from source: all driver build markers and cache/resource query stri
 - No Supabase, database, RPC, Edge Function, API contract, or backend logic changed.
 - Route modification/swap control was not added: frontend-only local swaps could misrepresent official assignments and would not persist. Revisit only with an explicitly non-authoritative preview design or backend support.
 - Build/cache ID: `20261011-driver-mobileux1`. Source files committed and re-fetched from GitHub; live phone layout and end-to-end delivery regression tests remain to be verified.
+
+
+## Outlet latitude/longitude fields — 2026-10-11
+
+- Added only latitude and longitude fields to Admin → Outlet Setup; values save through the existing isolated outlet location table and admin-session API.
+- Driver Navigate opens Google Maps directions to valid saved coordinates. Without coordinates, it falls back to outlet-name search.
+- No route optimization, route swapping, or automatic rank changes. Existing outlet ranks and driver bill-upload workflow remain unchanged.
+- Build: `20261011-outletlatlong1`. Source changes committed to main; verify GitHub Pages deployment and phone behavior before considering complete.
