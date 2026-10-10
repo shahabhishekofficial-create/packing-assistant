@@ -1888,3 +1888,13 @@ Verification from source: all driver build markers and cache/resource query stri
 - No Supabase function, database, admin, inventory, or packing workflow was changed.
 - Verification target: JavaScript syntax checks and GitHub Pages deployment. Live route load, camera flow, and offline cache behavior still require browser/device confirmation.
 - Separate issue still visible in the supplied console: manifest `icon-192.png` reported as invalid image; not changed in this fix.
+
+
+## PWA icon artwork / manifest warning — 2026-10-11
+
+- User-provided browser screenshot showed the direct `icon-192.png` asset rendered as checkerboard transparency with only fragmented line artwork; the existing PNG was not a usable app icon.
+- Replaced the emoji-dependent `icon.svg` artwork with a clean, vector warehouse-box mark.
+- Updated both root and driver web manifests to use the SVG icon and changed the driver Apple touch icon reference to the same SVG asset. Updated both service-worker precache lists to stop preferring the broken PNGs and bumped cache/build identifiers so clients can refresh.
+- Updated `version.json` to `20261011-iconfix1`.
+- Scope: icon/manifest/cache versioning only. No database, RPC, delivery API, packing logic, or inventory changes.
+- Verification boundary: source files and cache references updated in GitHub; live Pages rollout and real-device PWA installation still need browser verification after deployment/cache refresh.
