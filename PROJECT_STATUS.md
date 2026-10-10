@@ -1930,13 +1930,12 @@ Verification from source: all driver build markers and cache/resource query stri
 - Build/cache ID: `20261011-driver-mobileux1`. Source files committed and re-fetched from GitHub; live phone layout and end-to-end delivery regression tests remain to be verified.
 
 
-## Outlet locations and driver-assigned counts — 20261011-outletlocations1
+## Outlet precise coordinates — 20261011-outletlatlong1
 
-- Branch: `feature/outlet-location-route`; build: `20261011-outletlocations1`.
-- Added the isolated `outlet_location_master` table. Existing `outlets`, packing ranks, delivery records and inventory tables were not altered.
-- Added address, latitude, longitude and optional Google Maps URL inputs directly inside Admin → Outlet Setup. Values are saved persistently by normalized outlet name and reused in later orders. Latitude/longitude must be supplied together and are range-validated.
-- Reads/writes are routed through `driver-api` admin-session actions; location RPCs are not executable by anon/authenticated roles. Supabase migration applied; Edge Function `driver-api` deployed as version 78.
-- Driver navigation opens saved coordinates when available; otherwise it falls back to the supplied Maps URL or address. Driver screen shows the count of outlets assigned to that driver and uses per-driver stop numbering, not the packaging rank number.
-- Safety boundary: this change does **not** yet calculate an optimized road route. Existing ordering is still based on `outlet_rank`; the number shown to drivers no longer exposes that rank, but route sequencing has not been replaced. Do not claim automatic route optimization until a depot/start point and routing/optimization provider are configured and the new route sequence is stored independently from packaging rank.
-- Validation so far: verified migration table exists and anon cannot execute location RPCs; service_role can. Source changes are on the feature branch, not merged to main; no real driver-device or live UI regression test completed.
-- Rollback file: `supabase/rollback_outlet_locations_v1.sql` (destructive: removes stored location data).
+- Scope narrowed to latitude and longitude only in Admin → Outlet Setup.
+- Admin can enter decimal latitude and longitude for each outlet; both must be supplied together and must be within valid geographic ranges. Leave both blank when no precise pin is available.
+- Driver Navigate opens Google Maps directions to saved coordinates. If coordinates are missing, it falls back to searching the outlet name.
+- No automatic route optimization, route swapping, or rank changes are included. Outlet ranks remain manually controlled in Outlet Setup; drivers retain the existing ability to open any outlet assigned to them and upload bills.
+- Data uses the existing isolated `outlet_location_master` table and admin-session `driver-api` actions. Existing outlet, packing, invoice, rejection, damage-photo, and inventory data is not altered.
+- Branch: `feature/outlet-location-route`; build: `20261011-outletlatlong1`.
+- Verification: source-level checks only. Live admin save, driver navigation and installed-PWA cache behavior still require device verification.
