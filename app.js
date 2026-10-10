@@ -556,7 +556,7 @@ function renderOutletSettings(all){
   const box=$("outletSettingsList");
   if(!box)return;
   const drivers=getDrivers();
-  outletSetupDraft=Object.fromEntries(all.map(o=>[o.id,{driver:o.driver||"",rank:o.rank,deliveryCharge:Number(o.deliveryCharge||0),address:o.address||"",latitude:o.latitude??"",longitude:o.longitude??"",mapsUrl:o.mapsUrl||""}]));
+  outletSetupDraft=Object.fromEntries(all.map(o=>[o.id,{driver:o.driver||"",rank:o.rank,deliveryCharge:Number(o.deliveryCharge||0),latitude:o.latitude??"",longitude:o.longitude??""}]));
   box.innerHTML=all.map((o,i)=>{return `<div class="outletSettingRow" draggable="${window.matchMedia("(pointer:fine)").matches}" data-id="${o.id}">
     <span class="dragHandle" title="Drag to change rank">☷</span>
     <b class="rankNo">${i+1}</b>
@@ -566,11 +566,9 @@ function renderOutletSettings(all){
       ${drivers.map(d=>`<option value="${esc(d)}"${(o.driver||"")===d?" selected":""}>${esc(d)}</option>`).join("")}
     </select>
     <div class="chargeField"><span>₹ Delivery</span><input class="deliveryChargeInput" type="number" min="0" step="0.01" value="${Number(o.deliveryCharge||0).toFixed(2)}" aria-label="Delivery charge for ${esc(o.name)}" placeholder="0.00"></div>
-    <div class="outletLocationFields" style="grid-column:1/-1;display:grid;grid-template-columns:minmax(180px,2fr) repeat(2,minmax(110px,1fr)) minmax(160px,1.5fr);gap:8px;padding:0 8px 12px 38px">
-      <input class="outletAddressInput" type="text" value="${esc(o.address||"")}" placeholder="Delivery address / landmark" aria-label="Delivery address for ${esc(o.name)}">
+    <div class="outletLocationFields" style="grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(120px,1fr));gap:8px;padding:0 8px 12px 38px">
       <input class="outletLatitudeInput" type="number" min="-90" max="90" step="any" value="${esc(o.latitude??"")}" placeholder="Latitude" aria-label="Latitude for ${esc(o.name)}">
       <input class="outletLongitudeInput" type="number" min="-180" max="180" step="any" value="${esc(o.longitude??"")}" placeholder="Longitude" aria-label="Longitude for ${esc(o.name)}">
-      <input class="outletMapsUrlInput" type="url" value="${esc(o.mapsUrl||"")}" placeholder="Google Maps URL (optional)" aria-label="Google Maps URL for ${esc(o.name)}">
     </div>
   </div>`}).join("");
 
@@ -583,9 +581,9 @@ function renderOutletSettings(all){
     box.querySelectorAll(".outletSettingRow").forEach(row=>{
       const id=row.dataset.id,o=state.outlets.get(id);if(!o)return;
       const loc=byName.get(String(o.name||"").trim().toLowerCase());if(!loc)return;
-      outletSetupDraft[id]={...(outletSetupDraft[id]||{}),address:loc.address||"",latitude:loc.latitude??"",longitude:loc.longitude??"",mapsUrl:loc.maps_url||""};
+      outletSetupDraft[id]={...(outletSetupDraft[id]||{}),latitude:loc.latitude??"",longitude:loc.longitude??""};
       const set=(sel,val)=>{const el=row.querySelector(sel);if(el)el.value=val??"";};
-      set(".outletAddressInput",loc.address);set(".outletLatitudeInput",loc.latitude);set(".outletLongitudeInput",loc.longitude);set(".outletMapsUrlInput",loc.maps_url);
+      set(".outletLatitudeInput",loc.latitude);set(".outletLongitudeInput",loc.longitude);
     });
   })().catch(e=>{console.warn("Outlet location load:",e.message);});
   let drag=null;
@@ -627,10 +625,8 @@ function renderOutletSettings(all){
     input.addEventListener("input",()=>{
       const row=input.closest(".outletSettingRow"); if(!row)return;
       const id=row.dataset.id; if(!outletSetupDraft[id])outletSetupDraft[id]={};
-      if(input.classList.contains("outletAddressInput"))outletSetupDraft[id].address=input.value.trim();
       if(input.classList.contains("outletLatitudeInput"))outletSetupDraft[id].latitude=input.value.trim();
       if(input.classList.contains("outletLongitudeInput"))outletSetupDraft[id].longitude=input.value.trim();
-      if(input.classList.contains("outletMapsUrlInput"))outletSetupDraft[id].mapsUrl=input.value.trim();
     });
   });
 
@@ -709,7 +705,7 @@ async function saveOutletSettings(){
     const latRaw=String(locationDraft.latitude??"").trim(),lonRaw=String(locationDraft.longitude??"").trim();
     const lat=latRaw===""?null:Number(latRaw),lon=lonRaw===""?null:Number(lonRaw);
     if((lat===null)!==(lon===null)|| (lat!==null&&(!Number.isFinite(lat)||lat < -90||lat > 90)) || (lon!==null&&(!Number.isFinite(lon)||lon < -180||lon > 180))){errors.push(o.name+": enter both valid latitude and longitude, or leave both blank.");continue;}
-    const locResponse=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_save_outlet_location",admin_session:window.PA_ADMIN_SESSION,order_id:state.orderId,store_name:o.name,address:String(locationDraft.address||""),latitude:lat,longitude:lon,maps_url:String(locationDraft.mapsUrl||"")})});
+    const locResponse=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_save_outlet_location",admin_session:window.PA_ADMIN_SESSION,order_id:state.orderId,store_name:o.name,latitude:lat,longitude:lon})});
     const locResult=await locResponse.json().catch(()=>({}));
     if(!locResponse.ok||!locResult.ok)errors.push(o.name+" location: "+(locResult.message||"could not save"));
     if(locResult.error||locResult.data?.ok===false)errors.push(o.name+" location: "+(locResult.error?.message||locResult.data?.message||"could not save"));
