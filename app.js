@@ -556,7 +556,7 @@ function renderOutletSettings(all){
   const box=$("outletSettingsList");
   if(!box)return;
   const drivers=getDrivers();
-  outletSetupDraft=Object.fromEntries(all.map(o=>[o.id,{driver:o.driver||"",rank:o.rank,deliveryCharge:Number(o.deliveryCharge||0)}]));
+  outletSetupDraft=Object.fromEntries(all.map(o=>[o.id,{driver:o.driver||"",rank:o.rank,deliveryCharge:Number(o.deliveryCharge||0),address:o.address||"",latitude:o.latitude??"",longitude:o.longitude??"",mapsUrl:o.mapsUrl||""}]));
   box.innerHTML=all.map((o,i)=>{return `<div class="outletSettingRow" draggable="${window.matchMedia("(pointer:fine)").matches}" data-id="${o.id}">
     <span class="dragHandle" title="Drag to change rank">☷</span>
     <b class="rankNo">${i+1}</b>
@@ -566,6 +566,12 @@ function renderOutletSettings(all){
       ${drivers.map(d=>`<option value="${esc(d)}"${(o.driver||"")===d?" selected":""}>${esc(d)}</option>`).join("")}
     </select>
     <div class="chargeField"><span>₹ Delivery</span><input class="deliveryChargeInput" type="number" min="0" step="0.01" value="${Number(o.deliveryCharge||0).toFixed(2)}" aria-label="Delivery charge for ${esc(o.name)}" placeholder="0.00"></div>
+    <div class="outletLocationFields" style="grid-column:1/-1;display:grid;grid-template-columns:minmax(180px,2fr) repeat(2,minmax(110px,1fr)) minmax(160px,1.5fr);gap:8px;padding:0 8px 12px 38px">
+      <input class="outletAddressInput" type="text" value="${esc(o.address||"")}" placeholder="Delivery address / landmark" aria-label="Delivery address for ${esc(o.name)}">
+      <input class="outletLatitudeInput" type="number" min="-90" max="90" step="any" value="${esc(o.latitude??"")}" placeholder="Latitude" aria-label="Latitude for ${esc(o.name)}">
+      <input class="outletLongitudeInput" type="number" min="-180" max="180" step="any" value="${esc(o.longitude??"")}" placeholder="Longitude" aria-label="Longitude for ${esc(o.name)}">
+      <input class="outletMapsUrlInput" type="url" value="${esc(o.mapsUrl||"")}" placeholder="Google Maps URL (optional)" aria-label="Google Maps URL for ${esc(o.name)}">
+    </div>
   </div>`}).join("");
 
   let drag=null;
@@ -598,6 +604,19 @@ function renderOutletSettings(all){
       const id=row.dataset.id;
       if(!outletSetupDraft[id])outletSetupDraft[id]={};
       outletSetupDraft[id].deliveryCharge=Math.max(0,Number(input.value)||0);
+    });
+  });
+
+  box.querySelectorAll(".outletLocationFields input").forEach(input=>{
+    input.addEventListener("pointerdown",e=>e.stopPropagation());
+    input.addEventListener("click",e=>e.stopPropagation());
+    input.addEventListener("input",()=>{
+      const row=input.closest(".outletSettingRow"); if(!row)return;
+      const id=row.dataset.id; if(!outletSetupDraft[id])outletSetupDraft[id]={};
+      if(input.classList.contains("outletAddressInput"))outletSetupDraft[id].address=input.value.trim();
+      if(input.classList.contains("outletLatitudeInput"))outletSetupDraft[id].latitude=input.value.trim();
+      if(input.classList.contains("outletLongitudeInput"))outletSetupDraft[id].longitude=input.value.trim();
+      if(input.classList.contains("outletMapsUrlInput"))outletSetupDraft[id].mapsUrl=input.value.trim();
     });
   });
 
@@ -671,6 +690,12 @@ async function saveOutletSettings(){
       p_delivery_charge:o.deliveryCharge
     });
     if(chargeResult.error)errors.push(o.name+" delivery charge: "+chargeResult.error.message);
+    const locationDraft=outletSetupDraft[o.id]||{};
+    const latRaw=String(locationDraft.latitude??"").trim(),lonRaw=String(locationDraft.longitude??"").trim();
+    const lat=latRaw===""?null:Number(latRaw),lon=lonRaw===""?null:Number(lonRaw);
+    if((lat===null)!==(lon===null)|| (lat!==null&&(!Number.isFinite(lat)||lat < -90||lat > 90)) || (lon!==null&&(!Number.isFinite(lon)||lon < -180||lon > 180))){errors.push(o.name+": enter both valid latitude and longitude, or leave both blank.");continue;}
+    const locResult=await db.rpc("save_outlet_location_v1",{p_order_id:state.orderId,p_access_token:state.token,p_store_name:o.name,p_address:String(locationDraft.address||""),p_latitude:lat,p_longitude:lon,p_maps_url:String(locationDraft.mapsUrl||"")});
+    if(locResult.error||locResult.data?.ok===false)errors.push(o.name+" location: "+(locResult.error?.message||locResult.data?.message||"could not save"));
   }
 
   btn.disabled=false;
