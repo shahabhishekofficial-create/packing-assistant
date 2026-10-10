@@ -576,9 +576,10 @@ function renderOutletSettings(all){
 
   window.__paOutletLocationLoad= (async()=>{
     if(!state.orderId||!state.token)return;
-    const result=await db.rpc("get_outlet_locations_v1",{p_order_id:state.orderId,p_access_token:state.token});
-    if(result.error||!result.data?.ok)throw new Error(result.error?.message||result.data?.message||"Could not load outlet locations");
-    const byName=new Map((result.data.locations||[]).map(x=>[String(x.store_name||"").trim().toLowerCase().replace(/\\s+/g," "),x]));
+    const response=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_get_outlet_locations",admin_session:window.PA_ADMIN_SESSION,order_id:state.orderId})});
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok||!result.ok)throw new Error(result.message||"Could not load outlet locations");
+    const byName=new Map((result.locations||[]).map(x=>[String(x.store_name||"").trim().toLowerCase().replace(/[\\s]+/g," "),x]));
     box.querySelectorAll(".outletSettingRow").forEach(row=>{
       const id=row.dataset.id,o=state.outlets.get(id);if(!o)return;
       const loc=byName.get(String(o.name||"").trim().toLowerCase().replace(/\\s+/g," "));if(!loc)return;
@@ -708,7 +709,9 @@ async function saveOutletSettings(){
     const latRaw=String(locationDraft.latitude??"").trim(),lonRaw=String(locationDraft.longitude??"").trim();
     const lat=latRaw===""?null:Number(latRaw),lon=lonRaw===""?null:Number(lonRaw);
     if((lat===null)!==(lon===null)|| (lat!==null&&(!Number.isFinite(lat)||lat < -90||lat > 90)) || (lon!==null&&(!Number.isFinite(lon)||lon < -180||lon > 180))){errors.push(o.name+": enter both valid latitude and longitude, or leave both blank.");continue;}
-    const locResult=await db.rpc("save_outlet_location_v1",{p_order_id:state.orderId,p_access_token:state.token,p_store_name:o.name,p_address:String(locationDraft.address||""),p_latitude:lat,p_longitude:lon,p_maps_url:String(locationDraft.mapsUrl||"")});
+    const locResponse=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_save_outlet_location",admin_session:window.PA_ADMIN_SESSION,order_id:state.orderId,store_name:o.name,address:String(locationDraft.address||""),latitude:lat,longitude:lon,maps_url:String(locationDraft.mapsUrl||"")})});
+    const locResult=await locResponse.json().catch(()=>({}));
+    if(!locResponse.ok||!locResult.ok)errors.push(o.name+" location: "+(locResult.message||"could not save"));
     if(locResult.error||locResult.data?.ok===false)errors.push(o.name+" location: "+(locResult.error?.message||locResult.data?.message||"could not save"));
   }
 
