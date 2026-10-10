@@ -14,7 +14,11 @@
   function mapsFor(o){
     const raw=o.maps_url || o.google_maps_url || o.map_url;
     if(raw) return raw;
-    const query=o.address || o.outlet_address || ((o.outlet_name||"")+" Ahmedabad Gujarat");
+    const lat=Number(o.latitude),lon=Number(o.longitude);
+    if(Number.isFinite(lat)&&Number.isFinite(lon)&&o.latitude!==null&&o.longitude!==null&&o.latitude!==""&&o.longitude!==""){
+      return "https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(lat+","+lon);
+    }
+    const query=o.address || o.outlet_address || (o.outlet_name||"");
     return "https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(query);
   }
   function qtyTotal(items){
@@ -100,7 +104,7 @@
       const damagePending=damagePhotoRequired&&damageRows.some(r=>!rejectionPhotos.some(p=>String(p.item_id)===String(r.item_id)));
       const deliveryReady=(!invoiceRequired||!!d.invoice_path)&&(!invoiceNumberRequired||/^\d+$/.test(String(d.invoice_number||"")))&&(!rejectionRequired||rejectionConfirmed)&&!damagePending;
       const activeIndex=active.findIndex(x=>String(x.outlet_id)===String(o.outlet_id));
-      const sequence=(Number(o.outlet_rank)||0)>0 ? Number(o.outlet_rank) : sorted.indexOf(o)+1;
+      const sequence=sorted.indexOf(o)+1;
       const label=statusLabel(o,activeIndex,delivered,packed);
       const cls=statusClass(o,activeIndex,delivered,packed);
       const phone=phoneFor(o);
@@ -127,7 +131,7 @@
           +'</div></div>';
 
       return '<details class="driverOutletRow driverModernRow '+(delivered?"driverCompletedRow":"")+(!delivered&&String(o.outlet_id)===nextId?' driverHeroStop':'')+'" data-outlet-id="'+esc2(o.outlet_id)+'" '+(!delivered&&String(o.outlet_id)===nextId?'open':"")+'><summary class="driverModernSummary">'
-        +'<div class="driverStopNumber">STOP '+sequence+'</div>'
+        +'<div class="driverStopNumber">STOP '+sequence+' OF '+sorted.length+'</div>'
         +'<div class="driverModernMain"><div class="driverModernTitleLine"><strong>'+esc2(o.outlet_name)+'</strong><span class="modernStatus '+cls+'">'+label+'</span></div><div class="driverQuickMeta">📦 '+items.length+' Items · '+required+' Pcs · '+(d.invoice_path?"Invoice ready":"Invoice pending")+'</div></div>'
         +'<div class="driverQuickActions"><a class="driverQuickBtn navigateBtn" target="_blank" rel="noopener" href="'+esc2(map)+'">📍 <span>Navigate</span></a>'+(phone?'<a class="driverQuickIcon callBtn" href="tel:'+esc2(phone)+'" aria-label="Call '+esc2(o.outlet_name)+'">📞</a>':"")+'<span class="driverChevron">›</span></div>'
         +'</summary>'+cardBody+'</details>';
