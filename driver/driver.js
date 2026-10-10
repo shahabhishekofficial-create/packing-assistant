@@ -1,4 +1,6 @@
 const DRIVER_API=window.SUPABASE_CONFIG.url+"/functions/v1/driver-api";const DRIVER_KEY=window.SUPABASE_CONFIG.key;let SB=null;function getSB(){if(!SB){if(!window.supabase?.createClient)throw new Error("Supabase library failed to load.");SB=window.supabase.createClient(window.SUPABASE_CONFIG.url,window.SUPABASE_CONFIG.key);}return SB;}const ds={loading:false,routeLoadState:"not-loaded",loadedOutlets:0,totalOutlets:0,busy:{},token:localStorage.getItem("pa_driver_session")||"",name:localStorage.getItem("pa_driver_name")||"",orderId:null,outlets:[],earned:0};let refreshPromise=null;const $=id=>document.getElementById(id);
+let pendingDamagePhoto={outletId:"",itemId:""};
+
 let __driverLoginBound=false;
 function bindDriverLoginEarly(){
  if(__driverLoginBound)return;
@@ -196,7 +198,7 @@ async function login(){const name=$("driverLoginName").value.trim(),pin=$("drive
     return {status:"ocr_error",error:e?.message||String(e)};
   }
 }
-let damageCameraStream=null,damageCaptureBusy=false,pendingDamagePhoto={outletId:"",itemId:""};
+
 
 function stopDamageCamera(){
  if(damageCameraStream){
