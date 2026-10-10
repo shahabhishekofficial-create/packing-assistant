@@ -1875,3 +1875,16 @@ Commits:
 - `8dc9eb0be88e4c457e23c8def7255ab16e9d635e` — version.json bump
 
 Verification from source: all driver build markers and cache/resource query strings use `20261010-driverrefreshfix1`; the refresh error path restores the previous route when one exists. Live deployment and phone testing are still required. If a refresh request fails, the expected behavior is to retain the list and show a warning, not replace the list with “Route unavailable”.
+
+
+## Driver route startup crash + service-worker response reuse — 2026-10-11
+
+**Status: Source fix committed; deployment and live-device verification pending.**
+
+- Fixed the confirmed startup exception `Cannot access 'pendingDamagePhoto' before initialization`: moved the `pendingDamagePhoto` state declaration ahead of `lockDeliveredRows()` and all possible callers. Camera state and behavior are otherwise unchanged.
+- Fixed service-worker cache writes to clone successful responses synchronously before handing the original response back to the browser. This prevents delayed cache callbacks from calling `clone()` after the response body has been consumed.
+- Bumped the driver build/cache marker to `20261011-driver-routefix1` in `driver/index.html` and `driver/sw.js`, and updated `version.json` so installed clients can identify the new release.
+- Files changed: `driver/driver.js`, `driver/sw.js`, `driver/index.html`, `version.json`, `PROJECT_STATUS.md`.
+- No Supabase function, database, admin, inventory, or packing workflow was changed.
+- Verification target: JavaScript syntax checks and GitHub Pages deployment. Live route load, camera flow, and offline cache behavior still require browser/device confirmation.
+- Separate issue still visible in the supplied console: manifest `icon-192.png` reported as invalid image; not changed in this fix.
