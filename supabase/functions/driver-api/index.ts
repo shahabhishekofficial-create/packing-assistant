@@ -10,7 +10,7 @@ async function attachOutletLocations(db:any,data:any){
  if(!data||typeof data!=="object")return data;
  const {data:rows,error}=await db.from("outlet_location_master").select("store_name,address,latitude,longitude,maps_url,location_verified");
  if(error){console.warn("Outlet location lookup:",error.message);return data;}
- const norm=(v:any)=>String(v||"").normalize("NFKC").trim().replace(/[\\s]+/g," ").toLocaleLowerCase();
+ const norm=(v:any)=>String(v||"").normalize("NFKC").trim().replace(/\\s+/g," ").toLocaleLowerCase();
  const byName=new Map((rows||[]).map((r:any)=>[norm(r.store_name),r]));
  const visit=(v:any):any=>{
   if(Array.isArray(v))return v.map(visit);
@@ -127,13 +127,13 @@ if(body.action==="admin_invoice_url"){const accessToken=String(body.access_token
  if(!names.length)return json({ok:true,locations:[]});
  const {data:locations,error}=await db.from("outlet_location_master").select("store_name,address,latitude,longitude,maps_url,location_verified");
  if(error)return json({ok:false,message:error.message},400);
- const norm=(v:any)=>String(v||"").normalize("NFKC").trim().replace(/[\\s]+/g," ").toLocaleLowerCase();
+ const norm=(v:any)=>String(v||"").normalize("NFKC").trim().replace(/\\s+/g," ").toLocaleLowerCase();
  const byName=new Map((locations||[]).map((x:any)=>[norm(x.store_name),x]));
  return json({ok:true,locations:names.map((store_name:string)=>byName.get(norm(store_name))||{store_name,address:"",latitude:null,longitude:null,maps_url:"",location_verified:false})});
 }
 if(body.action==="admin_save_outlet_location"){
  const session=String(body.admin_session||"");if(!(await adminSessionOk(session)))return json({ok:false,message:"Admin session expired. Please sign in again."},403);
- const orderId=String(body.order_id||""),storeName=String(body.store_name||"").trim().replace(/[\\s]+/g," ");
+ const orderId=String(body.order_id||""),storeName=String(body.store_name||"").trim().replace(/\\s+/g," ");
  if(!/^[0-9a-fA-F-]{36}$/.test(orderId)||!storeName)return json({ok:false,message:"Order and outlet are required"},400);
  const lat=body.latitude===null||body.latitude===""?null:Number(body.latitude),lon=body.longitude===null||body.longitude===""?null:Number(body.longitude);
  if((lat===null)!==(lon===null)|| (lat!==null&&(!Number.isFinite(lat)||lat < -90||lat > 90||!Number.isFinite(lon)||lon < -180||lon > 180)))return json({ok:false,message:"Enter valid latitude and longitude together, or leave both blank."},400);
