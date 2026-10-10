@@ -1,7 +1,7 @@
 -- Additive outlet-location support. Existing packing, assignment and delivery tables remain unchanged.
 create table if not exists public.outlet_location_master (
   store_name text primary key,
-  normalized_store_name text generated always as (lower(regexp_replace(trim(store_name), '\\s+', ' ', 'g'))) stored,
+  normalized_store_name text generated always as (lower(regexp_replace(trim(store_name), '[[:space:]]+', ' ', 'g'))) stored,
   address text not null default '',
   latitude double precision,
   longitude double precision,
@@ -34,7 +34,7 @@ begin
   into v_result
   from (select distinct store_name from public.outlets where order_id=p_order_id) o
   left join public.outlet_location_master l
-    on l.normalized_store_name=lower(regexp_replace(trim(o.store_name), '\\s+', ' ', 'g'));
+    on l.normalized_store_name=lower(regexp_replace(trim(o.store_name), '[[:space:]]+', ' ', 'g'));
   return jsonb_build_object('ok',true,'locations',v_result);
 end $$;
 
@@ -48,7 +48,7 @@ set search_path=public
 as $$
 declare v_name text; v_ok boolean;
 begin
-  v_name:=regexp_replace(trim(coalesce(p_store_name,'')), '\\s+', ' ', 'g');
+  v_name:=regexp_replace(trim(coalesce(p_store_name,'')), '[[:space:]]+', ' ', 'g');
   if v_name='' then return jsonb_build_object('ok',false,'message','Outlet name is required'); end if;
   if (p_latitude is null) <> (p_longitude is null) then
     return jsonb_build_object('ok',false,'message','Latitude and longitude must both be provided');
@@ -58,11 +58,11 @@ begin
   end if;
   select exists(select 1 from public.orders o join public.outlets x on x.order_id=o.id
     where o.id=p_order_id and o.access_token=p_access_token
-      and lower(regexp_replace(trim(x.store_name), '\\s+', ' ', 'g'))=lower(v_name)) into v_ok;
+      and lower(regexp_replace(trim(x.store_name), '[[:space:]]+', ' ', 'g'))=lower(v_name)) into v_ok;
   if not v_ok then return jsonb_build_object('ok',false,'message','Outlet not found in this order'); end if;
   insert into public.outlet_location_master(store_name,address,latitude,longitude,maps_url,location_verified,updated_at)
   values(v_name,trim(coalesce(p_address,'')),p_latitude,p_longitude,trim(coalesce(p_maps_url,'')),p_latitude is not null,now())
-  on conflict (store_name) do update set address=excluded.address,latitude=excluded.latitude,longitude=excluded.longitude,
+  on conflict (normalized_store_name) do update set store_name=excluded.store_name,address=excluded.address,latitude=excluded.latitude,longitude=excluded.longitude,
     maps_url=excluded.maps_url,location_verified=excluded.location_verified,updated_at=now();
   return jsonb_build_object('ok',true);
 end $$;
