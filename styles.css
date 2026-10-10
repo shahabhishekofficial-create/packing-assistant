@@ -1565,3 +1565,28 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
   .settingsDialog .outletSettingRow .chargeField span{display:inline!important;font-size:10px!important}
   .settingsDialog .outletSettingRow .deliveryChargeInput{min-width:0!important;width:100%!important;height:40px!important;font-size:13px!important}
 }
+
+
+
+/* Outlet Setup mobile: allow natural left/right swipe anywhere on the outlet list */
+@media(max-width:650px){
+  .settingsDialog .outletSettingsList{
+    overflow-x:auto!important;
+    overflow-y:auto!important;
+    touch-action:pan-x pan-y!important;
+    -webkit-overflow-scrolling:touch!important;
+    overscroll-behavior-x:contain!important;
+    scrollbar-width:thin!important;
+  }
+  .settingsDialog .outletSettingRow{
+    min-width:680px!important;
+    max-width:none!important;
+    width:680px!important;
+    grid-template-columns:24px 30px minmax(150px,1fr) 120px 105px 120px!important;
+    overflow:visible!important;
+  }
+  .settingsDialog .outletSettingRow .settingName{grid-column:auto!important;grid-row:auto!important;white-space:nowrap!important}
+  .settingsDialog .outletSettingRow .outletLocationToggle{grid-column:auto!important;grid-row:auto!important}
+  .settingsDialog .outletSettingRow .driverSelect{grid-column:auto!important;grid-row:auto!important;width:120px!important}
+  .settingsDialog .outletSettingRow .chargeField{grid-column:auto!important;grid-row:auto!important;width:120px!important}
+}
