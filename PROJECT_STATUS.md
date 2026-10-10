@@ -1918,3 +1918,13 @@ Verification from source: all driver build markers and cache/resource query stri
 - This snapshot preserves the working app code and all modules as they stood at user confirmation. Do not use the freeze branch for feature work; implement future changes on `main` and preserve this branch as a rollback point.
 - Source archive (ZIP): https://github.com/shahabhishekofficial-create/packing-assistant/archive/refs/heads/stable/2026-10-11-working-freeze.zip
 - Freeze scope is source-control backup. This does not create an independent Supabase database backup or export secrets/credentials; those require a separate secure backup procedure.
+
+
+## Driver mobile UX redesign — 20261011-driver-mobileux1
+
+- User confirmed the previous driver app update works, then requested a frontend-only mobile UX redesign. Changes are confined to driver presentation files, cache/build versioning, and documentation.
+- Added a distinct high-contrast hero treatment to the first undelivered stop; active destination names wrap instead of being ellipsized; added an accessible route progress bar; increased Navigate, Call, Refresh and delivery action targets to at least 48px on mobile.
+- Upcoming stops remain compact disclosure rows; existing item, invoice, rejection, damage evidence and delivery action wiring is preserved.
+- No Supabase, database, RPC, Edge Function, API contract, or backend logic changed.
+- Route modification/swap control was not added: frontend-only local swaps could misrepresent official assignments and would not persist. Revisit only with an explicitly non-authoritative preview design or backend support.
+- Build/cache ID: `20261011-driver-mobileux1`. Source files committed and re-fetched from GitHub; live phone layout and end-to-end delivery regression tests remain to be verified.
