@@ -2247,3 +2247,11 @@ No service-role or secret key is exposed to the browser.
 - Safety boundary: this change does **not** yet calculate an optimized road route. Existing ordering is still based on `outlet_rank`; the number shown to drivers no longer exposes that rank, but route sequencing has not been replaced. Do not claim automatic route optimization until a depot/start point and routing/optimization provider are configured and the new route sequence is stored independently from packaging rank.
 - Validation so far: verified migration table exists and anon cannot execute location RPCs; service_role can. Source changes are on the feature branch, not merged to main; no real driver-device or live UI regression test completed.
 - Rollback file: `supabase/rollback_outlet_locations_v1.sql` (destructive: removes stored location data).
+
+
+## Outlet precise coordinates scope — 2026-10-11
+
+- Approved scope: latitude and longitude fields only in Admin → Outlet Setup, used to open the exact outlet location in Google Maps.
+- Outlet ranks stay manually controlled. No automatic routing, reordering, or route swapping.
+- Drivers can continue opening any outlet assigned to them and uploading invoices through the existing workflow.
+- Feature branch: `feature/outlet-location-route`; build `20261011-outletlatlong1`. Frozen release untouched.
