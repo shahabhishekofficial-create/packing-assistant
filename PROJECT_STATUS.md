@@ -1936,3 +1936,5 @@ Verification from source: all driver build markers and cache/resource query stri
 - Driver Navigate opens Google Maps directions to valid saved coordinates. Without coordinates, it falls back to outlet-name search.
 - No route optimization, route swapping, or automatic rank changes. Existing outlet ranks and driver bill-upload workflow remain unchanged.
 - Build: `20261011-outletlatlong1`. Source changes committed to main; verify GitHub Pages deployment and phone behavior before considering complete.
+
+- UX refinement (build `20261011-outletlatlong2`): coordinate inputs are hidden by default. Each outlet has a `Set location` / `Edit location` control; saved locations stay collapsed so staff do not see these fields during routine use.
