@@ -2241,3 +2241,5 @@ No service-role or secret key is exposed to the browser.
 
 - Scope: latitude/longitude fields only in Outlet Setup for exact Google Maps navigation. No address/Maps URL fields and no automatic routing/rank changes.
 - Existing driver ability to open assigned outlets and upload bills is preserved. Build `20261011-outletlatlong1`.
+
+- One-time coordinate entry is collapsed by default per outlet; use `Set location` / `Edit location` only when a store location changes.
