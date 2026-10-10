@@ -78,6 +78,7 @@
     const active=sorted.filter(o=>String(o.delivery?.status||"").toLowerCase()!=="delivered");
     const completed=sorted.filter(o=>String(o.delivery?.status||"").toLowerCase()==="delivered");
     const nextId=active[0] ? String(active[0].outlet_id) : "";
+    const progressPct=sorted.length?Math.round((completed.length/sorted.length)*100):0;
 
     function card(o,index,isCompleted){
       const d=o.delivery||{};
@@ -125,7 +126,7 @@
           : '<span class="driverWaitingNote">Waiting for packing</span>')
           +'</div></div>';
 
-      return '<details class="driverOutletRow driverModernRow '+(delivered?"driverCompletedRow":"")+'" data-outlet-id="'+esc2(o.outlet_id)+'" '+(!delivered&&String(o.outlet_id)===nextId?'open':"")+'><summary class="driverModernSummary">'
+      return '<details class="driverOutletRow driverModernRow '+(delivered?"driverCompletedRow":"")+(!delivered&&String(o.outlet_id)===nextId?' driverHeroStop':'')+'" data-outlet-id="'+esc2(o.outlet_id)+'" '+(!delivered&&String(o.outlet_id)===nextId?'open':"")+'><summary class="driverModernSummary">'
         +'<div class="driverStopNumber">STOP '+sequence+'</div>'
         +'<div class="driverModernMain"><div class="driverModernTitleLine"><strong>'+esc2(o.outlet_name)+'</strong><span class="modernStatus '+cls+'">'+label+'</span></div><div class="driverQuickMeta">📦 '+items.length+' Items · '+required+' Pcs · '+(d.invoice_path?"Invoice ready":"Invoice pending")+'</div></div>'
         +'<div class="driverQuickActions"><a class="driverQuickBtn navigateBtn" target="_blank" rel="noopener" href="'+esc2(map)+'">📍 <span>Navigate</span></a>'+(phone?'<a class="driverQuickIcon callBtn" href="tel:'+esc2(phone)+'" aria-label="Call '+esc2(o.outlet_name)+'">📞</a>':"")+'<span class="driverChevron">›</span></div>'
