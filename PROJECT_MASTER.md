@@ -2235,3 +2235,9 @@ No service-role or secret key is exposed to the browser.
 - Backend untouched. Existing delivery flow handlers remain connected.
 - No route swap feature was added because local-only swaps would not be authoritative or persistent.
 - Verification boundary: GitHub source updated and checked; live deployment and device regression testing pending.
+
+
+## Outlet precise coordinates — 2026-10-11
+
+- Scope: latitude/longitude fields only in Outlet Setup for exact Google Maps navigation. No address/Maps URL fields and no automatic routing/rank changes.
+- Existing driver ability to open assigned outlets and upload bills is preserved. Build `20261011-outletlatlong1`.
