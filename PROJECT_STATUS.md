@@ -1898,3 +1898,12 @@ Verification from source: all driver build markers and cache/resource query stri
 - Updated `version.json` to `20261011-iconfix1`.
 - Scope: icon/manifest/cache versioning only. No database, RPC, delivery API, packing logic, or inventory changes.
 - Verification boundary: source files and cache references updated in GitHub; live Pages rollout and real-device PWA installation still need browser verification after deployment/cache refresh.
+
+
+## Infinite driver page reload — 2026-10-11
+
+- Root cause confirmed in `driver/index.html`: `driverBuildGuard()` compared the hardcoded driver asset build ID against the shared root `version.json` build ID. Those IDs differed, so every page load unregistered the driver service worker, deleted its cache, and called `location.replace()` again. This made the page refresh continuously and blocked tapping controls.
+- Removed the self-reloading guard permanently. Version mismatches must never trigger automatic navigation; the shared `update.js` notification is the sole update path, and only a deliberate tap on Update reloads the page.
+- Aligned the root/driver asset build IDs, version marker, service-worker cache IDs and script URLs to `20261011-refreshloopfix1`; removed duplicate icon precache entries.
+- No application data, localStorage or IndexedDB is cleared by page-load logic. The manual Update action still clears service-worker caches as part of its one-time refresh workflow.
+- Source verification: the old `driverBuildGuard` reload branch is absent and both service workers use the new build ID. Live browser/deployment verification remains pending.
