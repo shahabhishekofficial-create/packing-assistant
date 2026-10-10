@@ -1,1 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="110" fill="#155eef"/><text x="256" y="330" text-anchor="middle" font-size="250">📦</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="104" fill="#155eef"/>
+  <path d="M112 184 256 112l144 72-144 74-144-74Z" fill="#fff"/>
+  <path d="M112 184v154l144 74V258L112 184Z" fill="#e8f0ff"/>
+  <path d="M400 184v154l-144 74V258l144-74Z" fill="#b9d1ff"/>
+  <path d="m112 184 144 74 144-74M256 258v154" fill="none" stroke="#155eef" stroke-width="12" stroke-linejoin="round"/>
+  <path d="m192 152 144 72" fill="none" stroke="#155eef" stroke-width="10" stroke-linecap="round"/>
+</svg>
