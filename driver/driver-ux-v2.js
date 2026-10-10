@@ -12,13 +12,11 @@
     return o.phone || o.phone_number || o.mobile || o.mobile_number || o.contact_number || o.outlet_phone || "";
   }
   function mapsFor(o){
-    const raw=o.maps_url || o.google_maps_url || o.map_url;
-    if(raw) return raw;
     const lat=Number(o.latitude),lon=Number(o.longitude);
     if(Number.isFinite(lat)&&Number.isFinite(lon)&&o.latitude!==null&&o.longitude!==null&&o.latitude!==""&&o.longitude!==""){
       return "https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(lat+","+lon);
     }
-    const query=o.address || o.outlet_address || (o.outlet_name||"");
+    const query=o.outlet_name||"";
     return "https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(query);
   }
   function qtyTotal(items){
