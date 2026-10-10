@@ -142,7 +142,7 @@
       html+='<section class="driverRouteSection"><div class="driverRouteWarning"><b>Refresh failed</b><p>Showing the last loaded route. Check your connection and tap Refresh to retry.</p></div></section>';
     }
     if(active.length){
-      html+='<section class="driverRouteSection"><div class="driverRouteSectionHead"><div><span class="eyebrow">ACTIVE & UPCOMING</span><h3>'+active.length+' stop'+(active.length===1?"":"s")+' remaining</h3></div><span class="routeProgress">'+completed.length+' / '+sorted.length+' complete</span></div><div class="driverRouteProgressTrack" role="progressbar" aria-label="Route progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+progressPct+'"><span style="width:'+progressPct+'%"></span></div>';
+      html+='<section class="driverRouteSection"><div class="driverRouteSectionHead"><div><span class="eyebrow">YOUR ASSIGNED ROUTE</span><h3>'+sorted.length+' outlet'+(sorted.length===1?"":"s")+' assigned</h3><p class="hint">'+active.length+' remaining · '+completed.length+' delivered</p></div><span class="routeProgress">'+completed.length+' / '+sorted.length+' complete</span></div><div class="driverRouteProgressTrack" role="progressbar" aria-label="Route progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+progressPct+'"><span style="width:'+progressPct+'%"></span></div>';
       html+=active.map((o,i)=>card(o,i,false)).join("");
       html+='</section>';
     }else if(ds.routeLoadState!=="loaded"){
