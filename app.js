@@ -574,6 +574,19 @@ function renderOutletSettings(all){
     </div>
   </div>`}).join("");
 
+  window.__paOutletLocationLoad= (async()=>{
+    if(!state.orderId||!state.token)return;
+    const result=await db.rpc("get_outlet_locations_v1",{p_order_id:state.orderId,p_access_token:state.token});
+    if(result.error||!result.data?.ok)throw new Error(result.error?.message||result.data?.message||"Could not load outlet locations");
+    const byName=new Map((result.data.locations||[]).map(x=>[String(x.store_name||"").trim().toLowerCase().replace(/\\s+/g," "),x]));
+    box.querySelectorAll(".outletSettingRow").forEach(row=>{
+      const id=row.dataset.id,o=state.outlets.get(id);if(!o)return;
+      const loc=byName.get(String(o.name||"").trim().toLowerCase().replace(/\\s+/g," "));if(!loc)return;
+      outletSetupDraft[id]={...(outletSetupDraft[id]||{}),address:loc.address||"",latitude:loc.latitude??"",longitude:loc.longitude??"",mapsUrl:loc.maps_url||""};
+      const set=(sel,val)=>{const el=row.querySelector(sel);if(el)el.value=val??"";};
+      set(".outletAddressInput",loc.address);set(".outletLatitudeInput",loc.latitude);set(".outletLongitudeInput",loc.longitude);set(".outletMapsUrlInput",loc.maps_url);
+    });
+  })().catch(e=>{console.warn("Outlet location load:",e.message);});
   let drag=null;
   box.querySelectorAll(".outletSettingRow").forEach(row=>{
     row.addEventListener("dragstart",()=>{
@@ -659,6 +672,7 @@ async function syncLocalOutletAssignmentsToServer(){
   if(changed)sessionStorage.setItem(key,"1");
 }
 async function saveOutletSettings(){
+  await (window.__paOutletLocationLoad||Promise.resolve());
   const btn=$("saveOutletSettings");
   const rows=[...($("outletSettingsList")?.querySelectorAll(".outletSettingRow")||[])];
   if(!rows.length)return;
