@@ -12,10 +12,9 @@
     return o.phone || o.phone_number || o.mobile || o.mobile_number || o.contact_number || o.outlet_phone || "";
   }
   function mapsFor(o){
-    const raw=o.maps_url || o.google_maps_url || o.map_url;
-    if(raw) return raw;
-    const query=o.address || o.outlet_address || ((o.outlet_name||"")+" Ahmedabad Gujarat");
-    return "https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(query);
+    const lat=Number(o.latitude),lon=Number(o.longitude);
+    if(o.latitude!==null&&o.latitude!==undefined&&String(o.latitude).trim()!==""&&o.longitude!==null&&o.longitude!==undefined&&String(o.longitude).trim()!==""&&Number.isFinite(lat)&&Number.isFinite(lon)&&lat>=-90&&lat<=90&&lon>=-180&&lon<=180)return "https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(lat+","+lon);
+    const query=(o.outlet_name||"")+" Ahmedabad Gujarat";return "https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(query);
   }
   function qtyTotal(items){
     return items.reduce((s,i)=>s+Number(i.required_qty||0),0);
