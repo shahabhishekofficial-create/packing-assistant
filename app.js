@@ -556,7 +556,7 @@ function renderOutletSettings(all){
   const box=$("outletSettingsList");
   if(!box)return;
   const drivers=getDrivers();
-  outletSetupDraft=Object.fromEntries(all.map(o=>[o.id,{driver:o.driver||"",rank:o.rank,deliveryCharge:Number(o.deliveryCharge||0)}]));
+  outletSetupDraft=Object.fromEntries(all.map(o=>[o.id,{driver:o.driver||"",rank:o.rank,deliveryCharge:Number(o.deliveryCharge||0),latitude:o.latitude??"",longitude:o.longitude??""}]));
   box.innerHTML=all.map((o,i)=>{return `<div class="outletSettingRow" draggable="${window.matchMedia("(pointer:fine)").matches}" data-id="${o.id}">
     <span class="dragHandle" title="Drag to change rank">☷</span>
     <b class="rankNo">${i+1}</b>
@@ -566,8 +566,11 @@ function renderOutletSettings(all){
       ${drivers.map(d=>`<option value="${esc(d)}"${(o.driver||"")===d?" selected":""}>${esc(d)}</option>`).join("")}
     </select>
     <div class="chargeField"><span>₹ Delivery</span><input class="deliveryChargeInput" type="number" min="0" step="0.01" value="${Number(o.deliveryCharge||0).toFixed(2)}" aria-label="Delivery charge for ${esc(o.name)}" placeholder="0.00"></div>
+    <div class="outletLocationFields" style="grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(120px,1fr));gap:8px;padding:0 8px 12px 38px"><input class="outletLatitudeInput" type="number" min="-90" max="90" step="any" value="${esc(o.latitude??"")}" placeholder="Latitude" aria-label="Latitude for ${esc(o.name)}"><input class="outletLongitudeInput" type="number" min="-180" max="180" step="any" value="${esc(o.longitude??"")}" placeholder="Longitude" aria-label="Longitude for ${esc(o.name)}"></div>
   </div>`}).join("");
 
+  window.__paOutletLocationLoad=(async()=>{if(!state.orderId||!state.token)return;const response=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_get_outlet_locations",admin_session:window.PA_ADMIN_SESSION,order_id:state.orderId})});const result=await response.json().catch(()=>({}));if(!response.ok||!result.ok)throw new Error(result.message||"Could not load outlet coordinates");const byName=new Map((result.locations||[]).map(x=>[String(x.store_name||"").trim().toLowerCase(),x]));box.querySelectorAll(".outletSettingRow").forEach(row=>{const id=row.dataset.id,o=state.outlets.get(id);if(!o)return;const loc=byName.get(String(o.name||"").trim().toLowerCase());if(!loc)return;outletSetupDraft[id]={...(outletSetupDraft[id]||{}),latitude:loc.latitude??"",longitude:loc.longitude??""};const lat=row.querySelector(".outletLatitudeInput"),lon=row.querySelector(".outletLongitudeInput");if(lat)lat.value=loc.latitude??"";if(lon)lon.value=loc.longitude??"";});})().catch(e=>console.warn("Outlet coordinate load:",e.message));
+  box.querySelectorAll(".outletLocationFields input").forEach(input=>{input.addEventListener("pointerdown",e=>e.stopPropagation());input.addEventListener("click",e=>e.stopPropagation());input.addEventListener("input",()=>{const row=input.closest(".outletSettingRow");if(!row)return;const id=row.dataset.id;if(!outletSetupDraft[id])outletSetupDraft[id]={};if(input.classList.contains("outletLatitudeInput"))outletSetupDraft[id].latitude=input.value.trim();if(input.classList.contains("outletLongitudeInput"))outletSetupDraft[id].longitude=input.value.trim();});});
   let drag=null;
   box.querySelectorAll(".outletSettingRow").forEach(row=>{
     row.addEventListener("dragstart",()=>{
@@ -640,6 +643,7 @@ async function syncLocalOutletAssignmentsToServer(){
   if(changed)sessionStorage.setItem(key,"1");
 }
 async function saveOutletSettings(){
+  await (window.__paOutletLocationLoad||Promise.resolve());
   const btn=$("saveOutletSettings");
   const rows=[...($("outletSettingsList")?.querySelectorAll(".outletSettingRow")||[])];
   if(!rows.length)return;
@@ -671,6 +675,9 @@ async function saveOutletSettings(){
       p_delivery_charge:o.deliveryCharge
     });
     if(chargeResult.error)errors.push(o.name+" delivery charge: "+chargeResult.error.message);
+    const q=outletSetupDraft[o.id]||{},lr=String(q.latitude??"").trim(),rr=String(q.longitude??"").trim(),lat=lr===""?null:Number(lr),lon=rr===""?null:Number(rr);
+    if((lat===null)!==(lon===null)||(lat!==null&&(!Number.isFinite(lat)||lat < -90||lat > 90))||(lon!==null&&(!Number.isFinite(lon)||lon < -180||lon > 180))){errors.push(o.name+": enter both valid latitude and longitude, or leave both blank.");continue;}
+    const res=await fetch(window.SUPABASE_CONFIG.url+"/functions/v1/driver-api",{method:"POST",headers:{"apikey":window.SUPABASE_CONFIG.key,"Content-Type":"application/json"},body:JSON.stringify({action:"admin_save_outlet_location",admin_session:window.PA_ADMIN_SESSION,order_id:state.orderId,store_name:o.name,latitude:lat,longitude:lon})});const out=await res.json().catch(()=>({}));if(!res.ok||!out.ok)errors.push(o.name+" coordinates: "+(out.message||"could not save"));
   }
 
   btn.disabled=false;
