@@ -1538,3 +1538,30 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
  .opsKpi,.opsQuickGrid button,button{transition:none!important}
  .opsKpi:hover,.opsQuickGrid button:hover{transform:none}
 }
+
+
+
+/* Outlet Setup: mobile-first stacked controls; no horizontal scrolling required */
+@media(max-width:650px){
+  .outletSetupColumns{display:none!important}
+  .settingsDialog .outletSettingsList{
+    width:100%!important;max-width:100%!important;overflow-x:hidden!important;
+    padding:2px!important;gap:10px!important;max-height:58vh!important;
+  }
+  .settingsDialog .outletSettingRow{
+    display:grid!important;
+    grid-template-columns:24px 30px minmax(0,1fr) 112px!important;
+    grid-template-rows:auto auto!important;
+    gap:8px 7px!important;
+    width:100%!important;min-width:0!important;max-width:100%!important;
+    padding:10px!important;overflow:hidden!important;
+  }
+  .settingsDialog .outletSettingRow .dragHandle{grid-column:1;grid-row:1}
+  .settingsDialog .outletSettingRow .rankNo{grid-column:2;grid-row:1}
+  .settingsDialog .outletSettingRow .settingName{grid-column:3;grid-row:1;white-space:normal!important;overflow-wrap:anywhere;font-size:13px!important;line-height:1.25}
+  .settingsDialog .outletSettingRow .outletLocationToggle{grid-column:4;grid-row:1;width:100%!important;min-width:0!important;padding:7px 4px!important;font-size:11px!important;white-space:normal!important}
+  .settingsDialog .outletSettingRow .driverSelect{grid-column:1/3;grid-row:2;width:100%!important;min-width:0!important;height:40px!important;font-size:13px!important}
+  .settingsDialog .outletSettingRow .chargeField{grid-column:3/5;grid-row:2;width:100%!important;min-width:0!important}
+  .settingsDialog .outletSettingRow .chargeField span{display:inline!important;font-size:10px!important}
+  .settingsDialog .outletSettingRow .deliveryChargeInput{min-width:0!important;width:100%!important;height:40px!important;font-size:13px!important}
+}
