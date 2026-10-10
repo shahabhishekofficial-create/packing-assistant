@@ -2226,3 +2226,12 @@ No service-role or secret key is exposed to the browser.
 - Confirmed-unused legacy admin payment RPC execution was revoked from public client roles.
 - Driver RPCs are server-side implementation details: anonymous/authenticated execution is denied and service-role execution is retained.
 - GitHub Pages and JavaScript validation must remain green before considering a release verified.
+
+
+## Change record — Driver mobile UX redesign (20261011-driver-mobileux1)
+
+- Frontend-only files: `driver/driver-ux-v2.js`, `driver/driver-ux-v2.css`, `driver/index.html`, `driver/sw.js`, `version.json`.
+- UX: current undelivered stop highlighted as hero; long names wrap; route progress bar; compact upcoming stop rows retained; mobile action targets at least 48px.
+- Backend untouched. Existing delivery flow handlers remain connected.
+- No route swap feature was added because local-only swaps would not be authoritative or persistent.
+- Verification boundary: GitHub source updated and checked; live deployment and device regression testing pending.
