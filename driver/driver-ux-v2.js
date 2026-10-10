@@ -13,10 +13,10 @@
   }
   function mapsFor(o){
     const lat=Number(o.latitude),lon=Number(o.longitude);
-    if(Number.isFinite(lat)&&Number.isFinite(lon)&&o.latitude!==null&&o.longitude!==null&&o.latitude!==""&&o.longitude!==""){
+    if(o.latitude!==null&&o.latitude!==undefined&&String(o.latitude).trim()!==""&&o.longitude!==null&&o.longitude!==undefined&&String(o.longitude).trim()!==""&&Number.isFinite(lat)&&Number.isFinite(lon)&&lat>=-90&&lat<=90&&lon>=-180&&lon<=180){
       return "https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(lat+","+lon);
     }
-    const query=o.outlet_name||"";
+    const query=(o.outlet_name||"")+" Ahmedabad Gujarat";
     return "https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(query);
   }
   function qtyTotal(items){
@@ -102,7 +102,7 @@
       const damagePending=damagePhotoRequired&&damageRows.some(r=>!rejectionPhotos.some(p=>String(p.item_id)===String(r.item_id)));
       const deliveryReady=(!invoiceRequired||!!d.invoice_path)&&(!invoiceNumberRequired||/^\d+$/.test(String(d.invoice_number||"")))&&(!rejectionRequired||rejectionConfirmed)&&!damagePending;
       const activeIndex=active.findIndex(x=>String(x.outlet_id)===String(o.outlet_id));
-      const sequence=sorted.indexOf(o)+1;
+      const sequence=(Number(o.outlet_rank)||0)>0 ? Number(o.outlet_rank) : sorted.indexOf(o)+1;
       const label=statusLabel(o,activeIndex,delivered,packed);
       const cls=statusClass(o,activeIndex,delivered,packed);
       const phone=phoneFor(o);
@@ -129,7 +129,7 @@
           +'</div></div>';
 
       return '<details class="driverOutletRow driverModernRow '+(delivered?"driverCompletedRow":"")+(!delivered&&String(o.outlet_id)===nextId?' driverHeroStop':'')+'" data-outlet-id="'+esc2(o.outlet_id)+'" '+(!delivered&&String(o.outlet_id)===nextId?'open':"")+'><summary class="driverModernSummary">'
-        +'<div class="driverStopNumber">STOP '+sequence+' OF '+sorted.length+'</div>'
+        +'<div class="driverStopNumber">STOP '+sequence+'</div>'
         +'<div class="driverModernMain"><div class="driverModernTitleLine"><strong>'+esc2(o.outlet_name)+'</strong><span class="modernStatus '+cls+'">'+label+'</span></div><div class="driverQuickMeta">📦 '+items.length+' Items · '+required+' Pcs · '+(d.invoice_path?"Invoice ready":"Invoice pending")+'</div></div>'
         +'<div class="driverQuickActions"><a class="driverQuickBtn navigateBtn" target="_blank" rel="noopener" href="'+esc2(map)+'">📍 <span>Navigate</span></a>'+(phone?'<a class="driverQuickIcon callBtn" href="tel:'+esc2(phone)+'" aria-label="Call '+esc2(o.outlet_name)+'">📞</a>':"")+'<span class="driverChevron">›</span></div>'
         +'</summary>'+cardBody+'</details>';
@@ -140,7 +140,7 @@
       html+='<section class="driverRouteSection"><div class="driverRouteWarning"><b>Refresh failed</b><p>Showing the last loaded route. Check your connection and tap Refresh to retry.</p></div></section>';
     }
     if(active.length){
-      html+='<section class="driverRouteSection"><div class="driverRouteSectionHead"><div><span class="eyebrow">YOUR ASSIGNED ROUTE</span><h3>'+sorted.length+' outlet'+(sorted.length===1?"":"s")+' assigned</h3><p class="hint">'+active.length+' remaining · '+completed.length+' delivered</p></div><span class="routeProgress">'+completed.length+' / '+sorted.length+' complete</span></div><div class="driverRouteProgressTrack" role="progressbar" aria-label="Route progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+progressPct+'"><span style="width:'+progressPct+'%"></span></div>';
+      html+='<section class="driverRouteSection"><div class="driverRouteSectionHead"><div><span class="eyebrow">ACTIVE & UPCOMING</span><h3>'+active.length+' stop'+(active.length===1?"":"s")+' remaining</h3></div><span class="routeProgress">'+completed.length+' / '+sorted.length+' complete</span></div><div class="driverRouteProgressTrack" role="progressbar" aria-label="Route progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+progressPct+'"><span style="width:'+progressPct+'%"></span></div>';
       html+=active.map((o,i)=>card(o,i,false)).join("");
       html+='</section>';
     }else if(ds.routeLoadState!=="loaded"){
