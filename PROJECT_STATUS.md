@@ -1964,3 +1964,18 @@ Verification from source: all driver build markers and cache/resource query stri
 - After test completion, confirmed `expense_claims` count was 0, then reset the identity sequence. SQL output: `[{"next_claim_number":1}]`; next generated claim number is 1.
 - Backup caveat: no database backup/export was created before migration because the connected Supabase actions expose no backup/export operation. User's plan entry `[Free / Pro]` did not identify one exact plan; backup entitlement remains unknown. Migration itself was additive/new-tables-only.
 - Live phone testing has not occurred. No deployment, screens, version/cache, or expense-api work performed.
+
+
+## Expense Phase 1 verification follow-up — 2026-10-13
+- Deliberate SQL failure check: ran `DO $$ BEGIN RAISE EXCEPTION 'EXPENSE_MIGRATION_DELIBERATE_FAILURE_CHECK'; END $$;`. Connector returned an error (not an empty result): PostgreSQL `P0001`, marker `EXPENSE_MIGRATION_DELIBERATE_FAILURE_CHECK`, context `PL/pgSQL function inline_code_block line 1 at RAISE`. This confirms the connector surfaces SQL errors.
+- Read-only table inventory result:
+  `expense_balance_summary`, `expense_categories`, `expense_claims`, `expense_employees`, `expense_payments`, `expenses`.
+- Read-only category query result (name, active, sort_order): `LR,true,1`; `Q Com Transport,true,2`; `Local Purchase,true,3`; `Packaging Material,true,4`; `HORECA Transport,true,5`; `Other Transport,true,6`; `Other,true,7`.
+- Read-only employee query result: `[{"id":"2911378b-d542-481a-aa37-6d09a15c447e","name":"Abhishek","is_default":true,"active":true}]`. No name correction was needed; no UPDATE was run.
+- Read-only row counts: `expense_claims=0`, `expense_payments=0`, `expenses=0`.
+- RLS query output (table_name, relrowsecurity, relforcerowsecurity): `expense_balance_summary,false,false`; `expense_categories,true,false`; `expense_claims,true,false`; `expense_employees,true,false`; `expense_payments,true,false`; `expenses,true,false`. The summary is a view, so it has no table RLS flag; all five underlying expense tables have RLS enabled. FORCE ROW LEVEL SECURITY is false on all listed relations.
+- `information_schema.role_table_grants` query for grantees anon/authenticated/service_role returned no rows for anon or authenticated. For service_role, the query returned: `expense_balance_summary: REFERENCES, SELECT, TRIGGER, TRUNCATE`; `expense_categories: INSERT, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE`; `expense_claims: INSERT, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE`; `expense_employees: INSERT, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE`; `expense_payments: DELETE, INSERT, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE`; `expenses: INSERT, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE`.
+- Function privilege query (signature, role, can_execute): `expense_create_claim(uuid,date,date)`: anon=false, authenticated=false, service_role=true; `expense_reopen_claim(uuid)`: anon=false, authenticated=false, service_role=true.
+- REST wording: **verified at database level (anon SELECT refused in the safety test, no grants, RLS on); HTTP REST check not performed, agent has no network access; re-test after expense-api is deployed.** This is not a claim that the HTTP REST request itself was tested or refused.
+- No database changes were made during this verification. No Edge Function or frontend deployment occurred.
+- Step (c) is pending approval. Do not deploy `expense-api` until the user explicitly approves implementation/deployment.
