@@ -1938,3 +1938,13 @@ Verification from source: all driver build markers and cache/resource query stri
 - Build: `20261011-outletlatlong1`. Source changes committed to main; verify GitHub Pages deployment and phone behavior before considering complete.
 
 - UX refinement (build `20261011-outletlatlong2`): coordinate inputs are hidden by default. Each outlet has a `Set location` / `Edit location` control; saved locations stay collapsed so staff do not see these fields during routine use.
+
+
+## Expense Management Phase 1 SQL review — 2026-10-13
+- Status: review files revised only; not applied or deployed. The user approved SQL-review-only work; live migration/test/backup remain unapproved.
+- Atomic `expense_create_claim` and `expense_reopen_claim` functions are granted only to service_role. Reopening checks linked payments, marks the claim reopened, then an AFTER trigger clears expense claim_id in the same transaction.
+- Hard DELETE on expenses is blocked; use soft delete. App must send phone-local date; India-time date defaults are fallback only.
+- `expense_balance_summary` is the common balance source: employee summary rows have claim_id NULL; claim rows carry their own Claim Due. Dashboard/claims/Excel must query this view.
+- Added function execute revokes for public/anon/authenticated and table/view access revokes. Test script has NOT been run.
+- Supabase plan remains unknown from project metadata. Official Supabase documentation states Free has no automatic backups and paid plans do; see review response.
+- Files: migration, rollback, safety test, CHANGELOG.md, PROJECT_STATUS.md. No live database, Edge Function, UI, version/cache, or backup operation touched. Phone testing remains pending.
