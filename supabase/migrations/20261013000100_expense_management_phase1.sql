@@ -12,7 +12,7 @@ create index expenses_category_idx on public.expenses(category_id) where deleted
 create table public.expense_payments(id uuid primary key default gen_random_uuid(),employee_id uuid not null references public.expense_employees(id) on delete restrict,claim_id uuid references public.expense_claims(id) on delete restrict,payment_date date not null default ((now() at time zone 'Asia/Kolkata')::date),amount numeric(14,2) not null check(amount>0),mode text not null check(mode in ('Bank','Cash','UPI','Other')),reference_note text,created_at timestamptz not null default now(),updated_at timestamptz not null default now());
 create index expense_payments_employee_date_idx on public.expense_payments(employee_id,payment_date desc);
 create index expense_payments_claim_idx on public.expense_payments(claim_id) where claim_id is not null;
-insert into public.expense_employees(name,is_default) values('Me',true);
+insert into public.expense_employees(name,is_default) values('Abhishek',true);
 insert into public.expense_categories(name,sort_order) values('LR',1),('Q Com Transport',2),('Local Purchase',3),('Packaging Material',4),('HORECA Transport',5),('Other Transport',6),('Other',7);
 
 create or replace function public.expense_guard_expense_claim() returns trigger language plpgsql security invoker set search_path='' as $$
