@@ -1948,3 +1948,10 @@ Verification from source: all driver build markers and cache/resource query stri
 - Added function execute revokes for public/anon/authenticated and table/view access revokes. Test script has NOT been run.
 - Supabase plan remains unknown from project metadata. Official Supabase documentation states Free has no automatic backups and paid plans do; see review response.
 - Files: migration, rollback, safety test, CHANGELOG.md, PROJECT_STATUS.md. No live database, Edge Function, UI, version/cache, or backup operation touched. Phone testing remains pending.
+
+
+## Expense Management SQL approval edits — 2026-10-13
+- User approved Step (a) and Step (b). Updated the migration seed employee to `Abhishek` and extended the safety test to check function EXECUTE grants for anon/authenticated/PUBLIC and perform a real SELECT attempt as anon.
+- These are source-file edits only so far. Live migration and safety test have not yet been run at the time of this status entry.
+- Requested claim-number reset is conditional: only after a passing test and only if the database contains zero real claims. It must not run otherwise.
+- User described plan as `[Free / Pro]`, which does not identify one plan. Backup availability remains unknown. Connected tools do not expose a database-backup/export action; no backup has been created through these tools.
