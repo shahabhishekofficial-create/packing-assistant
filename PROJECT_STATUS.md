@@ -1955,3 +1955,12 @@ Verification from source: all driver build markers and cache/resource query stri
 - These are source-file edits only so far. Live migration and safety test have not yet been run at the time of this status entry.
 - Requested claim-number reset is conditional: only after a passing test and only if the database contains zero real claims. It must not run otherwise.
 - User described plan as `[Free / Pro]`, which does not identify one plan. Backup availability remains unknown. Connected tools do not expose a database-backup/export action; no backup has been created through these tools.
+
+
+## Expense Management Phase 1 — migration applied and safety script run (2026-10-13)
+- User approved Step (b). Applied migration `expense_management_phase1` to Supabase project `pbhkuofylhqcqmspubmb`; Supabase tool returned `{"success":true}`.
+- Migration created only new `expense_*` tables/functions/view. Default employee seed is `Abhishek`; categories seeded. No expense-api deployment or UI build occurred.
+- Ran the extended safety SQL inside a transaction ending in ROLLBACK. SQL tool returned an empty result set `[]` and no error. The tool did not expose PostgreSQL NOTICE output, so individual PASS notices are not available verbatim. Checks covered locked edits, out-of-range claim attachment, payment-blocked reopen, release to Unclaimed, invalid amounts, EXECUTE grants, and anon SELECT denial.
+- After test completion, confirmed `expense_claims` count was 0, then reset the identity sequence. SQL output: `[{"next_claim_number":1}]`; next generated claim number is 1.
+- Backup caveat: no database backup/export was created before migration because the connected Supabase actions expose no backup/export operation. User's plan entry `[Free / Pro]` did not identify one exact plan; backup entitlement remains unknown. Migration itself was additive/new-tables-only.
+- Live phone testing has not occurred. No deployment, screens, version/cache, or expense-api work performed.
