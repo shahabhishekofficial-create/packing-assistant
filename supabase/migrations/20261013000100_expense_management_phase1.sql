@@ -115,7 +115,7 @@ grant select,insert,update on public.expense_employees to service_role;
 grant select,insert,update on public.expense_categories to service_role;
 grant select,insert,update on public.expense_claims to service_role;
 grant select,insert,update on public.expenses to service_role;
-grant select,insert,update on public.expense_payments to service_role;
+grant select,insert,update,delete on public.expense_payments to service_role;
 grant select on public.expense_balance_summary to service_role;
 revoke all on function public.expense_guard_expense_claim() from public,anon,authenticated;
 revoke all on function public.expense_guard_payment_claim() from public,anon,authenticated;
