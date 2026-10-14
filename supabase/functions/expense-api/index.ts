@@ -124,7 +124,7 @@ Deno.serve(async (req: Request) => {
           if (status === "claimed") q = q.not("claim_id", "is", null);
           if (reasonSearch) {
             const escapedSearch = reasonSearch.replace(/[\\%_]/g, "\\$&");
-            q = q.ilike("reason", \`%\${escapedSearch}%\`);
+            q = q.ilike("reason", "%" + escapedSearch + "%");
           }
           return q;
         };
