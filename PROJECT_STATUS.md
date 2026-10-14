@@ -2058,3 +2058,5 @@ Verification from source: all driver build markers and cache/resource query stri
 
 
 - Follow-up correction: `e2c0714bc26f8437f97fbfb319057d2707f9d37c` repairs reason-search wildcard escaping in the pagination change. No type check ran; not deployed.
+
+- full git history secret search: unknown
