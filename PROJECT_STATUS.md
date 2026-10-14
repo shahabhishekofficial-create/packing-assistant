@@ -1987,3 +1987,14 @@ Verification from source: all driver build markers and cache/resource query stri
 - Supabase function inventory confirms `driver-api verify_jwt=false`. Expense API deployment should use `verify_jwt=false` because the app uses a custom admin session, and the handler verifies it with `verify_admin_session` before any expense data query/mutation.
 - Default employee is resolved server-side; client-generated expense/payment IDs are idempotent; balances and export summaries use `expense_balance_summary`/database queries.
 - Source re-fetched from GitHub. Static/runtime tests not yet run; user review pending before c2.
+
+
+## Expense API c1 review fixes — 2026-10-14
+- Updated only `supabase/functions/expense-api/index.ts`; latest source commit: `359afd94479ce51b31ad8ad4fde6d8a3451c9113` (includes payment/pagination changes from `c19b8cec401bc9bdd3818581fde2b6fbc512fe11`). Not deployed.
+- Payment modes now match the migration constraint exactly: Bank, Cash, UPI, Other. Added `update_payment` (claim link/unlink, date, mode, note) and `delete_payment`; claim linking validates employee ownership and requires `reopened_at IS NULL`, so unallocated payments can be attached later to an active claim.
+- Export, bootstrap collections, and `list_expenses` now fetch pages of 1,000 until a short page is returned. Expense pages use a stable two-column order: `expense_date`, then `id`. Bootstrap limits expenses to the last 90 days while still returning all claims and payments.
+- Pagination test note: reviewed range windows as 0–999, 1000–1999, etc.; ran a deterministic synthetic 2,005-row test with identical expense dates and ID tie-breaking. It produced pages of 1000/1000/5, 2,005 returned rows, 2,005 unique IDs, and preserved order. This validates the pagination/order logic, not a live Supabase dataset; live multi-page verification remains pending.
+- Amount validation rejects inputs with more than two decimal places. Database `P0001` errors return the database message; other errors retain friendly generic responses. Failure logging includes only action name and error code.
+- `create_claim` now fetches and returns the inserted claim row after the RPC returns its UUID. Migration checked: `verify_admin_session(p_session_token text) RETURNS boolean`; API argument name and boolean check match.
+- Screens follow-up requirement: warn both when claim-linked payments exceed claim expenses and when all payments (including unallocated payments) exceed total expenses, making Total Due negative. Show the excess amount and refresh after payment create/edit/delete/link/unlink. Warn before saving a payment that would cause either overpayment.
+- No database/migration, screens, frontend, build/version/cache, `driver-api`, or frozen-branch changes. Static review and synthetic pagination test only; no deployed/runtime/phone verification. Awaiting user review; do not deploy.
