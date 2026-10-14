@@ -139,10 +139,15 @@ Deno.serve(async (req: Request) => {
           has_more: offset + (expenses || []).length < (count || 0)
         };
         if (offset === 0) {
-          // Amounts are decimal text; convert directly to whole paise without floating-point arithmetic.
-          const totalPaise = (expenses || []).reduce((sum: bigint, row: any) => {
+          // Sum every matching amount, not only the 50 rows returned for this page.
+          const allAmounts = await fetchAllPages<{ amount: string | number }>(() =>
+            matchingQuery("amount")
+              .order("expense_date", { ascending: true })
+              .order("id", { ascending: true })
+          );
+          const totalPaise = allAmounts.reduce((sum: bigint, row) => {
             const match = String(row.amount ?? "").match(/^(\d+)(?:\.(\d{1,2}))?$/);
-            if (!match) return sum;
+            if (!match) throw new Error("INVALID_EXPENSE_AMOUNT");
             return sum + BigInt(match[1]) * 100n + BigInt((match[2] || "").padEnd(2, "0") || "0");
           }, 0n);
           result.total_amount_paise = totalPaise.toString();
