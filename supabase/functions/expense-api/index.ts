@@ -13,7 +13,7 @@ const validDate = (v: unknown): v is string => typeof v === "string" && dateRx.t
 const amountValue = (v: unknown) => {
   if (typeof v !== "number" && typeof v !== "string") return null;
   const raw = String(v).trim();
-  if (!/^\\d+(?:\\.\\d+)?$/.test(raw) || (raw.split(".")[1] || "").length > 2) return null;
+  if (!/^\d+(?:\.\d+)?$/.test(raw) || (raw.split(".")[1] || "").length > 2) return null;
   const n = Number(raw);
   return Number.isFinite(n) && n > 0 && n <= 1000000000 ? n : null;
 };
