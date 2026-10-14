@@ -1951,7 +1951,7 @@ Verification from source: all driver build markers and cache/resource query stri
 
 
 ## Expense Management SQL approval edits — 2026-10-13
-- User approved Step (a) and Step (b). Updated the migration seed employee to `Abhishek` and extended the safety test to check function EXECUTE grants for anon/authenticated/PUBLIC and perform a real SELECT attempt as anon.
+- User approved Step (a) and Step (b). Updated the default employee seed and extended the safety test to check function EXECUTE grants for anon/authenticated/PUBLIC and perform a real SELECT attempt as anon. Personal names and identifying details are omitted.
 - These are source-file edits only so far. Live migration and safety test have not yet been run at the time of this status entry.
 - Requested claim-number reset is conditional: only after a passing test and only if the database contains zero real claims. It must not run otherwise.
 - User described plan as `[Free / Pro]`, which does not identify one plan. Backup availability remains unknown. Connected tools do not expose a database-backup/export action; no backup has been created through these tools.
@@ -2034,8 +2034,8 @@ Verification from source: all driver build markers and cache/resource query stri
 
 
 ## Expense cleanup review and driver guard provenance — 2026-10-14
-- Read-only expense review found four active, unclaimed, non-TEST expenses totaling 798.00: LR / “LR For Mauli” 200.00; Other Transport / “Transport for Green Capsicum” 50.00; Local Purchase / “Green Capsicum” 442.00; Other Transport / “Porter for Packaging” 106.00. All have expense date 2026-09-30 and were created on 2026-10-14 UTC. Owner confirmation is pending before any cleanup or further Slice 2a work.
-- TEST soft-delete attempt matched zero active rows. No expense row was changed by that attempt. Current database counts: active expenses 4, claims 0, payments 0. The balance summary reports Total Due 798.00. Do not mark cleanup complete or change/delete any of these four records unless the owner confirms.
+- Four active expenses are real; owner confirmed they must remain unchanged. Record only this status: **real expenses exist, owner confirmed**. Do not include real amounts, reasons, category/detail combinations, names, or identifying record data in repository/status files. No deletion or modification of these records is authorized.
+- Earlier TEST soft-delete attempt matched zero active rows. No expense row was changed by that attempt. Current recorded status: **real expenses exist, owner confirmed**. Do not include real amounts or detailed expense information in repository/status files.
 - Exact driver build-mismatch reload guard removal commit: `b921c014673009e4554e84cebd4205a134280d85`, “Stop driver auto-reload loop permanently” (2026-10-10). Its `driver/index.html` diff removes the guard that compared the shared `version.json` build ID, unregistered the driver service worker/deleted driver caches, and reloaded on mismatch. It explicitly documents that `update.js` owns manual one-shot updates.
 - Slice 2a API diff is not deployed. Before deployment, confirm call-site compatibility and review the final diff. Current `admin/expenses.js` calls `list_expenses` once for the read-only last-five list and consumes `result.expenses`; it does not currently expect all rows. `bootstrap` independently queries expenses through `fetchAllPages` (last 90 calendar dates), and `export` independently queries all active expenses through `fetchAllPages`; neither uses the `list_expenses` action. Repository-wide code search found no additional `list_expenses` call sites, though live runtime dependencies remain unknown.
 - User approved the Slice 2a file/cache-version list. Do not begin Slice 2a screens until the owner confirms the four active expense entries. No API deployment has been approved.
