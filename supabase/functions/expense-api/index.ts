@@ -7,7 +7,7 @@ const fail = (code: string, message: string, status: number) => json({ ok: false
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const dateRx = /^\d{4}-\d{2}-\d{2}$/;
 const modes = new Set(["Bank", "Cash", "UPI", "Other"]);
-const friendly: Record<string, string> = { "23505": "This record already exists.", "23503": "That category or claim is unavailable.", "23514": "Please check the amount, date, and selected values.", "22007": "Please enter a valid date.", "22P02": "Some details are invalid. Please check and try again.",  };
+const friendly: Record<string, string> = { "23505": "This record already exists.", "23503": "That category or claim is unavailable.", "23514": "Please check the amount, date, and selected values.", "22007": "Please enter a valid date.", "22P02": "Some details are invalid. Please check and try again." };
 const textValue = (v: unknown, max: number) => typeof v === "string" ? v.trim().slice(0, max) : "";
 const validDate = (v: unknown): v is string => typeof v === "string" && dateRx.test(v) && Number.isFinite(new Date(v + "T00:00:00Z").getTime()) && new Date(v + "T00:00:00Z").toISOString().slice(0, 10) === v;
 const amountValue = (v: unknown) => {
@@ -98,7 +98,7 @@ Deno.serve(async (req: Request) => {
           balances()
         ]);
         if (cats.error) throw cats.error;
-        return json({ ok: true, employee: { id: eid, name: "Abhishek" }, expenses_from_date: dateDaysAgoIST(90), categories: cats.data || [], expenses, claims, payments, balances: bal });
+        return json({ ok: true, employee: { id: eid, name: "Abhishek" }, expenses_from_date: dateDaysAgoIST(89), categories: cats.data || [], expenses, claims, payments, balances: bal });
       }
       case "list_expenses": {
         const eid = await employeeId();
