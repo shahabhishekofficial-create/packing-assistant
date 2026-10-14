@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#176b45">
+<title>Expenses | Bigly Agro Admin</title>
+<link rel="stylesheet" href="./expenses.css?v=20261014-expenses1">
+</head>
+<body class="adminPage">
+<div id="expenseBoot" role="status">Checking secure admin session…</div>
+<main class="expenseShell" id="expenseApp" hidden>
+<aside class="expenseSidebar" id="expenseSidebar">
+  <div class="expenseBrand"><div class="expenseLogo">BA</div><div><strong>Bigly Agro Private Limited</strong><small>OPS COMMAND CENTER</small></div></div>
+  <nav class="expenseNav" aria-label="Admin sections">
+    <a href="./index.html">▦ <span>Operations Dashboard</span></a>
+    <a href="./index.html">▣ <span>Packing &amp; Dispatch</span></a>
+    <a href="./inventory.html">□ <span>Restaurant Inventory</span></a>
+    <a class="active" href="./expenses.html" aria-current="page">₹ <span>Expenses</span></a>
+  </nav>
+  <div class="expenseSidebarFoot">● Secure admin area</div>
+</aside>
+<section class="expenseMain">
+  <header class="expenseTopbar">
+    <button id="expenseNavToggle" type="button" class="expenseTap" aria-label="Open sections" aria-expanded="false">☰</button>
+    <div><small>ADMIN FINANCE</small><h1>Expenses</h1></div>
+    <span class="expenseSessionLabel">Secure session</span>
+  </header>
+  <div class="expenseContent">
+    <p id="expenseStatus" class="expenseStatus" role="status" aria-live="polite">Loading expense data…</p>
+    <section class="expenseSummaryGrid" aria-label="Expense balances">
+      <article class="expenseCard expenseDueCard"><span>Total Due</span><strong id="expenseTotalDue">—</strong><small>From server balances</small></article>
+      <article class="expenseCard"><span>Unallocated payments</span><strong id="expenseUnallocated">—</strong><small>Payments not linked to a claim</small></article>
+    </section>
+    <section class="expensePanel">
+      <div class="expenseSectionHead"><div><small>QUICK ENTRY</small><h2>Add Expense</h2></div></div>
+      <form id="expenseForm" novalidate>
+        <label class="expenseField">Date<input id="expenseDate" name="expense_date" type="date" required></label>
+        <fieldset class="expenseCategories"><legend>Category</legend><div id="expenseCategoryChips" class="expenseChipList"><span>Loading categories…</span></div></fieldset>
+        <label class="expenseField">Amount (₹)<input id="expenseAmount" name="amount" type="text" inputmode="decimal" autocomplete="off" placeholder="0.00" required></label>
+        <label class="expenseField">Reason<input id="expenseReason" name="reason" type="text" maxlength="300" autocomplete="off" placeholder="What was this expense for?" required></label>
+        <label class="expenseField">Notes (optional)<textarea id="expenseNotes" name="notes" rows="2" maxlength="1000" placeholder="Extra details"></textarea></label>
+        <div class="expenseFormActions"><button id="expenseSave" class="expensePrimary expenseTap" type="submit">Save Expense</button><button id="expenseSaveAnother" class="expenseSecondary expenseTap" type="button">Save &amp; add another</button></div>
+        <p id="expenseSaveMessage" class="expenseSaveMessage" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+    <section class="expensePanel">
+      <div class="expenseSectionHead"><div><small>LATEST ACTIVITY</small><h2>Last 5 expenses</h2></div><button id="expenseRefresh" class="expenseSecondary expenseTap" type="button">Refresh</button></div>
+      <div id="expenseRecentList" class="expenseRecentList"><p class="expenseMuted">Loading recent entries…</p></div>
+    </section>
+    <p class="expenseFooterNote">Amounts and balances are returned by the expense service. This screen does not calculate totals from individual entries.</p>
+  </div>
+</section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1"></script>
+<script src="../config.js?v=20261014-expenses1"></script>
+<script src="./auth.js?v=20261014-expenses1"></script>
+<script defer src="./expenses.js?v=20261014-expenses1"></script>
+</body>
+</html>
