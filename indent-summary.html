@@ -76,9 +76,10 @@ table{width:100%;border-collapse:collapse;background:#fff}th,td{text-align:left;
   const fileInput=el("file"), generate=el("generate"), download=el("download"), reset=el("reset");
   let sourceName="indent-summary", items=[], sourceRows=0, total=0, pngUrl="";
   const aliases={
-    code:["itemcode","item_code","article","articlecode","sku","itemid","productcode","materialcode"],
-    name:["productname","product_name","itemname","item_name","product","itemdescription","materialdescription"],
-    qty:["sumofindents","indents","indent","indentqty","indentquantity","indent_qty","indent_quantity","qty","quantity","requiredqty","requiredquantity","totalqty"]
+    // Deliberately exclude generic "SKU": SKU ID is not guaranteed to be the item code.
+    code:["itemcode","articlecode","article","productcode","materialcode","itemid"],
+    name:["productname","itemname","product","itemdescription","materialdescription"],
+    qty:["sumofindents","indentqty","indentquantity","indent","indents","quantity","qty","requiredqty","requiredquantity","totalqty"]
   };
   function norm(v){return String(v??"").toLowerCase().normalize("NFKC").replace(/[^a-z0-9]/g,"");}
   function setStatus(msg,kind=""){el("status").textContent=msg;el("status").className="status"+(kind?" "+kind:"");}
@@ -88,7 +89,14 @@ table{width:100%;border-collapse:collapse;background:#fff}th,td{text-align:left;
     let best=null;
     for(let r=0;r<Math.min(matrix.length,30);r++){
       const row=matrix[r]||[], cells=row.map(norm);
-      const find=key=>cells.findIndex(c=>aliases[key].some(a=>c===norm(a)||c.includes(norm(a))));
+      const find=key=>{
+        // Exact normalized header matches only; never substring-match unrelated fields.
+        for(const alias of aliases[key]){
+          const index=cells.indexOf(norm(alias));
+          if(index>=0)return index;
+        }
+        return -1;
+      };
       const code=find("code"), name=find("name"), qty=find("qty");
       const score=[code,name,qty].filter(i=>i>=0).length;
       if(score===3 && (!best||r<best.row))best={row:r,code,name,qty};
