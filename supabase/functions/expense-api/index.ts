@@ -104,6 +104,29 @@ Deno.serve(async (req: Request) => {
         const eid = await employeeId();
         const fromDate = body.from_date == null || body.from_date === "" ? null : body.from_date;
         const toDate = body.to_date == null || body.to_date === "" ? null : body.to_date;
+        const categoryId = body.category_id == null || body.category_id === "" ? null : body.category_id;
+        const status = body.status == null || body.status === "" ? null : body.status;
+        const reasonSearch = body.reason_search == null ? "" : body.reason_search;
+        const rawOffset = body.offset == null || body.offset === "" ? 0 : body.offset;
+        const offset = typeof rawOffset === "number" ? rawOffset : (typeof rawOffset === "string" && /^\d+$/.test(rawOffset) ? Number(rawOffset) : NaN);
+        if ((fromDate !== null && !validDate(fromDate)) || (toDate !== null && !validDate(toDate)) || (fromDate && toDate && fromDate > toDate)) return fail("INVALID_DATE_RANGE", "Choose a valid date range.", 400);
+        if (categoryId !== null && (typeof categoryId !== "string" || !uuid.test(categoryId))) return fail("INVALID_CATEGORY", "Choose a valid category.", 400);
+        if (status !== null && status !== "unclaimed" && status !== "claimed") return fail("INVALID_STATUS", "Choose unclaimed or claimed.", 400);
+        if (typeof reasonSearch !== "string" || reasonSearch.length > 200 || reasonSearch.includes("\u0000")) return fail("INVALID_REASON_SEARCH", "Enter a valid search (maximum 200 characters).", 400);
+        if (!Number.isSafeInteger(offset) || offset < 0 || offset > 1000000) return fail("INVALID_OFFSET", "Choose a valid page offset.", 400);
+        const matchingQuery = (select: string, count?: "exact" | "planned" | "estimated") => {
+          let q = db.from("expenses").select(select, count ? { count } : undefined)
+            .eq("employee_id", eid).is("deleted_at", null);
+          if (fromDate) q = q.gte("expense_date", fromDate);
+          if (toDate) q = q.lte("expense_date", toDate);
+          if (categoryId) q = q.eq("category_id", categoryId);
+          if (status === "unclaimed") q = q.is("claim_id", null);
+          if (status === "claimed") q = q.not("claim_id", "is", null);
+          if (reasonSearch) {
+            const escapedSearch = reasonSearch.replace(/[\\%_]/g, "\\      case "list_expenses": {
+        const eid = await employeeId();
+        const fromDate = body.from_date == null || body.from_date === "" ? null : body.from_date;
+        const toDate = body.to_date == null || body.to_date === "" ? null : body.to_date;
         if ((fromDate !== null && !validDate(fromDate)) || (toDate !== null && !validDate(toDate)) || (fromDate && toDate && fromDate > toDate)) return fail("INVALID_DATE_RANGE", "Choose a valid date range.", 400);
         const matchingQuery = (select: string, count?: "exact" | "planned" | "estimated") => {
           let q = db.from("expenses").select(select, count ? { count } : undefined)
@@ -122,6 +145,31 @@ Deno.serve(async (req: Request) => {
           return sum + (Number.isFinite(amount) ? Math.round(amount * 100) : 0);
         }, 0);
         return json({ ok: true, expenses, total_count: totalRows.length, total_amount: (totalCents / 100).toFixed(2) });
+      }");
+            q = q.ilike("reason", `%${escapedSearch}%`);
+          }
+          return q;
+        };
+        const { data: expenses, error, count } = await matchingQuery("*,expense_categories(id,name)", "exact")
+          .order("expense_date", { ascending: false }).order("id", { ascending: false })
+          .range(offset, offset + 49);
+        if (error) throw error;
+        const result: Record<string, unknown> = {
+          ok: true,
+          expenses: expenses || [],
+          total_count: count || 0,
+          has_more: offset + (expenses || []).length < (count || 0)
+        };
+        if (offset === 0) {
+          // Amounts are decimal text; convert directly to whole paise without floating-point arithmetic.
+          const totalPaise = (expenses || []).reduce((sum: bigint, row: any) => {
+            const match = typeof row.amount === "string" ? row.amount.match(/^(\d+)(?:\.(\d{1,2}))?$/) : null;
+            if (!match) return sum;
+            return sum + BigInt(match[1]) * 100n + BigInt((match[2] || "").padEnd(2, "0") || "0");
+          }, 0n);
+          result.total_amount_paise = totalPaise.toString();
+        }
+        return json(result);
       }
       case "create_expense": {
         const id = textValue(body.id, 36), amount = amountValue(body.amount), reason = textValue(body.reason, 500);
