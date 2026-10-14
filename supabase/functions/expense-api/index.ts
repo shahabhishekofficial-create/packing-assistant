@@ -123,30 +123,8 @@ Deno.serve(async (req: Request) => {
           if (status === "unclaimed") q = q.is("claim_id", null);
           if (status === "claimed") q = q.not("claim_id", "is", null);
           if (reasonSearch) {
-            const escapedSearch = reasonSearch.replace(/[\\%_]/g, "\\      case "list_expenses": {
-        const eid = await employeeId();
-        const fromDate = body.from_date == null || body.from_date === "" ? null : body.from_date;
-        const toDate = body.to_date == null || body.to_date === "" ? null : body.to_date;
-        if ((fromDate !== null && !validDate(fromDate)) || (toDate !== null && !validDate(toDate)) || (fromDate && toDate && fromDate > toDate)) return fail("INVALID_DATE_RANGE", "Choose a valid date range.", 400);
-        const matchingQuery = (select: string, count?: "exact" | "planned" | "estimated") => {
-          let q = db.from("expenses").select(select, count ? { count } : undefined)
-            .eq("employee_id", eid).is("deleted_at", null);
-          if (fromDate) q = q.gte("expense_date", fromDate);
-          if (toDate) q = q.lte("expense_date", toDate);
-          return q;
-        };
-        const [expenses, totalRows] = await Promise.all([
-          fetchAllPages<any>(() => matchingQuery("*,expense_categories(id,name)").order("expense_date", { ascending: false }).order("id", { ascending: false })),
-          fetchAllPages<{ amount: number | string }>(() => matchingQuery("amount", "exact"))
-        ]);
-        // Sum integer cents to avoid floating-point accumulation errors.
-        const totalCents = totalRows.reduce((sum, row) => {
-          const amount = Number(row.amount);
-          return sum + (Number.isFinite(amount) ? Math.round(amount * 100) : 0);
-        }, 0);
-        return json({ ok: true, expenses, total_count: totalRows.length, total_amount: (totalCents / 100).toFixed(2) });
-      }");
-            q = q.ilike("reason", `%${escapedSearch}%`);
+            const escapedSearch = reasonSearch.replace(/[\\%_]/g, "\\$&");
+            q = q.ilike("reason", \`%\${escapedSearch}%\`);
           }
           return q;
         };
