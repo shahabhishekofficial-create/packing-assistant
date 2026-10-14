@@ -2027,3 +2027,5 @@ Verification from source: all driver build markers and cache/resource query stri
 - Phone session-expiry test requested by user: enter an expense without saving; delete the admin session row on the server; tap Save; confirm no expense is written and the form remains populated; sign in again; tap Save once; confirm exactly one entry exists. This test is pending and must be performed only with the user's approval/action.
 
 - Follow-up source correction: `9a670adf05478031bbd96f37166f462560fc229c` keeps the confirmed “Saved” result if the later dashboard refresh fails; a refresh failure no longer changes a server-confirmed save into “Not saved yet”.
+
+- Session-expiry test preparation (2026-10-14): user explicitly requested deletion of the current admin session row after Slice 1 was committed. Deleted the one row returned by `DELETE FROM public.admin_sessions RETURNING id, created_at, expires_at, last_seen_at`; one row was removed. Phone Save/re-login/idempotency test is now awaiting the user's phone test. Do not recreate a session row manually; normal admin login should create a fresh one.
