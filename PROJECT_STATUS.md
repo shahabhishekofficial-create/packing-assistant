@@ -1999,3 +1999,15 @@ Verification from source: all driver build markers and cache/resource query stri
 - Screens follow-up requirement: warn both when claim-linked payments exceed claim expenses and when all payments (including unallocated payments) exceed total expenses, making Total Due negative. Show the excess amount and refresh after payment create/edit/delete/link/unlink. Warn before saving a payment that would cause either overpayment.
 - Phone screen amount-input requirement: send the amount exactly as the user typed it (string/text), never as a calculated JavaScript number, so decimal validation does not reject floating-point noise. Screen code has not been changed or verified.
 - No database/migration, screens, frontend, build/version/cache, `driver-api`, or frozen-branch changes. Static review and synthetic pagination test only; no deployed/runtime/phone verification. Awaiting user review; do not deploy.
+
+
+## Expense API Step (c2) deployment — 2026-10-14
+- **Status: deployed, verification incomplete.** Supabase Edge Function `expense-api` is ACTIVE, deployment version 1, with `verify_jwt=false` matching `driver-api`. User explicitly approved Step (c2).
+- Function address: `https://pbhkuofylhqcqmspubmb.supabase.co/functions/v1/expense-api`.
+- Deployed source is `supabase/functions/expense-api/index.ts`, GitHub source blob SHA `79329e33656f624707f118d8edf752a1a987b944`; deployment ID `pbhkuofylhqcqmspubmb_15025e06-a35e-409c-8633-383d3d6aaffc_1`.
+- Deno type check: **unknown** (not run). No screens, frontend, build/version/cache, database schema, `driver-api`, or frozen-branch changes were made.
+- Function setting verification: Supabase function inventory reports `verify_jwt=false` for `expense-api` version 1.
+- Public-role access check: SQL query confirms all five underlying expense tables have RLS enabled and no table grants for `anon` or `authenticated`: `expense_categories`, `expense_claims`, `expense_employees`, `expense_payments`, `expenses`.
+- Function-specific logs: no matching startup or request entries were returned for this deployment at the time checked; clean startup is **unknown**, not confirmed.
+- No-token POST test with empty JSON body: **not performed successfully** because this environment cannot resolve the Supabase host (`curl: (6) Could not resolve host: pbhkuofylhqcqmspubmb.supabase.co`). Expected source behavior is HTTP 401 with `{"ok":false,"code":"SESSION_EXPIRED","message":"Your admin session has expired. Please log in again."}`, but live response remains unverified.
+- Phone testing: **pending**. User must test on their phone before the feature is described as working. No real expense claims should be entered until the user confirms the phone/browser test and checks Supabase Settings → Billing; plan/backup entitlement remains unknown.
