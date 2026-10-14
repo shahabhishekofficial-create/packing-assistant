@@ -110,7 +110,7 @@ table{width:100%;border-collapse:collapse;background:#fff}th,td{text-align:left;
   }
   function process(matrix){
     const cols=findColumns(matrix);
-    if(!cols)throw new Error("Could not find all three columns. Please check that the sheet has item code, product name and indent quantity headers.");
+    if(!cols)throw new Error("Required columns could not be identified from exact header names. Required: ITEM_CODE (or ARTICLE/ARTICLE_CODE), PRODUCT_NAME (or ITEM_NAME), and indent quantity (for example, Sum of Indents or Quantity). SKU ID is not accepted as item code. Correct the column headers or worksheet, then upload again.");
     const map=new Map();let valid=0;
     for(let r=cols.row+1;r<matrix.length;r++){
       const row=matrix[r]||[], rawCode=row[cols.code], rawName=row[cols.name], rawQty=row[cols.qty];
