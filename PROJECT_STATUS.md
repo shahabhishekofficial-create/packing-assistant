@@ -1959,7 +1959,7 @@ Verification from source: all driver build markers and cache/resource query stri
 
 ## Expense Management Phase 1 — migration applied and safety script run (2026-10-13)
 - User approved Step (b). Applied migration `expense_management_phase1` to Supabase project `pbhkuofylhqcqmspubmb`; Supabase tool returned `{"success":true}`.
-- Migration created only new `expense_*` tables/functions/view. Default employee seed is `Abhishek`; categories seeded. No expense-api deployment or UI build occurred.
+- Migration created only new `expense_*` tables/functions/view. A default employee and categories were seeded; personal identifying details are intentionally omitted. No expense-api deployment or UI build occurred.
 - Ran the extended safety SQL inside a transaction ending in ROLLBACK. SQL tool returned an empty result set `[]` and no error. The tool did not expose PostgreSQL NOTICE output, so individual PASS notices are not available verbatim. Checks covered locked edits, out-of-range claim attachment, payment-blocked reopen, release to Unclaimed, invalid amounts, EXECUTE grants, and anon SELECT denial.
 - After test completion, confirmed `expense_claims` count was 0, then reset the identity sequence. SQL output: `[{"next_claim_number":1}]`; next generated claim number is 1.
 - Backup caveat: no database backup/export was created before migration because the connected Supabase actions expose no backup/export operation. User's plan entry `[Free / Pro]` did not identify one exact plan; backup entitlement remains unknown. Migration itself was additive/new-tables-only.
@@ -1971,7 +1971,7 @@ Verification from source: all driver build markers and cache/resource query stri
 - Read-only table inventory result:
   `expense_balance_summary`, `expense_categories`, `expense_claims`, `expense_employees`, `expense_payments`, `expenses`.
 - Read-only category query result (name, active, sort_order): `LR,true,1`; `Q Com Transport,true,2`; `Local Purchase,true,3`; `Packaging Material,true,4`; `HORECA Transport,true,5`; `Other Transport,true,6`; `Other,true,7`.
-- Read-only employee query result: `[{"id":"2911378b-d542-481a-aa37-6d09a15c447e","name":"Abhishek","is_default":true,"active":true}]`. No name correction was needed; no UPDATE was run.
+- Read-only employee check confirmed one active default employee. Identifiers and personal details are intentionally omitted; no UPDATE was run.
 - Read-only row counts: `expense_claims=0`, `expense_payments=0`, `expenses=0`.
 - RLS query output (table_name, relrowsecurity, relforcerowsecurity): `expense_balance_summary,false,false`; `expense_categories,true,false`; `expense_claims,true,false`; `expense_employees,true,false`; `expense_payments,true,false`; `expenses,true,false`. The summary is a view, so it has no table RLS flag; all five underlying expense tables have RLS enabled. FORCE ROW LEVEL SECURITY is false on all listed relations.
 - `information_schema.role_table_grants` query for grantees anon/authenticated/service_role returned no rows for anon or authenticated. For service_role, the query returned: `expense_balance_summary: REFERENCES, SELECT, TRIGGER, TRUNCATE`; `expense_categories: INSERT, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE`; `expense_claims: INSERT, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE`; `expense_employees: INSERT, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE`; `expense_payments: DELETE, INSERT, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE`; `expenses: INSERT, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE`.
