@@ -111,7 +111,9 @@ table{width:100%;border-collapse:collapse;background:#fff}th,td{text-align:left;
       const q=typeof rawQty==="number"?rawQty:Number(String(rawQty??"").replace(/,/g,"").trim());
       if(!Number.isFinite(q))throw new Error("Invalid indent quantity at worksheet row "+(r+1)+". Correct the value and upload again.");
       const code=String(rawCode).trim().replace(/\.0$/,""), name=String(rawName).trim();
-      const key=code+"\u0000"+name;
+      // Treat case, whitespace, and punctuation differences as the same item identity.
+      // Keep distinct item codes separate and retain the first readable code/name for display.
+      const key=norm(code)+"\u0000"+norm(name);
       if(!map.has(key))map.set(key,{code,name,qty:0});
       map.get(key).qty+=q;valid++;
     }
