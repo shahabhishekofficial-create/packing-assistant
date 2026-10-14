@@ -2060,3 +2060,10 @@ Verification from source: all driver build markers and cache/resource query stri
 - Follow-up correction: `e2c0714bc26f8437f97fbfb319057d2707f9d37c` repairs reason-search wildcard escaping in the pagination change. No type check ran; not deployed.
 
 - full git history secret search: unknown
+
+## Expense list totals correction deployment — 2026-10-15
+- `expense-api` deployed from the approved `main` source as **ACTIVE version 2** with `verify_jwt=false`.
+- `list_expenses` full-match total correction is deployed. **Type check not run. Phone check pending.**
+- Post-deployment function logs: no version 2 request entries were found, so post-deployment error status is **unknown**. The available older version 1 logs contain successful 200/204 responses and one GET 405 (method not allowed).
+- Read-only SQL reconciliation passed: active expense total in paise equals the employee-level Total Due from `expense_balance_summary`. Real amounts and reasons are intentionally omitted.
+- No screens changed or started. No frontend deployment.
