@@ -1979,3 +1979,11 @@ Verification from source: all driver build markers and cache/resource query stri
 - REST wording: **verified at database level (anon SELECT refused in the safety test, no grants, RLS on); HTTP REST check not performed, agent has no network access; re-test after expense-api is deployed.** This is not a claim that the HTTP REST request itself was tested or refused.
 - No database changes were made during this verification. No Edge Function or frontend deployment occurred.
 - Step (c) is pending approval. Do not deploy `expense-api` until the user explicitly approves implementation/deployment.
+
+
+## Expense API c1 — 2026-10-14
+- Added `supabase/functions/expense-api/index.ts` to `main`, commit `52cf91a28e493aa62d9508a404e8c52b4343a0c7`. Source only; not deployed. No UI/build/version/cache/schema changes.
+- Exact CORS origin: `https://shahabhishekofficial-create.github.io`; no wildcard.
+- Supabase function inventory confirms `driver-api verify_jwt=false`. Expense API deployment should use `verify_jwt=false` because the app uses a custom admin session, and the handler verifies it with `verify_admin_session` before any expense data query/mutation.
+- Default employee is resolved server-side; client-generated expense/payment IDs are idempotent; balances and export summaries use `expense_balance_summary`/database queries.
+- Source re-fetched from GitHub. Static/runtime tests not yet run; user review pending before c2.
