@@ -1,0 +1,177 @@
+import { createClient } from "npm:@supabase/supabase-js@2";
+
+const ORIGIN = "https://shahabhishekofficial-create.github.io";
+const cors = { "Access-Control-Allow-Origin": ORIGIN, "Access-Control-Allow-Headers": "authorization, apikey, content-type, x-client-info", "Access-Control-Allow-Methods": "POST, OPTIONS", "Vary": "Origin" };
+const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { ...cors, "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } });
+const fail = (code: string, message: string, status: number) => json({ ok: false, code, message }, status);
+const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const dateRx = /^\d{4}-\d{2}-\d{2}$/;
+const modes = new Set(["Cash", "Bank Transfer", "UPI", "Cheque", "Other"]);
+const friendly: Record<string, string> = { "23505": "This record already exists.", "23503": "That category or claim is unavailable.", "23514": "Please check the amount, date, and selected values.", "22007": "Please enter a valid date.", "22P02": "Some details are invalid. Please check and try again.", P0001: "This action cannot be completed. Check the claim and payment status." };
+const textValue = (v: unknown, max: number) => typeof v === "string" ? v.trim().slice(0, max) : "";
+const validDate = (v: unknown): v is string => typeof v === "string" && dateRx.test(v) && Number.isFinite(new Date(v + "T00:00:00Z").getTime()) && new Date(v + "T00:00:00Z").toISOString().slice(0, 10) === v;
+const amountValue = (v: unknown) => { const n = typeof v === "number" ? v : Number(v); return Number.isFinite(n) && n > 0 && n <= 1000000000 ? n : null; };
+const sessionExpired = () => fail("SESSION_EXPIRED", "Your admin session has expired. Please log in again.", 401);
+
+Deno.serve(async (req: Request) => {
+  if (req.method === "OPTIONS") {
+    if (req.headers.get("origin") && req.headers.get("origin") !== ORIGIN) return new Response(null, { status: 403, headers: cors });
+    return new Response(null, { status: 204, headers: cors });
+  }
+  if (req.headers.get("origin") && req.headers.get("origin") !== ORIGIN) return fail("ORIGIN_NOT_ALLOWED", "This site is not allowed to access expenses.", 403);
+  if (req.method !== "POST") return fail("METHOD_NOT_ALLOWED", "Use the expense app to continue.", 405);
+  let body: Record<string, unknown>;
+  try { body = await req.json(); if (!body || typeof body !== "object" || Array.isArray(body)) return fail("INVALID_REQUEST", "Please check the request and try again.", 400); }
+  catch { return fail("INVALID_REQUEST", "Please check the request and try again.", 400); }
+
+  const session = textValue(body.admin_session, 512);
+  if (!session) return sessionExpired();
+  const url = Deno.env.get("SUPABASE_URL"), key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!url || !key) return fail("SERVICE_UNAVAILABLE", "Expenses are temporarily unavailable. Please try again.", 503);
+  const db = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
+
+  // AUTH GATE: every operation reaches this check before any table/view query or data-changing RPC.
+  // This verifies the application's custom admin-session token, not a Supabase JWT.
+  try {
+    const { data, error } = await db.rpc("verify_admin_session", { p_session_token: session });
+    if (error || data !== true) return sessionExpired();
+  } catch { return sessionExpired(); }
+
+  try {
+    const action = textValue(body.action, 60);
+    const employeeId = async () => {
+      const { data, error } = await db.from("expense_employees").select("id").eq("is_default", true).eq("active", true).limit(2);
+      if (error || !data || data.length !== 1) throw new Error("DEFAULT_EMPLOYEE");
+      return data[0].id as string;
+    };
+    const balances = async () => {
+      const { data, error } = await db.from("expense_balance_summary").select("*");
+      if (error) throw error;
+      return data || [];
+    };
+    const getById = async (table: "expenses" | "expense_payments", id: string) => {
+      const { data, error } = await db.from(table).select("*").eq("id", id).maybeSingle();
+      if (error) throw error;
+      return data;
+    };
+    const insertOnce = async (table: "expenses" | "expense_payments", row: Record<string, unknown>) => {
+      const { data, error } = await db.from(table).insert(row).select("*").maybeSingle();
+      if (!error && data) return { row: data, duplicate: false };
+      if (error?.code === "23505") {
+        const existing = await getById(table, String(row.id));
+        if (existing) return { row: existing, duplicate: true };
+      }
+      throw error || new Error("SAVE_FAILED");
+    };
+
+    switch (action) {
+      case "bootstrap": {
+        const eid = await employeeId();
+        const [cats, ex, cl, pay, bal] = await Promise.all([
+          db.from("expense_categories").select("id,name,active,sort_order").eq("active", true).order("sort_order"),
+          db.from("expenses").select("*,expense_categories(id,name)").eq("employee_id", eid).is("deleted_at", null).order("expense_date", { ascending: false }),
+          db.from("expense_claims").select("*").eq("employee_id", eid).order("claim_number", { ascending: false }),
+          db.from("expense_payments").select("*").eq("employee_id", eid).order("payment_date", { ascending: false }),
+          balances()
+        ]);
+        const bad = [cats, ex, cl, pay].find(x => x.error); if (bad?.error) throw bad.error;
+        return json({ ok: true, employee: { id: eid, name: "Abhishek" }, categories: cats.data || [], expenses: ex.data || [], claims: cl.data || [], payments: pay.data || [], balances: bal });
+      }
+      case "list_expenses": {
+        const eid = await employeeId();
+        let q = db.from("expenses").select("*,expense_categories(id,name)").eq("employee_id", eid).is("deleted_at", null).order("expense_date", { ascending: false });
+        if (validDate(body.from_date)) q = q.gte("expense_date", body.from_date);
+        if (validDate(body.to_date)) q = q.lte("expense_date", body.to_date);
+        const { data, error } = await q; if (error) throw error;
+        return json({ ok: true, expenses: data || [] });
+      }
+      case "create_expense": {
+        const id = textValue(body.id, 36), amount = amountValue(body.amount), reason = textValue(body.reason, 500);
+        const d = body.expense_date == null || body.expense_date === "" ? new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(new Date()) : body.expense_date;
+        if (!uuid.test(id) || !amount || !reason) return fail("INVALID_EXPENSE", "Enter a valid amount and reason.", 400);
+        if (!validDate(d)) return fail("INVALID_DATE", "Enter a valid expense date.", 400);
+        if (!uuid.test(String(body.category_id || ""))) return fail("INVALID_CATEGORY", "Choose a valid category.", 400);
+        const eid = await employeeId();
+        const { data: cat, error: ce } = await db.from("expense_categories").select("id").eq("id", body.category_id).eq("active", true).maybeSingle();
+        if (ce) throw ce; if (!cat) return fail("INVALID_CATEGORY", "Choose an active category.", 400);
+        const result = await insertOnce("expenses", { id, employee_id: eid, expense_date: d, amount, category_id: body.category_id, reason, notes: textValue(body.notes, 1000) || null });
+        return json({ ok: true, duplicate: result.duplicate, expense: result.row });
+      }
+      case "update_expense": {
+        const id = textValue(body.id, 36); if (!uuid.test(id)) return fail("INVALID_EXPENSE", "Choose a valid expense.", 400);
+        const updates: Record<string, unknown> = {};
+        if (body.amount !== undefined) { const n = amountValue(body.amount); if (!n) return fail("INVALID_AMOUNT", "Amount must be greater than zero.", 400); updates.amount = n; }
+        if (body.reason !== undefined) { const r = textValue(body.reason, 500); if (!r) return fail("INVALID_REASON", "Enter a reason.", 400); updates.reason = r; }
+        if (body.notes !== undefined) updates.notes = textValue(body.notes, 1000) || null;
+        if (body.expense_date !== undefined) { if (!validDate(body.expense_date)) return fail("INVALID_DATE", "Enter a valid expense date.", 400); updates.expense_date = body.expense_date; }
+        if (body.category_id !== undefined) {
+          if (!uuid.test(String(body.category_id))) return fail("INVALID_CATEGORY", "Choose a valid category.", 400);
+          const { data: cat, error } = await db.from("expense_categories").select("id").eq("id", body.category_id).eq("active", true).maybeSingle();
+          if (error) throw error; if (!cat) return fail("INVALID_CATEGORY", "Choose an active category.", 400); updates.category_id = body.category_id;
+        }
+        if (!Object.keys(updates).length) return fail("NOTHING_TO_UPDATE", "There are no changes to save.", 400);
+        updates.updated_at = new Date().toISOString();
+        const eid = await employeeId();
+        const { data: old, error: oe } = await db.from("expenses").select("id,claim_id,deleted_at").eq("id", id).eq("employee_id", eid).maybeSingle();
+        if (oe) throw oe; if (!old || old.deleted_at) return fail("EXPENSE_NOT_FOUND", "Expense not found.", 404);
+        if (old.claim_id) return fail("EXPENSE_CLAIMED", "Claimed expenses are locked. Reopen the claim first.", 409);
+        const { data, error } = await db.from("expenses").update(updates).eq("id", id).eq("employee_id", eid).is("claim_id", null).is("deleted_at", null).select("*").maybeSingle();
+        if (error) throw error; if (!data) return fail("EXPENSE_CLAIMED", "This expense changed or was claimed. Refresh and try again.", 409);
+        return json({ ok: true, expense: data });
+      }
+      case "delete_expense": {
+        const id = textValue(body.id, 36); if (!uuid.test(id)) return fail("INVALID_EXPENSE", "Choose a valid expense.", 400);
+        const eid = await employeeId();
+        const { data, error } = await db.from("expenses").update({ deleted_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", id).eq("employee_id", eid).is("claim_id", null).is("deleted_at", null).select("id").maybeSingle();
+        if (error) throw error; if (!data) return fail("EXPENSE_LOCKED_OR_MISSING", "This expense is claimed or no longer available.", 409);
+        return json({ ok: true });
+      }
+      case "list_claims": {
+        const eid = await employeeId();
+        const { data, error } = await db.from("expense_claims").select("*").eq("employee_id", eid).order("claim_number", { ascending: false });
+        if (error) throw error; return json({ ok: true, claims: data || [], balances: await balances() });
+      }
+      case "create_claim": {
+        if (!validDate(body.from_date) || !validDate(body.to_date) || String(body.from_date) > String(body.to_date)) return fail("INVALID_DATE_RANGE", "Choose a valid date range.", 400);
+        const eid = await employeeId();
+        const { data, error } = await db.rpc("expense_create_claim", { p_employee_id: eid, p_from_date: body.from_date, p_to_date: body.to_date });
+        if (error) throw error; return json({ ok: true, claim: data });
+      }
+      case "reopen_claim": {
+        const id = textValue(body.claim_id, 36); if (!uuid.test(id)) return fail("INVALID_CLAIM", "Choose a valid claim.", 400);
+        const { data, error } = await db.rpc("expense_reopen_claim", { p_claim_id: id });
+        if (error) throw error; return json({ ok: true, claim: data });
+      }
+      case "record_payment": {
+        const id = textValue(body.id, 36), amount = amountValue(body.amount), mode = textValue(body.mode, 40);
+        const d = body.payment_date == null || body.payment_date === "" ? new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(new Date()) : body.payment_date;
+        if (!uuid.test(id) || !amount || !modes.has(mode)) return fail("INVALID_PAYMENT", "Enter a valid amount and payment mode.", 400);
+        if (!validDate(d)) return fail("INVALID_DATE", "Enter a valid payment date.", 400);
+        const eid = await employeeId(); let claimId: string | null = null;
+        if (body.claim_id != null && body.claim_id !== "") {
+          claimId = textValue(body.claim_id, 36); if (!uuid.test(claimId)) return fail("INVALID_CLAIM", "Choose a valid claim.", 400);
+          const { data: cl, error } = await db.from("expense_claims").select("id,employee_id,reopened_at").eq("id", claimId).maybeSingle();
+          if (error) throw error; if (!cl || cl.employee_id !== eid || cl.reopened_at) return fail("INVALID_CLAIM", "Choose an active claim.", 400);
+        }
+        const result = await insertOnce("expense_payments", { id, employee_id: eid, claim_id: claimId, payment_date: d, amount, mode, reference_note: textValue(body.reference_note, 500) || null });
+        return json({ ok: true, duplicate: result.duplicate, payment: result.row, balances: await balances() });
+      }
+      case "balances": return json({ ok: true, balances: await balances() });
+      case "export": {
+        const eid = await employeeId();
+        const [ex, cl, pay, bal] = await Promise.all([
+          db.from("expenses").select("*,expense_categories(name)").eq("employee_id", eid).is("deleted_at", null).order("expense_date"),
+          db.from("expense_claims").select("*").eq("employee_id", eid).order("claim_number"),
+          db.from("expense_payments").select("*").eq("employee_id", eid).order("payment_date"),
+          balances()
+        ]);
+        const bad = [ex, cl, pay].find(x => x.error); if (bad?.error) throw bad.error;
+        return json({ ok: true, exported_at: new Date().toISOString(), expenses: ex.data || [], claims: cl.data || [], payments: pay.data || [], balances: bal });
+      }
+      default: return fail("UNKNOWN_ACTION", "Choose an available expense action.", 400);
+    }
+  } catch (e: any) {
+    if (String(e?.message || "") === "DEFAULT_EMPLOYEE") return fail("CONFIGURATION_ERROR", "The default employee is not configured. Please contact support.", 500);
+    return fail("REQUEST_FAILED", friendly[String(e?.code || "")] || "We couldn't complete that. Please try again.", 400);
+  }
+});
