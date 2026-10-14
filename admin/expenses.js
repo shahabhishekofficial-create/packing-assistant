@@ -118,7 +118,8 @@
       }else{
         form.reset();$("expenseDate").value=localToday();selectedCategory=categories[0]?.id||"";renderCategoryState();
       }
-      await Promise.all([loadBalances(),loadRecent()]);
+      try{ await Promise.all([loadBalances(),loadRecent()]); }
+      catch(_){ setStatus("Expense saved. Some dashboard details could not refresh; use Refresh to retry."); }
     }catch(e){
       if(e.sessionExpired){
         $("expenseSaveMessage").textContent="Session expired. Your entries are kept. Sign in again, then tap Save.";
