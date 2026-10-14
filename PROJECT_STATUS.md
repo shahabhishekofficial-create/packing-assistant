@@ -3,7 +3,7 @@
 _Last audited: 2026-10-10 (IST)_
 _Repository: `shahabhishekofficial-create/packing-assistant`_
 _Current branch: `main`_
-_Current repository HEAD at completion of this audit: `dfa12f6bb1997274e82ec64b781660eb8628ecaf`_
+_Current repository HEAD at completion of this audit: `f6b8b50f3ab8373dcac820758cfa246e8a0a80da`_
 _Current declared frontend build: `20261010-driverrefreshfix1`_
 
 > **This is an honest state report, not a roadmap.**
@@ -2046,3 +2046,12 @@ Verification from source: all driver build markers and cache/resource query stri
 - Source-only change. **Not deployed. No type check could be run.** Do not deploy until the owner explicitly approves.
 - Owner confirmed the four real expenses must remain unchanged. Status wording: **real expenses exist, owner confirmed**. No real expense amounts, reasons, or names should be added to repository/status files.
 - Expense screens remain on hold until phone tests are reported complete.
+
+## Expense list pagination correction — 2026-10-15
+
+- Commit: `f6b8b50f3ab8373dcac820758cfa246e8a0a80da` on `main`.
+- Scope: only the `list_expenses` action in `supabase/functions/expense-api/index.ts`.
+- Added validated `category_id`, `status` (`unclaimed`/`claimed`), `reason_search` with wildcard escaping, and bounded `offset`.
+- Returns at most 50 matching rows, exact `total_count`, and `has_more`; calculates `total_amount_paise` from returned amount text using integer paise only when offset is zero.
+- No other action changed. Not deployed. Screens not started.
+- No type check ran.
