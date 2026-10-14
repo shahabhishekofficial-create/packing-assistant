@@ -141,7 +141,7 @@ Deno.serve(async (req: Request) => {
         if (offset === 0) {
           // Amounts are decimal text; convert directly to whole paise without floating-point arithmetic.
           const totalPaise = (expenses || []).reduce((sum: bigint, row: any) => {
-            const match = typeof row.amount === "string" ? row.amount.match(/^(\d+)(?:\.(\d{1,2}))?$/) : null;
+            const match = String(row.amount ?? "").match(/^(\d+)(?:\.(\d{1,2}))?$/);
             if (!match) return sum;
             return sum + BigInt(match[1]) * 100n + BigInt((match[2] || "").padEnd(2, "0") || "0");
           }, 0n);
