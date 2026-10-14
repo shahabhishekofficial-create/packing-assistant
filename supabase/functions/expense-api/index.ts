@@ -92,7 +92,7 @@ Deno.serve(async (req: Request) => {
         const eid = await employeeId();
         const [cats, expenses, claims, payments, bal] = await Promise.all([
           db.from("expense_categories").select("id,name,active,sort_order").eq("active", true).order("sort_order").order("id"),
-          fetchAllPages<any>(() => db.from("expenses").select("*,expense_categories(id,name)").eq("employee_id", eid).is("deleted_at", null).gte("expense_date", dateDaysAgoIST(90)).order("expense_date", { ascending: false }).order("id", { ascending: false })),
+          fetchAllPages<any>(() => db.from("expenses").select("*,expense_categories(id,name)").eq("employee_id", eid).is("deleted_at", null).gte("expense_date", dateDaysAgoIST(89)).order("expense_date", { ascending: false }).order("id", { ascending: false })),
           fetchAllPages<any>(() => db.from("expense_claims").select("*").eq("employee_id", eid).order("claim_number", { ascending: false }).order("id", { ascending: false })),
           fetchAllPages<any>(() => db.from("expense_payments").select("*").eq("employee_id", eid).order("payment_date", { ascending: false }).order("id", { ascending: false })),
           balances()
