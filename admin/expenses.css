@@ -1,0 +1,46 @@
+:root{color-scheme:light;--eg:#176b45;--eg-dark:#105638;--ebg:#f4f8f5;--eborder:#dce7df;--etext:#193b2b;--emuted:#657b6d}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;width:100%;max-width:100%;overflow-x:hidden}
+body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--ebg);color:var(--etext);font-size:15px}
+[hidden]{display:none!important}
+#expenseBoot{min-height:100vh;display:grid;place-items:center;padding:24px;color:var(--eg-dark);font-weight:700}
+.expenseShell{min-height:100vh;display:flex;width:100%;max-width:100%}
+.expenseSidebar{width:248px;flex:0 0 248px;background:#fff;border-right:1px solid var(--eborder);display:flex;flex-direction:column}
+.expenseBrand{display:flex;align-items:center;gap:10px;padding:20px 16px;border-bottom:1px solid var(--eborder)}
+.expenseLogo{width:40px;height:40px;display:grid;place-items:center;background:var(--eg);color:#fff;border-radius:12px;font-weight:900}
+.expenseBrand strong{display:block;font-size:13px;line-height:1.3}.expenseBrand small{display:block;margin-top:4px;font-size:9px;letter-spacing:.12em;color:var(--emuted);font-weight:800}
+.expenseNav{padding:12px 10px;display:grid;gap:5px;align-content:start;flex:1}
+.expenseNav a{min-height:44px;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;text-decoration:none;color:#425c4c;font-size:13px;font-weight:700}
+.expenseNav a:hover{background:#eef6f0}.expenseNav a.active{background:var(--eg-dark);color:#fff}
+.expenseSidebarFoot{padding:14px 16px;border-top:1px solid var(--eborder);font-size:11px;color:var(--emuted)}
+.expenseMain{min-width:0;flex:1}
+.expenseTopbar{min-height:70px;display:flex;align-items:center;gap:12px;padding:12px 24px;background:#fff;border-bottom:1px solid var(--eborder);position:sticky;top:0;z-index:5}
+.expenseTopbar h1{font-size:20px;margin:2px 0 0}.expenseTopbar small{font-size:10px;letter-spacing:.12em;color:var(--emuted);font-weight:800}
+.expenseSessionLabel{margin-left:auto;color:var(--emuted);font-size:12px}
+.expenseContent{max-width:1000px;padding:22px;margin:0 auto}
+.expenseStatus{font-size:13px;color:var(--emuted);min-height:20px;margin:0 0 14px}
+.expenseSummaryGrid{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:14px;margin-bottom:16px}
+.expenseCard,.expensePanel{background:#fff;border:1px solid var(--eborder);border-radius:16px;box-shadow:0 4px 18px #183b2910}
+.expenseCard{padding:20px;min-width:0}.expenseCard span{display:block;font-size:13px;color:var(--emuted);font-weight:700}.expenseCard strong{display:block;font-size:clamp(24px,4vw,36px);line-height:1.2;margin:10px 0;overflow-wrap:anywhere}.expenseDueCard strong{font-size:clamp(34px,6vw,48px);color:var(--eg-dark)}.expenseCard small{font-size:11px;color:var(--emuted)}
+.expensePanel{padding:18px;margin-bottom:16px;min-width:0}
+.expenseSectionHead{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}
+.expenseSectionHead small{font-size:10px;letter-spacing:.12em;font-weight:800;color:var(--eg)}.expenseSectionHead h2{font-size:19px;margin:4px 0 0}
+#expenseForm{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.expenseField{display:grid;gap:7px;font-size:12px;font-weight:800;color:#375642;min-width:0}
+.expenseField input,.expenseField textarea{width:100%;max-width:100%;min-width:0;border:1px solid #cbdacf;border-radius:10px;padding:12px;background:#fff;color:var(--etext);font:inherit;font-size:16px;line-height:1.35}
+.expenseField textarea{resize:vertical}
+.expenseCategories{grid-column:1/-1;min-width:0;margin:0;padding:0;border:0}.expenseCategories legend{font-size:12px;font-weight:800;margin-bottom:8px}
+.expenseChipList{display:flex;flex-wrap:wrap;gap:8px}
+.expenseChip{min-height:44px;border:1px solid #b9d0c0;border-radius:999px;padding:10px 14px;background:#fff;color:#315740;font-weight:750;font-size:13px;max-width:100%;overflow-wrap:anywhere}
+.expenseChip[aria-pressed=true]{background:var(--eg-dark);border-color:var(--eg-dark);color:#fff}
+.expenseFormActions{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:10px}
+.expenseTap{min-height:44px;touch-action:manipulation}
+.expensePrimary,.expenseSecondary{border:0;border-radius:10px;padding:11px 16px;font:inherit;font-size:14px;font-weight:800;cursor:pointer}
+.expensePrimary{background:var(--eg);color:#fff}.expensePrimary:disabled{opacity:.55;cursor:wait}
+.expenseSecondary{background:#eef5ef;color:var(--eg-dark);border:1px solid #c8dbcd}
+.expenseSaveMessage{grid-column:1/-1;min-height:20px;margin:0;font-size:13px;color:var(--eg-dark)}
+.expenseRecentList{display:grid;gap:0;min-width:0}
+.expenseRecentRow{padding:13px 0;border-top:1px solid #e7eee9;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:start;min-width:0}
+.expenseRecentRow:first-child{border-top:0}.expenseRecentMain{min-width:0}.expenseRecentTitle{font-weight:800;overflow-wrap:anywhere}.expenseRecentMeta{font-size:12px;color:var(--emuted);margin-top:4px;overflow-wrap:anywhere}.expenseRecentAmount{font-weight:850;white-space:nowrap}.expenseMuted,.expenseFooterNote{font-size:12px;color:var(--emuted)}.expenseFooterNote{line-height:1.5;padding:0 2px 20px}
+#expenseNavToggle{display:none}
+@media(max-width:760px){.expenseShell{display:block}.expenseSidebar{display:none;width:100%;height:auto;border-right:0;border-bottom:1px solid var(--eborder)}.expenseSidebar.open{display:flex}.expenseNav{display:grid}.expenseSidebarFoot{display:none}.expenseTopbar{min-height:64px;padding:9px 12px}.expenseTopbar h1{font-size:18px}.expenseSessionLabel{font-size:11px}.expenseContent{padding:12px}.expenseSummaryGrid{grid-template-columns:1fr;gap:10px}.expenseCard{padding:16px}.expenseDueCard strong{font-size:40px}.expensePanel{padding:14px}#expenseForm{grid-template-columns:1fr;gap:13px}.expenseCategories,.expenseFormActions,.expenseSaveMessage{grid-column:1}#expenseNavToggle{display:inline-flex;align-items:center;justify-content:center;width:44px;min-width:44px;border:1px solid var(--eborder);border-radius:10px;background:#fff;color:var(--eg-dark);font-size:20px}.expenseSectionHead h2{font-size:17px}.expenseFormActions>*{flex:1 1 100%}.expenseRecentRow{padding:14px 0}}
