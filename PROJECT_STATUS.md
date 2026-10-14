@@ -2039,3 +2039,10 @@ Verification from source: all driver build markers and cache/resource query stri
 - Exact driver build-mismatch reload guard removal commit: `b921c014673009e4554e84cebd4205a134280d85`, “Stop driver auto-reload loop permanently” (2026-10-10). Its `driver/index.html` diff removes the guard that compared the shared `version.json` build ID, unregistered the driver service worker/deleted driver caches, and reloaded on mismatch. It explicitly documents that `update.js` owns manual one-shot updates.
 - Slice 2a API diff is not deployed. Before deployment, confirm call-site compatibility and review the final diff. Current `admin/expenses.js` calls `list_expenses` once for the read-only last-five list and consumes `result.expenses`; it does not currently expect all rows. `bootstrap` independently queries expenses through `fetchAllPages` (last 90 calendar dates), and `export` independently queries all active expenses through `fetchAllPages`; neither uses the `list_expenses` action. Repository-wide code search found no additional `list_expenses` call sites, though live runtime dependencies remain unknown.
 - User approved the Slice 2a file/cache-version list. Do not begin Slice 2a screens until the owner confirms the four active expense entries. No API deployment has been approved.
+
+
+## Expense list totals correction — 2026-10-15
+- Updated `supabase/functions/expense-api/index.ts` in commit `6ba996487499cc1c4b6d4fd9362c7c4327b8d9ad` on `main`. The `list_expenses` action now shares its filters between the full expense list and a totals query that selects only `amount`, and returns `total_count` and `total_amount`.
+- Source-only change. **Not deployed. No type check could be run.** Do not deploy until the owner explicitly approves.
+- Owner confirmed the four real expenses must remain unchanged. Status wording: **real expenses exist, owner confirmed**. No real expense amounts, reasons, or names should be added to repository/status files.
+- Expense screens remain on hold until phone tests are reported complete.
