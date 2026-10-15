@@ -2137,3 +2137,12 @@ Verification from source: all driver build markers and cache/resource query stri
 - Ran `supabase/tests/expense_export_summary_rollback_test.sql`. **FAILED** at the category-order assertion before the test's final ROLLBACK could be confirmed by the tool: PostgreSQL error `42883: operator does not exist: record ->> unknown`, in the query selecting `ordinality` from `jsonb_array_elements(...) WITH ORDINALITY x` and applying `x->>'category_id'`. The alias needs a named JSONB column (and ordinality column) rather than treating the whole record as JSONB.
 - Per owner instruction, stopped immediately after the failure. No function-security checks, smoke call, expense-count/Total Due check, or further database commands were run. Whether the synthetic test transaction was rolled back is **unknown** from the tool error; do not claim rollback.
 - No real expense rows or reasons recorded. No API code deployed and no screens built.
+
+
+## Slice 2b read-only verification and test-script correction — 2026-10-15
+- Read-only leftover check after the failed synthetic test: no synthetic employee, no categories with sort_order 901–903, and no related expenses, claims, or payments were found. No other session was reported as `idle in transaction`.
+- Read-only function checks passed: `expense_export_summary` exists, is STABLE, SECURITY DEFINER, and has an empty search_path. EXECUTE is unavailable to anon, authenticated, and PUBLIC; service_role can execute.
+- Default-employee no-filter smoke call passed. Returned totals-only fields were internally consistent and matched the recorded baseline; no real expense rows or reasons were selected or recorded in this status file.
+- Read-only reconciliation passed: active expense count and employee Total Due remain at the recorded baseline. Exact live totals are intentionally omitted from this file.
+- Fixed `supabase/tests/expense_export_summary_rollback_test.sql` in commit `92ec5e86ddc4a8d3778dd55c1681276c3e61ae1c`: all three category-order selects now use `WITH ORDINALITY AS x(val, ord)`, reference `x.val->>`, and select `ord`. The separate inactive-category existence check had the same record/JSONB alias bug and was fixed to use `AS x(val)` and `x.val->>`.
+- Searched the test file for the same aliasing pattern; these four occurrences were the affected sites. Test has **not** been rerun pending owner approval of the diff. No cleanup/deletion, API deployment, or screens.
