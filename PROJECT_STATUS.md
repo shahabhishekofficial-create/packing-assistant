@@ -2091,3 +2091,9 @@ Verification from source: all driver build markers and cache/resource query stri
 - Slice 2a uses a separate list module and existing expense-api actions only; no API or database changes. List errors must not block Add Expense or dashboard.
 - Claimed expenses are locked; only unclaimed expenses can be edited or soft-deleted. Phone verification remains pending; do not mark working until owner tests.
 - Duplicate check was read-only and its result was shown only in chat. No database changes.
+
+
+## Slice 2a Part 1 — read-only expense list — 2026-10-15
+- Added an isolated read-only list module and stylesheet with date/category/status filters, reason search, 50-row paging, API filtered total and claimed-row lock labels.
+- Uses existing `bootstrap` and `list_expenses` actions only. No API, database, service-worker, version, root or driver files changed.
+- List load errors are contained in the list panel; phone checks remain pending. Do not mark working before owner test.

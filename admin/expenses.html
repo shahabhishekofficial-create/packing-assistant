@@ -6,6 +6,7 @@
 <meta name="theme-color" content="#176b45">
 <title>Expenses | Bigly Agro Admin</title>
 <link rel="stylesheet" href="./expenses.css?v=20261014-expenses1">
+<link rel="stylesheet" href="./expenses-list.css?v=20261015-slice2a1">
 </head>
 <body class="adminPage">
 <div id="expenseBoot" role="status">Checking secure admin session…</div>
@@ -44,6 +45,21 @@
         <p id="expenseSaveMessage" class="expenseSaveMessage" role="status" aria-live="polite"></p>
       </form>
     </section>
+    <section class="expensePanel" id="expenseListPanel" aria-labelledby="expenseListHeading">
+      <div class="expenseSectionHead"><div><small>EXPENSE HISTORY</small><h2 id="expenseListHeading">All expenses</h2></div></div>
+      <div class="expenseListFilters">
+        <label>Date range<select id="expenseListPeriod"><option value="this">This month</option><option value="last">Last month</option><option value="all">All dates</option><option value="custom">Custom range</option></select></label>
+        <div id="expenseListCustomDates" class="expenseListCustomDates" hidden><label>From<input id="expenseListFrom" type="date"></label><label>To<input id="expenseListTo" type="date"></label></div>
+        <label>Category<select id="expenseListCategory"><option value="">All categories</option></select></label>
+        <label>Status<select id="expenseListStatus"><option value="">All expenses</option><option value="unclaimed">Unclaimed</option><option value="claimed">Claimed</option></select></label>
+        <label>Search reason<input id="expenseListSearch" type="search" maxlength="200" placeholder="Search reason"></label>
+        <button id="expenseListApply" class="expenseSecondary expenseTap" type="button">Apply filters</button>
+      </div>
+      <div class="expenseListTotals"><div><small id="expenseListCount">Loading…</small><div>Filtered total</div><strong id="expenseListTotal">—</strong></div></div>
+      <p id="expenseListMessage" class="expenseListMessage" role="status" aria-live="polite">Loading expense list…</p>
+      <div id="expenseListRows" class="expenseListRows"></div>
+      <button id="expenseListLoadMore" class="expenseSecondary expenseTap" type="button" hidden>Load more</button>
+    </section>
     <section class="expensePanel">
       <div class="expenseSectionHead"><div><small>LATEST ACTIVITY</small><h2>Last 5 expenses</h2></div><button id="expenseRefresh" class="expenseSecondary expenseTap" type="button">Refresh</button></div>
       <div id="expenseRecentList" class="expenseRecentList"><p class="expenseMuted">Loading recent entries…</p></div>
@@ -56,5 +72,6 @@
 <script src="../config.js?v=20261014-expenses1"></script>
 <script src="./auth.js?v=20261014-expenses1"></script>
 <script defer src="./expenses.js?v=20261014-expenses1"></script>
+<script defer src="./expenses-list.js?v=20261015-slice2a1"></script>
 </body>
 </html>
