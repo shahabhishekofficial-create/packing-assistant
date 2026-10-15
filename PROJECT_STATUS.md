@@ -2104,3 +2104,14 @@ Verification from source: all driver build markers and cache/resource query stri
 - Actual cache query version used by both new list assets is `20261015-slice2a1`; this differs from the planned `20261014-expenses2a`.
 - Part 2 edit/delete remains on hold until the owner reports Part 1 phone-test results.
 - No real expense amounts or reasons are recorded here.
+
+
+## Slice 2a Part 1 phone verification — 2026-10-15
+- Owner reports all applicable phone checks passed. Claimed-row check and Load more check were N/A because no claims existed and fewer than 50 expenses were present.
+- Status reflects the owner's test report; no real expense amounts or reasons are recorded.
+
+## Slice 2a Part 2 — unclaimed expense edit/delete — 2026-10-15
+- Scope: edit through the existing Add Expense form and existing `update_expense` action; soft delete through existing `delete_expense` action with confirmation. No API changes.
+- Claimed rows remain locked. Double-tap protection, session-expiry retention, and claimed/missing refresh handling are implemented in the list module; phone test pending.
+- List and Add Expense code paths remain separate; verify they remain usable if Part 2 fails. Do not mark working before owner phone testing.
+- Cache query version for the list JS and CSS is `20261015-slice2a2`. No real expense amounts or reasons are recorded.
