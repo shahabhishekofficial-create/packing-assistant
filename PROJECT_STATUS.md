@@ -2115,3 +2115,10 @@ Verification from source: all driver build markers and cache/resource query stri
 - Claimed rows remain locked. Double-tap protection, session-expiry retention, and claimed/missing refresh handling are implemented in the list module; phone test pending.
 - List and Add Expense code paths remain separate; verify they remain usable if Part 2 fails. Do not mark working before owner phone testing.
 - Cache query version for the list JS and CSS is `20261015-slice2a2`. No real expense amounts or reasons are recorded.
+
+
+## Slice 2a Part 2 amount validation correction — 2026-10-15
+- Corrected the doubled-backslash amount regex in `admin/expenses-list.js`; a full-file scan found this as the only doubled-backslash regex defect. Amount remains typed text, must be positive, and permits at most two decimal places.
+- Updated only the expense-list JS and CSS cache query versions in `admin/expenses.html` to `20261015-slice2a3`.
+- JavaScript amount-pattern test results: 125.50, 5, and 0.5 accepted; 10.005, abc, 0, -1, and empty string rejected.
+- Source committed; phone retest pending. Do not mark working until owner reports phone test. No API, Add Expense JS, database rows, version.json, service worker, root or driver files changed.
