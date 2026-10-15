@@ -2146,3 +2146,11 @@ Verification from source: all driver build markers and cache/resource query stri
 - Read-only reconciliation passed: active expense count and employee Total Due remain at the recorded baseline. Exact live totals are intentionally omitted from this file.
 - Fixed `supabase/tests/expense_export_summary_rollback_test.sql` in commit `92ec5e86ddc4a8d3778dd55c1681276c3e61ae1c`: all three category-order selects now use `WITH ORDINALITY AS x(val, ord)`, reference `x.val->>`, and select `ord`. The separate inactive-category existence check had the same record/JSONB alias bug and was fixed to use `AS x(val)` and `x.val->>`.
 - Searched the test file for the same aliasing pattern; these four occurrences were the affected sites. Test has **not** been rerun pending owner approval of the diff. No cleanup/deletion, API deployment, or screens.
+
+
+## Slice 2b synthetic test rerun and cleanup — 2026-10-16
+- Test accepted as "ran without error; PASS notice not shown by the connector; leftovers 0". Do not describe this as an unqualified pass.
+- The SQL tool returned an empty result array and no error; the connector did not expose the test's NOTICE output.
+- Read-only leftover counts: synthetic employee 0; synthetic categories 901–903 0; related expenses 0; related claims 0; related payments 0; idle-in-transaction sessions 0.
+- Baseline read-only checks subsequently returned 33 active expenses and the expected employee summary value. The real amount is intentionally not recorded here.
+- No API code, deployment, or screens changed.
