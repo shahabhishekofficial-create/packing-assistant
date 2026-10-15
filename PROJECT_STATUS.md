@@ -2129,3 +2129,11 @@ Verification from source: all driver build markers and cache/resource query stri
 - **Not tested:** amount rejection for three decimal places, double-tap Save, double-tap Delete, and session expiry. These are explicitly untested, not passed.
 - Part 2 status: **committed, partly phone-tested**.
 - No real expense amounts or reasons recorded.
+
+
+## Slice 2b migration attempt — 2026-10-15
+- Owner explicitly approved applying `supabase/migrations/20261015000100_expense_export_summary.sql` to the live database, with synthetic-only testing and immediate stop on any failure.
+- Applied the migration to Supabase project `pbhkuofylhqcqmspubmb`; migration tool returned `{"success":true}`.
+- Ran `supabase/tests/expense_export_summary_rollback_test.sql`. **FAILED** at the category-order assertion before the test's final ROLLBACK could be confirmed by the tool: PostgreSQL error `42883: operator does not exist: record ->> unknown`, in the query selecting `ordinality` from `jsonb_array_elements(...) WITH ORDINALITY x` and applying `x->>'category_id'`. The alias needs a named JSONB column (and ordinality column) rather than treating the whole record as JSONB.
+- Per owner instruction, stopped immediately after the failure. No function-security checks, smoke call, expense-count/Total Due check, or further database commands were run. Whether the synthetic test transaction was rolled back is **unknown** from the tool error; do not claim rollback.
+- No real expense rows or reasons recorded. No API code deployed and no screens built.
