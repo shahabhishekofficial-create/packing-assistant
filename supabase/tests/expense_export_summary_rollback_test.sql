@@ -72,24 +72,24 @@ begin
   end if;
 
   if not exists (
-    select 1 from jsonb_array_elements(v_summary->'category_totals') x
-    where x->>'category_id' = v_cat_inactive::text
-      and x->>'total_paise' = '0'
-      and x->>'sort_order' = '903'
+    select 1 from jsonb_array_elements(v_summary->'category_totals') AS x(val)
+    where x.val->>'category_id' = v_cat_inactive::text
+      and x.val->>'total_paise' = '0'
+      and x.val->>'sort_order' = '903'
   ) then
     raise exception 'FAIL: inactive zero-total category or sort_order was omitted';
   end if;
 
   -- Category output must retain the declared sort_order, including inactive categories.
-  select ordinality into v_pos_a
-  from jsonb_array_elements(v_summary->'category_totals') with ordinality x
-  where x->>'category_id' = v_cat_a::text and x->>'sort_order' = '901';
-  select ordinality into v_pos_b
-  from jsonb_array_elements(v_summary->'category_totals') with ordinality x
-  where x->>'category_id' = v_cat_b::text and x->>'sort_order' = '902';
-  select ordinality into v_pos_inactive
-  from jsonb_array_elements(v_summary->'category_totals') with ordinality x
-  where x->>'category_id' = v_cat_inactive::text and x->>'sort_order' = '903';
+  select ord into v_pos_a
+  from jsonb_array_elements(v_summary->'category_totals') with ordinality AS x(val, ord)
+  where x.val->>'category_id' = v_cat_a::text and x.val->>'sort_order' = '901';
+  select ord into v_pos_b
+  from jsonb_array_elements(v_summary->'category_totals') with ordinality AS x(val, ord)
+  where x.val->>'category_id' = v_cat_b::text and x.val->>'sort_order' = '902';
+  select ord into v_pos_inactive
+  from jsonb_array_elements(v_summary->'category_totals') with ordinality AS x(val, ord)
+  where x.val->>'category_id' = v_cat_inactive::text and x.val->>'sort_order' = '903';
   if v_pos_a is null or v_pos_b is null or v_pos_inactive is null
      or not (v_pos_a < v_pos_b and v_pos_b < v_pos_inactive) then
     raise exception 'FAIL: categories are not ordered by sort_order';
