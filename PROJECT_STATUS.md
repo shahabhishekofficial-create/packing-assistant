@@ -2122,3 +2122,10 @@ Verification from source: all driver build markers and cache/resource query stri
 - Updated only the expense-list JS and CSS cache query versions in `admin/expenses.html` to `20261015-slice2a3`.
 - JavaScript amount-pattern test results: 125.50, 5, and 0.5 accepted; 10.005, abc, 0, -1, and empty string rejected.
 - Source committed; phone retest pending. Do not mark working until owner reports phone test. No API, Add Expense JS, database rows, version.json, service worker, root or driver files changed.
+
+
+## Slice 2a Part 2 phone retest status — 2026-10-15
+- Owner reports **edit works** and **delete works** on phone.
+- **Not tested:** amount rejection for three decimal places, double-tap Save, double-tap Delete, and session expiry. These are explicitly untested, not passed.
+- Part 2 status: **committed, partly phone-tested**.
+- No real expense amounts or reasons recorded.
