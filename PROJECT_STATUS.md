@@ -2097,3 +2097,10 @@ Verification from source: all driver build markers and cache/resource query stri
 - Added an isolated read-only list module and stylesheet with date/category/status filters, reason search, 50-row paging, API filtered total and claimed-row lock labels.
 - Uses existing `bootstrap` and `list_expenses` actions only. No API, database, service-worker, version, root or driver files changed.
 - List load errors are contained in the list panel; phone checks remain pending. Do not mark working before owner test.
+
+
+## Slice 2a Part 1 verification status — 2026-10-15
+- **Status: committed, phone test pending.** Do not mark working until phone testing is reported.
+- Actual cache query version used by both new list assets is `20261015-slice2a1`; this differs from the planned `20261014-expenses2a`.
+- Part 2 edit/delete remains on hold until the owner reports Part 1 phone-test results.
+- No real expense amounts or reasons are recorded here.
