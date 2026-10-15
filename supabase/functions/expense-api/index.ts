@@ -154,6 +154,92 @@ Deno.serve(async (req: Request) => {
         }
         return json(result);
       }
+      case "export_summary":
+      case "export_rows": {
+        const eid = await employeeId();
+        const fromDate = body.from_date == null || body.from_date === "" ? null : body.from_date;
+        const toDate = body.to_date == null || body.to_date === "" ? null : body.to_date;
+        const categoryId = body.category_id == null || body.category_id === "" ? null : body.category_id;
+        const status = body.status == null || body.status === "" ? null : body.status;
+        const reasonSearch = body.reason_search == null ? "" : body.reason_search;
+        if ((fromDate !== null && !validDate(fromDate)) || (toDate !== null && !validDate(toDate)) || (fromDate && toDate && fromDate > toDate)) return fail("INVALID_DATE_RANGE", "Choose a valid date range.", 400);
+        if (categoryId !== null && (typeof categoryId !== "string" || !uuid.test(categoryId))) return fail("INVALID_CATEGORY", "Choose a valid category.", 400);
+        if (status !== null && status !== "unclaimed" && status !== "claimed") return fail("INVALID_STATUS", "Choose unclaimed or claimed.", 400);
+        if (typeof reasonSearch !== "string" || reasonSearch.length > 200 || reasonSearch.includes("\u0000")) return fail("INVALID_REASON_SEARCH", "Enter a valid search (maximum 200 characters).", 400);
+
+        const { data: summary, error: summaryError } = await db.rpc("expense_export_summary", {
+          p_employee_id: eid,
+          p_from_date: fromDate,
+          p_to_date: toDate,
+          p_category_id: categoryId,
+          p_status: status,
+          // The database function owns literal substring escaping; pass raw search text.
+          p_reason_search: reasonSearch
+        });
+        if (summaryError) throw summaryError;
+        if (!summary || typeof summary !== "object" || !Number.isSafeInteger(Number(summary.total_count)) || !/^\d+$/.test(String(summary.total_paise ?? ""))) {
+          throw new Error("EXPORT_SUMMARY_INVALID: The expense summary could not be verified. Refresh and try again.");
+        }
+        if (action === "export_summary") return json({ ok: true, summary });
+
+        const totalCount = Number(summary.total_count);
+        if (totalCount > 20000) return fail("EXPORT_ROW_LIMIT_EXCEEDED", "More than 20,000 matching expenses. Narrow the date range or filters and try again.", 400);
+        const matchingQuery = (withCount = false) => {
+          let q = db.from("expenses").select("id,expense_date,reason,amount,claim_id,expense_categories(name)", withCount ? { count: "exact" } : undefined)
+            .eq("employee_id", eid).is("deleted_at", null);
+          if (fromDate) q = q.gte("expense_date", fromDate);
+          if (toDate) q = q.lte("expense_date", toDate);
+          if (categoryId) q = q.eq("category_id", categoryId);
+          if (status === "unclaimed") q = q.is("claim_id", null);
+          if (status === "claimed") q = q.not("claim_id", "is", null);
+          if (reasonSearch) {
+            const escapedSearch = reasonSearch.replace(/[\\%_]/g, "\\$&");
+            q = q.ilike("reason", "%" + escapedSearch + "%");
+          }
+          return q.order("expense_date", { ascending: true }).order("id", { ascending: true });
+        };
+        const rows: any[] = [];
+        let observedCount: number | null = null;
+        for (let offset = 0; offset < 20000; offset += 1000) {
+          const { data, error, count } = await matchingQuery(offset === 0).range(offset, offset + 999);
+          if (error) throw error;
+          if (offset === 0) observedCount = count ?? null;
+          if (observedCount !== null && observedCount > 20000) {
+            return fail("EXPORT_ROW_LIMIT_EXCEEDED", "More than 20,000 matching expenses. Narrow the date range or filters and try again.", 400);
+          }
+          const page = data || [];
+          rows.push(...page);
+          if (page.length < 1000) break;
+        }
+        if (observedCount !== null && observedCount > rows.length && rows.length >= 20000) {
+          return fail("EXPORT_ROW_LIMIT_EXCEEDED", "More than 20,000 matching expenses. Narrow the date range or filters and try again.", 400);
+        }
+
+        const claimIds = [...new Set(rows.map((row) => row.claim_id).filter((id) => typeof id === "string"))];
+        const claimNumbers = new Map<string, string | number>();
+        if (claimIds.length) {
+          const { data: claims, error } = await db.from("expense_claims").select("id,claim_number").eq("employee_id", eid).in("id", claimIds);
+          if (error) throw error;
+          for (const claim of claims || []) claimNumbers.set(claim.id, claim.claim_number);
+        }
+        const totalPaise = rows.reduce((sum: bigint, row) => {
+          const match = String(row.amount ?? "").match(/^(\d+)(?:\.(\d{1,2}))?$/);
+          if (!match) throw new Error("INVALID_EXPENSE_AMOUNT");
+          return sum + BigInt(match[1]) * 100n + BigInt((match[2] || "").padEnd(2, "0") || "0");
+        }, 0n);
+        if (rows.length !== totalCount || totalPaise.toString() !== String(summary.total_paise)) {
+          return fail("DATA_CHANGED", "Expenses changed while the export was being prepared. Refresh and try again.", 409);
+        }
+        const expenses = rows.map((row) => ({
+          date: row.expense_date,
+          category_name: row.expense_categories?.name ?? "",
+          reason: row.reason,
+          amount: String(row.amount),
+          status: row.claim_id ? "claimed" : "unclaimed",
+          claim_number: row.claim_id ? (claimNumbers.get(row.claim_id) ?? null) : null
+        }));
+        return json({ ok: true, summary, expenses });
+      }
       case "create_expense": {
         const id = textValue(body.id, 36), amount = amountValue(body.amount), reason = textValue(body.reason, 500);
         const d = body.expense_date == null || body.expense_date === "" ? new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(new Date()) : body.expense_date;
@@ -288,10 +374,14 @@ Deno.serve(async (req: Request) => {
       default: return fail("UNKNOWN_ACTION", "Choose an available expense action.", 400);
     }
   } catch (e: any) {
-    const code = String(e?.code || "UNKNOWN");
+    const rawMessage = String(e?.message || "");
+    const parsedDatabaseError = rawMessage.match(/^([A-Z][A-Z0-9_]*):\s*(.+)$/);
+    const code = parsedDatabaseError?.[1] || String(e?.code || "UNKNOWN");
+    const message = parsedDatabaseError?.[2];
     console.error("expense-api failure", { action, code });
-    if (String(e?.message || "") === "DEFAULT_EMPLOYEE") return fail("CONFIGURATION_ERROR", "The default employee is not configured. Please contact support.", 500);
-    if (code === "P0001" && typeof e?.message === "string" && e.message) return fail("REQUEST_FAILED", e.message, 400);
+    if (rawMessage === "DEFAULT_EMPLOYEE") return fail("CONFIGURATION_ERROR", "The default employee is not configured. Please contact support.", 500);
+    if (parsedDatabaseError) return fail(code, message, 400);
+    if (code === "P0001" && rawMessage) return fail("REQUEST_FAILED", rawMessage, 400);
     return fail("REQUEST_FAILED", friendly[code] || "We couldn't complete that. Please try again.", 400);
   }
 });
