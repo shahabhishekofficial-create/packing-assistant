@@ -19,6 +19,7 @@ declare
   v_employee_name text;
   v_total_count bigint;
   v_total_paise numeric;
+  v_expenses_paise numeric;
   v_payments_paise numeric;
   v_balance_paise numeric;
   v_categories jsonb;
@@ -112,6 +113,13 @@ begin
     group by e.category_id
   ) x on x.category_id = c.id;
 
+  -- Overall expenses include every active expense for this employee, independent
+  -- of the period/category/status/search filters used for the export section.
+  select coalesce(sum((e.amount * 100)::bigint), 0)
+    into v_expenses_paise
+  from public.expenses e
+  where e.employee_id = p_employee_id and e.deleted_at is null;
+
   -- Overall payments are summed from expense_payments. Overall balance due has
   -- one source only: the employee summary row in expense_balance_summary.
   select coalesce(sum((p.amount * 100)::bigint), 0)
@@ -137,6 +145,7 @@ begin
     'total_count', v_total_count,
     'total_paise', v_total_paise::text,
     'category_totals', v_categories,
+    'overall_expenses_paise', v_expenses_paise::text,
     'overall_payments_received_paise', v_payments_paise::text,
     'overall_balance_due_paise', v_balance_paise::text
   );
