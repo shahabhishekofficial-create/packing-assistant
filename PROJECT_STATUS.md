@@ -2014,7 +2014,7 @@ Verification from source: all driver build markers and cache/resource query stri
 
 
 ## Expenses screen — Slice 1 source implementation (2026-10-14)
-- **Status: committed; phone test pending. Do not describe as working until the user tests it on their phone. Slice 2 has not started.**
+- **Status: balances display correctly; double-tap, offline-save and session-expiry tests not yet run.**
 - Created `admin/expenses.html`, `admin/expenses.js`, and `admin/expenses.css`; made one sidebar link insertion in `admin/index.html`. These are the only product files changed for this slice.
 - No changes to `version.json`, `admin/sw.js`, root files, driver files, `app.js`, database schema, or the existing Expense API. The new page deliberately does not load `update.js`. New assets use `?v=20261014-expenses1`.
 - Existing `admin/auth.js` is reused. It verifies the saved admin session on startup, displays the existing login overlay if the session is absent/invalid, and exposes the session as `window.PA_ADMIN_SESSION`. Expense API calls are not made before this token exists; the API independently verifies it before reading or changing data.
@@ -2084,3 +2084,10 @@ Verification from source: all driver build markers and cache/resource query stri
 - Synthetic rollback test checks `overall_expenses_paise - overall_payments_received_paise = overall_balance_due_paise`, compares filtered function output against an independent hand-written query over synthetic rows, includes literal `%` and `_` reasons, verifies inactive-category inclusion and `sort_order`, and asserts expected invalid-input errors.
 - Required post-deploy check: for the same employee and identical filters, compare the `list_expenses` total with the export summary filtered total and confirm they match.
 - Review-file changes only. **No SQL was applied; the test has not been run.** No expense rows, API code, deployment, rollback file, or screens were touched.
+
+
+## Slice 2a expense list — 2026-10-15
+- Slice 1 status: balances display correctly; double-tap, offline-save and session-expiry tests not yet run. No real amounts or reasons recorded.
+- Slice 2a uses a separate list module and existing expense-api actions only; no API or database changes. List errors must not block Add Expense or dashboard.
+- Claimed expenses are locked; only unclaimed expenses can be edited or soft-deleted. Phone verification remains pending; do not mark working until owner tests.
+- Duplicate check was read-only and its result was shown only in chat. No database changes.
