@@ -2077,3 +2077,10 @@ Verification from source: all driver build markers and cache/resource query stri
 - Test script creates only synthetic fixtures within a transaction ending in ROLLBACK; it compares filtered count/total against the same list-filter semantics, checks literal wildcard escaping, inactive categories, overall figures and the cap. It was not run.
 - Review commits: migration `f217bfed39ea4032258777419ad63d45d7cd36f4`; rollback `9ef3f22ce84d4c692b1472baa6c1b771ba1c25a1`; test `835cc5ca1310d086706ff6b7df991f57aa611c0d`.
 - No SQL was applied; no expense rows were read by the review test or modified. No API code changed or deployed. No type check or live test ran. Slice 2a and its phone tests remain prerequisites before Slice 2b implementation.
+
+
+## Slice 2b export summary review correction — 2026-10-15
+- Review-only migration now returns `overall_expenses_paise`, summing all active expenses for the employee independently of export filters.
+- Synthetic rollback test checks `overall_expenses_paise - overall_payments_received_paise = overall_balance_due_paise`, compares filtered function output against an independent hand-written query over synthetic rows, includes literal `%` and `_` reasons, verifies inactive-category inclusion and `sort_order`, and asserts expected invalid-input errors.
+- Required post-deploy check: for the same employee and identical filters, compare the `list_expenses` total with the export summary filtered total and confirm they match.
+- Review-file changes only. **No SQL was applied; the test has not been run.** No expense rows, API code, deployment, rollback file, or screens were touched.
