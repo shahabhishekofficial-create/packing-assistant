@@ -2154,3 +2154,12 @@ Verification from source: all driver build markers and cache/resource query stri
 - Read-only leftover counts: synthetic employee 0; synthetic categories 901–903 0; related expenses 0; related claims 0; related payments 0; idle-in-transaction sessions 0.
 - Baseline read-only checks subsequently returned 33 active expenses and the expected employee summary value. The real amount is intentionally not recorded here.
 - No API code, deployment, or screens changed.
+
+
+## Slice 2b export API implementation — 2026-10-16
+- Added export_summary and export_rows actions to supabase/functions/expense-api/index.ts; existing export action is unchanged.
+- Both new actions use the same date/category/status/search validation as list_expenses. Raw reason_search is passed to the database summary function, which performs literal substring escaping; row filtering also preserves literal substring semantics.
+- Database errors with a CODE: message prefix are returned as separate code and message fields; EXPORT_ROW_LIMIT_EXCEEDED remains distinguishable.
+- export_rows fetches stable date/id-ordered pages of up to 1,000 rows, with a 20,000-row cap; it returns date, category name, reason, amount text, status, claim number, and the summary from the same action call.
+- Server-side consistency check compares fetched row count and summed BigInt paise against the summary count and total. A mismatch returns DATA_CHANGED; the displayed total remains the summary value.
+- No real expense amounts or reasons are recorded. No type check ran. No deployment or screens changed; production and phone behavior remain unverified.
