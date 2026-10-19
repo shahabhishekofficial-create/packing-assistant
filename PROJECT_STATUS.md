@@ -2176,3 +2176,12 @@ Verification from source: all driver build markers and cache/resource query stri
 
 - Baseline: 40 active expenses; four parity checks matched.
 - No amounts or reasons recorded.
+
+## Expense export screen implementation — 2026-10-19
+
+- Added a Prepare flow with separate Share and Download actions to the Expenses page. Prepare uses the current date/category/status/reason-search filters and calls export_rows once per preparation attempt. Returned server summary and rows are used; the browser does not aggregate totals.
+- ExcelJS 4.4.0, jsPDF 3.0.4, and AutoTable 5.0.8 are loaded on demand only after Prepare is tapped. CDN package pages confirm the versions exist. Published dates verified: ExcelJS 4.4.0 — about 2 years ago; AutoTable 5.0.8 — 17 May 2026; jsPDF 3.0.4 — unknown.
+- PDF has a 2,000-row limit and uses “Rs.”. Excel amount cells use the rupee symbol. Export filenames use the selected period or all_<India date> when no date range is active.
+- Excel reason/category/status/claim text is written as string cells; no apostrophe prefix was added because no phone test was run. Notes are not returned by the existing export_rows response and are explicitly disclosed as omitted. The API was not changed.
+- The current implementation is committed but not phone-tested. Share-sheet behavior, workbook formula behavior, PDF rendering, totals against the dashboard, and failure isolation remain unknown until the user tests on a phone. No type check ran. No deployment was manually initiated.
+- Changed files only: admin/expenses.html, admin/expenses-export.js, admin/expenses-export.css. No version.json, service worker, root, driver, API, or database changes.
