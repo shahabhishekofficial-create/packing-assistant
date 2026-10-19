@@ -2185,3 +2185,11 @@ Verification from source: all driver build markers and cache/resource query stri
 - Excel reason/category/status/claim text is written as string cells; no apostrophe prefix was added because no phone test was run. Notes are not returned by the existing export_rows response and are explicitly disclosed as omitted. The API was not changed.
 - The current implementation is committed but not phone-tested. Share-sheet behavior, workbook formula behavior, PDF rendering, totals against the dashboard, and failure isolation remain unknown until the user tests on a phone. No type check ran. No deployment was manually initiated.
 - Changed files only: admin/expenses.html, admin/expenses-export.js, admin/expenses-export.css. No version.json, service worker, root, driver, API, or database changes.
+
+## Expense export formatting correction — 2026-10-20
+
+- Fixed overall payments lookup to read the server summary field `overall_payments_received_paise`; the Summary sheet uses the same shared value.
+- Removed the export-rows notes disclaimer from PDF and Excel. Notes remain unavailable because the existing export_rows response does not return them; API unchanged.
+- PDF uses Indian thousands separators and two decimal places for rupee amounts, DD/MM/YYYY dates, reserved space below Filters, and Page X of Y footers. Excel amount cells remain numeric; expense dates are Date values with a DD/MM/YYYY number format.
+- Bumped only the `admin/expenses.html` JavaScript reference to `20261019-export2`; CSS reference unchanged. No version.json, service worker, API, database, claims slice, or deployment changes.
+- Not phone-tested. PDF pagination/layout, Excel cell types and formatting, summary parity, share/download behavior, and failure isolation remain unknown until user tests on phone. No type check ran.

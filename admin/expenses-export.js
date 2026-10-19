@@ -64,6 +64,24 @@
     return null;
   }
   function text(value) { return value === null || value === undefined ? "" : String(value); }
+  function indianMoney(value) {
+    return "Rs. " + Number(value).toLocaleString("en-IN", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  }
+  function displayDate(value) {
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(text(value));
+    return match ? match[3] + "/" + match[2] + "/" + match[1] : text(value);
+  }
+  function displayDates(value) {
+    return text(value).replace(/\b(\d{4})-(\d{2})-(\d{2})\b/g, (_, y, m, d) => d + "/" + m + "/" + y);
+  }
+  function excelDate(value) {
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(text(value));
+    if (!match) return text(value);
+    return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+  }
   function show(msg) { message.textContent = msg; }
   function setBusy(value) {
     state.busy = value;
@@ -146,7 +164,7 @@
   function summaryDetails(summary, filters) {
     const total = moneyFromPaise(summary.total_paise);
     const asOf = text(first(summary, ["as_of_date", "as_of", "balance_as_of"])) || todayIndia();
-    const paymentsPaise = first(summary, ["overall_payments_paise", "total_payments_paise", "payments_paise", "payments_total_paise"]);
+    const paymentsPaise = first(summary, ["overall_payments_received_paise", "overall_payments_paise", "total_payments_paise", "payments_paise", "payments_total_paise"]);
     const duePaise = first(summary, ["balance_due_paise", "overall_balance_due_paise", "total_due_paise", "due_paise"]);
     const payments = paymentsPaise === null ? first(summary, ["overall_payments", "total_payments", "payments_total"]) : moneyFromPaise(paymentsPaise);
     const due = duePaise === null ? first(summary, ["balance_due", "overall_balance_due", "total_due"]) : moneyFromPaise(duePaise);
@@ -204,14 +222,13 @@
       ["Total expenses", detail.total],
       ["Overall payments, as of " + detail.asOf, detail.payments],
       ["Balance due — overall, as of " + detail.asOf, detail.due],
-      ["Notes", "Not supplied by the export_rows API; not included."],
       [],
       ["Category", "Total"]
     ];
     summaryRows.forEach(row => sheet.addRow(row));
     detail.categories.forEach(item => sheet.addRow([safeTextCell(categoryName(item)), categoryAmount(item)]));
     sheet.getColumn(2).numFmt = '"₹"#,##0.00;[Red]-"₹"#,##0.00';
-    sheet.getRow(12).font = { bold: true };
+    sheet.getRow(11).font = { bold: true };
     sheet.eachRow(row => row.eachCell(cell => {
       if (typeof cell.value === "string") cell.numFmt = "@";
     }));
@@ -227,13 +244,14 @@
     ];
     payload.rows.forEach(row => {
       const out = expenses.addRow({
-        date: text(row.date),
+        date: excelDate(row.date),
         category: safeTextCell(row.category_name),
         reason: safeTextCell(row.reason),
         amount: Number(row.amount),
         status: safeTextCell(row.status),
         claim: row.claim_number === null || row.claim_number === undefined ? "" : safeTextCell(row.claim_number)
       });
+      out.getCell(1).numFmt = "dd/mm/yyyy";
       [2, 3, 5, 6].forEach(i => { out.getCell(i).numFmt = "@"; });
     });
     const totalRow = expenses.addRow(["", "", "Total", detail.total, "", ""]);
@@ -259,32 +277,48 @@
     doc.setFontSize(9);
     const info = [
       "Employee: " + detail.name,
-      "Period: " + detail.period,
-      "Total: Rs. " + (detail.total === null ? "Unknown" : detail.total.toFixed(2)),
-      "Overall payments, as of " + detail.asOf + ": " + (typeof detail.payments === "number" ? "Rs. " + detail.payments.toFixed(2) : detail.payments),
-      "Balance due — overall, as of " + detail.asOf + ": " + (typeof detail.due === "number" ? "Rs. " + detail.due.toFixed(2) : detail.due),
-      "Notes: not supplied by the export_rows API; not included.",
-      "Filters: " + filters.filter_labels.map(pair => pair[0] + "=" + pair[1]).join("; ")
+      "Period: " + displayDates(detail.period),
+      "Total: " + (detail.total === null ? "Unknown" : indianMoney(detail.total)),
+      "Overall payments, as of " + displayDate(detail.asOf) + ": " + (typeof detail.payments === "number" ? indianMoney(detail.payments) : detail.payments),
+      "Balance due — overall, as of " + displayDate(detail.asOf) + ": " + (typeof detail.due === "number" ? indianMoney(detail.due) : detail.due),
+      "Filters: " + filters.filter_labels.map(pair => pair[0] + "=" + displayDates(pair[1])).join("; ")
     ];
-    doc.text(info, 36, 50);
-    const categoryRows = detail.categories.map(item => [categoryName(item), categoryAmount(item) === null ? "Unknown" : "Rs. " + Number(categoryAmount(item)).toFixed(2)]);
+    const infoLines = info.flatMap(line => doc.splitTextToSize(line, doc.internal.pageSize.getWidth() - 72));
+    doc.text(infoLines, 36, 50);
+    const infoEndY = 50 + infoLines.length * 11;
+    const categoryRows = detail.categories.map(item => [categoryName(item), categoryAmount(item) === null ? "Unknown" : indianMoney(categoryAmount(item))]);
     if (categoryRows.length) {
-      doc.autoTable({ startY: 112, head: [["Category", "Total"]], body: categoryRows, theme: "grid", styles: { fontSize: 8 } });
+      doc.autoTable({
+        startY: infoEndY + 20,
+        margin: { bottom: 30 },
+        head: [["Category", "Total"]],
+        body: categoryRows,
+        theme: "grid",
+        styles: { fontSize: 8 }
+      });
     }
-    const rowsStart = Math.max(112, (doc.lastAutoTable?.finalY || 96) + 14);
+    const rowsStart = Math.max(infoEndY + 20, (doc.lastAutoTable?.finalY || infoEndY) + 14);
     doc.autoTable({
       startY: rowsStart,
+      margin: { bottom: 30 },
       head: [["Date", "Category", "Reason", "Amount (Rs.)", "Status", "Claim number"]],
       body: payload.rows.map(row => [
-        text(row.date), text(row.category_name), text(row.reason),
-        Number(row.amount).toFixed(2), text(row.status), text(row.claim_number)
+        displayDate(row.date), text(row.category_name), text(row.reason),
+        indianMoney(Number(row.amount)).replace(/^Rs\. /, ""), text(row.status), text(row.claim_number)
       ]),
-      foot: [["", "", "Total (server)", detail.total === null ? "Unknown" : detail.total.toFixed(2), "", ""]],
+      foot: [["", "", "Total (server)", detail.total === null ? "Unknown" : indianMoney(detail.total).replace(/^Rs\. /, ""), "", ""]],
       showFoot: "last",
       theme: "grid",
       styles: { fontSize: 7, overflow: "linebreak", cellPadding: 3 },
       columnStyles: { 2: { cellWidth: 190 } }
     });
+    const pageCount = doc.getNumberOfPages();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    for (let page = 1; page <= pageCount; page++) {
+      doc.setPage(page);
+      doc.setFontSize(8);
+      doc.text("Page " + page + " of " + pageCount, doc.internal.pageSize.getWidth() / 2, pageHeight - 14, { align: "center" });
+    }
     return new File([doc.output("blob")], fileName(filters, "pdf"), { type: "application/pdf" });
   }
   async function prepareFile() {
