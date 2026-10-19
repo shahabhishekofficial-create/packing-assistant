@@ -2163,3 +2163,10 @@ Verification from source: all driver build markers and cache/resource query stri
 - export_rows fetches stable date/id-ordered pages of up to 1,000 rows, with a 20,000-row cap; it returns date, category name, reason, amount text, status, claim number, and the summary from the same action call.
 - Server-side consistency check compares fetched row count and summed BigInt paise against the summary count and total. A mismatch returns DATA_CHANGED; the displayed total remains the summary value.
 - No real expense amounts or reasons are recorded. No type check ran. No deployment or screens changed; production and phone behavior remain unverified.
+
+## Expense export API deployment verification — 2026-10-19
+
+- export_summary and export_rows deployed as version 3; not yet called over HTTP.
+- Database-level parity passed: all four checks matched between expense_export_summary and direct expenses count/sum for the default employee (no filters, one category, one date range, one search word). Real totals and reasons are intentionally omitted from this status file.
+- Startup logs: query succeeded for the last 10 minutes but returned no entries; startup errors: unknown.
+- No screens, application code, database records, or deployment settings changed. No rollback performed. No type check ran.
