@@ -21,15 +21,21 @@
     d.setMonth(d.getMonth() + months);
     return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(d);
   }
+  function addDays(date, days) {
+    const d = new Date(date + "T00:00:00Z");
+    d.setUTCDate(d.getUTCDate() + days);
+    return d.toISOString().slice(0, 10);
+  }
   function currentFilters() {
     const today = todayIndia();
     const mode = $("expenseListPeriod").value;
     let from = "", to = "";
     if (mode === "this") { from = today.slice(0, 7) + "-01"; to = today; }
     else if (mode === "last") {
-      const prior = shiftDate(today.slice(0, 7) + "-01", -1);
+      const monthStart = today.slice(0, 7) + "-01";
+      const prior = shiftDate(monthStart, -1);
       from = prior.slice(0, 7) + "-01";
-      to = shiftDate(today.slice(0, 7) + "-01", -1);
+      to = addDays(monthStart, -1);
     } else if (mode === "custom") {
       from = $("expenseListFrom").value;
       to = $("expenseListTo").value;
@@ -198,13 +204,14 @@
       ["Total expenses", detail.total],
       ["Overall payments, as of " + detail.asOf, detail.payments],
       ["Balance due — overall, as of " + detail.asOf, detail.due],
+      ["Notes", "Not supplied by the export_rows API; not included."],
       [],
       ["Category", "Total"]
     ];
     summaryRows.forEach(row => sheet.addRow(row));
     detail.categories.forEach(item => sheet.addRow([safeTextCell(categoryName(item)), categoryAmount(item)]));
     sheet.getColumn(2).numFmt = '"₹"#,##0.00;[Red]-"₹"#,##0.00';
-    sheet.getRow(11).font = { bold: true };
+    sheet.getRow(12).font = { bold: true };
     sheet.eachRow(row => row.eachCell(cell => {
       if (typeof cell.value === "string") cell.numFmt = "@";
     }));
@@ -256,6 +263,7 @@
       "Total: Rs. " + (detail.total === null ? "Unknown" : detail.total.toFixed(2)),
       "Overall payments, as of " + detail.asOf + ": " + (typeof detail.payments === "number" ? "Rs. " + detail.payments.toFixed(2) : detail.payments),
       "Balance due — overall, as of " + detail.asOf + ": " + (typeof detail.due === "number" ? "Rs. " + detail.due.toFixed(2) : detail.due),
+      "Notes: not supplied by the export_rows API; not included.",
       "Filters: " + filters.filter_labels.map(pair => pair[0] + "=" + pair[1]).join("; ")
     ];
     doc.text(info, 36, 50);
@@ -293,7 +301,7 @@
       const type = $("expenseExportType").value;
       const file = type === "pdf" ? await buildPdf(payload, filters) : await buildExcel(payload, filters);
       setFile(file, file.name);
-      show("File prepared. Tap Share or Download.");
+      show("File prepared. Notes are not included because export_rows does not return them. Tap Share or Download.");
     } catch (e) {
       show((e && e.message ? e.message : "Export failed.") + " The expense list and Add Expense are separate and remain available.");
     } finally {
