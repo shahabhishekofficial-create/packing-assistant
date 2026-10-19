@@ -2170,3 +2170,9 @@ Verification from source: all driver build markers and cache/resource query stri
 - Database-level parity passed: all four checks matched between expense_export_summary and direct expenses count/sum for the default employee (no filters, one category, one date range, one search word). Real totals and reasons are intentionally omitted from this status file.
 - Startup logs: query succeeded for the last 10 minutes but returned no entries; startup errors: unknown.
 - No screens, application code, database records, or deployment settings changed. No rollback performed. No type check ran.
+
+
+## Expense export baseline — 2026-10-19
+
+- Baseline: 40 active expenses; four parity checks matched.
+- No amounts or reasons recorded.
