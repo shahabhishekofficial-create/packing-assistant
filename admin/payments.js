@@ -2,7 +2,7 @@
 "use strict";
 const API="https://pbhkuofylhqcqmspubmb.supabase.co/functions/v1/expense-api", $=id=>document.getElementById(id);
 const app=$("paymentApp"),boot=$("paymentBoot"),form=$("paymentForm"),save=$("paymentSave");
-const state={saving:false,pendingId:"",editing:null,payments:[],claims:[],balances:[]};
+const state={saving:false,deleting:false,pendingId:"",editing:null,payments:[],claims:[],balances:[]};
 const money=v=>{const n=Number(v);return Number.isFinite(n)?new Intl.NumberFormat("en-IN",{style:"currency",currency:"INR",minimumFractionDigits:2,maximumFractionDigits:2}).format(n):"Unavailable";};
 const today=()=>{const p=new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Kolkata",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date()),o=Object.fromEntries(p.map(x=>[x.type,x.value]));return o.year+"-"+o.month+"-"+o.day;};
 const dateText=v=>{const m=String(v||"").match(/^(\d{4})-(\d{2})-(\d{2})$/);return m?m[3]+"/"+m[2]+"/"+m[1]:String(v||"—");};
@@ -16,11 +16,20 @@ async function api(action,extra={}){
  if(!r.ok||j.ok!==true)throw Object.assign(Error(j.message||"The payment request failed."),{code:j.code||""});return j;
 }
 function balanceRow(rows){const a=Array.isArray(rows)?rows:[];return a.find(r=>r.claim_id===null||r.claim_id===undefined)||a[0]||{};}
+function paise(value){
+ const raw=String(value??"").trim(),m=raw.match(/^(\d+)(?:\.(\d{1,2}))?$/);
+ if(!m)return null;
+ return BigInt(m[1])*100n+BigInt((m[2]||"").padEnd(2,"0")||"0");
+}
+function moneyPaise(value){
+ const negative=value<0n,abs=negative?-value:value,whole=(abs/100n).toString(),fraction=(abs%100n).toString().padStart(2,"0");
+ return (negative?"-":"")+money(whole+"."+fraction);
+}
 async function loadBalances(){
  const r=await api("balances");state.balances=Array.isArray(r.balances)?r.balances:[];const b=balanceRow(state.balances);
  const due=b.total_due??b.due_amount??b.balance_due??b.amount_due??b.net_due,un=b.unallocated_payments??b.unallocated_amount??b.unallocated_total??b.unallocated_payment_amount;
  $("paymentTotalDue").textContent=due===undefined||due===null?"Unavailable":money(due);$("paymentUnallocated").textContent=un===undefined||un===null?"Unavailable":money(un);
- return due===undefined||due===null?null:Number(due);
+ return due===undefined||due===null?null:String(due);
 }
 function renderClaims(){
  const sel=$("paymentClaim"),cur=sel.value;sel.replaceChildren();const un=document.createElement("option");un.value="";un.textContent="Unallocated payment";sel.append(un);
@@ -73,9 +82,9 @@ async function submitPayment(e){
  if(!state.pendingId){if(!crypto.randomUUID){formMessage("This phone cannot create a secure payment ID. No payment was saved.");return;}state.pendingId=crypto.randomUUID();}
  setBusy(true);save.textContent="Checking balance…";formMessage("Rechecking balances before saving…");
  try{
-  const due=await loadBalances();if(due===null||!Number.isFinite(due))throw Error("Current Total Due is unavailable. No payment was saved; refresh and retry.");
-  const amount=Number(amountText.trim()),excess=amount-due;
-  if(due-amount<0){const ok=window.confirm("Overpayment warning: this payment would make Total Due negative by "+money(excess)+". Continue with this payment?");if(!ok){formMessage("Cancelled. Nothing was saved; your entries are kept.");return;}}
+  const dueText=await loadBalances(),duePaise=paise(dueText),amountPaise=paise(amountText);
+  if(duePaise===null||amountPaise===null)throw Error("Current Total Due or payment amount is invalid. No payment was saved; refresh and retry.");
+  if(amountPaise>duePaise){const excess=amountPaise-duePaise;const ok=window.confirm("Overpayment warning: this payment would make Total Due negative by "+moneyPaise(excess)+". Continue with this payment?");if(!ok){formMessage("Cancelled. Nothing was saved; your entries are kept.");return;}}
   save.textContent="Saving…";formMessage("Saving payment…");
   const r=await api("record_payment",{id:state.pendingId,payment_date:paymentDate,amount:amountText.trim(),mode,reference_note:reference,claim_id:claimId||null});
   if(!r.payment)throw Error("The server did not confirm the saved payment.");state.pendingId="";form.reset();$("paymentDate").value=today();$("paymentMode").value="Bank";formMessage("Saved");await refreshAfterSave();
@@ -83,11 +92,21 @@ async function submitPayment(e){
  finally{setBusy(false);save.textContent=state.editing?"Save changes":"Save payment";}
 }
 async function deletePayment(row){
- if(state.saving)return;const label="Permanently delete this payment dated "+dateText(row.payment_date)+" for "+money(row.amount)+"? Deletes are permanent and cannot be undone.";
- if(!window.confirm(label))return;setBusy(true);message("Deleting payment permanently…");
- try{const r=await api("delete_payment",{id:row.id});if(r.ok!==true)throw Error("The server did not confirm deletion.");if(state.editing?.id===row.id)cancelEdit(true);message("Payment permanently deleted.");await refreshAfterSave();}
- catch(e){if(e.sessionExpired)formMessage("Session expired. Your entries are kept. Please log in again.");message(e.message||"Could not delete payment.");}
- finally{setBusy(false);}
+ if(state.saving||state.deleting)return;
+ const label="Permanently delete this payment dated "+dateText(row.payment_date)+" for "+money(row.amount)+"? Deletes are permanent and cannot be undone.";
+ if(!window.confirm(label))return;
+ state.deleting=true;setBusy(true);message("Deleting payment permanently…");
+ try{
+  const r=await api("delete_payment",{id:row.id});
+  if(r.ok!==true)throw Error("The server did not confirm deletion.");
+  if(state.editing?.id===row.id)cancelEdit(true);
+  try{await Promise.all([loadBalances(),loadPayments()]);}
+  catch(e){message("Payment deleted. Some details could not refresh; tap Refresh to retry.");return;}
+  message("Payment deleted");
+ }catch(e){
+  if(e.sessionExpired)formMessage("Session expired. Your entries are kept. Please log in again.");
+  message(e.message||"Could not delete payment.");
+ }finally{state.deleting=false;setBusy(false);}
 }
 form.addEventListener("submit",submitPayment);$("paymentCancelEdit").addEventListener("click",cancelEdit);$("paymentRefresh").addEventListener("click",()=>void refreshAll());$("paymentDate").value=today();
 window.addEventListener("pa-admin-authenticated",()=>{void refreshAll();});
