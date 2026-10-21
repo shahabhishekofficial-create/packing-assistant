@@ -80,7 +80,7 @@
   function excelDate(value) {
     const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(text(value));
     if (!match) return text(value);
-    return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+    return new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])));
   }
   function show(msg) { message.textContent = msg; }
   function setBusy(value) {

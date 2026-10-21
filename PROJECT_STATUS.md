@@ -2193,3 +2193,11 @@ Verification from source: all driver build markers and cache/resource query stri
 - PDF uses Indian thousands separators and two decimal places for rupee amounts, DD/MM/YYYY dates, reserved space below Filters, and Page X of Y footers. Excel amount cells remain numeric; expense dates are Date values with a DD/MM/YYYY number format.
 - Bumped only the `admin/expenses.html` JavaScript reference to `20261019-export2`; CSS reference unchanged. No version.json, service worker, API, database, claims slice, or deployment changes.
 - Not phone-tested. PDF pagination/layout, Excel cell types and formatting, summary parity, share/download behavior, and failure isolation remain unknown until user tests on phone. No type check ran.
+
+## Expense export Excel date timezone correction — 2026-10-21
+
+- Changed `excelDate()` to construct date values at UTC midnight; retained Excel date number format `dd/mm/yyyy`.
+- Bumped only the `admin/expenses.html` JavaScript reference to `20261019-export3`; CSS reference unchanged.
+- Reviewed date construction in the export script: other date handling uses an explicit Asia/Kolkata timezone/offset or UTC; no other naive local-midnight construction found.
+- Node check under `TZ=Asia/Kolkata`: `2026-10-01` maps to UTC ISO date `2026-10-01T00:00:00.000Z` and Excel serial `46296`. ExcelJS is unavailable in Node, so actual ExcelJS serialization is unknown.
+- Not phone-tested; do not treat as working until user test. No type check ran. No deployment.
