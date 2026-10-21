@@ -16,10 +16,11 @@ async function api(action,extra={}){
  if(!r.ok||j.ok!==true)throw Object.assign(Error(j.message||"The payment request failed."),{code:j.code||""});return j;
 }
 function balanceRow(rows){const a=Array.isArray(rows)?rows:[];return a.find(r=>r.claim_id===null||r.claim_id===undefined)||a[0]||{};}
-function paise(value){
- const raw=String(value??"").trim(),m=raw.match(/^(\d+)(?:\.(\d{1,2}))?$/);
+function paise(value,allowNegative=false){
+ const raw=String(value??"").trim(),m=raw.match(allowNegative?/^(-?)(\d+)(?:\.(\d{1,2}))?$/:/^(\d+)(?:\.(\d{1,2}))?$/);
  if(!m)return null;
- return BigInt(m[1])*100n+BigInt((m[2]||"").padEnd(2,"0")||"0");
+ const sign=allowNegative&&m[1]==="-"?-1n:1n,whole=allowNegative?m[2]:m[1],fraction=allowNegative?m[3]:m[2];
+ return sign*(BigInt(whole)*100n+BigInt((fraction||"").padEnd(2,"0")||"0"));
 }
 function moneyPaise(value){
  const negative=value<0n,abs=negative?-value:value,whole=(abs/100n).toString(),fraction=(abs%100n).toString().padStart(2,"0");
@@ -82,7 +83,7 @@ async function submitPayment(e){
  if(!state.pendingId){if(!crypto.randomUUID){formMessage("This phone cannot create a secure payment ID. No payment was saved.");return;}state.pendingId=crypto.randomUUID();}
  setBusy(true);save.textContent="Checking balance…";formMessage("Rechecking balances before saving…");
  try{
-  const dueText=await loadBalances(),duePaise=paise(dueText),amountPaise=paise(amountText);
+  const dueText=await loadBalances(),duePaise=paise(dueText,true),amountPaise=paise(amountText);
   if(duePaise===null||amountPaise===null)throw Error("Current Total Due or payment amount is invalid. No payment was saved; refresh and retry.");
   if(amountPaise>duePaise){const excess=amountPaise-duePaise;const ok=window.confirm("Overpayment warning: this payment would make Total Due negative by "+moneyPaise(excess)+". Continue with this payment?");if(!ok){formMessage("Cancelled. Nothing was saved; your entries are kept.");return;}}
   save.textContent="Saving…";formMessage("Saving payment…");
