@@ -2224,3 +2224,8 @@ Verification from source: all driver build markers and cache/resource query stri
 - Corrected edit/delete success cleanup so the form resets even while the save/delete busy lock is active.
 - No other files or behavior changed. No type check ran; no deployment; phone verification remains pending.
 
+## Payments claim-edit safeguard — 2026-10-21
+
+- Existing inactive claims are displayed as disabled choices so editing another payment field does not silently unallocate the payment. The update request sends claim_id only when the claim selection changes.
+- No API/database change. No type check ran; no deployment; phone verification remains pending.
+

@@ -24,7 +24,7 @@ async function loadBalances(){
 }
 function renderClaims(){
  const sel=$("paymentClaim"),cur=sel.value;sel.replaceChildren();const un=document.createElement("option");un.value="";un.textContent="Unallocated payment";sel.append(un);
- state.claims.filter(c=>!c.reopened_at).forEach(c=>{const o=document.createElement("option");o.value=c.id;const range=c.from_date&&c.to_date?" · "+dateText(c.from_date)+"–"+dateText(c.to_date):"";o.textContent="Claim #"+String(c.claim_number??"—")+range;sel.append(o);});
+ state.claims.forEach(c=>{const o=document.createElement("option");o.value=c.id;const range=c.from_date&&c.to_date?" · "+dateText(c.from_date)+"–"+dateText(c.to_date):"";o.textContent="Claim #"+String(c.claim_number??"—")+range+(c.reopened_at?" (inactive)":"");o.disabled=!!c.reopened_at;sel.append(o);});
  if([...sel.options].some(o=>o.value===cur))sel.value=cur;
 }
 function claimLabel(id){if(!id)return "Unallocated";const c=state.claims.find(x=>x.id===id);return c?"Claim #"+String(c.claim_number??"—"):"Claim";}
@@ -65,7 +65,7 @@ async function submitPayment(e){
  if(!paymentDate||!amountText.trim()||!/^\d+(?:\.\d{1,2})?$/.test(amountText.trim())||Number(amountText)<=0){formMessage("Enter a date and a positive amount with no more than 2 decimal places.");return;}
  if(state.editing){
   setBusy(true);save.textContent="Saving…";formMessage("Saving changes…");
-  try{const r=await api("update_payment",{id:state.editing.id,payment_date:paymentDate,mode,reference_note:reference,claim_id:claimId||null});if(!r.payment)throw Error("The server did not confirm the payment update.");
+  try{const payload={id:state.editing.id,payment_date:paymentDate,mode,reference_note:reference};if(claimId!==String(state.editing.claim_id||""))payload.claim_id=claimId||null;const r=await api("update_payment",payload);if(!r.payment)throw Error("The server did not confirm the payment update.");
    state.editing=null;cancelEdit(true);formMessage("Saved");await refreshAfterSave();
   }catch(err){if(err.sessionExpired)sessionExpired();else formMessage(err.message||"Could not save changes. Your entries are kept.");}
   finally{setBusy(false);save.textContent=state.editing?"Save changes":"Save payment";}return;
