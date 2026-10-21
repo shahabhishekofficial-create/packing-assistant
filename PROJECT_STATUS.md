@@ -2237,3 +2237,13 @@ Verification from source: all driver build markers and cache/resource query stri
 - Node comparison checks: equal Total Due => no warning; ₹0.01 above => warning; ₹100,000 against ₹84,172.00 => warning. These are synthetic arithmetic checks, not phone verification.
 - Session-message search found the exact generic retry text in `admin/expenses.js:128`; it is used for network errors, while HTTP 401 / SESSION_EXPIRED is handled separately. No expenses.js changes.
 - No API, database, claims, service-worker, version.json, root, driver, or unrelated screen changes. No type check ran; no deployment; phone verification pending.
+
+
+## Payments negative-due parsing and fixed status bar — 2026-10-21
+
+- `paise(value, allowNegative=false)` accepts a leading minus only when explicitly enabled for server Total Due parsing. Payment amount parsing and form validation remain positive-only.
+- `#paymentStatus` is fixed to the bottom of the viewport, uses safe-area bottom padding, and has z-index 9999 (below the admin login overlay). Page bottom padding reserves space so the bar does not cover the Save controls or final payment row. The existing HTML element already has `role="status"`.
+- Bumped only the Payments CSS and JS query references to `20261021-payments3`.
+- Node tests passed for `-5828.00`, `0`, `84172.00`, `abc`, `10.005`, negative input rejection when parsing a payment amount, and payment `90000` against negative Total Due triggering the warning.
+- No API, expenses.js, database, or deployment changes. No type check ran. Phone test pending; do not mark working until owner tests.
+- Implementation commits: `a18abea8457a89c827a8036df25321b230b1049a`, `352ef3e07820d22c0609589e9d058f4bbe29aaa4`, `d907b169ed085114e2c86f394d289c63bb0c5938`.
