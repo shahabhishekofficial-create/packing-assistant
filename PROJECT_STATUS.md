@@ -2229,3 +2229,11 @@ Verification from source: all driver build markers and cache/resource query stri
 - Existing inactive claims are displayed as disabled choices so editing another payment field does not silently unallocate the payment. The update request sends claim_id only when the claim selection changes.
 - No API/database change. No type check ran; no deployment; phone verification remains pending.
 
+## Payments screen fix — 2026-10-21
+
+- Hardened payment deletion against repeat taps; shows date/amount in the permanent-delete confirmation and reports “Payment deleted” only after the server confirms deletion.
+- Overpayment comparison now parses the freshly fetched Total Due and typed amount into integer BigInt paise; equal amounts do not warn, any amount above due warns.
+- Bumped payments CSS and JS references to `20261021-payments2`.
+- Node comparison checks: equal Total Due => no warning; ₹0.01 above => warning; ₹100,000 against ₹84,172.00 => warning. These are synthetic arithmetic checks, not phone verification.
+- Session-message search found the exact generic retry text in `admin/expenses.js:128`; it is used for network errors, while HTTP 401 / SESSION_EXPIRED is handled separately. No expenses.js changes.
+- No API, database, claims, service-worker, version.json, root, driver, or unrelated screen changes. No type check ran; no deployment; phone verification pending.
