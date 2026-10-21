@@ -2209,3 +2209,13 @@ Verification from source: all driver build markers and cache/resource query stri
 - Still not tested: amount rejection (10.005), double-tap Save, double-tap Delete, and session expiry.
 - This is user-reported phone testing, not independently reproduced here. No real expense amounts or reasons recorded.
 
+## Payments screen — Part A implementation — 2026-10-21
+
+- Added a separate admin Payments page and a “Record payment” link on admin/expenses.html; admin/expenses.js is unchanged.
+- The page reads balances from the existing balances action and payment/claim history from the existing export action. No API or database changes.
+- Existing update_payment can change payment_date, mode, reference_note, and claim_id; it cannot change amount. Amount corrections require permanent delete and re-entry.
+- Record flow sends the amount as typed text and creates a phone-side UUID before saving. It re-fetches balances before saving and asks for confirmation if the resulting Total Due would be negative. The UI reports “Saved” only after the server returns a payment row.
+- Delete confirmation includes payment date and amount and states deletion is permanent. Reference notes are rendered as plain text. Session-expiry and retry behavior have not been phone-tested.
+- Changed files: admin/expenses.html, admin/payments.html, admin/payments.js, admin/payments.css, PROJECT_STATUS.md. References: payments.css?v=20261021-payments1, payments.js?v=20261021-payments1; config/auth references match expenses.html. No update.js.
+- No changes to version.json, admin/sw.js, root files, driver files, API, or database. No type check ran. No deployment. Phone verification remains pending.
+
