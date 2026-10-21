@@ -2201,3 +2201,11 @@ Verification from source: all driver build markers and cache/resource query stri
 - Reviewed date construction in the export script: other date handling uses an explicit Asia/Kolkata timezone/offset or UTC; no other naive local-midnight construction found.
 - Node check under `TZ=Asia/Kolkata`: `2026-10-01` maps to UTC ISO date `2026-10-01T00:00:00.000Z` and Excel serial `46296`. ExcelJS is unavailable in Node, so actual ExcelJS serialization is unknown.
 - Not phone-tested; do not treat as working until user test. No type check ran. No deployment.
+
+## Expense export phone verification — user-reported, 2026-10-21
+
+- User reported that all phone export steps passed: Excel dates correct; amounts numeric; total equals Total Due; PDF shows payments and page numbers; Share/Download works; Airplane Mode shows a short message while the expense list and Add Expense continue working.
+- Formula test: user reported pass, but the only TEST entry's reason did not start with =; to be re-verified.
+- Still not tested: amount rejection (10.005), double-tap Save, double-tap Delete, and session expiry.
+- This is user-reported phone testing, not independently reproduced here. No real expense amounts or reasons recorded.
+
