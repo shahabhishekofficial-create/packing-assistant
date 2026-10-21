@@ -54,8 +54,8 @@ function beginEdit(row){
  $("paymentDate").value=String(row.payment_date||"");$("paymentAmount").value=String(row.amount??"");$("paymentAmount").readOnly=true;$("paymentMode").value=String(row.mode||"Other");
  $("paymentReference").value=String(row.reference_note||"");$("paymentClaim").value=String(row.claim_id||"");formMessage("Amount cannot be edited. To correct it, permanently delete this payment and record it again.");form.scrollIntoView({behavior:"smooth",block:"start"});
 }
-function cancelEdit(){
- if(state.saving)return;state.editing=null;$("paymentFormTitle").textContent="Record payment";save.textContent="Save payment";$("paymentCancelEdit").hidden=true;$("paymentEditNote").hidden=true;
+function cancelEdit(force=false){
+ if(state.saving&&!force)return;state.editing=null;$("paymentFormTitle").textContent="Record payment";save.textContent="Save payment";$("paymentCancelEdit").hidden=true;$("paymentEditNote").hidden=true;
  form.reset();$("paymentDate").value=today();$("paymentAmount").readOnly=false;$("paymentMode").value="Bank";$("paymentClaim").value="";formMessage("");state.pendingId="";
 }
 async function refreshAfterSave(){try{await Promise.all([loadBalances(),loadPayments()]);message("Payment data refreshed.");}catch(e){message("Payment saved. Some details could not refresh; tap Refresh to retry.");}}
@@ -66,7 +66,7 @@ async function submitPayment(e){
  if(state.editing){
   setBusy(true);save.textContent="Saving…";formMessage("Saving changes…");
   try{const r=await api("update_payment",{id:state.editing.id,payment_date:paymentDate,mode,reference_note:reference,claim_id:claimId||null});if(!r.payment)throw Error("The server did not confirm the payment update.");
-   state.editing=null;cancelEdit();formMessage("Saved");await refreshAfterSave();
+   state.editing=null;cancelEdit(true);formMessage("Saved");await refreshAfterSave();
   }catch(err){if(err.sessionExpired)sessionExpired();else formMessage(err.message||"Could not save changes. Your entries are kept.");}
   finally{setBusy(false);save.textContent=state.editing?"Save changes":"Save payment";}return;
  }
@@ -85,7 +85,7 @@ async function submitPayment(e){
 async function deletePayment(row){
  if(state.saving)return;const label="Permanently delete this payment dated "+dateText(row.payment_date)+" for "+money(row.amount)+"? Deletes are permanent and cannot be undone.";
  if(!window.confirm(label))return;setBusy(true);message("Deleting payment permanently…");
- try{const r=await api("delete_payment",{id:row.id});if(r.ok!==true)throw Error("The server did not confirm deletion.");if(state.editing?.id===row.id)cancelEdit();message("Payment permanently deleted.");await refreshAfterSave();}
+ try{const r=await api("delete_payment",{id:row.id});if(r.ok!==true)throw Error("The server did not confirm deletion.");if(state.editing?.id===row.id)cancelEdit(true);message("Payment permanently deleted.");await refreshAfterSave();}
  catch(e){if(e.sessionExpired)formMessage("Session expired. Your entries are kept. Please log in again.");message(e.message||"Could not delete payment.");}
  finally{setBusy(false);}
 }

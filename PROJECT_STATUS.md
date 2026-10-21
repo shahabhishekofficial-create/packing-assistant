@@ -2219,3 +2219,8 @@ Verification from source: all driver build markers and cache/resource query stri
 - Changed files: admin/expenses.html, admin/payments.html, admin/payments.js, admin/payments.css, PROJECT_STATUS.md. References: payments.css?v=20261021-payments1, payments.js?v=20261021-payments1; config/auth references match expenses.html. No update.js.
 - No changes to version.json, admin/sw.js, root files, driver files, API, or database. No type check ran. No deployment. Phone verification remains pending.
 
+## Payments screen correction — 2026-10-21
+
+- Corrected edit/delete success cleanup so the form resets even while the save/delete busy lock is active.
+- No other files or behavior changed. No type check ran; no deployment; phone verification remains pending.
+
