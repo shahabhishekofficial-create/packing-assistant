@@ -2268,3 +2268,14 @@ Verification from source: all driver build markers and cache/resource query stri
 - Delete confirmation includes the expense date and amount; repeat taps are blocked while the request is active; “Expense deleted” appears in the bottom status bar for six seconds after server confirmation.
 - Error messages override success feedback and remain visible; added a visible List build label to identify the loaded script.
 - Synthetic source inspection only. No type check ran, no deployment, and no phone test yet. Do not mark working until owner tests.
+
+
+## Claims Slice B1 — read-only function audit and review files — 2026-10-23
+
+- Live `pg_get_functiondef` inspection confirms `expense_reopen_claim(uuid)` refuses reopening if any `expense_payments` row remains linked to the claim; it raises `Unlink or remove payments before reopening this claim` before updating `reopened_at`.
+- Live `expense_create_claim(uuid,date,date)` validates the date range and active employee, takes a per-employee advisory transaction lock, locks eligible expenses, and claims only non-deleted, currently unclaimed expenses in the inclusive date range. Empty eligibility is refused.
+- Added review-only migration `supabase/migrations/20261023000100_expense_claim_summary.sql`, rollback `supabase/rollbacks/20261023000100_expense_claim_summary.sql`, and synthetic transaction/ROLLBACK test `supabase/tests/expense_claim_summary_rollback_test.sql`. **No SQL applied; the test was not run.**
+- Proposed `expense_claim_summary(employee)`: per claim, number, period, active expense count, claimed/received/due as exact paise strings, and status where reopened takes precedence over Paid. Function is STABLE, SECURITY DEFINER, empty search_path, EXECUTE granted only to service_role.
+- Proposed API actions (not implemented): `claim_preview(from,to)` counts/sums active, unclaimed expenses in the inclusive range without creating a claim; `list_claims` returns the summary; `claim_detail(id)` returns only that employee's claim, its active expenses, and linked payments. Creation must still revalidate under the existing locked RPC; preview is not a reservation.
+- API diff is held until the migration SQL is approved. No screens, API changes, deployments, or live data writes. No type check ran. Phone tests are not applicable to this no-screen slice.
+- Expense-list delete commit chain: JS `91c95b1ec74d3a5487dcd5312fc7f8993b48e2a3`; HTML cache ref `5576d73e933a757e838b16d3f44357e5b3a03774`; status entry `7bb981073d1b38ef0188d78a95cb3c77b2a0ba00`. Phone test pending.
