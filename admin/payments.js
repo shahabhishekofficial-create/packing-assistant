@@ -75,7 +75,6 @@ async function refreshAfterSave(){try{await Promise.all([loadBalances(),loadPaym
 async function submitPayment(e){
  e.preventDefault();if(state.saving)return;if(!window.PA_ADMIN_SESSION){message("Session expired. Your entries are kept. Please log in again.",true);formMessage("Session expired. Your entries are kept. Please log in again.");window.PA_ADMIN_LOGOUT?.();return;}
  const paymentDate=$("paymentDate").value,amountText=$("paymentAmount").value,mode=$("paymentMode").value,reference=$("paymentReference").value,claimId=$("paymentClaim").value;
- if(!paymentDate||!amountText.trim()||!/^\d+(?:\.\d{1,2})?$/.test(amountText.trim())||Number(amountText)<=0){formMessage("Enter a date and a positive amount with no more than 2 decimal places.");return;}
  if(!paymentDate||!amountText.trim()||!/^\d+(?:\.\d{1,2})?$/.test(amountText.trim())||Number(amountText)<=0){message("Enter a date and a positive amount with no more than 2 decimal places.",true);formMessage("Enter a date and a positive amount with no more than 2 decimal places.");return;}
  if(state.editing){
   setBusy(true);save.textContent="Saving…";formMessage("Saving changes…");
