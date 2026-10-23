@@ -2260,3 +2260,11 @@ Verification from source: all driver build markers and cache/resource query stri
 - Step 8 (session expiry): NOT TESTED; owner chose to skip.
 - Still untested: amount rejection (10.005) on expense edit; double-tap Save and double-tap Delete on the expense list; session expiry on expense edit and payments.
 - No real expense amounts or reasons recorded. These are user-reported phone results, not independently reproduced here.
+
+
+## Expense-list delete feedback — 2026-10-23
+
+- Updated only `admin/expenses-list.js` and its script query version in `admin/expenses.html` for this fix.
+- Delete confirmation includes the expense date and amount; repeat taps are blocked while the request is active; “Expense deleted” appears in the bottom status bar for six seconds after server confirmation.
+- Error messages override success feedback and remain visible; added a visible List build label to identify the loaded script.
+- Synthetic source inspection only. No type check ran, no deployment, and no phone test yet. Do not mark working until owner tests.
