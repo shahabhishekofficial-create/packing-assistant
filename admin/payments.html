@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#176b45">
-<title>Payments | Bigly Agro Admin</title><link rel="stylesheet" href="./payments.css?v=20261021-payments3">
+<title>Payments | Bigly Agro Admin</title><link rel="stylesheet" href="./payments.css?v=20261021-payments4">
 </head><body>
 <div id="paymentBoot" role="status">Checking secure admin session…</div>
 <main id="paymentApp" class="paymentShell" hidden>
@@ -24,10 +24,11 @@
 <p id="paymentFormMessage" class="paymentFormMessage" role="status" aria-live="polite"></p>
 </form></section>
 <section class="paymentPanel"><div class="paymentPanelHead"><div><small>RECENT ACTIVITY</small><h2>Last 3 payments</h2></div><button id="paymentRefresh" class="paymentSecondary" type="button">Refresh</button></div><div id="paymentRecent" class="paymentRows"><p class="paymentMuted">Loading recent payments…</p></div></section>
-<section class="paymentPanel"><div class="paymentPanelHead"><div><small>PAYMENT HISTORY</small><h2>All payments</h2></div></div><p id="paymentListMessage" class="paymentStatus" role="status" aria-live="polite">Loading payment history…</p><div id="paymentList" class="paymentRows"></div></section>
+<section class="paymentPanel"><div class="paymentPanelHead"><div><small>PAYMENT HISTORY</small><h2>All payments</h2></div></div><p id="paymentListStatus" class="paymentListStatus" role="status" aria-live="polite" hidden></p><p id="paymentListMessage" class="paymentStatus" role="status" aria-live="polite">Loading payment history…</p><div id="paymentList" class="paymentRows"></div></section>
+<footer class="paymentFooter">Page build payments4</footer>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1"></script>
 <script src="../config.js?v=20261014-expenses1"></script>
 <script src="./auth.js?v=20261014-expenses1"></script>
-<script defer src="./payments.js?v=20261021-payments3"></script>
+<script defer src="./payments.js?v=20261021-payments4"></script>
 </body></html>
