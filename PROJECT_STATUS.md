@@ -2266,7 +2266,7 @@ Verification from source: all driver build markers and cache/resource query stri
 
 - Updated only `admin/expenses-list.js` and its script query version in `admin/expenses.html` for this fix.
 - Delete confirmation includes the expense date and amount; repeat taps are blocked while the request is active; “Expense deleted” appears in the bottom status bar for six seconds after server confirmation.
-- Error messages override success feedback and remain visible; added a visible List build label to identify the loaded script.
+- Error messages override success feedback and remain visible; added a visible List build label `20261023-expense-list-delete1` identifies the loaded script.
 - Synthetic source inspection only. No type check ran, no deployment, and no phone test yet. Do not mark working until owner tests.
 
 
