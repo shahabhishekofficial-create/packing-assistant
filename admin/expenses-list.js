@@ -1,7 +1,7 @@
 (() => {
 "use strict";
 const root=document.getElementById("expenseListPanel");if(!root)return;
-const buildLabel=document.createElement("small");buildLabel.textContent="List build expense-list-delete-20261023-1";buildLabel.style.cssText="display:block;margin-top:6px;color:#64756a;font-size:11px;";root.querySelector(".expenseSectionHead")?.append(buildLabel);
+const buildLabel=document.createElement("small");buildLabel.textContent="List build 20261023-expense-list-delete1";buildLabel.style.cssText="display:block;margin-top:6px;color:#64756a;font-size:11px;";root.querySelector(".expenseSectionHead")?.append(buildLabel);
 const API="https://pbhkuofylhqcqmspubmb.supabase.co/functions/v1/expense-api", $=id=>root.querySelector("#"+id);
 const state={offset:0,hasMore:false,loading:false,mutating:false,categories:[],rows:[],editing:null};
 let statusHoldUntil=0,statusVersion=0;
