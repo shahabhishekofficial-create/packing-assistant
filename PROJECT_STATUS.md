@@ -2243,3 +2243,11 @@ Verification from source: all driver build markers and cache/resource query stri
 
 - Node checks: `-5828.00` parses to -582800 paise; `0` parses to 0; `84172.00` parses to 8417200; `abc` and `10.005` are rejected; payment `90000` against Total Due `-5828.00` triggers the overpayment warning.
 - Phone test pending.
+
+
+## Payments status-message visibility correction — 2026-10-23
+
+- Centralized fixed-bar updates so an empty message hides `#paymentStatus`; kept `role="status"` and added a matching temporary status line above payment history.
+- Successful `Saved` and `Payment deleted` messages are protected from refresh/status overwrites for at least six seconds and then cleared if still current. Added visible `Page build payments4`; bumped Payments CSS/JS query versions to `20261021-payments4`.
+- Requested jsdom simulation: unknown; jsdom is not installed in the available Node environment. No simulation result is claimed. No type check ran. No deployment. Phone test pending; do not mark working until owner tests.
+- No API, database, `admin/expenses.js`, or `admin/expenses-list.js` changes.
