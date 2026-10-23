@@ -6,7 +6,10 @@ const state={saving:false,deleting:false,pendingId:"",editing:null,payments:[],c
 const money=v=>{const n=Number(v);return Number.isFinite(n)?new Intl.NumberFormat("en-IN",{style:"currency",currency:"INR",minimumFractionDigits:2,maximumFractionDigits:2}).format(n):"Unavailable";};
 const today=()=>{const p=new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Kolkata",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date()),o=Object.fromEntries(p.map(x=>[x.type,x.value]));return o.year+"-"+o.month+"-"+o.day;};
 const dateText=v=>{const m=String(v||"").match(/^(\d{4})-(\d{2})-(\d{2})$/);return m?m[3]+"/"+m[2]+"/"+m[1]:String(v||"—");};
-function message(s){$("paymentStatus").textContent=s;}function formMessage(s){$("paymentFormMessage").textContent=s;}
+let statusHoldUntil=0;
+function message(s,force=false){if(!force&&Date.now()<statusHoldUntil)return;const el=$("paymentStatus");el.textContent=s;el.hidden=!s;}
+function announceSuccess(s){statusHoldUntil=Date.now()+6000;message(s,true);const line=$("paymentListStatus");line.textContent=s;line.hidden=false;window.setTimeout(()=>{if(Date.now()>=statusHoldUntil){if(line.textContent===s){line.textContent="";line.hidden=true;}if($("paymentStatus").textContent===s){message("",true);statusHoldUntil=0;}}},6000);}
+function formMessage(s){$("paymentFormMessage").textContent=s;}
 function sessionExpired(){app.hidden=false;boot.hidden=true;formMessage("Session expired. Your entries are kept. Please log in again, then tap Save payment.");}
 async function api(action,extra={}){
  const token=window.PA_ADMIN_SESSION||"";if(!token)throw Object.assign(Error("Session expired. Your entries are kept. Please log in again, then retry."),{sessionExpired:true});
@@ -76,7 +79,7 @@ async function submitPayment(e){
  if(state.editing){
   setBusy(true);save.textContent="Saving…";formMessage("Saving changes…");
   try{const payload={id:state.editing.id,payment_date:paymentDate,mode,reference_note:reference};if(claimId!==String(state.editing.claim_id||""))payload.claim_id=claimId||null;const r=await api("update_payment",payload);if(!r.payment)throw Error("The server did not confirm the payment update.");
-   state.editing=null;cancelEdit(true);formMessage("Saved");await refreshAfterSave();
+   state.editing=null;cancelEdit(true);formMessage("Saved");announceSuccess("Saved");await refreshAfterSave();
   }catch(err){if(err.sessionExpired)sessionExpired();else formMessage(err.message||"Could not save changes. Your entries are kept.");}
   finally{setBusy(false);save.textContent=state.editing?"Save changes":"Save payment";}return;
  }
@@ -88,7 +91,7 @@ async function submitPayment(e){
   if(amountPaise>duePaise){const excess=amountPaise-duePaise;const ok=window.confirm("Overpayment warning: this payment would make Total Due negative by "+moneyPaise(excess)+". Continue with this payment?");if(!ok){formMessage("Cancelled. Nothing was saved; your entries are kept.");return;}}
   save.textContent="Saving…";formMessage("Saving payment…");
   const r=await api("record_payment",{id:state.pendingId,payment_date:paymentDate,amount:amountText.trim(),mode,reference_note:reference,claim_id:claimId||null});
-  if(!r.payment)throw Error("The server did not confirm the saved payment.");state.pendingId="";form.reset();$("paymentDate").value=today();$("paymentMode").value="Bank";formMessage("Saved");await refreshAfterSave();
+  if(!r.payment)throw Error("The server did not confirm the saved payment.");state.pendingId="";form.reset();$("paymentDate").value=today();$("paymentMode").value="Bank";formMessage("Saved");announceSuccess("Saved");await refreshAfterSave();
  }catch(err){if(err.sessionExpired)sessionExpired();else formMessage(err.message||"Payment not saved. Your entries are kept; retry when ready.");}
  finally{setBusy(false);save.textContent=state.editing?"Save changes":"Save payment";}
 }
@@ -102,8 +105,8 @@ async function deletePayment(row){
   if(r.ok!==true)throw Error("The server did not confirm deletion.");
   if(state.editing?.id===row.id)cancelEdit(true);
   try{await Promise.all([loadBalances(),loadPayments()]);}
-  catch(e){message("Payment deleted. Some details could not refresh; tap Refresh to retry.");return;}
-  message("Payment deleted");
+  catch(e){announceSuccess("Payment deleted");return;}
+  announceSuccess("Payment deleted");
  }catch(e){
   if(e.sessionExpired)formMessage("Session expired. Your entries are kept. Please log in again.");
   message(e.message||"Could not delete payment.");
