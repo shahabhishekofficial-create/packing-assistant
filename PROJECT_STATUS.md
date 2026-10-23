@@ -2251,3 +2251,12 @@ Verification from source: all driver build markers and cache/resource query stri
 - Successful `Saved` and `Payment deleted` messages are protected from refresh/status overwrites for at least six seconds and then cleared if still current. Added visible `Page build payments4`; bumped Payments CSS/JS query versions to `20261021-payments4`.
 - Requested jsdom simulation: unknown; jsdom is not installed in the available Node environment. No simulation result is claimed. No type check ran. No deployment. Phone test pending; do not mark working until owner tests.
 - No API, database, `admin/expenses.js`, or `admin/expenses-list.js` changes.
+
+## Payments phone verification — user-reported, 2026-10-23
+
+- Step 1 (save): PASS.
+- Step 4 (overpayment warning): PASS.
+- Step 7 (delete): PASS.
+- Step 8 (session expiry): NOT TESTED; owner chose to skip.
+- Still untested: amount rejection (10.005) on expense edit; double-tap Save and double-tap Delete on the expense list; session expiry on expense edit and payments.
+- No real expense amounts or reasons recorded. These are user-reported phone results, not independently reproduced here.
