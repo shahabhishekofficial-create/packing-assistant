@@ -40,7 +40,7 @@ const orders=await allRows("orders","id,order_name,status,created_at,completed_a
 if(startIso){
  const periodDeliveredRows=await allRows("delivery_records","order_id",q=>q.gte("delivered_at",startIso).lt("delivered_at",endExclusive));
  const extraIds=[...new Set((periodDeliveredRows||[]).map((x:any)=>String(x.order_id)))].filter(id=>!(orders||[]).some((o:any)=>String(o.id)===id));
- if(extraIds.length)orders.push(...await allRows("orders","id,order_name,status,created_at,completed_at",q=>q.in("id",extraIds.slice(0,1000))));
+ if(extraIds.length)orders.push(...await byOrderIds("orders","id,order_name,status,created_at,completed_at",extraIds));
 }
 const {data:currentRows}=await db.from("orders").select("id,order_name,status,created_at,completed_at,is_current").eq("is_current",true).limit(1);
 const currentOrder=currentRows?.[0]||null;
