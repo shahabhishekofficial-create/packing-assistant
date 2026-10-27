@@ -14,34 +14,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Check app.js
-        run: node --check app.js
-      - name: Check driver.js
-        run: node --check driver/driver.js
-      - name: Check admin auth.js
-        run: node --check admin/auth.js
-      - name: Check admin team.js
-        run: node --check admin/team.js
-      - name: Check admin inventory.js
-        run: node --check admin/inventory.js
-      - name: Check admin inventory-nav.js
-        run: node --check admin/inventory-nav.js
-      - name: Check admin vegetable-inventory.js
-        run: node --check admin/vegetable-inventory.js
-      - name: Check inventory-count.js
-        run: node --check inventory-count.js
-      - name: Check vegetable-inventory.js
-        run: node --check vegetable-inventory.js
-      - name: Check config.js
-        run: node --check config.js
-      - name: Check update.js
-        run: node --check update.js
       - name: Set up Deno
         uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
-      - name: Check driver-api edge function
-        run: deno check --quiet supabase/functions/driver-api/index.ts
+      - name: Validate all source files
+        run: bash scripts/validate-source.sh
       - name: Check service workers
         run: |
           node --check driver/sw.js

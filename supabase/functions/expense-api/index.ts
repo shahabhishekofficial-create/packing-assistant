@@ -380,7 +380,7 @@ Deno.serve(async (req: Request) => {
     const message = parsedDatabaseError?.[2];
     console.error("expense-api failure", { action, code });
     if (rawMessage === "DEFAULT_EMPLOYEE") return fail("CONFIGURATION_ERROR", "The default employee is not configured. Please contact support.", 500);
-    if (parsedDatabaseError) return fail(code, message, 400);
+    if (parsedDatabaseError) return fail(code, message || "The request was rejected.", 400);
     if (code === "P0001" && rawMessage) return fail("REQUEST_FAILED", rawMessage, 400);
     return fail("REQUEST_FAILED", friendly[code] || "We couldn't complete that. Please try again.", 400);
   }

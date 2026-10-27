@@ -1,4 +1,4 @@
-const DRIVER_API=window.SUPABASE_CONFIG.url+"/functions/v1/driver-api";const DRIVER_KEY=window.SUPABASE_CONFIG.key;let SB=null;function getSB(){if(!SB){if(!window.supabase?.createClient)throw new Error("Supabase library failed to load.");SB=window.supabase.createClient(window.SUPABASE_CONFIG.url,window.SUPABASE_CONFIG.key);}return SB;}const ds={loading:false,routeLoadState:"not-loaded",loadedOutlets:0,totalOutlets:0,busy:{},token:localStorage.getItem("pa_driver_session")||"",name:localStorage.getItem("pa_driver_name")||"",orderId:null,outlets:[],earned:0};let refreshPromise=null;const $=id=>document.getElementById(id);
+const DRIVER_API=window.SUPABASE_CONFIG.url+"/functions/v1/driver-api";function actionIdempotencyKey(action,orderId,outletId){const key="pa_idem_"+[action,orderId,outletId].map(v=>encodeURIComponent(String(v||""))).join("_");let value=localStorage.getItem(key);if(!value){value=crypto.randomUUID();localStorage.setItem(key,value);}return{key,value};}function clearActionIdempotencyKey(ref){if(ref?.key)localStorage.removeItem(ref.key);}const DRIVER_KEY=window.SUPABASE_CONFIG.key;let SB=null;function getSB(){if(!SB){if(!window.supabase?.createClient)throw new Error("Supabase library failed to load.");SB=window.supabase.createClient(window.SUPABASE_CONFIG.url,window.SUPABASE_CONFIG.key);}return SB;}const ds={loading:false,routeLoadState:"not-loaded",loadedOutlets:0,totalOutlets:0,busy:{},token:localStorage.getItem("pa_driver_session")||"",name:localStorage.getItem("pa_driver_name")||"",orderId:null,outlets:[],earned:0};let refreshPromise=null;const $=id=>document.getElementById(id);
 let pendingDamagePhoto={outletId:"",itemId:""};
 
 let __driverLoginBound=false;
@@ -344,8 +344,8 @@ async function chooseInvoice(outletId){
  $("invoiceDialog").showModal();$("invoiceNumber").focus();
 }
 async function saveInvoiceNumberOnly(outletId,invoiceNumber){
- const d=await api("invoice_number_only",{order_id:ds.orderId,outlet_id:outletId,invoice_number:invoiceNumber,idempotency_key:crypto.randomUUID()});
- if(!d?.ok)throw new Error(d?.message||"Could not save invoice number");
+ const idem=actionIdempotencyKey("invoice_number_only",ds.orderId,outletId);const d=await api("invoice_number_only",{order_id:ds.orderId,outlet_id:outletId,invoice_number:invoiceNumber,idempotency_key:idem.value});
+ if(!d?.ok)throw new Error(d?.message||"Could not save invoice number");clearActionIdempotencyKey(idem);
  const o=ds.outlets.find(x=>String(x.outlet_id)===String(outletId));
  if(o){o.delivery=o.delivery||{};o.delivery.invoice_number=invoiceNumber;o.delivery.status="pending";}
  toast("Invoice number saved. Ready to deliver.","success");render();focusOutlet(outletId,true);
@@ -418,7 +418,7 @@ async function processInvoiceFile(file,outletId,invoiceNumber){
   if(!liveOutlet)throw new Error("Outlet is no longer assigned to this driver. Refresh and try again.");
   const prepared=await compressImage(file);let ocr=null;
   toast("Checking invoice…","info");ocr=await runInvoiceOcr(prepared,outletId,invoiceNumber);
-  const idempotencyKey=crypto.randomUUID();
+  const idem=actionIdempotencyKey("invoice_uploaded",ds.orderId,outletId);const idempotencyKey=idem.value;
   const d=await api("upload_url",{order_id:ds.orderId,outlet_id:outletId,outlet_name:(liveOutlet.outlet_name||""),filename:prepared.name,mime_type:prepared.type,extension:"jpg",invoice_number:invoiceNumber});
   let uploadError=null;
   for(let attempt=1;attempt<=3;attempt++){
@@ -429,7 +429,7 @@ async function processInvoiceFile(file,outletId,invoiceNumber){
   if(uploadError)throw uploadError;
   toast("Finalizing delivery…","info");
   const transition=await api("invoice_uploaded",{order_id:ds.orderId,outlet_id:outletId,path:d.path,invoice_number:invoiceNumber,filename:(liveOutlet.outlet_name||"Outlet")+" - "+invoiceNumber+".jpg",mime_type:prepared.type,ocr_status:ocr?.status||"pending",ocr_result:ocr||null,idempotency_key:idempotencyKey});
-  if(String(transition?.delivery_state||"")!=="DELIVERED")throw new Error("Invoice saved but delivery was not completed. Please refresh and retry.");
+  if(String(transition?.delivery_state||"")!=="DELIVERED")throw new Error("Invoice saved but delivery was not completed. Please refresh and retry.");clearActionIdempotencyKey(idem);
   const current=ds.outlets.find(o=>String(o.outlet_id)===String(outletId));
   const alreadyDelivered=current?.delivery?.status==="delivered";
   if(current){
@@ -559,5 +559,5 @@ $("invoiceInput").onchange=async e=>{const input=e.target,file=input.files[0],ou
   toast(rejections.some(x=>x.reason==="DAMAGE")?"Upload damage photo(s) before invoice.":"Rejection check complete. Upload invoice now.","success");render();focusOutlet(outletId,true);
  }catch(e){toast("Could not save: "+e.message,"error");render();}finally{delete ds.busy[String(outletId)];render();focusOutlet(outletId,true);}
 }
-async function markExceptionPacked(outletId,itemId){const key="pack:"+String(itemId);if(ds.busy[key])return;ds.busy[key]=true;render();try{toast("Marking item packed…","info");await api("mark_item_packed",{order_id:ds.orderId,outlet_id:outletId,item_id:itemId,idempotency_key:crypto.randomUUID()});toast("Item marked as packed. It will no longer appear as missing.","success");await refresh();}catch(e){if(/session expired/i.test(e.message)){logout();return;}toast("Could not mark item packed: "+e.message,"error");}finally{delete ds.busy[key];render();}}
-async function markDelivered(outletId){const key=String(outletId);if(ds.busy[key])return;ds.busy[key]=true;render();try{const outlet=ds.outlets.find(o=>String(o.outlet_id)===key);toast("Completing delivery…","info");await api("mark_delivered",{order_id:ds.orderId,outlet_id:outletId,outlet_name:outlet?.outlet_name||"",idempotency_key:crypto.randomUUID()});toast("Delivery completed.","success");await refresh();}catch(e){if(/session expired/i.test(e.message)){logout();return;}toast("Delivery failed: "+e.message,"error");}finally{delete ds.busy[key];render();}}$("driverMenuBtn").onclick=openDriverMenu;$("driverMenuClose").onclick=()=>$("driverMenuDialog").close();$("driverRefresh").onclick=refresh;window.addEventListener("pagehide",()=>{try{stopDamageCamera();}catch(_){}try{stopInvoiceCamera();}catch(_){}});applyDriverConfig();if(ds.token){ds.loading=true;ds.totalOutlets=0;ds.loadedOutlets=0;render();refresh();}else render();
+async function markExceptionPacked(outletId,itemId){const key="pack:"+String(itemId);if(ds.busy[key])return;ds.busy[key]=true;render();try{toast("Marking item packed…","info");const idem=actionIdempotencyKey("mark_item_packed",ds.orderId,String(outletId)+":"+String(itemId));await api("mark_item_packed",{order_id:ds.orderId,outlet_id:outletId,item_id:itemId,idempotency_key:idem.value});clearActionIdempotencyKey(idem);toast("Item marked as packed. It will no longer appear as missing.","success");await refresh();}catch(e){if(/session expired/i.test(e.message)){logout();return;}toast("Could not mark item packed: "+e.message,"error");}finally{delete ds.busy[key];render();}}
+async function markDelivered(outletId){const key=String(outletId);if(ds.busy[key])return;ds.busy[key]=true;render();try{const outlet=ds.outlets.find(o=>String(o.outlet_id)===key);toast("Completing delivery…","info");const idem=actionIdempotencyKey("mark_delivered",ds.orderId,outletId);await api("mark_delivered",{order_id:ds.orderId,outlet_id:outletId,outlet_name:outlet?.outlet_name||"",idempotency_key:idem.value});clearActionIdempotencyKey(idem);toast("Delivery completed.","success");await refresh();}catch(e){if(/session expired/i.test(e.message)){logout();return;}toast("Delivery failed: "+e.message,"error");}finally{delete ds.busy[key];render();}}$("driverMenuBtn").onclick=openDriverMenu;$("driverMenuClose").onclick=()=>$("driverMenuDialog").close();$("driverRefresh").onclick=refresh;window.addEventListener("pagehide",()=>{try{stopDamageCamera();}catch(_){}try{stopInvoiceCamera();}catch(_){}});applyDriverConfig();if(ds.token){ds.loading=true;ds.totalOutlets=0;ds.loadedOutlets=0;render();refresh();}else render();
