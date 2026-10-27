@@ -1,9 +1,9 @@
 # PROJECT STATUS — Packing Assistant V2
 
-_Last audited: 2026-10-10 (IST)_
+_Last audited: 2026-10-27 (IST)_
 _Repository: `shahabhishekofficial-create/packing-assistant`_
-_Current branch: `main`_
-_Current repository HEAD at completion of this audit: `99623e49ea507de8cc7e935b4fd977600d7ef047`_
+_Current branch: `audit-fixes/2026-10-27` (proposed remediation; not yet merged or deployed)_
+_Branch tip before this status update: `0465ce718a55688c8c9aa49c7c2c75774e3d0338`_
 _Current declared frontend build: `20261010-driverrefreshfix1`_
 
 > **This is an honest state report, not a roadmap.**
@@ -2279,3 +2279,37 @@ Verification from source: all driver build markers and cache/resource query stri
 - Proposed API actions (not implemented): `claim_preview(from,to)` counts/sums active, unclaimed expenses in the inclusive range without creating a claim; `list_claims` returns the summary; `claim_detail(id)` returns only that employee's claim, its active expenses, and linked payments. Creation must still revalidate under the existing locked RPC; preview is not a reservation.
 - API diff is held until the migration SQL is approved. No screens, API changes, deployments, or live data writes. No type check ran. Phone tests are not applicable to this no-screen slice.
 - Expense-list delete commit chain: JS `91c95b1ec74d3a5487dcd5312fc7f8993b48e2a3`; HTML cache ref `5576d73e933a757e838b16d3f44357e5b3a03774`; status entry `7bb981073d1b38ef0188d78a95cb3c77b2a0ba00`. Phone test pending.
+
+
+---
+
+# Audit remediation — 2026-10-27
+
+## Source changes prepared on `audit-fixes/2026-10-27`
+
+- **Admin password fallback:** removed the bundled PBKDF2 salt/hash and browser-side fallback. Password verification now fails closed if Supabase is unavailable, errors, or rejects the password. Existing server-session verification at startup remains in place.
+- **Invoice evidence:** the driver API now requires the referenced invoice object to exist in the private invoice bucket, be non-empty, be no larger than 15 MB, and report JPEG/PNG/WebP content before accepting the invoice transition. This source check is not a substitute for verifying the deployed RPC grants and live storage policies.
+- **OCR trust:** OCR match results are labeled `client_suggested_match` and recorded with `verification_source: client_derived_suggestion`; they are not represented as server-verified results.
+- **Route order:** dashboard route sorting now uses `outlet_rank`, the field supplied by outlet records.
+- **Pagination:** the period-delivery order lookup no longer has the 5,000-row cap; the driver ledger paginates trip, outlet, item, and payment reads; the additional-order lookup no longer slices IDs to 1,000.
+- **Driver analytics:** driver attribution now uses `driver_id` from delivery records rather than matching display names. Assignments without a linked delivery record may be absent from per-driver analytics; verify against live data.
+- **Retry handling:** driver invoice upload, invoice-number save, delivery completion, and mark-item-packed actions retain the same idempotency key until the action is confirmed.
+- **PWA cache ownership:** the root service worker now owns the `pa-root-` namespace and no longer deletes the admin cache namespace during activation. Admin offline behavior remains deliberately unclaimed.
+- **Accessibility:** removed zoom-blocking viewport settings from admin and driver pages.
+- **Validation:** added `scripts/validate-source.sh` to check every first-party JavaScript file and every Supabase Edge Function; both the Pages workflow and validation workflow now call it.
+
+## Still unknown / requires authorized live or device verification
+
+- **Driver PIN brute-force defense:** live `driver_login` implementation and effective per-account/IP throttling are not established from the available source. No unverified in-memory limiter was added.
+- **Live backend security:** current RLS policies, function grants, storage policies, deployed RPC definitions, and service-role action authorization have not been exported and compared with tracked migrations.
+- **Credential operations:** admin password rotation, revoking existing sessions, and server-side login throttling/logging require authorized production operations; not performed by this source change.
+- **Browser-stored tokens:** admin, driver, and packing-order tokens still use browser storage. Moving to server-managed HttpOnly sessions requires a coordinated backend/session-origin design.
+- **Migration reproducibility:** the live schema and historical migration gaps remain unverified. No production SQL was applied.
+- **Device/workflow verification:** no phone tests, offline tests, concurrency tests, staging database rebuild, or production deployment were performed. Do not label these changes working until owner tests on the phone and CI/staging checks complete.
+- **Regression-risk refactoring and inventory/expense failure-path testing:** not completed in this remediation pass; these need focused tests and separate workflow-level changes rather than a broad untested rewrite.
+
+## Change control
+
+- Frozen backup branch `stable/2026-10-11-working-freeze` was not modified.
+- Changes are proposed on `audit-fixes/2026-10-27`; merge/deployment status is pending.
+- No production data, credentials, or live database schema were changed.
