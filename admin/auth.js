@@ -5,39 +5,12 @@
   const LAST_ACTIVITY_KEY = "packing_assistant_admin_last_activity";
   const SESSION_TOKEN_KEY = "packing_assistant_admin_session_token";
   const SESSION_MS = 60 * 60 * 1000;
-  const ITERATIONS = 200000;
-  const SALT_B64 = "F6GJ+7oca9r+51tm3FzSwQ==";
-  const HASH_B64 = "hx8/4FHwWBPUr43NnskKji0Y4PW0Tee3HHpiQY4pCO4=";
   const db = window.supabase && window.SUPABASE_CONFIG ? window.supabase.createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.key) : null;
   let logoutTimer = null;
   let bootWatchdog = null;
   let reauthResolver = null;
   let serverSessionRefreshAt = 0;
   let serverSessionRefreshing = false;
-
-  function b64ToBytes(s){ return Uint8Array.from(atob(s), c => c.charCodeAt(0)); }
-
-  async function hashPassword(password){
-    const key = await crypto.subtle.importKey(
-      "raw",
-      new TextEncoder().encode(password),
-      "PBKDF2",
-      false,
-      ["deriveBits"]
-    );
-    const bits = await crypto.subtle.deriveBits(
-      {name:"PBKDF2", salt:b64ToBytes(SALT_B64), iterations:ITERATIONS, hash:"SHA-256"},
-      key,
-      256
-    );
-    return btoa(String.fromCharCode(...new Uint8Array(bits)));
-  }
-
-  function same(a,b){
-    if(typeof a!=="string" || typeof b!=="string" || a.length!==b.length)return false;
-    let x=0; for(let i=0;i<a.length;i++)x|=a.charCodeAt(i)^b.charCodeAt(i);
-    return x===0;
-  }
 
   function sessionValid(){
     if(localStorage.getItem(SESSION_KEY)!=="1")return false;
@@ -129,10 +102,10 @@
         const button=e.target.querySelector("button");
         button.disabled=true; button.textContent="Checking…"; err.textContent="";
         try{
-          let ok=false;
-          if(db){const r=await db.rpc("verify_admin_password",{p_password:input.value});if(!r.error)ok=!!r.data;}
-          if(!ok)ok=same(await hashPassword(input.value),HASH_B64);
-          if(!ok){err.textContent="Incorrect password.";input.select();return;}
+          if(!db)throw new Error("Admin authentication service is unavailable. Please retry when online.");
+          const verified=await db.rpc("verify_admin_password",{p_password:input.value});
+          if(verified.error)throw new Error("Could not verify the password with the server. Please retry.");
+          if(verified.data!==true){err.textContent="Incorrect password.";input.select();return;}
           const sr=await db.rpc("create_admin_session",{p_password:input.value});
           if(sr.error||!sr.data)throw new Error("Could not create admin session.");
           window.PA_ADMIN_SESSION=sr.data;
