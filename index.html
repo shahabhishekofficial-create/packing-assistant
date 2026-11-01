@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f6f8fb">
 <title>Packing Assistant</title>
 <link rel="manifest" href="manifest.webmanifest">
@@ -28,7 +29,8 @@
 <meta name="apple-mobile-web-app-title" content="Packing">
 <meta name="format-detection" content="telephone=no">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/packing-180.png">
-<link rel="stylesheet" href="mobile.css?v=20261031-pwa5">
+<link rel="stylesheet" href="mobile.css?v=20261031-pwa8">
+<link rel="stylesheet" href="ui.css?v=20261031-pwa8">
 </head>
 <body class="packerPage tactilePacker">
 <main id="app">
@@ -56,14 +58,14 @@
       <p>Upload the latest packing Excel. The same app link will automatically show the active order on every phone.</p>
     </div>
     <div class="uploadRow">
-      <input id="fileInput" type="file" accept=".xlsx,.xls,.csv">
+      <input aria-label="Choose the packing order file" id="fileInput" type="file" accept=".xlsx,.xls,.csv">
       <button id="createOrderBtn" class="primary">Create Live Order</button>
       <button id="loadDemo" class="secondary">Demo</button>
     </div>
     <p class="hint">Required headers: STORE_NAME, ITEM_CODE, PRODUCT_NAME, Sum of Indents, SKU Narration Order</p>
     <div id="orderLinkBox" class="shareBox hidden">
       <span>Permanent app link</span>
-      <div class="shareRow"><input id="orderLink" readonly><button id="copyLink">Copy</button></div>
+      <div class="shareRow"><input aria-label="Order reference link" id="orderLink" readonly><button id="copyLink">Copy</button></div>
     </div>
   </div>
 
@@ -127,7 +129,7 @@
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script src="config.js?v=20261006-deliveryfix2"></script>
 <script src="app.js?v=20261006-deliveryfix2"></script>
-<script>window.PA_VERSION_URL="version.json";</script><script src="update.js?v=20261031-pwa5"></script><script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20261031-pwa5",{updateViaCache:"none"}).then(r=>r.update()).catch(console.warn));}</script>
-<script>fetch("version.json?_"+Date.now(),{cache:"no-store"}).then(r=>r.json()).then(v=>{const e=document.getElementById("buildVersion");if(e)e.textContent="Build "+(v.build_id||"unknown")}).catch(()=>{});</script><script src="pwa-install.js?v=20261031-pwa5" defer></script>
+<script>window.PA_VERSION_URL="version.json";</script><script src="update.js?v=20261031-pwa8"></script><script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20261031-pwa8",{updateViaCache:"none"}).then(r=>r.update()).catch(console.warn));}</script>
+<script>fetch("version.json?_"+Date.now(),{cache:"no-store"}).then(r=>r.json()).then(v=>{const e=document.getElementById("buildVersion");if(e)e.textContent="Build "+(v.build_id||"unknown")}).catch(()=>{});</script><script src="pwa-install.js?v=20261031-pwa8" defer></script>
 </body>
 </html>

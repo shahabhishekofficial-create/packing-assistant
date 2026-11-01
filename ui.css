@@ -1,0 +1,454 @@
+/* Cross-cutting interface polish for every module.
+   Loaded after the page stylesheets and after mobile.css, so it settles the
+   interaction details the page-level blocks disagree about: focus rings, press
+   feedback, minimum touch targets, micro-type floor, number alignment, scroll
+   affordances on wide tables, motion preferences and the iOS form-zoom guard.
+   Layout rules live in mobile.css — this file only refines what is already there. */
+
+/* --------------------------------------------------------------------------
+   1. Interaction defaults
+   -------------------------------------------------------------------------- */
+
+/* switching the scrollbar gutter on keeps the page from jumping sideways when a
+   dialog locks the body scroll */
+html {
+  scrollbar-gutter: stable;
+  scroll-padding-top: 76px;
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, [role="button"], a[href], summary, label, select) {
+  touch-action: manipulation;
+}
+
+:where(button, [role="button"]) {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+  font-family: inherit;
+}
+
+:where(button, [role="button"], a[href], input, select, textarea) {
+  transition: background-color .15s ease, border-color .15s ease,
+              color .15s ease, box-shadow .15s ease, transform .12s ease;
+}
+
+:where(button, [role="button"]):active:not(:disabled),
+:where(a[href]):active {
+  transform: translateY(1px);
+}
+
+:where(button, [role="button"]):disabled,
+:where(button)[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+:where(a, button, [role="button"], summary) {
+  cursor: pointer;
+}
+
+/* one focus ring everywhere: the page blocks each shipped a different colour and
+   several controls shipped none at all */
+html body :is(a, button, [role="button"], input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid #0f172a;
+  outline-offset: 2px;
+  border-radius: inherit;
+  box-shadow: 0 0 0 5px rgba(15, 23, 42, .12);
+}
+
+html body :is(input, select, textarea):focus-visible {
+  outline-offset: 1px;
+}
+
+::selection {
+  background: #cfe6d8;
+  color: #0f3d27;
+}
+
+/* a guard against sideways page scroll on real data: `clip` keeps sticky
+   headers working, unlike `hidden`, and no child can drag the page sideways */
+body {
+  overflow-x: clip;
+}
+
+/* --------------------------------------------------------------------------
+   2. Touch targets
+   Header chips, language toggles and icon buttons were 24–33px tall, which is
+   below the 34px floor at any width and well below the 40px a thumb needs.
+   -------------------------------------------------------------------------- */
+
+.cmdHeaderBtn,
+#adminMenuBtn,
+#adminRefreshBtn,
+#cmdNewOrderBtn,
+.cmdMobileOnly,
+.vegLang button,
+.vegLogout,
+.vegShortcut,
+.expenseListAction,
+.paymentListAction,
+.btnIcon {
+  min-height: 34px;
+}
+
+.vegLang button,
+.vegLogout,
+#adminMenuBtn,
+.btnIcon {
+  min-width: 34px;
+}
+
+.vegLang button {
+  font-size: 11px;
+  padding: 8px 9px;
+}
+
+@media (max-width: 768px) {
+  .cmdHeaderBtn,
+  #adminMenuBtn,
+  #adminRefreshBtn,
+  #cmdNewOrderBtn,
+  .cmdMobileOnly,
+  #fetchLookupBtn,
+  .vegLang button,
+  .vegLogout,
+  .vegShortcut,
+  .expenseListAction,
+  .paymentListAction,
+  .btnIcon {
+    min-height: 40px;
+  }
+
+  .vegLang button,
+  .vegLogout,
+  #adminMenuBtn,
+  .btnIcon {
+    min-width: 40px;
+  }
+
+  /* the fetch/details style full-width buttons sat at 33px */
+  #fetchLookupBtn,
+  .vegGradeRow button {
+    min-height: 44px;
+  }
+}
+
+/* the breadcrumb links back to a parent module were 22px tall line boxes */
+.vegTopbar a,
+.indentPage main a[href],
+.expenseContent a[href$=".html"],
+.payContent a[href$=".html"],
+main a[href^="../"] {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+}
+
+/* the live badge clipped its own label against a hard 118px cap */
+#liveSyncStatus {
+  max-width: none !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+
+/* --------------------------------------------------------------------------
+   3. Micro-type floor
+   Several badges, captions and table headers render at 8–9px. Nothing on screen
+   should be smaller than 10.5px.
+   -------------------------------------------------------------------------- */
+
+html body :is(.vegTopbar span, .vegBadge, .vegShortcut, .vegEmpty, .vegMsg,
+    .vegRecentHead small, .vegRecentRow small, .vegItem small, .vegQuickHead small,
+    .vegEntryHead small, .vegReason span, .vegQtyRow label, .vegKicker, .stockScope,
+    .eyebrow, .invKicker, .cmdCycle, .liveBadge, #connection, #liveSyncStatus,
+    #opsActiveOrder, .expenseSectionHead small, .paymentPanelHead small,
+    .cmdHeaderBtn, #adminRefreshBtn, #opsStagePacking, #opsStageDispatch,
+    .cmdKpi small, .cmdPanel small) {
+  font-size: 11px !important;
+}
+
+html body :is(th, .inventoryStockTable th, .importTable th, .vegTable th,
+    .cmdTable th, .cmdTableWrap th) {
+  font-size: 11px !important;
+  letter-spacing: .02em;
+}
+
+/* the operations console shipped a 7–9px density: driver tags, audit stamps,
+   KPI labels, mobile column chips and delivery tables. Nothing below 10.5px. */
+html body :is(.cmdTag, .cmdPhone, .cmdAuditRow time, .cmdBrand p, .cmdFooter,
+    .cmdFleetRow, .cmdKpiLabel, .cmdKpiSub, .cmdNavLabel, .cmdNav em,
+    .opsKpi label, .opsSnapshotRow .snapStatus, .opsDriverRow > *::before,
+    .driverFilterTab, .deliveryStatus, .deliveryEvidenceBtn,
+    .deliveryDashTable td, .deliveryDashTable th, .deliveryHistoryTable td,
+    .deliveryHistoryTable td small, .deliveryHistoryTable td::before,
+    #driverDashboardKpis .deliveryKpi span, .vegKpi span) {
+  font-size: 10.5px !important;
+}
+
+/* --------------------------------------------------------------------------
+   4. Numbers line up
+   Money, counts and timestamps were set in proportional figures, so columns of
+   digits never lined up.
+   -------------------------------------------------------------------------- */
+
+:is(table, .cmdKpiValue, .inventoryStockKpis, .vegKpi, .expenseCard strong,
+    .paymentBalance strong, .expenseListTotals, .expenseRecentRow, .paymentRow,
+    .stat strong, .dashboardSummary, .qty, .product h2) {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+/* --------------------------------------------------------------------------
+   5. Wide tables scroll clearly, and say so
+   -------------------------------------------------------------------------- */
+
+.tableWrap,
+.cmdTableWrap,
+[class*="TableWrap"],
+.inventoryStockTableWrap {
+  scrollbar-width: thin;
+  scrollbar-color: #c2cbd6 transparent;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tableWrap::-webkit-scrollbar,
+.cmdTableWrap::-webkit-scrollbar,
+[class*="TableWrap"]::-webkit-scrollbar {
+  height: 8px;
+}
+
+.tableWrap::-webkit-scrollbar-thumb,
+.cmdTableWrap::-webkit-scrollbar-thumb,
+[class*="TableWrap"]::-webkit-scrollbar-thumb {
+  background: #c2cbd6;
+  border-radius: 99px;
+}
+
+.tableWrap::-webkit-scrollbar-track,
+.cmdTableWrap::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* long unbroken strings (build stamps, references, tokens) wrap instead of
+   pushing their container sideways */
+:is(.liveBadge, #buildVersion, .expenseSectionHead small, .vegBadge,
+    .expenseRecentRow, .paymentRow, .vegRecentRow, td, .expenseListRow) {
+  overflow-wrap: anywhere;
+}
+
+/* --------------------------------------------------------------------------
+   6. Layout units that follow the mobile browser chrome
+   -------------------------------------------------------------------------- */
+
+@supports (min-height: 100dvh) {
+  :is(.expenseShell, .paymentShell, #expenseBoot, #paymentBoot, .cmdShell, .vegBoot,
+      .driverBoot) {
+    min-height: 100dvh;
+  }
+
+  .activePackingContainer {
+    min-height: calc(100dvh - 78px);
+  }
+}
+
+/* notch / home-indicator padding where the browser reports it */
+@supports (padding: max(0px)) {
+  :is(.appHeader, .cmdHeader, .expenseTopbar, .paymentHeader, .vegTopbar) {
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
+  }
+}
+
+/* --------------------------------------------------------------------------
+   7. iOS zooms the whole page when a control under 16px takes focus
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 768px) {
+  html body :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), select, textarea) {
+    font-size: 16px;
+  }
+
+  /* keep the small-text labels readable at that size instead of stretching */
+  .vegQtyRow input {
+    padding-top: 20px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   8. Motion
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  :where(button, [role="button"]):active:not(:disabled),
+  :where(a[href]):active {
+    transform: none;
+  }
+}
+
+/* nothing should animate its way off-screen on a slow phone */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   9. Empty states
+   A list container that the renderer has cleared was left completely blank;
+   these placeholders only appear while the container is genuinely empty.
+   -------------------------------------------------------------------------- */
+
+#outletList:empty::after,
+#adminOutletList:empty::after {
+  content: "No outlets in this order yet — they appear as soon as the order loads.";
+  grid-column: 1 / -1;
+  padding: 20px 16px;
+  border: 1px dashed #cfd8d3;
+  border-radius: 12px;
+  background: #fbfcfb;
+  color: #6b7579;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.5;
+  text-align: center;
+}
+
+/* Every remaining 7–10px rule in the operations, inventory, expense, payment
+   and driver stylesheets, raised to the 10.5px floor in one pass. */
+html body #driverDashboard .deliveryDashSection .sectionHead .eyebrow { font-size: 10.5px !important; }
+html body #driverDashboard .deliveryDashTable .deliveryStatus { font-size: 10.5px !important; }
+html body #driverDashboard .deliveryDashTable td { font-size: 10.5px !important; }
+html body #driverDashboard .deliveryDashTable td:nth-child(2) b { font-size: 10.5px !important; }
+html body #driverDashboard .deliveryDashTable td:nth-child(6) .deliveryEvidenceBtn { font-size: 10.5px !important; }
+html body #driverDashboard .deliveryHistoryTable td:nth-child(3) small { font-size: 10.5px !important; }
+html body #driverDashboard .driverFilterTab { font-size: 10.5px !important; }
+html body #driverDashboard .driverLiveTableWrap .deliveryDashTable .deliveryStatus { font-size: 10.5px !important; }
+html body #driverDashboard .driverLiveTableWrap .deliveryDashTable td { font-size: 10.5px !important; }
+html body #driverDashboard .driverLiveTableWrap .deliveryDashTable td:nth-child(2) b { font-size: 10.5px !important; }
+html body #driverDashboard .driverLiveTableWrap .deliveryDashTable td:nth-child(4) { font-size: 10.5px !important; }
+html body #driverDashboard .driverLiveTableWrap .deliveryDashTable td:nth-child(6) .deliveryEvidenceBtn { font-size: 10.5px !important; }
+html body #driverDashboardKpis .deliveryKpi small { font-size: 10.5px !important; }
+html body #driverDashboardKpis .deliveryKpi span { font-size: 10.5px !important; }
+html body .baSideItem.coming:after { font-size: 10.5px !important; }
+html body .cmdActions button { font-size: 10.5px !important; }
+html body .cmdAuditRow b { font-size: 10.5px !important; }
+html body .cmdAuditRow span { font-size: 10.5px !important; }
+html body .cmdAuditRow time { font-size: 10.5px !important; }
+html body .cmdBrand p { font-size: 10.5px !important; }
+html body .cmdCluster { font-size: 10.5px !important; }
+html body .cmdFleetRow { font-size: 10.5px !important; }
+html body .cmdFleetRow small { font-size: 10.5px !important; }
+html body .cmdFleetRow span { font-size: 10.5px !important; }
+html body .cmdFooter { font-size: 10.5px !important; }
+html body .cmdKpiLabel { font-size: 10.5px !important; }
+html body .cmdKpiSub { font-size: 10.5px !important; }
+html body .cmdNav em { font-size: 10.5px !important; }
+html body .cmdNavLabel { font-size: 10.5px !important; }
+html body .cmdOrderBadge { font-size: 10.5px !important; }
+html body .cmdPanelHead p { font-size: 10.5px !important; }
+html body .cmdPhone { font-size: 10.5px !important; }
+html body .cmdProgressMeta { font-size: 10.5px !important; }
+html body .cmdSectionLabel { font-size: 10.5px !important; }
+html body .cmdStatus { font-size: 10.5px !important; }
+html body .cmdTable th { font-size: 10.5px !important; }
+html body .cmdTag { font-size: 10.5px !important; }
+html body .deliveryDashTable td small { font-size: 10.5px !important; }
+html body .deliveryFlag { font-size: 10.5px !important; }
+html body .deliveryKpi span { font-size: 10.5px !important; }
+html body .deliveryStatus { font-size: 10.5px !important; }
+html body .driverDashboardHead .eyebrow { font-size: 10.5px !important; }
+html body .driverDashboardHead .sectionHeadActions button { font-size: 10.5px !important; }
+html body .expenseBrand small { font-size: 10.5px !important; }
+html body .fleetKpiBox small { font-size: 10.5px !important; }
+html body .fleetTripBadge { font-size: 10.5px !important; }
+html body .invCountLabel { font-size: 10.5px !important; }
+html body .invScanBtn small { font-size: 10.5px !important; }
+html body .modernStatus { font-size: 10.5px !important; }
+html body .opsActivityRow small { font-size: 10.5px !important; }
+html body .opsCatRow label { font-size: 10.5px !important; }
+html body .opsCatRow span { font-size: 10.5px !important; }
+html body .opsDriverHead { font-size: 10.5px !important; }
+html body .opsDriverRow small { font-size: 10.5px !important; }
+html body .opsDriverRow> :nth-child(2) { font-size: 10.5px !important; }
+html body .opsHero p { font-size: 10.5px !important; }
+html body .opsKpi label { font-size: 10.5px !important; }
+html body .opsKpi small { font-size: 10.5px !important; }
+html body .opsKpi strong em { font-size: 10.5px !important; }
+html body .opsPanelHead button { font-size: 10.5px !important; }
+html body .opsPanelHead span { font-size: 10.5px !important; }
+html body .opsPriority small { font-size: 10.5px !important; }
+html body .opsPriority strong { font-size: 10.5px !important; }
+html body .opsQuickGrid small { font-size: 10.5px !important; }
+html body .opsSnapshotRow .snapStatus { font-size: 10.5px !important; }
+html body .opsSnapshotRow b { font-size: 10.5px !important; }
+html body .opsSnapshotRow small { font-size: 10.5px !important; }
+html body .opsStatus { font-size: 10.5px !important; }
+html body .opsTable { font-size: 10.5px !important; }
+html body .opsTable td { font-size: 10.5px !important; }
+html body .opsTable th { font-size: 10.5px !important; }
+html body .tableWrap th { font-size: 10.5px !important; }
+html body .vegBadge { font-size: 10.5px !important; }
+html body .vegItem small { font-size: 10.5px !important; }
+html body .vegKpi span { font-size: 10.5px !important; }
+html body .vegQtyRow label { font-size: 10.5px !important; }
+html body .vegRecentHead small { font-size: 10.5px !important; }
+html body .vegRecentRow small { font-size: 10.5px !important; }
+html body .vegShortcut { font-size: 10.5px !important; }
+
+/* header cells inside the inventory and console cards */
+html body .inventoryCard table th,
+html body .cmdPanel table th,
+html body .tableWrap table thead th {
+  font-size: 10.5px !important;
+}
+
+html body .invStockDashboard .tableWrap th,
+html body .inventoryCard .tableWrap th {
+  font-size: 10.5px !important;
+}
+
+/* the small-screen header hides this button's own label and prints a shorter
+   one with ::after, so the font-size floor must not reach the button itself */
+@media (max-width: 760px) {
+  html body #cmdNewOrderBtn {
+    font-size: 0 !important;
+  }
+
+  html body #cmdNewOrderBtn::after {
+    content: "+ Order";
+    font-size: 11px !important;
+  }
+}
+
+/* the inventory admin action row: 10px button labels and a 33px tall button */
+html body :is(#addItemBtn, #importBtn, #downloadTemplateBtn, #downloadCsvTemplateBtn,
+    #exportStockBtn, .inventoryAdminActions button) {
+  font-size: 11px !important;
+  min-height: 40px;
+}
+
+html body #fetchLookupBtn {
+  min-height: 42px;
+  font-size: 15px;
+}
+
+html body :is(.cmdProfile b, .cmdProfile span, .cmdProfile small) {
+  font-size: 11px !important;
+}
+
+/* sidebar rows were 31px tall on desktop */
+html body .cmdNav button,
+html body .cmdNav a,
+html body .baSideItem {
+  min-height: 34px;
+}

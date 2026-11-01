@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="color-scheme" content="light">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#f5f8fc">
 <title>Packaging Indent Summary | Packing Assistant</title>
@@ -38,7 +39,8 @@ table{width:100%;border-collapse:collapse;background:#fff}th,td{text-align:left;
 <meta name="format-detection" content="telephone=no">
 <link rel="manifest" href="manifest-indent-summary.webmanifest">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/indent-180.png">
-<link rel="stylesheet" href="mobile.css?v=20261031-pwa5">
+<link rel="stylesheet" href="mobile.css?v=20261031-pwa8">
+<link rel="stylesheet" href="ui.css?v=20261031-pwa8">
 </head>
 <body class="indentPage">
 <main>
@@ -50,7 +52,7 @@ table{width:100%;border-collapse:collapse;background:#fff}th,td{text-align:left;
     <div class="upload">
       <strong>Choose your raw Excel or CSV file</strong>
       <div>Supported: .xlsx, .xls, .csv · Uses the first worksheet</div>
-      <input id="file" type="file" accept=".xlsx,.xls,.csv">
+      <input aria-label="Choose the raw indent file" id="file" type="file" accept=".xlsx,.xls,.csv">
     </div>
     <div class="actions">
       <button id="generate" class="primary" disabled>Generate item-wise summary</button>
@@ -232,7 +234,7 @@ table{width:100%;border-collapse:collapse;background:#fff}th,td{text-align:left;
   });
 })();
 </script>
-<script src="pwa-install.js?v=20261031-pwa5" defer></script>
-<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20261031-pwa5",{scope:"./",updateViaCache:"none"}).catch(()=>{}));}</script>
+<script src="pwa-install.js?v=20261031-pwa8" defer></script>
+<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20261031-pwa8",{scope:"./",updateViaCache:"none"}).catch(()=>{}));}</script>
 </body>
 </html>

@@ -2337,3 +2337,20 @@ Verification from source: all driver build markers and cache/resource query stri
 - Expenses: the top bar keeps the title on one line and the page-level section headings no longer squeeze against their side labels.
 - Verified by rendering every module at 360px, 390px, 768px, 1024px and 1280px in a headless browser with mock data: no horizontal page overflow at any width and the desktop layout is unchanged. The expenses and payments screens were reviewed with the sign-in gate lifted locally, so their signed-in state still needs a pass on a real device.
 - Build stamp moved to `20261031-pwa5` and the three offline shells are regenerated, so installed copies pick up the new stylesheet.
+
+## Interface polish pass — 2026-11-01
+
+- New `ui.css`, loaded after the page stylesheets and after `mobile.css` on every module, holds the cross-cutting details that used to differ page by page.
+- Focus: one consistent focus ring on every link, button, field and dialog control. Several modules shipped no visible keyboard focus at all, and the ones that did used three different colours.
+- Press feedback: buttons and links respond to a tap, icon buttons no longer show the grey flash on Android, and disabled controls show a not-allowed cursor.
+- Touch targets: header chips, language toggles, menu buttons, icon buttons and the inventory action row now have a 34px floor, and 40–44px on phones.
+- Type: nothing renders below 10px any more. The operations console carried a 7–9px density for driver tags, audit stamps, KPI captions, mobile column labels and delivery tables; all of it moved to a readable floor in one pass.
+- Numbers: money, counts and timestamps use tabular figures so columns align.
+- Scrolling: wide tables keep their own horizontal scroller with a styled, visible scrollbar, momentum scrolling and overscroll containment, so a sideways swipe inside a table cannot drag the page. The page itself cannot scroll sideways.
+- Mobile browser chrome: full-height layouts use dynamic viewport units, sticky headers keep their own scroll offset, and the page reserves the scrollbar gutter so opening a dialog does not shift the layout.
+- iOS: form controls are 16px on phones, which stops Safari zooming the whole page when a field takes focus.
+- Accessibility: pinch zoom is no longer blocked by the viewport meta tag, every previously unlabelled search, filter and file input has an accessible name, and colour-scheme plus telephone-detection metadata are set on all pages so Android does not force-dark the UI and iOS does not turn order numbers into phone links.
+- Empty states: the packing outlet list explains itself instead of showing a blank panel while an order loads.
+- Motion: transitions are short and dropped entirely for visitors who ask for reduced motion.
+- Removed one dead control: the vegetable counting header carried an empty, unstyled, unbound menu button.
+- Verified by rendering all ten modules at 320, 360, 390, 414, 768, 1024, 1280 and 1440px in a headless browser: no page-level horizontal overflow anywhere, no clipped labels, no images failing to load, no duplicate element ids, and every visible button and link has an accessible name. The offline shells were regenerated and their precache lists verified.

@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="color-scheme" content="light">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f7f8fc">
 <title>Warehouse Inventory Count</title>
@@ -13,7 +14,8 @@
 <meta name="format-detection" content="telephone=no">
 <link rel="manifest" href="manifest-restaurant-inventory.webmanifest">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/restaurant-180.png">
-<link rel="stylesheet" href="mobile.css?v=20261031-pwa5">
+<link rel="stylesheet" href="mobile.css?v=20261031-pwa8">
+<link rel="stylesheet" href="ui.css?v=20261031-pwa8">
 </head>
 <body class="inventoryCountPage">
 <main id="inventoryApp">
@@ -33,7 +35,7 @@
 
     <div class="invSetup">
       <div class="invSectionTitle"><span>1</span><div><strong>Choose inventory</strong><small>Select what you are counting today.</small></div></div>
-      <select id="section" class="invSelect">
+      <select aria-label="Stock section" id="section" class="invSelect">
         <option value="restaurant">Restaurant Grocery</option>
         <option value="vegetable">Vegetables</option>
       </select>
@@ -44,7 +46,7 @@
     <div id="counter" class="invCounter hidden">
       <div class="invSectionTitle"><span>2</span><div><strong>Find an item</strong><small>Search by name or barcode.</small></div></div>
       <div class="invSearchRow">
-        <div class="invSearchBox"><span>⌕</span><input id="search" placeholder="Search item or barcode" autocomplete="off"></div>
+        <div class="invSearchBox"><span>⌕</span><input aria-label="Search item or barcode" id="search" placeholder="Search item or barcode" autocomplete="off"></div>
         <button id="scanBtn" class="invScanBtn" type="button" aria-label="Scan barcode">▦<small>Scan</small></button>
       </div>
 
@@ -52,7 +54,7 @@
 
       <div class="invCountBox">
         <div class="invCountLabel">PHYSICAL COUNT</div>
-        <div class="invQtyRow"><input id="countQty" type="number" min="0" step="any" inputmode="decimal" placeholder="0"><span id="countUnitLabel"></span></div>
+        <div class="invQtyRow"><input aria-label="Counted quantity" id="countQty" type="number" min="0" step="any" inputmode="decimal" placeholder="0"><span id="countUnitLabel"></span></div>
         <div id="conversion" class="invConversion"></div>
       </div>
 
@@ -79,7 +81,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/4.2.1/jspdf.umd.min.js"></script>
 <script src="config.js?v=20261005-restinv1"></script>
 <script src="inventory-count.js?v=20261005-restinv1"></script>
-<script src="pwa-install.js?v=20261031-pwa5" defer></script>
-<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20261031-pwa5",{scope:"./",updateViaCache:"none"}).catch(()=>{}));}</script>
+<script src="pwa-install.js?v=20261031-pwa8" defer></script>
+<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20261031-pwa8",{scope:"./",updateViaCache:"none"}).catch(()=>{}));}</script>
 </body>
 </html>
