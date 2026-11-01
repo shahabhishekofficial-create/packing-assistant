@@ -1,6 +1,6 @@
 /* Offline shell + install support for the driver module.
    Cache naming is scoped per app: this worker only evicts caches it owns. */
-const BUILD_ID="20261031-pwa1",CACHE="pa-driver-"+BUILD_ID,CORE=["./","./index.html","../icons/driver-180.png","manifest.webmanifest","../tokens.css?v=20261004-tokens1","../components.css?v=20261004-components1","../styles.css?v=20261011-outletlatlong1","../config.js?v=20261011-outletlatlong1","driver.js?v=20261011-outletlatlong1","../update.js?v=20261031-pwa1","./driver-ux-v2.css?v=20261011-outletlatlong1","./driver-ux-v2.js?v=20261011-outletlatlong1","../pwa-install.js?v=20261031-pwa1","../icons/driver-192.png","../icons/driver-512.png","../version.json"];
+const BUILD_ID="20261031-pwa2",CACHE="pa-driver-"+BUILD_ID,CORE=["./","./index.html","../icons/driver-180.png","manifest.webmanifest","../tokens.css?v=20261004-tokens1","../components.css?v=20261004-components1","../styles.css?v=20261011-outletlatlong1","../config.js?v=20261011-outletlatlong1","driver.js?v=20261011-outletlatlong1","../update.js?v=20261031-pwa2","./driver-ux-v2.css?v=20261011-outletlatlong1","./driver-ux-v2.js?v=20261011-outletlatlong1","../pwa-install.js?v=20261031-pwa2","../icons/driver-192.png","../icons/driver-512.png","../version.json"];
 self.addEventListener("install",e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting()))});
 self.addEventListener("activate",e=>{e.waitUntil((async()=>{
   if(self.registration.navigationPreload){try{await self.registration.navigationPreload.enable()}catch(_){}}
