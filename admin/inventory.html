@@ -21,7 +21,7 @@
 <script defer src="../config.js?v=20261001-audit2"></script>
 <script defer src="./auth.js?v=20261001-audit2"></script>
 <script>window.PA_VERSION_URL="../version.json";</script>
-<script defer src="../update.js?v=20261031-pwa8"></script>
+<script defer src="../update.js?v=20261031-pwa9"></script>
 <style>
 body.adminPage{background:#f5f8f7;font-family:"Plus Jakarta Sans",Inter,system-ui,sans-serif} body.adminPage .cmdSidebar{display:flex}
 .cmdShell{min-height:100dvh;height:auto;display:flex;overflow:visible;background:#f5f8f7}
@@ -89,8 +89,8 @@ body.modal-open{overflow:hidden!important;height:100dvh!important;overscroll-beh
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Operations">
 <meta name="format-detection" content="telephone=no">
-<link rel="stylesheet" href="../mobile.css?v=20261031-pwa8">
-<link rel="stylesheet" href="../ui.css?v=20261031-pwa8">
+<link rel="stylesheet" href="../mobile.css?v=20261031-pwa9">
+<link rel="stylesheet" href="../ui.css?v=20261031-pwa9">
 </head>
 <body class="adminPage">
 <div id="adminBootOverlay"><div class="bootCard">Loading Inventory<span class="bootSub">Starting secure session…</span></div></div>
@@ -158,13 +158,13 @@ body.modal-open{overflow:hidden!important;height:100dvh!important;overscroll-beh
 
 
 </main>
-<script defer src="./inventory.js?v=20261031-pwa8"></script>
-<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20261031-pwa8",{updateViaCache:"none"}).catch(console.warn));}</script>
+<script defer src="./inventory.js?v=20261031-pwa9"></script>
+<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20261031-pwa9",{updateViaCache:"none"}).catch(console.warn));}</script>
 <script>
 (function(){
  const sync=()=>document.body.classList.toggle("modal-open",!!document.querySelector("dialog[open]"));
  const init=()=>{document.querySelectorAll("dialog").forEach(d=>{d.addEventListener("close",sync);d.addEventListener("cancel",()=>setTimeout(sync,0));});new MutationObserver(sync).observe(document.body,{subtree:true,attributes:true,attributeFilter:["open"]});sync();};
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
 })();
-</script><script src="../pwa-install.js?v=20261031-pwa8" defer></script>
+</script><script src="../pwa-install.js?v=20261031-pwa9" defer></script>
 </body></html>

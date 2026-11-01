@@ -2354,3 +2354,9 @@ Verification from source: all driver build markers and cache/resource query stri
 - Motion: transitions are short and dropped entirely for visitors who ask for reduced motion.
 - Removed one dead control: the vegetable counting header carried an empty, unstyled, unbound menu button.
 - Verified by rendering all ten modules at 320, 360, 390, 414, 768, 1024, 1280 and 1440px in a headless browser: no page-level horizontal overflow anywhere, no clipped labels, no images failing to load, no duplicate element ids, and every visible button and link has an accessible name. The offline shells were regenerated and their precache lists verified.
+
+## Vegetable inventory admin screen — 2026-11-02
+
+- The four summary cards (active items, count sessions, count entries, last count) were collapsing to a single column below 520px, which pushed the working area two screens down. They now stay two-up on phones.
+- The "Open Staff Count" link had no padding of its own, so it rendered as a bare label butting against the download button on desktop and as a stray label on phones. It is now a proper secondary button, full width on phones and inline on desktop.
+- The update prompt stacks its buttons on narrow screens instead of wrapping the sentence to three lines next to two squeezed buttons.

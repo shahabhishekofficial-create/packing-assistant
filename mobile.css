@@ -424,3 +424,21 @@
   .expenseSectionHead > div { flex: 1 1 auto !important; min-width: 0 !important; }
   .expenseSectionHead h2 { font-size: 22px !important; line-height: 1.25 !important; }
 }
+
+/* vegetable admin: four KPI cards collapsed to one column on phones, and the
+   staff-count link rendered as a bare label next to a full-width button */
+@media (max-width: 560px) {
+  .vegAdminPage .vegKpiGrid { grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
+  .vegAdminPage .vegKpi { min-height: 84px !important; padding: 12px !important; }
+  .vegAdminPage .vegKpi small { font-size: 11px !important; line-height: 1.35 !important; }
+  .vegAdminPage .vegMasterTools { flex-direction: column !important; align-items: stretch !important; }
+  .vegAdminPage .vegMasterTools > * { width: 100% !important; }
+  .vegAdminPage .vegLinkBtn {
+    min-height: 44px !important;
+    padding: 11px 16px !important;
+    border-radius: 11px !important;
+    font-weight: 800 !important;
+    font-size: 14px !important;
+    justify-content: center !important;
+  }
+}

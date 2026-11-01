@@ -452,3 +452,36 @@ html body .cmdNav a,
 html body .baSideItem {
   min-height: 34px;
 }
+
+/* the update prompt turned into a three-line block on narrow phones */
+@media (max-width: 480px) {
+  #paUpdateNotice {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+  }
+
+  #paUpdateNotice > span:last-child {
+    justify-content: flex-end !important;
+  }
+
+  #paUpdateNotice button {
+    min-height: 42px !important;
+  }
+}
+
+/* the "Open Staff Count" link had no padding of its own, so it rendered as a
+   cramped label butting against the download button */
+.vegAdminPage .vegMasterTools .vegLinkBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 10px 16px;
+  border-radius: 11px;
+  font-weight: 800;
+  font-size: 13.5px;
+  line-height: 1.2;
+  white-space: nowrap;
+  text-decoration: none;
+}
