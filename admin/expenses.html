@@ -8,6 +8,13 @@
 <link rel="stylesheet" href="./expenses.css?v=20261014-expenses1">
 <link rel="stylesheet" href="./expenses-list.css?v=20261015-slice2a3">
 <link rel="stylesheet" href="./expenses-export.css?v=20261019-export1">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Expenses">
+<meta name="format-detection" content="telephone=no">
+<link rel="manifest" href="manifest-expenses.webmanifest">
+<link rel="apple-touch-icon" sizes="180x180" href="../icons/expenses-180.png">
 </head>
 <body class="adminPage">
 <div id="expenseBoot" role="status">Checking secure admin session…</div>
@@ -82,5 +89,7 @@
 <script defer src="./expenses.js?v=20261014-expenses1"></script>
 <script defer src="./expenses-list.js?v=20261023-expense-list-delete1"></script>
 <script defer src="./expenses-export.js?v=20261019-export3"></script>
+<script src="../pwa-install.js?v=20261031-pwa1" defer></script>
+<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20261031-pwa1",{scope:"./",updateViaCache:"none"}).catch(()=>{}));}</script>
 </body>
 </html>

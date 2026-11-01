@@ -22,6 +22,12 @@
 .quickFill button{min-width:58px;min-height:42px;border:1px solid #cbd8d1;border-radius:11px;background:#f4f8f5;font-weight:800;color:#14532d}
 @media(max-width:640px){.tactilePacker .actions{grid-template-columns:1fr;gap:10px}.tactilePacker .actions button{min-height:62px;font-size:16px}.tactilePacker button{touch-action:manipulation}}
 </style>
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Packing">
+<meta name="format-detection" content="telephone=no">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/packing-180.png">
 </head>
 <body class="packerPage tactilePacker">
 <main id="app">
@@ -120,6 +126,7 @@
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script src="config.js?v=20261006-deliveryfix2"></script>
 <script src="app.js?v=20261006-deliveryfix2"></script>
-<script>window.PA_VERSION_URL="version.json";</script><script src="update.js?v=20261011-refreshloopfix1"></script><script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20261011-refreshloopfix1",{updateViaCache:"none"}).then(r=>r.update()).catch(console.warn));}</script>
-<script>fetch("version.json?_"+Date.now(),{cache:"no-store"}).then(r=>r.json()).then(v=>{const e=document.getElementById("buildVersion");if(e)e.textContent="Build "+(v.build_id||"unknown")}).catch(()=>{});</script></body>
+<script>window.PA_VERSION_URL="version.json";</script><script src="update.js?v=20261031-pwa1"></script><script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20261031-pwa1",{updateViaCache:"none"}).then(r=>r.update()).catch(console.warn));}</script>
+<script>fetch("version.json?_"+Date.now(),{cache:"no-store"}).then(r=>r.json()).then(v=>{const e=document.getElementById("buildVersion");if(e)e.textContent="Build "+(v.build_id||"unknown")}).catch(()=>{});</script><script src="pwa-install.js?v=20261031-pwa1" defer></script>
+</body>
 </html>

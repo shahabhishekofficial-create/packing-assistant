@@ -1,12 +1,12 @@
 <!doctype html><html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#f5f8f7"><title>Bigly Agro — Vegetable Inventory</title>
-<link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="../icon-192.png">
+<link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" sizes="180x180" href="../icons/admin-180.png">
 <link rel="stylesheet" href="../styles.css?v=20261007-scroll1"><link rel="stylesheet" href="./inventory.css?v=20261001-audit2"><link rel="stylesheet" href="./vegetable-inventory.css?v=20261001-audit2">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1"></script>
 <script defer src="../config.js?v=20261001-audit2"></script><script defer src="./auth.js?v=20261001-audit2"></script>
-<script>window.PA_VERSION_URL="../version.json";</script><script defer src="../update.js?v=20261006-deliveryfix2"></script>
+<script>window.PA_VERSION_URL="../version.json";</script><script defer src="../update.js?v=20261031-pwa1"></script>
 <style>
 body.adminPage{background:#f5f8f7;font-family:"Plus Jakarta Sans",Inter,system-ui,sans-serif}
 .cmdShell{min-height:100dvh;height:auto;display:flex;overflow:visible;background:#f5f8f7}
@@ -97,7 +97,12 @@ body.modal-open{overflow:hidden!important;height:100dvh!important;overscroll-beh
     min-width:0!important;
   }
 }
-</style></head><body class="adminPage"><div id="adminBootOverlay"><div class="bootCard">Loading Vegetable Inventory<span class="bootSub">Starting secure session…</span></div></div>
+</style><meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Operations">
+<meta name="format-detection" content="telephone=no">
+</head><body class="adminPage"><div id="adminBootOverlay"><div class="bootCard">Loading Vegetable Inventory<span class="bootSub">Starting secure session…</span></div></div>
 <main id="app"><div class="cmdShell">
 <aside class="cmdSidebar" id="inventorySidebar">
 <div class="cmdBrand"><div class="cmdLogo">BA</div><div><h1>Bigly Agro Private Limited</h1><p>OPS COMMAND CENTER</p></div></div>
@@ -170,7 +175,7 @@ body.modal-open{overflow:hidden!important;height:100dvh!important;overscroll-beh
   </form>
 </dialog></section></div></div></div></main>
 <script defer src="./vegetable-inventory.js?v=20261006-vegadmin2"></script>
-<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20261006-vegadmin2",{updateViaCache:"none"}).catch(console.warn));}</script>
+<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20261031-pwa1",{updateViaCache:"none"}).catch(console.warn));}</script>
 <script>document.getElementById("baSidebarToggle")?.addEventListener("click",()=>document.querySelector(".cmdSidebar")?.classList.toggle("open"));</script>
 <script>
 (function(){
@@ -178,4 +183,5 @@ body.modal-open{overflow:hidden!important;height:100dvh!important;overscroll-beh
  const init=()=>{document.querySelectorAll("dialog").forEach(d=>{d.addEventListener("close",sync);d.addEventListener("cancel",()=>setTimeout(sync,0));});new MutationObserver(sync).observe(document.body,{subtree:true,attributes:true,attributeFilter:["open"]});sync();};
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
 })();
-</script></body></html>
+</script><script src="../pwa-install.js?v=20261031-pwa1" defer></script>
+</body></html>

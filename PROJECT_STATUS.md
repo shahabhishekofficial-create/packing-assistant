@@ -2279,3 +2279,34 @@ Verification from source: all driver build markers and cache/resource query stri
 - Proposed API actions (not implemented): `claim_preview(from,to)` counts/sums active, unclaimed expenses in the inclusive range without creating a claim; `list_claims` returns the summary; `claim_detail(id)` returns only that employee's claim, its active expenses, and linked payments. Creation must still revalidate under the existing locked RPC; preview is not a reservation.
 - API diff is held until the migration SQL is approved. No screens, API changes, deployments, or live data writes. No type check ran. Phone tests are not applicable to this no-screen slice.
 - Expense-list delete commit chain: JS `91c95b1ec74d3a5487dcd5312fc7f8993b48e2a3`; HTML cache ref `5576d73e933a757e838b16d3f44357e5b3a03774`; status entry `7bb981073d1b38ef0188d78a95cb3c77b2a0ba00`. Phone test pending.
+
+
+## Auth hardening (live database) — 2026-10-31
+
+- Applied **one** live database migration, `admin_auth_hardening`. It adds a small server-side attempt/cooldown record for the shared admin password plus three internal guard routines, and routes the existing admin sign-in, session-creation and password-change entry points through that guard.
+- Behaviour: after 5 consecutive failures the shared password entry points refuse for 15 minutes; a success clears the counter and the cooldown. Signatures, return types, success paths, and existing error text are unchanged. Client roles keep exactly the access they had before.
+- The new record table has row-level security enabled and **no** grants to client roles. The three guard routines are revoked from all client roles; they are not part of the public API.
+- Verification: a rolled-back synthetic transaction test passed all 10 checks (threshold, lock, correct-credential refusal while locked, cooldown expiry, reset on success, session creation refused while locked, password change refused while locked, wrong-current-password message unchanged, both success paths unchanged). A client-role call inside a rolled-back transaction confirmed the browser path reaches the guard; the transaction was rolled back and the state was re-checked as clean.
+- Baseline data unchanged before and after: 80 orders, 1,297 outlets, 13,540 order items, 319 delivery records, 274 ledger entries, total due ₹47,100. Admin password hash fingerprint unchanged.
+- No repository application code, Edge Function, service worker, manifest, `version.json` or stylesheet was modified. No data was backfilled and no historical record was edited.
+- Known trade-off (accepted): the cooldown is global to the shared password, so sustained failed attempts also delay a legitimate sign-in for the remainder of the cooldown window.
+- Rollback material for this change is held outside the repository (previous definitions plus a drop list) and is not committed here.
+
+## Admin complete-delivery review — 2026-10-31
+
+- Reviewed the admin "complete delivery" path against the **live** definition rather than the repository file.
+- Result: the live definition already restores the driver credit exactly once (idempotent, single credit per delivery) and writes the operation audit row with the delivery reference. No change was required and none was applied.
+- Live data check: 0 delivered outlets without a driver credit; 0 operation-audit rows for this path with a missing delivery reference; the path has not been invoked since the current definition was installed. No backfill was performed and none is pending.
+- Discrepancy noted for later housekeeping: the corresponding repository migration file does not match the live definition. Migration-file reconciliation is pending and was deliberately not started in this change.
+
+## Installable app packaging — 2026-10-31
+
+- Each module now installs from the browser as its own app: packing, restaurant inventory, vegetable inventory, indent summary, operations admin, expenses, ledgers and driver. Eight distinct app identities on one origin.
+- One web app manifest per module with its own `id`, `start_url`, `scope`, display mode, theme/background colour and icon set. The previously orphaned `admin-manifest.webmanifest` now aliases the admin app instead of pointing at a redirect stub.
+- Icon set in `icons/`: 192px and 512px transparent icons, 192px and 512px full-bleed maskable icons, and a 180px opaque touch icon for each module.
+- Shared `pwa-install.js` renders the install affordance: the native browser prompt on Android and short add-to-home-screen instructions on iOS Safari. It hides itself when the app is already running standalone and remembers a dismissal.
+- Every module page now carries `apple-mobile-web-app-*`, `apple-touch-icon` and `theme-color` metadata. Previously only the driver page did, and its touch icon pointed at an SVG, which iOS ignores.
+- Offline shell per app: the root, admin and driver service workers each precache their own module pages, assets and manifests under their own cache namespace. Admin previously precached nothing and deleted every cache on activation; it now keeps its own cache and removes only stale ones it owns.
+- Precache lists are generated from the URLs the pages actually request, so the previous stale `?v=` entries (which never matched and never warmed the cache) are gone.
+- `update.js` build stamps on all pages and `version.json` now share one build id, so the update banner only appears when a deploy really changes content instead of after every load.
+- Verified statically: every precache entry resolves, every page carries the manifest/Apple/theme metadata, all manifests parse with unique ids and same-origin start URLs inside their scope, and service-worker install, activate and offline-navigation behaviour was exercised against a local server in a mocked worker environment. On-device install on Android Chrome and iOS Safari is still to be confirmed by the team.

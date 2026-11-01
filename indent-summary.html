@@ -31,6 +31,13 @@ table{width:100%;border-collapse:collapse;background:#fff}th,td{text-align:left;
 .hidden{display:none!important}
 @media(max-width:560px){main{width:min(100% - 18px,980px);margin:12px auto 30px}.stats{gap:7px}.stat{padding:10px 8px}.stat strong{font-size:20px}th,td{padding:10px;font-size:13px}.actions button{flex:1}}
 </style>
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Indent">
+<meta name="format-detection" content="telephone=no">
+<link rel="manifest" href="manifest-indent-summary.webmanifest">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/indent-180.png">
 </head>
 <body>
 <main>
@@ -224,5 +231,7 @@ table{width:100%;border-collapse:collapse;background:#fff}th,td{text-align:left;
   });
 })();
 </script>
+<script src="pwa-install.js?v=20261031-pwa1" defer></script>
+<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20261031-pwa1",{scope:"./",updateViaCache:"none"}).catch(()=>{}));}</script>
 </body>
 </html>

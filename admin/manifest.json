@@ -1,29 +1,87 @@
 {
+  "id": "./",
   "name": "Bigly Agro Operations",
-  "short_name": "Bigly Agro",
-  "id": "/packing-assistant/admin/",
-  "start_url": "/packing-assistant/admin/",
-  "scope": "/packing-assistant/admin/",
+  "short_name": "Operations",
+  "description": "Delivery fleet, partner ledgers and inventory dashboard",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
   "orientation": "portrait",
+  "background_color": "#f6f8fb",
+  "theme_color": "#f6f8fb",
   "lang": "en",
   "dir": "ltr",
+  "categories": [
+    "business",
+    "productivity"
+  ],
   "prefer_related_applications": false,
-  "background_color": "#f3f4f6",
-  "theme_color": "#155eef",
-  "description": "Bigly Agro Private Limited operations dashboard",
   "icons": [
     {
-      "src": "/packing-assistant/icon-192.png",
+      "src": "../icons/admin-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
-      "src": "/packing-assistant/icon-512.png",
+      "src": "../icons/admin-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "../icons/admin-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "../icons/admin-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Expenses",
+      "short_name": "Expenses",
+      "url": "./expenses.html",
+      "icons": [
+        {
+          "src": "../icons/admin-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Payments",
+      "short_name": "Payments",
+      "url": "./payments.html",
+      "icons": [
+        {
+          "src": "../icons/admin-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Inventory",
+      "short_name": "Inventory",
+      "url": "./inventory.html",
+      "icons": [
+        {
+          "src": "../icons/admin-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
     }
   ]
 }
