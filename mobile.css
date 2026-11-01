@@ -11,6 +11,80 @@
   text-transform: uppercase; color: #64748b; line-height: 1.2;
 }
 
+/* ============================================================================
+   Packing assistant (warehouse staff).
+   The header put the brand and four action chips on one unwrapped row, so the
+   packaging-summary chip and the build badge ran off the right edge.
+   ========================================================================== */
+/* tablet / landscape phone: one squeezed row pushed the brand into 3 lines and clipped
+   the build badge, so let the header wrap and keep the brand on its own line when needed */
+@media (max-width: 900px) {
+  .packerPage .appHeader { flex-wrap: wrap; row-gap: 10px; }
+  .packerPage .brand { min-width: min(240px, 100%); }
+  .packerPage .brand h1 { line-height: 1.2; }
+  .packerPage .headerActions { flex: 0 1 auto; min-width: 0; flex-wrap: wrap; justify-content: flex-end; }
+  .packerPage .headerActions > a, .packerPage .headerActions > button { min-height: 40px; }
+  .packerPage .headerActions select { display: block !important; min-height: 40px; }
+}
+
+@media (max-width: 700px) {
+  .packerPage .appHeader {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .packerPage .brand { gap: 10px; align-items: center; }
+  .packerPage .brandIcon { width: 40px; height: 40px; border-radius: 12px; font-size: 20px; flex: 0 0 auto; }
+  .packerPage .brand h1 { font-size: 19px; line-height: 1.25; letter-spacing: -.3px; }
+  .packerPage .brand p { font-size: 11.5px; line-height: 1.35; margin-top: 2px; }
+  .packerPage .headerActions { width: 100%; flex-wrap: wrap; gap: 8px; align-items: stretch; }
+  .packerPage .headerActions > a {
+    flex: 1 1 100%; min-height: 42px; justify-content: center; text-align: center;
+  }
+  .packerPage .headerActions > button { flex: 1 1 45%; min-height: 42px; }
+  .packerPage .headerActions select { display: block !important; flex: 1 1 100%; width: 100%; min-height: 42px; font-size: 14px; }
+  .packerPage .headerActions .b-status,
+  .packerPage .headerActions .liveBadge { flex: 0 0 auto; align-self: center; }
+}
+
+/* ============================================================================
+   Vegetable counting (warehouse staff).
+   The three language chips and the menu button were squeezed next to the title
+   and clipped to 25px targets.
+   ========================================================================== */
+@media (max-width: 640px) {
+  .vegetableCountPage .vegTopbar {
+    height: auto;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 9px 10px;
+  }
+  .vegetableCountPage .vegTopbar > div:first-child { flex: 1 1 100%; min-width: 0; }
+  .vegetableCountPage .vegTopbar strong { font-size: 15px; }
+  .vegetableCountPage .vegTopActions { width: 100%; gap: 8px; }
+  .vegetableCountPage .vegLang { flex: 1 1 auto; min-width: 0; gap: 2px; }
+  .vegetableCountPage .vegLang button {
+    flex: 1 1 auto; min-height: 38px; padding: 7px 6px; font-size: 11px;
+  }
+  .vegetableCountPage .vegTopActions > button {
+    min-height: 38px; min-width: 42px; padding: 7px 10px;
+  }
+}
+
+/* ============================================================================
+   Shared control polish: several controls were rendering in the browser
+   default font instead of the page font.
+   ========================================================================== */
+@media (max-width: 768px) {
+  .adminPage button, .adminPage input, .adminPage select, .adminPage textarea,
+  .packerPage button, .packerPage input, .packerPage select,
+  .vegetableCountPage button, .vegetableCountPage input, .vegetableCountPage select,
+  .inventoryCountPage button, .inventoryCountPage input, .inventoryCountPage select,
+  .driverPage button, .driverPage input, .driverPage select {
+    font-family: inherit;
+  }
+}
+
 /* desktop keeps the category in its own column, so the mobile-only copy stays hidden */
 .stockCat { display: none; }
 
@@ -23,8 +97,12 @@
     gap: 8px !important;
     align-items: center !important;
   }
+  .cmdHeader { flex-wrap: wrap !important; align-items: center !important; row-gap: 8px !important; }
   .cmdHeaderLeft { flex: 1 1 auto !important; min-width: 0 !important; gap: 8px !important; }
-  .cmdHeaderRight { flex: 0 0 auto !important; gap: 6px !important; }
+  .cmdHeaderRight {
+    flex: 1 1 auto !important; min-width: 0 !important; gap: 6px !important;
+    flex-wrap: wrap !important; justify-content: flex-end !important;
+  }
   .cmdHeader .baMobileMenu {
     width: 38px !important; height: 38px !important; padding: 0 !important;
     flex: 0 0 auto !important; display: grid !important; place-items: center;
@@ -36,8 +114,12 @@
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   .cmdHeader .b-status { flex: 0 0 auto !important; padding: 6px 8px !important; font-size: 9px !important; }
-  /* both header links duplicate the drawer entries, and together they overflowed the bar */
-  .cmdHeaderRight .cmdHeaderBtn { display: none !important; }
+  /* no font-size here: the dashboard shortens "+ New Order" to "+ Order" with a
+     font-size:0 + ::after trick, and forcing a size printed the label twice */
+  .cmdHeaderRight .cmdHeaderBtn {
+    flex: 0 0 auto !important; min-height: 34px !important;
+    padding: 7px 9px !important; white-space: nowrap;
+  }
   .cmdHeader button { font-family: inherit !important; }
 
   /* ---------- page heading: stacked, not squeezed into a narrow column ---------- */
@@ -138,6 +220,9 @@
     overflow-y: hidden !important;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-x: contain;
+    max-width: 100%;
+  }
+  .inventoryCard .tableWrap {
     margin: 0 12px 12px !important;
     padding: 0 !important;
     border: 1px solid #eef2f0;
@@ -311,4 +396,31 @@
   .inventoryAdminPage, .vegAdminPage { padding: 12px 10px 26px !important; }
   .inventoryStockKpis b { font-size: 17px !important; }
   .adminItemActions button { padding: 7px 9px !important; }
+}
+
+/* indent summary: stacked full-width actions instead of two 3-line buttons */
+@media (max-width: 560px) {
+  .indentPage .actions { flex-direction: column !important; gap: 8px !important; }
+  .indentPage .actions button {
+    flex: 1 1 auto !important; width: 100% !important;
+    min-height: 46px !important; font-size: 15px !important; white-space: normal !important;
+  }
+  .indentPage .status { font-size: 12.5px !important; line-height: 1.5 !important; }
+}
+
+/* expenses: topbar and section heads stop squeezing the titles at phone widths */
+@media (max-width: 560px) {
+  .expenseTopbar { flex-wrap: wrap !important; row-gap: 8px !important; gap: 8px !important; padding: 9px 12px !important; }
+  .expenseTopbar h1 { font-size: 17px !important; }
+  .expenseTopbar > div { flex: 1 1 auto !important; min-width: 0 !important; }
+  .expenseTopbar > div small { display: block !important; white-space: nowrap !important; }
+  .expenseTopbar .expenseSessionLabel { display: none !important; }
+  .expenseTopbar .expenseSecondary {
+    flex: 0 0 auto !important; white-space: nowrap !important;
+    min-height: 40px !important; padding: 8px 10px !important; font-size: 11.5px !important;
+  }
+  .expenseSectionHead { flex-wrap: wrap !important; row-gap: 4px !important; }
+  .expenseSectionHead > small { flex: 1 1 100% !important; }
+  .expenseSectionHead > div { flex: 1 1 auto !important; min-width: 0 !important; }
+  .expenseSectionHead h2 { font-size: 22px !important; line-height: 1.25 !important; }
 }

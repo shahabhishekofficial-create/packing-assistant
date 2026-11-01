@@ -2324,3 +2324,16 @@ Verification from source: all driver build markers and cache/resource query stri
 - Forms: dialog fields stack with full-width controls at 16px (which stops iOS zooming on focus), a styled select with a chevron, and a sticky action bar so save and cancel stay reachable in a long form.
 - Buttons inherit the page font (several were rendering in the browser default), and the stock scope label is a small uppercase caption rather than unstyled 16px body text.
 - Verified by rendering both pages at 360px, 390px and 1280px in a headless browser with mock rows: no horizontal page overflow, no clipped controls, and the desktop layout is unchanged apart from the caption above.
+
+## Phone layout across every module — 2026-11-01
+
+- The operations stylesheet moved from `admin/ops-mobile.css` to a single shared `mobile.css` at the repository root, and every module page links it last in the head: packing, restaurant inventory count, vegetable inventory count, indent summary, driver, operations dashboard, expenses, payments, and the two admin inventory workspaces.
+- Packing assistant: the brand, the packaging-summary link, the voice-language selector and the status chips stack instead of running off the right edge; the language selector is now reachable on phones and small tablets, where it had been hidden.
+- Tablet widths (701–900px) previously squeezed the brand into three lines and clipped the build badge. The header now wraps to a second row for the action chips instead.
+- Operations dashboard: the menu, live badge, new-order button and overflow menu stay on one row and all stay reachable; the previous sheet hid the whole right-hand group on small screens.
+- Tables keep every column and scroll sideways inside their card instead of being clipped, and card frames apply only to the pages that use cards.
+- Vegetable counting: the title takes its own row and the language buttons and menu button are full tap targets instead of 24px chips.
+- Indent summary: the three actions are full-width rows instead of two narrow buttons wrapping to three lines.
+- Expenses: the top bar keeps the title on one line and the page-level section headings no longer squeeze against their side labels.
+- Verified by rendering every module at 360px, 390px, 768px, 1024px and 1280px in a headless browser with mock data: no horizontal page overflow at any width and the desktop layout is unchanged. The expenses and payments screens were reviewed with the sign-in gate lifted locally, so their signed-in state still needs a pass on a real device.
+- Build stamp moved to `20261031-pwa5` and the three offline shells are regenerated, so installed copies pick up the new stylesheet.
