@@ -2311,3 +2311,16 @@ Verification from source: all driver build markers and cache/resource query stri
 - Precache lists are generated from the URLs the pages actually request, so the previous stale `?v=` entries (which never matched and never warmed the cache) are gone.
 - `update.js` build stamps on all pages and `version.json` now share one build id, so the update banner only appears when a deploy really changes content instead of after every load.
 - Verified statically: every precache entry resolves, every page carries the manifest/Apple/theme metadata, all manifests parse with unique ids and same-origin start URLs inside their scope, and service-worker install, activate and offline-navigation behaviour was exercised against a local server in a mocked worker environment. On-device install on Android Chrome and iOS Safari is still to be confirmed by the team.
+
+## Operations workspaces on phones — 2026-11-01
+
+- New `admin/ops-mobile.css`, linked last in the head of the restaurant and vegetable inventory pages, settles the responsive rules that the page-level style blocks disagreed about.
+- Header: the page title, live badge, dashboard link and overflow link no longer overrun the bar. The bar is one row on a phone (menu, title, live badge); the two links it drops duplicate entries already in the drawer.
+- Page heading: the title and its four action buttons now stack. The buttons sit in a two-up grid with the primary action full width, instead of being squeezed into a narrow right-hand column.
+- Stock summary: the four figures use a two-by-two grid instead of four crushed columns that clipped their own labels.
+- Stock table: on a phone it shows the item, the quantity and the change action; the category moves under the item name and the reference columns (unit, last count, counted by, updated) stay in the markup and still appear on tablet and desktop. No sideways scrolling needed for the row action any more.
+- Other tables (audit log, import preview, vegetable count entries) keep every column and scroll sideways inside their card, with a visible scrollbar and a pinned first column.
+- Item master: each item is a compact card with the status badge and the two actions on one line, instead of a full-width edit button and a full-width deactivate button per item.
+- Forms: dialog fields stack with full-width controls at 16px (which stops iOS zooming on focus), a styled select with a chevron, and a sticky action bar so save and cancel stay reachable in a long form.
+- Buttons inherit the page font (several were rendering in the browser default), and the stock scope label is a small uppercase caption rather than unstyled 16px body text.
+- Verified by rendering both pages at 360px, 390px and 1280px in a headless browser with mock rows: no horizontal page overflow, no clipped controls, and the desktop layout is unchanged apart from the caption above.
