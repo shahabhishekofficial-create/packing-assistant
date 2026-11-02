@@ -49,15 +49,19 @@ html {
 
 /* one focus ring everywhere: the page blocks each shipped a different colour and
    several controls shipped none at all */
-html body :is(a, button, [role="button"], input, select, textarea, summary, [tabindex]):focus-visible {
+html body :is(a, button, [role="button"], summary, [tabindex]):focus-visible {
   outline: 2px solid #0f172a;
   outline-offset: 2px;
   border-radius: inherit;
   box-shadow: 0 0 0 5px rgba(15, 23, 42, .12);
 }
 
+/* text fields keep one ring: the dark outline plus halo above drew a double
+   border around the blue field border, so they get a matching blue ring */
 html body :is(input, select, textarea):focus-visible {
-  outline-offset: 1px;
+  outline: 2px solid #3155e7;
+  outline-offset: -1px;
+  box-shadow: none;
 }
 
 ::selection {
@@ -484,4 +488,27 @@ html body .baSideItem {
   line-height: 1.2;
   white-space: nowrap;
   text-decoration: none;
+}
+
+/* --------------------------------------------------------------------------
+   10. Accidental refresh while scrolling
+   A downward drag at the top of the page used to trigger the browser's
+   pull-to-refresh on Android, reloading a half-finished count. Chaining the
+   overscroll to the page instead of the browser keeps the gesture harmless.
+   -------------------------------------------------------------------------- */
+
+html {
+  overscroll-behavior-y: contain;
+}
+
+body {
+  overscroll-behavior-y: contain;
+}
+
+/* inner scroll areas must never hand the gesture back to the browser either */
+.vegRecentList,
+.vegItemList,
+.tableWrap,
+[class*="TableWrap"] {
+  overscroll-behavior-y: contain;
 }
