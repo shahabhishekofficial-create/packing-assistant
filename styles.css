@@ -1639,3 +1639,10 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
     min-height:40px!important;min-width:0!important;
   }
 }
+
+/* a counted item keeps its tick visible: the row is tinted until the count
+   changes, and the ticked row still reads as selected when it is open */
+.itemPick.counted{border-color:#b7ebce!important;background:#f6fdf9!important}
+.itemPick.counted b{color:#0b6b3a}
+.itemPick.counted small{color:#12693f}
+.itemPick.counted.selected{border-color:#9aaaf4!important;background:#f3f5ff!important}
