@@ -2391,3 +2391,15 @@ Each of the ten modules was rendered at 320, 360, 390, 414, 768, 1024, 1280 and 
 - Removed two leftover development labels: the list build label in the expenses screen and the build line in the payments footer.
 - The remaining multi-line text on these screens is intentional: cards whose title and caption are separate blocks, filter labels above their select, and KPI cards with an icon, label and value. No button, heading, table cell or badge breaks its word or spills outside its card.
 - Build stamp moved to `20261102-layout1`.
+
+## Touch scrolling — 2026-11-02
+
+Phones and tablets needed two fingers to scroll the app, and the two-finger attempt turned into a zoom instead. Cause and repair:
+
+- The page had two scroll containers. `overflow-x: hidden` on a box forces that box's other axis to `auto`, so `html` and `body` were both scroll boxes, and `html{height:100%}` with `-webkit-overflow-scrolling: touch` on the body made the body an inner scroller of its own. iOS then attaches a one-finger drag to the wrong box — the drag does nothing — while the two-finger gestures still belong to the viewport, so the page zooms. Only the viewport scrolls now: `html` keeps the clipping and the scrolling, `body` is a plain block, and every screen measures `body` as `overflow: visible`.
+- Two gesture handlers were fighting the browser and are gone. One blocked every two-finger drag that moved in parallel (so a two-finger scroll could not work at all, and on iOS the blocked gesture becomes a zoom); the other re-implemented scrolling with `scrollBy` over admin tables, which removed momentum and dropped the gesture whenever it started diagonally. Neither is needed: the browser handles both.
+- Because the document no longer scrolls through the body, the dialog scroll lock now also reaches the viewport (`html:has(body.modal-open)`); opening a dialog still freezes the page behind it, verified by dragging under a lock.
+- One gesture policy on every screen: one finger pans, a pinch zooms, a double tap never zooms. Some admin screens had pinned the page to `pan-y`, which also switched pinch off, so the same device behaved differently from screen to screen.
+- A horizontal-swipe table still pans horizontally, and inner lists (saved counts, sidebars, dialogs) keep their own scrolling and momentum.
+- Build stamp moved to `20261102-touch1`. `app.js` and `config.js` carry the new stamp on every page, because the behaviour lives in those two files and a cached copy would keep the old gesture handling alive.
+- Verified with synthesised touch input at 390px and 1024px: a one-finger drag scrolls the page on all ten screens, no touch handler is registered on the document any more, a dialog lock blocks the drag, the layout sweep still shows no clipped or overflowing content at 320–1440px.

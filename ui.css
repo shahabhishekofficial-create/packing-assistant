@@ -673,3 +673,50 @@ body {
     padding-right: 6px !important;
   }
 }
+
+/* --------------------------------------------------------------------------
+   15. One scroll container, and it is the viewport
+   `overflow-x: hidden` on a box forces that box's other axis to `auto`, so
+   `html` AND `body` were both scroll boxes, and `html{height:100%}` with
+   `-webkit-overflow-scrolling: touch` on the body made the body an inner
+   scroller of its own. On iOS the gesture then attaches to the wrong box: a
+   one-finger drag does nothing while the two-finger (viewport) gestures keep
+   working, which reads on the phone as "scrolling needs two fingers, and it
+   zooms instead". Only the viewport scrolls now; the body is a plain block
+   and html clips the sideways overflow on its own.
+   -------------------------------------------------------------------------- */
+
+html {
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+body:not(.modal-open) {
+  height: auto !important;
+  overflow-x: visible !important;
+  overflow-y: visible !important;
+}
+
+/* the legacy momentum hint only makes sense on a real inner scroller */
+body {
+  -webkit-overflow-scrolling: auto !important;
+}
+
+/* one gesture policy for every screen: one finger pans, a pinch zooms, and a
+   double tap on a button never zooms the page. Some admin screens had pinned
+   the root to `pan-y`, which also switched pinch off, so the same device
+   behaved differently from screen to screen. */
+html,
+html body,
+html body[class],
+html body *,
+html body :is(#app, #driverDashboard, .cmdShell, .cmdMain, .screen, .cmdNav, .tableWrap,
+               .driverLiveTableWrap, .driverLiveOutletsSection, .deliveryDashSection) {
+  touch-action: manipulation !important;
+}
+
+/* the document no longer scrolls through the body, so the dialog lock has to
+   reach the viewport's own scroller */
+html:has(body.modal-open) {
+  overflow-y: hidden !important;
+}

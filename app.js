@@ -2141,34 +2141,9 @@ document.querySelectorAll("[data-cmd-matrix-filter]").forEach(btn=>btn.addEventL
 }));
 
 
-/* ===== Admin table touch routing =====
-   Vertical finger gestures over table content scroll the page. Horizontal
-   gestures remain available for wide tables. The table's own vertical
-   scrollbar can still be dragged directly. */
-(function installAdminTableTouchRouting(){
-  if(!IS_ADMIN_PAGE) return;
-  let active=null;
-  document.addEventListener("touchstart",e=>{
-    if(e.touches.length!==1) return;
-    const wrap=e.target.closest?.(".adminPage .tableWrap");
-    if(!wrap) return;
-    active={wrap,x:e.touches[0].clientX,y:e.touches[0].clientY,lastY:e.touches[0].clientY,axis:null};
-  },{passive:true});
-  document.addEventListener("touchmove",e=>{
-    if(!active||e.touches.length!==1) return;
-    const t=e.touches[0],dx=t.clientX-active.x,dy=t.clientY-active.y;
-    if(!active.axis && Math.abs(dx)+Math.abs(dy)>6){
-      active.axis=Math.abs(dy)>=Math.abs(dx) ? "y" : "x";
-    }
-    if(active.axis!=="y") return;
-    e.preventDefault();
-    const delta=active.lastY-t.clientY;
-    if(delta) window.scrollBy(0,delta);
-    active.lastY=t.clientY;
-  },{passive:false});
-  document.addEventListener("touchend",()=>{active=null;},{passive:true});
-  document.addEventListener("touchcancel",()=>{active=null;},{passive:true});
-})();
+/* Tables scroll natively: no touch handler is installed, so a finger drag over
+   a table keeps the browser's own momentum and chaining. */
+
 
 
 

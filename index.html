@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#f6f8fb">
 <title>Packing Assistant</title>
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="tokens.css?v=20261004-tokens1"><link rel="stylesheet" href="components.css?v=20261004-components1"><link rel="stylesheet" href="styles.css?v=20261102-layout1">
+<link rel="stylesheet" href="tokens.css?v=20261004-tokens1"><link rel="stylesheet" href="components.css?v=20261004-components1"><link rel="stylesheet" href="styles.css?v=20261102-touch1">
 <style>
 .activePackingContainer{min-height:calc(100vh - 78px)}
 .tactilePacker{background:#eef3f0}
@@ -29,8 +29,8 @@
 <meta name="apple-mobile-web-app-title" content="Packing">
 <meta name="format-detection" content="telephone=no">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/packing-180.png">
-<link rel="stylesheet" href="mobile.css?v=20261102-layout1">
-<link rel="stylesheet" href="ui.css?v=20261102-layout1">
+<link rel="stylesheet" href="mobile.css?v=20261102-touch1">
+<link rel="stylesheet" href="ui.css?v=20261102-touch1">
 </head>
 <body class="packerPage tactilePacker">
 <main id="app">
@@ -127,9 +127,9 @@
 </main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-<script src="config.js?v=20261006-deliveryfix2"></script>
-<script src="app.js?v=20261006-deliveryfix2"></script>
-<script>window.PA_VERSION_URL="version.json";</script><script src="update.js?v=20261102-layout1"></script><script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20261102-layout1",{updateViaCache:"none"}).then(r=>r.update()).catch(console.warn));}</script>
-<script>fetch("version.json?_"+Date.now(),{cache:"no-store"}).then(r=>r.json()).then(v=>{const e=document.getElementById("buildVersion");if(e)e.textContent="Build "+(v.build_id||"unknown")}).catch(()=>{});</script><script src="pwa-install.js?v=20261102-layout1" defer></script>
+<script src="config.js?v=20261102-touch1"></script>
+<script src="app.js?v=20261102-touch1"></script>
+<script>window.PA_VERSION_URL="version.json";</script><script src="update.js?v=20261102-touch1"></script><script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20261102-touch1",{updateViaCache:"none"}).then(r=>r.update()).catch(console.warn));}</script>
+<script>fetch("version.json?_"+Date.now(),{cache:"no-store"}).then(r=>r.json()).then(v=>{const e=document.getElementById("buildVersion");if(e)e.textContent="Build "+(v.build_id||"unknown")}).catch(()=>{});</script><script src="pwa-install.js?v=20261102-touch1" defer></script>
 </body>
 </html>
