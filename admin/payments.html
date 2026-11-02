@@ -10,8 +10,8 @@
 <meta name="format-detection" content="telephone=no">
 <link rel="manifest" href="manifest-payments.webmanifest">
 <link rel="apple-touch-icon" sizes="180x180" href="../icons/ledgers-180.png">
-<link rel="stylesheet" href="../mobile.css?v=20261102-count1">
-<link rel="stylesheet" href="../ui.css?v=20261102-count1">
+<link rel="stylesheet" href="../mobile.css?v=20261102-layout1">
+<link rel="stylesheet" href="../ui.css?v=20261102-layout1">
 </head><body>
 <div id="paymentBoot" role="status">Checking secure admin session…</div>
 <main id="paymentApp" class="paymentShell" hidden>
@@ -35,12 +35,12 @@
 </form></section>
 <section class="paymentPanel"><div class="paymentPanelHead"><div><small>RECENT ACTIVITY</small><h2>Last 3 payments</h2></div><button id="paymentRefresh" class="paymentSecondary" type="button">Refresh</button></div><div id="paymentRecent" class="paymentRows"><p class="paymentMuted">Loading recent payments…</p></div></section>
 <section class="paymentPanel"><div class="paymentPanelHead"><div><small>PAYMENT HISTORY</small><h2>All payments</h2></div></div><p id="paymentListStatus" class="paymentListStatus" role="status" aria-live="polite" hidden></p><p id="paymentListMessage" class="paymentStatus" role="status" aria-live="polite">Loading payment history…</p><div id="paymentList" class="paymentRows"></div></section>
-<footer class="paymentFooter">Page build payments4</footer>
+<footer class="paymentFooter">Amounts and claims are handled by the payment service.</footer>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1"></script>
 <script src="../config.js?v=20261014-expenses1"></script>
 <script src="./auth.js?v=20261014-expenses1"></script>
 <script defer src="./payments.js?v=20261021-payments5"></script>
-<script src="../pwa-install.js?v=20261102-count1" defer></script>
-<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20261102-count1",{scope:"./",updateViaCache:"none"}).catch(()=>{}));}</script>
+<script src="../pwa-install.js?v=20261102-layout1" defer></script>
+<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20261102-layout1",{scope:"./",updateViaCache:"none"}).catch(()=>{}));}</script>
 </body></html>

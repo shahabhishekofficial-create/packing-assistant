@@ -41,5 +41,13 @@
 }
 .vegItem.counted { border-color: #b7ebce; background: #f6fdf9; }
 .vegItem.counted b { color: #0b6b3a; }
-.vegRecentList { max-height: 46vh; overflow-y: auto; overscroll-behavior-y: contain; }
+.vegRecentList { overscroll-behavior-y: contain; }
 .vegSyncChip.revised { background: #eef2ff; color: #3538cd; }
+
+/* on a desktop the finish action was a single button stretched across the
+   whole column; it now sizes to its label and sits with its message */
+@media (min-width: 700px) {
+  .vegFinish { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .vegFinish .vegSecondary { width: auto; min-width: 220px; padding: 0 22px; }
+  .vegFinish .vegMsg { margin: 0; }
+}

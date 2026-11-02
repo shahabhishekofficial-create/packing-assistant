@@ -132,6 +132,12 @@ function nameOf(x) {
   return x["name_" + lang] || x.name_en || "";
 }
 
+/* the sub-line repeats the title when the page is in English, so it is only
+   printed when it actually adds the second language */
+function subtitle(name, secondary) {
+  return secondary && secondary !== name ? secondary : "";
+}
+
 function norm(s) {
   return String(s || "").toLowerCase().trim().replace(/\s+/g, " ");
 }
@@ -326,17 +332,24 @@ function renderItems() {
         const entry = entries.find((e) => String(e.item_id) === String(i.item_id));
         const done = entry && entryTotal(entry) > 0;
         return (
-          '<button class="vegItem ' +
-          (selected?.item_id === i.item_id ? "selected" : "") +
-          (done ? " counted" : "") +
-          '" data-id="' +
-          i.item_id +
-          '"><div><b>' +
-          escapeHtml(nameOf(i)) +
-          "</b><small>" +
-          escapeHtml(i.name_en) +
-          (done ? " · ✓ " + kg(entryTotal(entry)) : "") +
-          "</small></div><span>›</span></button>"
+          (() => {
+            const title = nameOf(i);
+            const sub = subtitle(title, i.name_en);
+            const tail = done ? "✓ " + kg(entryTotal(entry)) : "";
+            const line = [sub, tail].filter(Boolean).join(" · ");
+            return (
+              '<button class="vegItem ' +
+              (selected?.item_id === i.item_id ? "selected" : "") +
+              (done ? " counted" : "") +
+              '" data-id="' +
+              i.item_id +
+              '"><div><b>' +
+              escapeHtml(title) +
+              "</b>" +
+              (line ? "<small>" + escapeHtml(line) + "</small>" : "") +
+              "</div><span>›</span></button>"
+            );
+          })()
         );
       })
       .join("") || '<div class="vegMsg">No matching vegetable.</div>';
@@ -404,7 +417,9 @@ function openEntry(item) {
   showEl("vegEntry");
   hideEl("vegDeleteBtn");
   $("vegSaveBtn").textContent = t("save");
-  $("vegSelected").innerHTML = "<b>" + escapeHtml(nameOf(item)) + "</b><small>" + escapeHtml(item.name_en || "") + "</small>";
+  $("vegSelected").innerHTML =
+    "<b>" + escapeHtml(nameOf(item)) + "</b>" +
+    (subtitle(nameOf(item), item.name_en) ? "<small>" + escapeHtml(item.name_en) + "</small>" : "");
   paintGrade();
   $("vegWeight").value = "";
   $("vegReason").value = "";
@@ -442,7 +457,9 @@ function startEdit(itemId, opts = {}) {
   showEl("vegDeleteBtn");
   $("vegSaveBtn").textContent = t("update");
   $("vegSelected").innerHTML =
-    "<b>" + escapeHtml(nameOf(item)) + "</b><small>" + escapeHtml(item.name_en || "") + " · " + escapeHtml(t("edit")) + "</small>";
+    "<b>" + escapeHtml(nameOf(item)) + "</b><small>" +
+    (subtitle(nameOf(item), item.name_en) ? escapeHtml(item.name_en) + " · " : "") +
+    escapeHtml(t("edit")) + "</small>";
   paintGrade();
   $("vegWeight").value = String(entry.amounts[top] || "");
   $("vegReason").value = entry.reason || "";
