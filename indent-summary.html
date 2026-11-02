@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="color-scheme" content="light">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#f5f8fc">
 <title>Packaging Indent Summary | Packing Assistant</title>
@@ -31,8 +32,17 @@ table{width:100%;border-collapse:collapse;background:#fff}th,td{text-align:left;
 .hidden{display:none!important}
 @media(max-width:560px){main{width:min(100% - 18px,980px);margin:12px auto 30px}.stats{gap:7px}.stat{padding:10px 8px}.stat strong{font-size:20px}th,td{padding:10px;font-size:13px}.actions button{flex:1}}
 </style>
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Indent">
+<meta name="format-detection" content="telephone=no">
+<link rel="manifest" href="manifest-indent-summary.webmanifest">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/indent-180.png">
+<link rel="stylesheet" href="mobile.css?v=20261031-pwa9">
+<link rel="stylesheet" href="ui.css?v=20261031-pwa9">
 </head>
-<body>
+<body class="indentPage">
 <main>
   <div class="top">
     <div><h1>📦 Packaging Indent Summary</h1><p class="subtitle">Upload the raw indent Excel. Get a clean, share-ready item-wise quantity image.</p></div>
@@ -42,7 +52,7 @@ table{width:100%;border-collapse:collapse;background:#fff}th,td{text-align:left;
     <div class="upload">
       <strong>Choose your raw Excel or CSV file</strong>
       <div>Supported: .xlsx, .xls, .csv · Uses the first worksheet</div>
-      <input id="file" type="file" accept=".xlsx,.xls,.csv">
+      <input aria-label="Choose the raw indent file" id="file" type="file" accept=".xlsx,.xls,.csv">
     </div>
     <div class="actions">
       <button id="generate" class="primary" disabled>Generate item-wise summary</button>
@@ -224,5 +234,7 @@ table{width:100%;border-collapse:collapse;background:#fff}th,td{text-align:left;
   });
 })();
 </script>
+<script src="pwa-install.js?v=20261031-pwa9" defer></script>
+<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20261031-pwa9",{scope:"./",updateViaCache:"none"}).catch(()=>{}));}</script>
 </body>
 </html>

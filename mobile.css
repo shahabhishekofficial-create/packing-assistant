@@ -1,0 +1,444 @@
+/* Mobile layout for the Operations workspaces (restaurant inventory, vegetable inventory).
+   Linked last in <head> so it settles the responsive rules that the page-level blocks
+   disagree about: the header overflowed, the page heading stayed side-by-side with its
+   action buttons, the four stock KPIs were squeezed into one row, the stock tables were
+   clipped instead of scrollable, and the item card actions stretched to full width. */
+
+/* the stock scope label was an unstyled span, so it rendered as stray 16px body text */
+.stockScope {
+  display: inline-flex; align-items: center;
+  font-size: 10px; font-weight: 800; letter-spacing: .08em;
+  text-transform: uppercase; color: #64748b; line-height: 1.2;
+}
+
+/* ============================================================================
+   Packing assistant (warehouse staff).
+   The header put the brand and four action chips on one unwrapped row, so the
+   packaging-summary chip and the build badge ran off the right edge.
+   ========================================================================== */
+/* tablet / landscape phone: one squeezed row pushed the brand into 3 lines and clipped
+   the build badge, so let the header wrap and keep the brand on its own line when needed */
+@media (max-width: 900px) {
+  .packerPage .appHeader { flex-wrap: wrap; row-gap: 10px; }
+  .packerPage .brand { min-width: min(240px, 100%); }
+  .packerPage .brand h1 { line-height: 1.2; }
+  .packerPage .headerActions { flex: 0 1 auto; min-width: 0; flex-wrap: wrap; justify-content: flex-end; }
+  .packerPage .headerActions > a, .packerPage .headerActions > button { min-height: 40px; }
+  .packerPage .headerActions select { display: block !important; min-height: 40px; }
+}
+
+@media (max-width: 700px) {
+  .packerPage .appHeader {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .packerPage .brand { gap: 10px; align-items: center; }
+  .packerPage .brandIcon { width: 40px; height: 40px; border-radius: 12px; font-size: 20px; flex: 0 0 auto; }
+  .packerPage .brand h1 { font-size: 19px; line-height: 1.25; letter-spacing: -.3px; }
+  .packerPage .brand p { font-size: 11.5px; line-height: 1.35; margin-top: 2px; }
+  .packerPage .headerActions { width: 100%; flex-wrap: wrap; gap: 8px; align-items: stretch; }
+  .packerPage .headerActions > a {
+    flex: 1 1 100%; min-height: 42px; justify-content: center; text-align: center;
+  }
+  .packerPage .headerActions > button { flex: 1 1 45%; min-height: 42px; }
+  .packerPage .headerActions select { display: block !important; flex: 1 1 100%; width: 100%; min-height: 42px; font-size: 14px; }
+  .packerPage .headerActions .b-status,
+  .packerPage .headerActions .liveBadge { flex: 0 0 auto; align-self: center; }
+}
+
+/* ============================================================================
+   Vegetable counting (warehouse staff).
+   The three language chips and the menu button were squeezed next to the title
+   and clipped to 25px targets.
+   ========================================================================== */
+@media (max-width: 640px) {
+  .vegetableCountPage .vegTopbar {
+    height: auto;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 9px 10px;
+  }
+  .vegetableCountPage .vegTopbar > div:first-child { flex: 1 1 100%; min-width: 0; }
+  .vegetableCountPage .vegTopbar strong { font-size: 15px; }
+  .vegetableCountPage .vegTopActions { width: 100%; gap: 8px; }
+  .vegetableCountPage .vegLang { flex: 1 1 auto; min-width: 0; gap: 2px; }
+  .vegetableCountPage .vegLang button {
+    flex: 1 1 auto; min-height: 38px; padding: 7px 6px; font-size: 11px;
+  }
+  .vegetableCountPage .vegTopActions > button {
+    min-height: 38px; min-width: 42px; padding: 7px 10px;
+  }
+}
+
+/* ============================================================================
+   Shared control polish: several controls were rendering in the browser
+   default font instead of the page font.
+   ========================================================================== */
+@media (max-width: 768px) {
+  .adminPage button, .adminPage input, .adminPage select, .adminPage textarea,
+  .packerPage button, .packerPage input, .packerPage select,
+  .vegetableCountPage button, .vegetableCountPage input, .vegetableCountPage select,
+  .inventoryCountPage button, .inventoryCountPage input, .inventoryCountPage select,
+  .driverPage button, .driverPage input, .driverPage select {
+    font-family: inherit;
+  }
+}
+
+/* desktop keeps the category in its own column, so the mobile-only copy stays hidden */
+.stockCat { display: none; }
+
+@media (max-width: 768px) {
+  /* ---------- app bar: one row, no clipped controls ---------- */
+  .cmdHeader {
+    height: auto !important;
+    min-height: 54px !important;
+    padding: 8px 10px !important;
+    gap: 8px !important;
+    align-items: center !important;
+  }
+  .cmdHeader { flex-wrap: wrap !important; align-items: center !important; row-gap: 8px !important; }
+  .cmdHeaderLeft { flex: 1 1 auto !important; min-width: 0 !important; gap: 8px !important; }
+  .cmdHeaderRight {
+    flex: 1 1 auto !important; min-width: 0 !important; gap: 6px !important;
+    flex-wrap: wrap !important; justify-content: flex-end !important;
+  }
+  .cmdHeader .baMobileMenu {
+    width: 38px !important; height: 38px !important; padding: 0 !important;
+    flex: 0 0 auto !important; display: grid !important; place-items: center;
+    font-size: 18px !important;
+  }
+  .cmdCycle {
+    flex: 1 1 auto !important; min-width: 0 !important;
+    padding: 7px 9px !important; font-size: 11px !important;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .cmdHeader .b-status { flex: 0 0 auto !important; padding: 6px 8px !important; font-size: 9px !important; }
+  /* no font-size here: the dashboard shortens "+ New Order" to "+ Order" with a
+     font-size:0 + ::after trick, and forcing a size printed the label twice */
+  .cmdHeaderRight .cmdHeaderBtn {
+    flex: 0 0 auto !important; min-height: 34px !important;
+    padding: 7px 9px !important; white-space: nowrap;
+  }
+  .cmdHeader button { font-family: inherit !important; }
+
+  /* ---------- page heading: stacked, not squeezed into a narrow column ---------- */
+  .inventoryAdminPage, .vegAdminPage { padding: 14px 12px 28px !important; }
+  .inventoryAdminHead, .vegAdminHead {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+    padding: 0 0 14px !important;
+    margin: 0 0 10px !important;
+  }
+  .inventoryAdminHead h2, .vegAdminHead h2 { font-size: 20px !important; line-height: 1.25 !important; margin: 2px 0 4px !important; }
+  .inventoryAdminHead p, .vegAdminHead p { font-size: 12px !important; line-height: 1.5 !important; }
+  .inventoryAdminHead .eyebrow, .vegAdminHead .eyebrow { font-size: 9px !important; line-height: 1.5 !important; letter-spacing: .08em !important; }
+  .inventoryAdminActions, .vegAdminActions {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+    width: 100% !important;
+    margin: 0 !important;
+    justify-content: stretch !important;
+    align-items: stretch !important;
+  }
+  .inventoryAdminActions > *, .vegAdminActions > * { width: 100% !important; min-width: 0 !important; }
+  .inventoryAdminActions button, .inventoryAdminActions a,
+  .vegAdminActions button, .vegAdminActions a {
+    width: 100% !important;
+    min-height: 42px !important;
+    padding: 8px 10px !important;
+    font-family: inherit !important;
+    font-size: 11.5px !important;
+    font-weight: 800 !important;
+    line-height: 1.2 !important;
+    white-space: normal !important;
+    text-align: center;
+  }
+  .inventoryAdminActions .primary, .vegAdminActions .primary { grid-column: 1 / -1 !important; }
+  /* an odd button out on the last row gets the full width instead of a hole */
+  .inventoryAdminActions > *:last-child, .vegAdminActions > *:last-child { grid-column: 1 / -1 !important; }
+  .vegMasterTools { display: flex !important; flex-wrap: wrap !important; gap: 8px !important; width: 100% !important; align-items: center !important; }
+  .vegMasterTools .masterSummary { flex: 1 1 100% !important; font-size: 11px !important; color: #64748b !important; }
+  .vegMasterTools button { flex: 1 1 100% !important; min-height: 40px !important; font-size: 11.5px !important; }
+  /* the four vegetable summary cards carried a lot of empty space each */
+  .vegKpi { padding: 12px 13px !important; }
+  .vegKpi strong, .vegKpi b { font-size: 21px !important; line-height: 1.15 !important; }
+  .vegKpi span, .vegKpi small { font-size: 11px !important; line-height: 1.35 !important; }
+  #importBtn { grid-column: 1 / -1 !important; }
+
+  /* ---------- cards ---------- */
+  .inventoryCard { margin: 0 0 10px !important; border-radius: 13px !important; }
+  .inventoryCardHead {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+    padding: 13px !important;
+  }
+  .inventoryCardHead h3, .adminScanBox h3 { font-size: 15px !important; line-height: 1.3 !important; }
+  .inventoryCard .hint, .adminScanBox .hint { font-size: 11.5px !important; line-height: 1.5 !important; }
+  .inventoryCardHead > button { width: 100% !important; min-height: 40px !important; font-size: 11.5px !important; }
+  .inventoryCard button { font-family: inherit !important; }
+  .inventorySectionBar {
+    display: flex !important; flex-wrap: wrap !important; gap: 8px !important;
+    padding: 11px 13px !important; overflow: visible !important;
+  }
+  .sectionTab { font-size: 11px !important; }
+  .masterSummary { font-size: 10.5px !important; white-space: normal !important; }
+  .inventoryAlert { font-size: 11.5px !important; }
+
+  /* ---------- stock summary row: 2 x 2 instead of four crushed columns ---------- */
+  .inventoryAdminPage .inventoryStockKpis {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+    margin: 0 0 12px !important;
+    padding: 0 12px;
+  }
+  .inventoryStockKpis > div { padding: 11px 12px !important; border-radius: 11px !important; }
+  .inventoryStockKpis b { font-size: 19px !important; line-height: 1.15 !important; }
+  .inventoryStockKpis span { font-size: 10.5px !important; line-height: 1.3 !important; margin-top: 2px !important; }
+
+  .inventoryStockActions { display: flex !important; flex-wrap: wrap !important; gap: 8px !important; width: 100% !important; align-items: stretch !important; }
+  .inventoryStockActions .stockScope {
+    flex: 1 1 100% !important;
+    font-size: 10px !important;
+    font-weight: 800 !important;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #64748b !important;
+  }
+  .inventoryStockActions button { flex: 1 1 42% !important; min-height: 40px !important; font-size: 11.5px !important; }
+  .inventoryStockActions .primary { flex: 1 1 100% !important; }
+
+  /* ---------- tables: scroll sideways inside the card, first column pinned ---------- */
+  .tableWrap {
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    max-width: 100%;
+  }
+  .inventoryCard .tableWrap {
+    margin: 0 12px 12px !important;
+    padding: 0 !important;
+    border: 1px solid #eef2f0;
+    border-radius: 10px;
+  }
+  .tableWrap::-webkit-scrollbar { height: 6px; }
+  .tableWrap::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
+  .tableWrap::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 999px; }
+  .tableWrap table { min-width: 660px; }
+  .tableWrap th, .tableWrap td { white-space: nowrap; font-size: 10.5px !important; }
+  .invStockDashboard .tableWrap th { font-size: 9px !important; letter-spacing: 0 !important; }
+  .tableWrap thead th { position: sticky; top: 0; z-index: 1; }
+  .inventoryStockTable th:first-child, .inventoryStockTable td:first-child {
+    position: sticky; left: 0; z-index: 2;
+    background: #fff;
+    box-shadow: 1px 0 0 #eef2f0;
+  }
+  .inventoryStockTable thead th:first-child { background: #f8faf9; }
+
+  /* The stock table keeps the three things a phone user acts on - the item, the
+     quantity and the change action - and drops the reference columns, so it fits
+     without sideways scrolling at all. They are still on screen on tablet/desktop. */
+  .invStockDashboard .tableWrap { overflow-x: hidden !important; }
+  .invStockDashboard .tableWrap table { min-width: 0 !important; width: 100% !important; }
+  .invStockDashboard .tableWrap th,
+  .invStockDashboard .tableWrap td { white-space: normal !important; }
+  .invStockDashboard .inventoryStockTable th:nth-child(2),
+  .invStockDashboard .inventoryStockTable td:nth-child(2),
+  .invStockDashboard .inventoryStockTable th:nth-child(4),
+  .invStockDashboard .inventoryStockTable td:nth-child(4),
+  .invStockDashboard .inventoryStockTable th:nth-child(5),
+  .invStockDashboard .inventoryStockTable td:nth-child(5),
+  .invStockDashboard .inventoryStockTable th:nth-child(6),
+  .invStockDashboard .inventoryStockTable td:nth-child(6),
+  .invStockDashboard .inventoryStockTable th:nth-child(7),
+  .invStockDashboard .inventoryStockTable td:nth-child(7) { display: none !important; }
+  .invStockDashboard .inventoryStockTable { table-layout: fixed !important; }
+  .invStockDashboard .inventoryStockTable th:first-child { width: auto !important; }
+  .invStockDashboard .inventoryStockTable th:nth-child(3) { width: 26% !important; }
+  .invStockDashboard .inventoryStockTable th:last-child { width: 94px !important; }
+  .invStockDashboard .inventoryStockTable td:last-child { white-space: nowrap !important; text-align: right; }
+  .stockCat { display: block; margin-top: 2px; font-size: 10px; font-weight: 600; color: #64748b; }
+  .invStockDashboard .inventoryStockTable td:last-child { padding: 8px 6px !important; }
+  .invStockDashboard .inventoryStockTable td:last-child .adjustStockBtn {
+    width: 100% !important; min-height: 34px !important; padding: 7px 4px !important;
+    font-family: inherit !important; font-size: 10px !important; font-weight: 800 !important;
+    letter-spacing: 0 !important; white-space: nowrap;
+  }
+  .invStockDashboard .inventoryStockTable td:first-child,
+  .invStockDashboard .inventoryStockTable th:first-child { box-shadow: none; }
+  .invStockDashboard .inventoryStockTable td { vertical-align: middle; }
+
+  /* ---------- item cards: compact, actions on one line ---------- */
+  .adminItemList, .vegAdminList {
+    display: flex !important; flex-direction: column; gap: 8px;
+    padding: 10px 12px !important;
+  }
+  .adminItemRow {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 9px !important;
+    padding: 11px 12px !important;
+    border-radius: 11px !important;
+  }
+  .adminItemMain b { font-size: 13.5px !important; line-height: 1.35 !important; }
+  .adminItemMain span, .adminItemMain small { font-size: 11px !important; line-height: 1.4 !important; margin-top: 2px !important; }
+  .adminItemActions {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    gap: 6px !important;
+    width: 100% !important;
+  }
+  .adminItemActions .statusPill {
+    flex: 0 0 auto !important;
+    margin-right: auto !important;
+    padding: 4px 8px !important;
+    font-size: 10px !important;
+  }
+  .adminItemActions button {
+    flex: 0 0 auto !important;
+    width: auto !important;
+    min-height: 34px !important;
+    padding: 7px 11px !important;
+    font-family: inherit !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    border-radius: 8px !important;
+  }
+  .emptyState { font-size: 12px !important; padding: 14px 0 !important; text-align: center; }
+
+  /* ---------- search + scan controls ---------- */
+  .itemSearchRow { display: flex !important; flex-direction: column !important; gap: 8px !important; padding: 12px !important; }
+  .itemSearchRow input, .itemSearchRow select {
+    width: 100% !important; min-height: 42px !important; padding: 0 11px !important; font-size: 13px !important;
+  }
+  .adminScanBox { margin: 12px !important; padding: 13px !important; }
+  .scanRow { display: flex !important; flex-direction: column !important; gap: 8px !important; margin-top: 10px !important; }
+  .scanRow input { width: 100% !important; min-height: 44px !important; padding: 0 11px !important; font-size: 13px !important; }
+  .scanRow button { width: 100% !important; min-height: 42px !important; font-size: 11.5px !important; }
+  .fetchLookupBtn { width: 100% !important; min-height: 42px !important; margin-top: 8px !important; font-size: 12px !important; }
+  .importActions { display: flex !important; flex-wrap: wrap !important; gap: 8px !important; padding: 0 12px 12px !important; }
+  .importActions button { flex: 1 1 42% !important; min-height: 40px !important; }
+  .importSummary { margin: 12px !important; font-size: 11.5px !important; }
+
+  /* ---------- dialogs ---------- */
+  .inventoryDialog { width: calc(100vw - 16px) !important; max-width: none !important; border-radius: 16px !important; }
+  .inventoryDialog form { padding: 16px !important; }
+  /* the label was rendering as a block, which put the caption, the hint and the
+     control on one crowded line; stack them and let every control fill the row */
+  .inventoryDialog label, .inventoryDialog form label {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 6px !important;
+    width: 100% !important;
+    margin: 12px 0 0 !important;
+    font-size: 12px !important;
+    font-weight: 800 !important;
+    color: #475569 !important;
+  }
+  .inventoryDialog label.checkLine { flex-direction: row !important; align-items: center !important; gap: 8px !important; }
+  .inventoryDialog input:not([type="checkbox"]), .inventoryDialog select, .inventoryDialog textarea {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    min-height: 46px !important;
+    padding: 11px 12px !important;
+    font-family: inherit !important;
+    font-size: 16px !important;   /* 16px keeps iOS from zooming when a field is focused */
+    border: 1px solid #dbe3eb !important;
+    border-radius: 10px !important;
+    background-color: #fff !important;
+    color: #0f172a !important;
+  }
+  .inventoryDialog select {
+    appearance: none; -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 12px center !important;
+    background-size: 16px !important;
+    padding-right: 36px !important;
+  }
+  .inventoryDialog textarea { min-height: 96px !important; resize: vertical; }
+  .inventoryDialog .fieldHint { font-size: 10.5px !important; font-weight: 600 !important; color: #94a3b8 !important; }
+  .inventoryDialog .formGrid { grid-template-columns: 1fr !important; gap: 0 !important; }
+  .inventoryDialog .fetchInline { align-items: stretch !important; gap: 8px !important; }
+  .inventoryDialog .fetchInline button { width: 100% !important; min-height: 42px !important; font-size: 12px !important; }
+  .inventoryDialog .categoryControl { flex-wrap: wrap !important; }
+  .inventoryDialog .categoryControl select { flex: 1 1 100% !important; }
+  .inventoryDialog .categoryControl button { flex: 1 1 100% !important; min-height: 42px !important; font-size: 12px !important; }
+  .inventoryDialog .dialogHead { gap: 10px !important; align-items: flex-start !important; }
+  .inventoryDialog .dialogHead h3 { font-size: 17px !important; line-height: 1.25 !important; }
+  .inventoryDialog .dialogHead .hint { font-size: 11.5px !important; }
+  .inventoryDialog .storageBox, .inventoryDialog .optionalBox, .inventoryDialog .itemCoreIntro, .inventoryDialog .conversionNote, .inventoryDialog .sourceNote { padding: 12px !important; }
+  .inventoryDialog menu { position: sticky; bottom: -16px; background: #fff; padding: 12px 0 0 !important; margin-top: 16px !important; box-shadow: 0 -8px 16px rgba(255,255,255,.9); }
+  .inventoryDialog menu {
+    display: flex !important; flex-wrap: wrap !important; gap: 8px !important;
+    padding: 0 !important; margin: 14px 0 0 !important;
+  }
+  .inventoryDialog menu button {
+    flex: 1 1 42% !important; min-height: 42px !important;
+    font-family: inherit !important; font-size: 12px !important;
+  }
+  .itemCoreIntro, .conversionNote, .sourceNote { font-size: 11.5px !important; line-height: 1.5 !important; }
+}
+
+/* very small phones: keep the two-up summary but tighten the page gutters */
+@media (max-width: 380px) {
+  .inventoryAdminPage, .vegAdminPage { padding: 12px 10px 26px !important; }
+  .inventoryStockKpis b { font-size: 17px !important; }
+  .adminItemActions button { padding: 7px 9px !important; }
+}
+
+/* indent summary: stacked full-width actions instead of two 3-line buttons */
+@media (max-width: 560px) {
+  .indentPage .actions { flex-direction: column !important; gap: 8px !important; }
+  .indentPage .actions button {
+    flex: 1 1 auto !important; width: 100% !important;
+    min-height: 46px !important; font-size: 15px !important; white-space: normal !important;
+  }
+  .indentPage .status { font-size: 12.5px !important; line-height: 1.5 !important; }
+}
+
+/* expenses: topbar and section heads stop squeezing the titles at phone widths */
+@media (max-width: 560px) {
+  .expenseTopbar { flex-wrap: wrap !important; row-gap: 8px !important; gap: 8px !important; padding: 9px 12px !important; }
+  .expenseTopbar h1 { font-size: 17px !important; }
+  .expenseTopbar > div { flex: 1 1 auto !important; min-width: 0 !important; }
+  .expenseTopbar > div small { display: block !important; white-space: nowrap !important; }
+  .expenseTopbar .expenseSessionLabel { display: none !important; }
+  .expenseTopbar .expenseSecondary {
+    flex: 0 0 auto !important; white-space: nowrap !important;
+    min-height: 40px !important; padding: 8px 10px !important; font-size: 11.5px !important;
+  }
+  .expenseSectionHead { flex-wrap: wrap !important; row-gap: 4px !important; }
+  .expenseSectionHead > small { flex: 1 1 100% !important; }
+  .expenseSectionHead > div { flex: 1 1 auto !important; min-width: 0 !important; }
+  .expenseSectionHead h2 { font-size: 22px !important; line-height: 1.25 !important; }
+}
+
+/* vegetable admin: four KPI cards collapsed to one column on phones, and the
+   staff-count link rendered as a bare label next to a full-width button */
+@media (max-width: 560px) {
+  .vegAdminPage .vegKpiGrid { grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
+  .vegAdminPage .vegKpi { min-height: 84px !important; padding: 12px !important; }
+  .vegAdminPage .vegKpi small { font-size: 11px !important; line-height: 1.35 !important; }
+  .vegAdminPage .vegMasterTools { flex-direction: column !important; align-items: stretch !important; }
+  .vegAdminPage .vegMasterTools > * { width: 100% !important; }
+  .vegAdminPage .vegLinkBtn {
+    min-height: 44px !important;
+    padding: 11px 16px !important;
+    border-radius: 11px !important;
+    font-weight: 800 !important;
+    font-size: 14px !important;
+    justify-content: center !important;
+  }
+}

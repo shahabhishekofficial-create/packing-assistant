@@ -2,12 +2,22 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="color-scheme" content="light">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#176b45">
 <title>Expenses | Bigly Agro Admin</title>
 <link rel="stylesheet" href="./expenses.css?v=20261014-expenses1">
 <link rel="stylesheet" href="./expenses-list.css?v=20261015-slice2a3">
 <link rel="stylesheet" href="./expenses-export.css?v=20261019-export1">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Expenses">
+<meta name="format-detection" content="telephone=no">
+<link rel="manifest" href="manifest-expenses.webmanifest">
+<link rel="apple-touch-icon" sizes="180x180" href="../icons/expenses-180.png">
+<link rel="stylesheet" href="../mobile.css?v=20261031-pwa9">
+<link rel="stylesheet" href="../ui.css?v=20261031-pwa9">
 </head>
 <body class="adminPage">
 <div id="expenseBoot" role="status">Checking secure admin session…</div>
@@ -82,5 +92,7 @@
 <script defer src="./expenses.js?v=20261014-expenses1"></script>
 <script defer src="./expenses-list.js?v=20261023-expense-list-delete1"></script>
 <script defer src="./expenses-export.js?v=20261019-export3"></script>
+<script src="../pwa-install.js?v=20261031-pwa9" defer></script>
+<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20261031-pwa9",{scope:"./",updateViaCache:"none"}).catch(()=>{}));}</script>
 </body>
 </html>

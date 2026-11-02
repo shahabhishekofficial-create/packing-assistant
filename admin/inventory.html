@@ -2,11 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f5f8f7">
 <title>Bigly Agro — Inventory</title>
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="../icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="../icons/admin-180.png">
 <link rel="stylesheet" href="../tokens.css?v=20261004-tokens1"><link rel="stylesheet" href="../components.css?v=20261004-components1"><link rel="stylesheet" href="../styles.css?v=20261007-scroll1">
 <link rel="stylesheet" href="./inventory.css?v=20261001-audit2">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -20,7 +21,7 @@
 <script defer src="../config.js?v=20261001-audit2"></script>
 <script defer src="./auth.js?v=20261001-audit2"></script>
 <script>window.PA_VERSION_URL="../version.json";</script>
-<script defer src="../update.js?v=20261006-deliveryfix2"></script>
+<script defer src="../update.js?v=20261031-pwa9"></script>
 <style>
 body.adminPage{background:#f5f8f7;font-family:"Plus Jakarta Sans",Inter,system-ui,sans-serif} body.adminPage .cmdSidebar{display:flex}
 .cmdShell{min-height:100dvh;height:auto;display:flex;overflow:visible;background:#f5f8f7}
@@ -83,31 +84,14 @@ body.adminPage{min-height:100%;height:auto;overflow-x:hidden;overflow-y:auto;-we
 body.modal-open{overflow:hidden!important;height:100dvh!important;overscroll-behavior:none}
 .inventoryDialog{max-height:90dvh!important;overflow:hidden!important}
 .inventoryDialog form{max-height:90dvh!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;touch-action:pan-y!important}
-</style><style id="mobileInventoryGridArchitecture">
-@media(max-width:768px){
-  .inventoryStockKpis,.vegKpiGrid,.formGrid,.vegReportFilters,.packingFilterGrid{
-    display:flex!important;flex-direction:column!important;width:100%!important;gap:12px!important;
-  }
-  .inventoryStockKpis>*,.vegKpiGrid>*,.formGrid>*,.vegReportFilters>*{
-    width:100%!important;min-width:0!important;grid-column:auto!important;
-  }
-  .inventoryAdminHead,.vegAdminHead{
-    min-width:0!important;
-  }
-  .inventoryAdminActions,.vegAdminActions,.vegMasterTools{
-    width:100%!important;min-width:0!important;
-  }
-  .inventoryAdminActions button,.vegAdminActions button,.vegMasterTools button,
-  .inventoryAdminActions a,.vegAdminActions a{
-    flex:1 1 auto!important;min-width:0!important;
-  }
-  .inventoryCard,.inventoryCardHead,.adminScanBox,.vegetableIntro,
-  .itemSearchRow,.adminItemList,.vegAdminList{
-    overflow:visible!important;
-    min-width:0!important;
-  }
-}
-</style></head>
+</style><style id="mobileInventoryGridArchitecture">/* superseded by ../mobile.css, which is linked last in this head */</style><meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Operations">
+<meta name="format-detection" content="telephone=no">
+<link rel="stylesheet" href="../mobile.css?v=20261031-pwa9">
+<link rel="stylesheet" href="../ui.css?v=20261031-pwa9">
+</head>
 <body class="adminPage">
 <div id="adminBootOverlay"><div class="bootCard">Loading Inventory<span class="bootSub">Starting secure session…</span></div></div>
 <main id="app">
@@ -137,11 +121,11 @@ body.modal-open{overflow:hidden!important;height:100dvh!important;overscroll-beh
   <div class="cmdHeaderRight"><a href="./index.html?section=home" class="cmdHeaderBtn">⌂ Dashboard</a><div class="cmdProfile"><b>Administrator</b><span>Secure session</span></div><a href="./index.html?section=home" class="cmdHeaderBtn">⋮</a></div>
 </header>
 <section class="inventoryAdminPage">
-<div class="inventoryAdminHead"><div><span class="eyebrow">OPERATIONS · RESTAURANT INVENTORY</span><h2>Restaurant Inventory</h2><p>Manage restaurant grocery inventory. Warehouse staff use the separate counting workflow.</p></div><div class="inventoryAdminActions"><button id="downloadTemplateBtn" class="secondary">↓ Excel Template</button><button id="downloadCsvTemplateBtn" class="secondary">↓ CSV Template</button><button id="importBtn" class="secondary">Import CSV / XLSX</button><input id="fileInput" type="file" accept=".csv,.xlsx,.xls" hidden><button id="addItemBtn" class="primary">+ Add Item</button></div></div>
+<div class="inventoryAdminHead"><div><span class="eyebrow">OPERATIONS · RESTAURANT INVENTORY</span><h2>Restaurant Inventory</h2><p>Manage restaurant grocery inventory. Warehouse staff use the separate counting workflow.</p></div><div class="inventoryAdminActions"><button id="downloadTemplateBtn" class="secondary">↓ Excel Template</button><button id="downloadCsvTemplateBtn" class="secondary">↓ CSV Template</button><button id="importBtn" class="secondary">Import CSV / XLSX</button><input aria-label="Choose an inventory file" id="fileInput" type="file" accept=".csv,.xlsx,.xls" hidden><button id="addItemBtn" class="primary">+ Add Item</button></div></div>
 <div id="inventoryAlert" class="inventoryAlert hidden" role="status"></div>
 <section class="inventoryCard itemMasterTools"><div class="inventorySectionBar"><span class="sectionTab active">🍽️ Restaurant Inventory</span><span id="masterSummary" class="masterSummary"></span></div>
 <div id="restaurantTools">
-<div class="adminScanBox"><div><span class="eyebrow">BARCODE LOOKUP</span><h3>Scan a barcode</h3><p class="hint">Restaurant items can be identified by barcode and enriched automatically.</p></div><div class="scanRow"><input id="adminBarcode" inputmode="numeric" autocomplete="off" placeholder="Scan / type barcode"><button id="cameraBtn" class="secondary">📷 Scan</button></div><div id="cameraBox" class="cameraBox hidden"><div id="qrReader"></div><button id="stopCameraBtn" class="secondary">Stop camera</button></div><button id="fetchLookupBtn" class="fetchLookupBtn" disabled>Fetch Details</button><p id="lookupStatus" class="hint"></p></div>
+<div class="adminScanBox"><div><span class="eyebrow">BARCODE LOOKUP</span><h3>Scan a barcode</h3><p class="hint">Restaurant items can be identified by barcode and enriched automatically.</p></div><div class="scanRow"><input aria-label="Scan or type a barcode" id="adminBarcode" inputmode="numeric" autocomplete="off" placeholder="Scan / type barcode"><button id="cameraBtn" class="secondary">📷 Scan</button></div><div id="cameraBox" class="cameraBox hidden"><div id="qrReader"></div><button id="stopCameraBtn" class="secondary">Stop camera</button></div><button id="fetchLookupBtn" class="fetchLookupBtn" disabled>Fetch Details</button><p id="lookupStatus" class="hint"></p></div>
 </div></section>
 <section class="inventoryCard invStockDashboard">
 <div class="inventoryCardHead"><div><span class="eyebrow">WAREHOUSE STOCK</span><h3>Available Inventory</h3><p class="hint">Latest physical counts and admin adjustments. Admin changes require a reason and are permanently logged.</p></div><div class="inventoryStockActions"><span class="stockScope">Restaurant Inventory</span><button id="stockRefreshBtn" class="secondary">↻ Refresh</button><button id="exportStockPdfBtn" class="primary">↓ Export Stock PDF</button></div></div>
@@ -153,7 +137,7 @@ body.modal-open{overflow:hidden!important;height:100dvh!important;overscroll-beh
 <div class="tableWrap"><table class="inventoryStockTable"><thead><tr><th>Date</th><th>Item</th><th>Action</th><th>Actor</th><th>Old</th><th>New</th><th>Change</th><th>Reason</th></tr></thead><tbody id="inventoryLogBody"></tbody></table></div>
 </section>
 
-<section class="inventoryCard"><div class="inventoryCardHead"><div><span class="eyebrow">ITEM MASTER</span><h3 id="itemsTitle">Restaurant Items</h3><p class="hint">Active and inactive items are retained. Nothing is overwritten or deleted.</p></div></div><div class="itemSearchRow"><input id="itemSearch" type="search" placeholder="Search item, alias, category or barcode…"><select id="itemFilter"><option value="active">Active</option><option value="all">All</option><option value="inactive">Inactive</option></select></div><div id="itemList" class="adminItemList"></div></section>
+<section class="inventoryCard"><div class="inventoryCardHead"><div><span class="eyebrow">ITEM MASTER</span><h3 id="itemsTitle">Restaurant Items</h3><p class="hint">Active and inactive items are retained. Nothing is overwritten or deleted.</p></div></div><div class="itemSearchRow"><input aria-label="Search items" id="itemSearch" type="search" placeholder="Search item, alias, category or barcode…"><select aria-label="Filter items by status" id="itemFilter"><option value="active">Active</option><option value="all">All</option><option value="inactive">Inactive</option></select></div><div id="itemList" class="adminItemList"></div></section>
 <section id="importPreviewCard" class="inventoryCard hidden"><div class="inventoryCardHead"><div><span class="eyebrow">IMPORT PREVIEW</span><h3>Review before import</h3></div><button id="cancelImportBtn" class="secondary">Cancel</button></div><div id="importSummary" class="importSummary"></div><div class="tableWrap"><table class="importTable"><thead><tr><th>Row</th><th>Name</th><th>Packaging</th><th>Pack Size</th><th>Status</th><th>Error</th></tr></thead><tbody id="importRows"></tbody></table></div><div class="importActions"><button id="downloadErrorsBtn" class="secondary hidden">↓ Download Error CSV</button><button id="confirmImportBtn" class="primary" disabled>Import Valid Rows</button></div></section>
 </section>
 
@@ -174,12 +158,13 @@ body.modal-open{overflow:hidden!important;height:100dvh!important;overscroll-beh
 
 
 </main>
-<script defer src="./inventory.js?v=20261005-restinv4"></script>
-<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20261005-restinv4",{updateViaCache:"none"}).catch(console.warn));}</script>
+<script defer src="./inventory.js?v=20261031-pwa9"></script>
+<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20261031-pwa9",{updateViaCache:"none"}).catch(console.warn));}</script>
 <script>
 (function(){
  const sync=()=>document.body.classList.toggle("modal-open",!!document.querySelector("dialog[open]"));
  const init=()=>{document.querySelectorAll("dialog").forEach(d=>{d.addEventListener("close",sync);d.addEventListener("cancel",()=>setTimeout(sync,0));});new MutationObserver(sync).observe(document.body,{subtree:true,attributes:true,attributeFilter:["open"]});sync();};
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
 })();
-</script></body></html>
+</script><script src="../pwa-install.js?v=20261031-pwa9" defer></script>
+</body></html>

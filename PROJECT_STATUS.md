@@ -2279,3 +2279,84 @@ Verification from source: all driver build markers and cache/resource query stri
 - Proposed API actions (not implemented): `claim_preview(from,to)` counts/sums active, unclaimed expenses in the inclusive range without creating a claim; `list_claims` returns the summary; `claim_detail(id)` returns only that employee's claim, its active expenses, and linked payments. Creation must still revalidate under the existing locked RPC; preview is not a reservation.
 - API diff is held until the migration SQL is approved. No screens, API changes, deployments, or live data writes. No type check ran. Phone tests are not applicable to this no-screen slice.
 - Expense-list delete commit chain: JS `91c95b1ec74d3a5487dcd5312fc7f8993b48e2a3`; HTML cache ref `5576d73e933a757e838b16d3f44357e5b3a03774`; status entry `7bb981073d1b38ef0188d78a95cb3c77b2a0ba00`. Phone test pending.
+
+
+## Auth hardening (live database) — 2026-10-31
+
+- Applied **one** live database migration, `admin_auth_hardening`. It adds a small server-side attempt/cooldown record for the shared admin password plus three internal guard routines, and routes the existing admin sign-in, session-creation and password-change entry points through that guard.
+- Behaviour: after 5 consecutive failures the shared password entry points refuse for 15 minutes; a success clears the counter and the cooldown. Signatures, return types, success paths, and existing error text are unchanged. Client roles keep exactly the access they had before.
+- The new record table has row-level security enabled and **no** grants to client roles. The three guard routines are revoked from all client roles; they are not part of the public API.
+- Verification: a rolled-back synthetic transaction test passed all 10 checks (threshold, lock, correct-credential refusal while locked, cooldown expiry, reset on success, session creation refused while locked, password change refused while locked, wrong-current-password message unchanged, both success paths unchanged). A client-role call inside a rolled-back transaction confirmed the browser path reaches the guard; the transaction was rolled back and the state was re-checked as clean.
+- Baseline data unchanged before and after: 80 orders, 1,297 outlets, 13,540 order items, 319 delivery records, 274 ledger entries, total due ₹47,100. Admin password hash fingerprint unchanged.
+- No repository application code, Edge Function, service worker, manifest, `version.json` or stylesheet was modified. No data was backfilled and no historical record was edited.
+- Known trade-off (accepted): the cooldown is global to the shared password, so sustained failed attempts also delay a legitimate sign-in for the remainder of the cooldown window.
+- Rollback material for this change is held outside the repository (previous definitions plus a drop list) and is not committed here.
+
+## Admin complete-delivery review — 2026-10-31
+
+- Reviewed the admin "complete delivery" path against the **live** definition rather than the repository file.
+- Result: the live definition already restores the driver credit exactly once (idempotent, single credit per delivery) and writes the operation audit row with the delivery reference. No change was required and none was applied.
+- Live data check: 0 delivered outlets without a driver credit; 0 operation-audit rows for this path with a missing delivery reference; the path has not been invoked since the current definition was installed. No backfill was performed and none is pending.
+- Discrepancy noted for later housekeeping: the corresponding repository migration file does not match the live definition. Migration-file reconciliation is pending and was deliberately not started in this change.
+
+## Installable app packaging — 2026-10-31
+
+- Each module now installs from the browser as its own app: packing, restaurant inventory, vegetable inventory, indent summary, operations admin, expenses, ledgers and driver. Eight distinct app identities on one origin.
+- One web app manifest per module with its own `id`, `start_url`, `scope`, display mode, theme/background colour and icon set. The previously orphaned `admin-manifest.webmanifest` now aliases the admin app instead of pointing at a redirect stub.
+- Icon set in `icons/`: 192px and 512px transparent icons, 192px and 512px full-bleed maskable icons, and a 180px opaque touch icon for each module.
+- Shared `pwa-install.js` renders the install affordance: the native browser prompt on Android and short add-to-home-screen instructions on iOS Safari. It hides itself when the app is already running standalone and remembers a dismissal.
+- The install chip never appears on a sign-in or start-up screen. It waits for the admin sign-in card and boot overlay, the admin re-authentication prompt and the driver login section to clear, and disappears again if one of them opens while it is on screen. It also clears the fixed bottom action bars and toast area, hides itself once after 20 seconds and stays quiet for the rest of the session.
+- Every module page now carries `apple-mobile-web-app-*`, `apple-touch-icon` and `theme-color` metadata. Previously only the driver page did, and its touch icon pointed at an SVG, which iOS ignores.
+- Offline shell per app: the root, admin and driver service workers each precache their own module pages, assets and manifests under their own cache namespace. Admin previously precached nothing and deleted every cache on activation; it now keeps its own cache and removes only stale ones it owns.
+- Precache lists are generated from the URLs the pages actually request, so the previous stale `?v=` entries (which never matched and never warmed the cache) are gone.
+- `update.js` build stamps on all pages and `version.json` now share one build id, so the update banner only appears when a deploy really changes content instead of after every load.
+- Verified statically: every precache entry resolves, every page carries the manifest/Apple/theme metadata, all manifests parse with unique ids and same-origin start URLs inside their scope, and service-worker install, activate and offline-navigation behaviour was exercised against a local server in a mocked worker environment. On-device install on Android Chrome and iOS Safari is still to be confirmed by the team.
+
+## Operations workspaces on phones — 2026-11-01
+
+- New `admin/ops-mobile.css`, linked last in the head of the restaurant and vegetable inventory pages, settles the responsive rules that the page-level style blocks disagreed about.
+- Header: the page title, live badge, dashboard link and overflow link no longer overrun the bar. The bar is one row on a phone (menu, title, live badge); the two links it drops duplicate entries already in the drawer.
+- Page heading: the title and its four action buttons now stack. The buttons sit in a two-up grid with the primary action full width, instead of being squeezed into a narrow right-hand column.
+- Stock summary: the four figures use a two-by-two grid instead of four crushed columns that clipped their own labels.
+- Stock table: on a phone it shows the item, the quantity and the change action; the category moves under the item name and the reference columns (unit, last count, counted by, updated) stay in the markup and still appear on tablet and desktop. No sideways scrolling needed for the row action any more.
+- Other tables (audit log, import preview, vegetable count entries) keep every column and scroll sideways inside their card, with a visible scrollbar and a pinned first column.
+- Item master: each item is a compact card with the status badge and the two actions on one line, instead of a full-width edit button and a full-width deactivate button per item.
+- Forms: dialog fields stack with full-width controls at 16px (which stops iOS zooming on focus), a styled select with a chevron, and a sticky action bar so save and cancel stay reachable in a long form.
+- Buttons inherit the page font (several were rendering in the browser default), and the stock scope label is a small uppercase caption rather than unstyled 16px body text.
+- Verified by rendering both pages at 360px, 390px and 1280px in a headless browser with mock rows: no horizontal page overflow, no clipped controls, and the desktop layout is unchanged apart from the caption above.
+
+## Phone layout across every module — 2026-11-01
+
+- The operations stylesheet moved from `admin/ops-mobile.css` to a single shared `mobile.css` at the repository root, and every module page links it last in the head: packing, restaurant inventory count, vegetable inventory count, indent summary, driver, operations dashboard, expenses, payments, and the two admin inventory workspaces.
+- Packing assistant: the brand, the packaging-summary link, the voice-language selector and the status chips stack instead of running off the right edge; the language selector is now reachable on phones and small tablets, where it had been hidden.
+- Tablet widths (701–900px) previously squeezed the brand into three lines and clipped the build badge. The header now wraps to a second row for the action chips instead.
+- Operations dashboard: the menu, live badge, new-order button and overflow menu stay on one row and all stay reachable; the previous sheet hid the whole right-hand group on small screens.
+- Tables keep every column and scroll sideways inside their card instead of being clipped, and card frames apply only to the pages that use cards.
+- Vegetable counting: the title takes its own row and the language buttons and menu button are full tap targets instead of 24px chips.
+- Indent summary: the three actions are full-width rows instead of two narrow buttons wrapping to three lines.
+- Expenses: the top bar keeps the title on one line and the page-level section headings no longer squeeze against their side labels.
+- Verified by rendering every module at 360px, 390px, 768px, 1024px and 1280px in a headless browser with mock data: no horizontal page overflow at any width and the desktop layout is unchanged. The expenses and payments screens were reviewed with the sign-in gate lifted locally, so their signed-in state still needs a pass on a real device.
+- Build stamp moved to `20261031-pwa5` and the three offline shells are regenerated, so installed copies pick up the new stylesheet.
+
+## Interface polish pass — 2026-11-01
+
+- New `ui.css`, loaded after the page stylesheets and after `mobile.css` on every module, holds the cross-cutting details that used to differ page by page.
+- Focus: one consistent focus ring on every link, button, field and dialog control. Several modules shipped no visible keyboard focus at all, and the ones that did used three different colours.
+- Press feedback: buttons and links respond to a tap, icon buttons no longer show the grey flash on Android, and disabled controls show a not-allowed cursor.
+- Touch targets: header chips, language toggles, menu buttons, icon buttons and the inventory action row now have a 34px floor, and 40–44px on phones.
+- Type: nothing renders below 10px any more. The operations console carried a 7–9px density for driver tags, audit stamps, KPI captions, mobile column labels and delivery tables; all of it moved to a readable floor in one pass.
+- Numbers: money, counts and timestamps use tabular figures so columns align.
+- Scrolling: wide tables keep their own horizontal scroller with a styled, visible scrollbar, momentum scrolling and overscroll containment, so a sideways swipe inside a table cannot drag the page. The page itself cannot scroll sideways.
+- Mobile browser chrome: full-height layouts use dynamic viewport units, sticky headers keep their own scroll offset, and the page reserves the scrollbar gutter so opening a dialog does not shift the layout.
+- iOS: form controls are 16px on phones, which stops Safari zooming the whole page when a field takes focus.
+- Accessibility: pinch zoom is no longer blocked by the viewport meta tag, every previously unlabelled search, filter and file input has an accessible name, and colour-scheme plus telephone-detection metadata are set on all pages so Android does not force-dark the UI and iOS does not turn order numbers into phone links.
+- Empty states: the packing outlet list explains itself instead of showing a blank panel while an order loads.
+- Motion: transitions are short and dropped entirely for visitors who ask for reduced motion.
+- Removed one dead control: the vegetable counting header carried an empty, unstyled, unbound menu button.
+- Verified by rendering all ten modules at 320, 360, 390, 414, 768, 1024, 1280 and 1440px in a headless browser: no page-level horizontal overflow anywhere, no clipped labels, no images failing to load, no duplicate element ids, and every visible button and link has an accessible name. The offline shells were regenerated and their precache lists verified.
+
+## Vegetable inventory admin screen — 2026-11-02
+
+- The four summary cards (active items, count sessions, count entries, last count) were collapsing to a single column below 520px, which pushed the working area two screens down. They now stay two-up on phones.
+- The "Open Staff Count" link had no padding of its own, so it rendered as a bare label butting against the download button on desktop and as a stray label on phones. It is now a proper secondary button, full width on phones and inline on desktop.
+- The update prompt stacks its buttons on narrow screens instead of wrapping the sentence to three lines next to two squeezed buttons.

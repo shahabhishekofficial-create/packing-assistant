@@ -2,11 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f6f8fb">
 <title>Bigly Agro — Operations Dashboard</title>
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="../icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="../icons/admin-180.png">
 <link rel="stylesheet" href="../tokens.css?v=20261004-tokens1"><link rel="stylesheet" href="../components.css?v=20261004-components1"><link rel="stylesheet" href="../styles.css?v=20261011-outletlatlong7">
 <script>
 (function(){
@@ -1118,7 +1119,14 @@ body.adminPage{background:var(--cmd-bg);font-family:"Plus Jakarta Sans",Inter,sy
     max-width:100%!important;
   }
 }
-</style></head>
+</style><meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Operations">
+<meta name="format-detection" content="telephone=no">
+<link rel="stylesheet" href="../mobile.css?v=20261031-pwa9">
+<link rel="stylesheet" href="../ui.css?v=20261031-pwa9">
+</head>
 <body class="adminPage"><div id="adminBootOverlay"><div class="bootCard">Loading Admin Dashboard<span class="bootSub">Starting secure session…</span></div></div>
 <main id="app">
 <div class="cmdShell">
@@ -1219,8 +1227,8 @@ body.adminPage{background:var(--cmd-bg);font-family:"Plus Jakarta Sans",Inter,sy
 <section id="fleetManagement" class="screen hidden">
   <div class="sectionHead fleetPageHead"><div><span class="eyebrow">DELIVERY FLEET</span><h2>Driver Payments & Balances</h2></div><div class="sectionHeadActions"><button id="fleetBackBtn" class="secondary">← Dashboard</button></div></div>
   <div class="fleetToolbar">
-    <div class="fleetSearchWrap"><span>⌕</span><input id="fleetSearch" type="search" placeholder="Search driver name or phone…" autocomplete="off"></div>
-    <select id="fleetBalanceFilter" class="fleetFilter"><option value="all">All drivers</option><option value="due">Balance due</option><option value="high">High balance &gt; ₹10,000</option><option value="medium">₹2,000 – ₹10,000</option><option value="low">Below ₹2,000 / cleared</option></select>
+    <div class="fleetSearchWrap"><span>⌕</span><input aria-label="Search drivers by name or phone" id="fleetSearch" type="search" placeholder="Search driver name or phone…" autocomplete="off"></div>
+    <select aria-label="Filter drivers by balance" id="fleetBalanceFilter" class="fleetFilter"><option value="all">All drivers</option><option value="due">Balance due</option><option value="high">High balance &gt; ₹10,000</option><option value="medium">₹2,000 – ₹10,000</option><option value="low">Below ₹2,000 / cleared</option></select>
     <button id="fleetExportCsv" class="secondary">Export Ledger CSV</button>
   </div>
   <div id="fleetSummary" class="fleetSummary"></div>
@@ -1310,7 +1318,7 @@ body.adminPage{background:var(--cmd-bg);font-family:"Plus Jakarta Sans",Inter,sy
   <section class="analysisCard packingCreatePanel">
     <div class="sectionHead">
       <div><span class="eyebrow">ORDER IMPORT</span><h3>Create / refresh live packing order</h3><p class="hint">Upload the latest Excel/CSV here. Packaging operations remain inside this section.</p></div>
-      <button id="dashCreateOrder" class="primary" type="button">＋ Import New Order</button><input id="orderFileInput" type="file" accept=".xlsx,.xls,.csv" hidden><span id="orderLoadStatus" class="hint hidden"></span>
+      <button id="dashCreateOrder" class="primary" type="button">＋ Import New Order</button><input aria-label="Choose an order file" id="orderFileInput" type="file" accept=".xlsx,.xls,.csv" hidden><span id="orderLoadStatus" class="hint hidden"></span>
     </div>
     <div class="sectionHead packingOverviewHead">
     <div><span class="eyebrow">PACKING &amp; DISPATCH</span><h2>Packing Overview</h2><p class="hint">Monitor the current order and packing progress. Item-by-item packing controls remain on the separate staff packing screen.</p></div>
@@ -1487,7 +1495,8 @@ if(!window.supabase){
 <script defer src="../app.js?v=20261011-outletlatlong6"></script>
 <script defer src="./team.js?v=20261002-staffid3"></script>
 <script defer src="./inventory-nav.js?v=20261001-audit2"></script>
-<script>window.PA_VERSION_URL="../version.json";</script><script defer src="../update.js?v=20261007-mobile-driver2"></script><script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20261007-mobile-driver2",{updateViaCache:"none"}).then(r=>r.update()).catch(console.warn));}</script>
-<script>fetch("../version.json?_"+Date.now(),{cache:"no-store"}).then(r=>r.json()).then(v=>{const e=document.getElementById("buildVersion");if(e)e.textContent="Build "+(v.build_id||"unknown")}).catch(()=>{});</script></body>
+<script>window.PA_VERSION_URL="../version.json";</script><script defer src="../update.js?v=20261031-pwa9"></script><script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20261031-pwa9",{updateViaCache:"none"}).then(r=>r.update()).catch(console.warn));}</script>
+<script>fetch("../version.json?_"+Date.now(),{cache:"no-store"}).then(r=>r.json()).then(v=>{const e=document.getElementById("buildVersion");if(e)e.textContent="Build "+(v.build_id||"unknown")}).catch(()=>{});</script><script src="../pwa-install.js?v=20261031-pwa9" defer></script>
+</body>
 </html>
 <style>.adminApproveDeliveredBtn{margin-left:6px;border-color:#b45309;color:#92400e}.deliveryHistoryLoadMore{display:flex;align-items:center;justify-content:center;gap:12px;padding:14px 4px;border-top:1px solid #e5e7eb}.deliveryHistoryLoadMore button{min-width:120px}.deliveryHistoryLoadMore span{font-size:12px;color:#64748b}.deliveryHistoryCount{justify-content:flex-start}.adminApproveDeliveredBtn:disabled{opacity:.55;cursor:wait}</style>
