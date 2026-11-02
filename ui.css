@@ -512,3 +512,164 @@ body {
 [class*="TableWrap"] {
   overscroll-behavior-y: contain;
 }
+
+/* --------------------------------------------------------------------------
+   11. Headers and action rows keep their labels on one line
+   At tablet and small-laptop widths the console header squeezed its chips until
+   "Refresh", "New Order" and "Staff Packing Portal" each broke onto two lines,
+   and the same happened to small panel buttons such as "View all".
+   The chips now hold one line and the groups wrap onto a second header row.
+   -------------------------------------------------------------------------- */
+
+.cmdHeader {
+  height: auto;
+  min-height: 64px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  gap: 6px 12px;
+  flex-wrap: wrap;
+}
+
+.cmdHeaderLeft,
+.cmdHeaderRight {
+  flex-wrap: wrap;
+  min-width: 0;
+  row-gap: 6px;
+}
+
+.cmdHeaderBtn,
+.cmdCycle,
+.cmdLiveStatus,
+.cmdProfile,
+.cmdProfile b,
+.cmdProfile span {
+  white-space: nowrap;
+}
+
+.cmdHeaderBtn {
+  flex: 0 0 auto;
+}
+
+:is(.opsPanelHead, .cmdPanelHead, .baPanelHead, [class$="PanelHead"]) button,
+:is(.opsPanelHead, .cmdPanelHead, .baPanelHead, [class$="PanelHead"]) a {
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+/* class names the console panels build their small "view all" links with */
+:is(#opsViewAttention, #opsViewFleet, #opsOpenInventory, #opsOpenPacking, #opsOpenReports, #opsImportOrder) {
+  white-space: nowrap;
+}
+
+/* --------------------------------------------------------------------------
+   12. Narrow phones: action buttons keep their label on one line
+   At 320px "Generate item-wise summary", "Download share-ready PNG" and the
+   import/export buttons broke into two lines and left the action column ragged.
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 380px) {
+  :is(#generate, #download, #downloadTemplateBtn, #downloadCsvTemplateBtn, #addItemBtn, #importBtn,
+      #downloadVegCsv, #importVegCsv, #addVegItemBtn, #exportStockPdfBtn, #stockRefreshBtn,
+      #inventoryLogRefresh, #saveItemBtn, #importConfirmBtn, #confirmImportBtn) {
+    white-space: nowrap;
+    font-size: 12px;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   13. A wide table says so
+   Several admin tables keep their columns and scroll sideways inside their
+   card. Nothing on screen said so, so a table that needed a swipe looked like
+   a table with its right-hand columns cut off. These two shadows appear only
+   while there is more to scroll to, and disappear at the end of the table.
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 900px) {
+.tableWrap,
+[class*="TableWrap"] {
+  background-image:
+    linear-gradient(90deg, #fff 40%, rgba(255, 255, 255, 0)),
+    linear-gradient(270deg, #fff 40%, rgba(255, 255, 255, 0)),
+    radial-gradient(farthest-side at 0 50%, rgba(15, 23, 42, .14), rgba(15, 23, 42, 0)),
+    radial-gradient(farthest-side at 100% 50%, rgba(15, 23, 42, .14), rgba(15, 23, 42, 0));
+  background-position: 0 0, 100% 0, 0 0, 100% 0;
+  background-repeat: no-repeat;
+  background-size: 36px 100%, 36px 100%, 14px 100%, 14px 100%;
+  background-attachment: local, local, scroll, scroll;
+}
+}
+
+/* --------------------------------------------------------------------------
+   14. Operations cards keep two columns between tablet and desktop
+   The console dashboard asks for two columns up to 1150px, but two later
+   grids (the action row and the insight row) re-declared three fixed ratios,
+   so at 1024px the middle "Inventory pulse" card was 188px wide and its
+   "Open Inventory" link hung 16px outside the card. The two-column rule is
+   restored here for every one of those grids, and the odd card out only
+   stretches across the row when the grid genuinely has an odd count.
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 1150px) {
+  html body .opsThreeGrid,
+  html body .opsBottomGrid,
+  html body .opsActionGrid,
+  html body .opsInsightGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  html body :is(.opsThreeGrid, .opsBottomGrid, .opsActionGrid, .opsInsightGrid) > * {
+    grid-column: auto !important;
+    min-width: 0 !important;
+  }
+
+  html body :is(.opsThreeGrid, .opsBottomGrid, .opsActionGrid, .opsInsightGrid) > :last-child:nth-child(odd) {
+    grid-column: 1 / -1 !important;
+  }
+
+  /* the small "view all" style links never shrink; let them drop to their own
+     line instead of spilling out of the card */
+  :is(.opsPanelHead, .cmdPanelHead, .baPanelHead, [class$="PanelHead"]) {
+    flex-wrap: wrap;
+    row-gap: 2px;
+  }
+}
+
+@media (max-width: 800px) {
+  html body :is(.opsThreeGrid, .opsBottomGrid, .opsActionGrid, .opsInsightGrid) {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+
+/* the hero stepper reserved 330px, which squeezed the page title into two
+   lines on a 1024px tablet; the chips are comfortable from 56px */
+@media (min-width: 801px) and (max-width: 1150px) {
+  html body .opsStage { min-width: 0 !important; }
+  html body .opsStage > div { min-width: 56px !important; }
+}
+
+/* the build stamp is a single token: at 11px it needed 148px inside a 535px
+   header and broke over two lines; at 10px it fits on one line everywhere */
+#buildVersion {
+  font-size: 10px !important;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+/* the connection text already starts with its own dot, so the component's
+   ::before dot showed up twice ("● ● Online") */
+#connection.b-status::before {
+  display: none;
+}
+
+/* "AVAILABLE QTY" is wider than the 61px column the phone layout gives it, so
+   the browser cut the word mid-letter ("AVAILABL"). A hair smaller header with
+   tighter side padding fits the whole word without moving the columns. */
+@media (max-width: 420px) {
+  html body .invStockDashboard .inventoryStockTable th {
+    font-size: 9.5px !important;
+    padding-left: 6px !important;
+    padding-right: 6px !important;
+  }
+}

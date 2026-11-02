@@ -2374,3 +2374,20 @@ Verification from source: all driver build markers and cache/resource query stri
 - Text fields keep a single focus ring: the dark outline plus halo drew a double border around the already-blue field border, so fields now share the field colour.
 - Build stamp moved to `20261102-count1`; all three offline shells are regenerated with deduplicated precache lists and the shared `styles.css` reference aligned across pages.
 - Verified in a headless browser at 360px and 390px with a stubbed data layer: an item counted twice keeps one line, a second grade adds a column to the same line, editing replaces the value, a reload restores both saved entries and an unsaved draft, an offline entry survives a reload and syncs on reconnect, a submitted session still accepts a correction, and the exported PDF contains the corrected numbers (with the revised marking only when there is one). Both counting screens show no horizontal overflow.
+
+## Layout re-check across every screen — 2026-11-02
+
+Each of the ten modules was rendered at 320, 360, 390, 414, 768, 1024, 1280 and 1440px and measured (page scroll width, every element's right edge, clipped containers, plus a line count for buttons, headings, table cells and badges). Everything below is what that pass actually found and changed.
+
+- Driver app header: four rules in the driver stylesheet had been saved with the characters `\n` instead of line breaks, so the CSS parser discarded them — including the rule that hides the development build chip. The stamp was sitting in the driver header wrapped over two lines. The rules parse again, the chip is gone and "Driver Delivery" stays on one line.
+- Admin console, 800–1150px: two grids re-declared three fixed columns after the two-column tablet rule, so the insight row stayed three-up. At 1024px the middle "Inventory pulse" card was 188px wide and its "Open Inventory" link sat 16px outside the card. Those grids now follow the same two-column rule (the odd card out spans the row only when the card count is odd), so at 1024px the action and insight rows are two even 364px columns, and the actions row is no longer one narrow card above one full-width card.
+- Admin hero, 800–1150px: the status stepper reserved 330px and pushed "Operations Overview" onto two lines on a 1024px screen. The chips give up space first now (56px floor), so the eyebrow and title sit on one line each.
+- Build stamp: the badge is a single token and broke over two lines at 1024px. It is one line at every width now.
+- Connection badge: the component draws its own dot and the label already starts with one, so the header read "● ● Online". The duplicate is gone.
+- Restaurant inventory stock table, 320–390px: "AVAILABLE QTY" was wider than its 61px column and the word was cut in the middle ("AVAILABL"). A slightly smaller header with tighter side padding fits both words; the column widths are untouched.
+- Restaurant inventory search field: its placeholder was 232px of text in a 211px field. Shortened so the full hint is visible.
+- Wide tables that keep their columns show the scroll shadows from the previous pass only below 900px, so a desktop table that already fits is never given a fade.
+- Vegetable counting: removed the second-language line that only repeated the item name, and the "Finish Today's Count" button is auto-width beside its note on desktop instead of a full-width bar.
+- Removed two leftover development labels: the list build label in the expenses screen and the build line in the payments footer.
+- The remaining multi-line text on these screens is intentional: cards whose title and caption are separate blocks, filter labels above their select, and KPI cards with an icon, label and value. No button, heading, table cell or badge breaks its word or spills outside its card.
+- Build stamp moved to `20261102-layout1`.
