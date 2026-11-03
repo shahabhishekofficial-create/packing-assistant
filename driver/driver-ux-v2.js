@@ -31,6 +31,74 @@
     return "upcoming";
   }
 
+  /* ----------------------------------------------------------------
+     Scroll stability
+     A route re-render must never move the page under the driver's
+     thumb, drop a typed quantity, or close a stop they opened.
+     ---------------------------------------------------------------- */
+  const PAN_WINDOW_MS=650;
+  if(!window.__driverPanBound){
+    window.__driverPanBound=1;
+    ["touchstart","touchmove","wheel","pointerdown"].forEach(t=>window.addEventListener(t,()=>{window.__driverPanAt=Date.now();},{passive:true}));
+  }
+  function userPanning(){return Date.now()-(window.__driverPanAt||0)<PAN_WINDOW_MS;}
+
+  /* Signature of a node with expansion state removed, so a user-opened
+     <details> is not treated as a content change. */
+  function sigOf(el){
+    const c=el.cloneNode(true);
+    if(c.tagName==="DETAILS") c.removeAttribute("open");
+    c.querySelectorAll?.("details[open]").forEach(d=>d.removeAttribute("open"));
+    return c.outerHTML;
+  }
+  function syncAttrs(oldEl,freshEl){
+    [...oldEl.attributes].forEach(a=>{if(!freshEl.hasAttribute(a.name))oldEl.removeAttribute(a.name);});
+    [...freshEl.attributes].forEach(a=>{if(oldEl.getAttribute(a.name)!==a.value)oldEl.setAttribute(a.name,a.value);});
+    if(oldEl.tagName==="DETAILS"&&freshEl.hasAttribute("open"))oldEl.open=true;
+  }
+
+  /* Keyed patch: keeps nodes that did not change, so the browser never
+     re-expands/re-collapses or re-lays-out untouched stops. */
+  function patchChildren(container,freshParent){
+    const next=[...freshParent.children];
+    const cur=new Map();
+    [...container.children].forEach(n=>{if(n.dataset.key)cur.set(n.dataset.key,n);});
+    let pos=0;
+    for(const fresh of next){
+      const k=fresh.dataset.key||"";
+      const old=k?cur.get(k):null;
+      let node=fresh;
+      if(old && old.tagName===fresh.tagName && old.dataset.rk && fresh.dataset.rk){
+        syncAttrs(old,fresh);
+        patchChildren(old,fresh);
+        node=old;
+      }else if(old && sigOf(old)===sigOf(fresh)){
+        node=old;
+      }else if(old && old.open){
+        fresh.setAttribute("open","");
+      }
+      const at=container.children[pos]||null;
+      if(node!==at) container.insertBefore(node,at);
+      pos++;
+    }
+    while(container.children.length>pos) container.lastElementChild.remove();
+  }
+
+  function anchorOf(box){
+    for(const el of box.querySelectorAll(".driverOutletRow")){
+      const r=el.getBoundingClientRect();
+      if(r.bottom>8 && r.top<window.innerHeight-4) return {id:String(el.dataset.outletId||""),top:r.top};
+    }
+    return null;
+  }
+  function restoreAnchor(box,anchor){
+    if(!anchor||!anchor.id||userPanning()) return;
+    const el=box.querySelector('.driverOutletRow[data-outlet-id="'+CSS.escape(anchor.id)+'"]');
+    if(!el) return;
+    const delta=el.getBoundingClientRect().top-anchor.top;
+    if(Math.abs(delta)>=1) window.scrollBy({top:delta,left:0,behavior:"instant"});
+  }
+
   function renderDriverUx(){
     const login=document.getElementById("driverLogin");
     const home=document.getElementById("driverHome");
@@ -47,9 +115,19 @@
 
     const head=home.querySelector(".sectionHead");
     if(head){
-      head.innerHTML='<div class="driverRouteHeading"><div><span class="eyebrow">TODAY\'S ROUTE</span><h2>'+esc2(ds.name||"Driver")+'</h2></div><div class="driverHeaderEarn">₹'+Number(ds.earned||0).toFixed(0)+' <span>earned</span></div><button id="driverRefresh" class="secondary driverRefreshBtn" type="button">↻ Refresh</button></div>';
+      const headSig=(ds.name||"")+"|"+Number(ds.earned||0).toFixed(0)+"|"+(ds.loading?"1":"0");
+      if(head.dataset.headSig!==headSig){
+        head.dataset.headSig=headSig;
+        head.innerHTML='<div class="driverRouteHeading"><div><span class="eyebrow">TODAY\'S ROUTE</span><h2>'+esc2(ds.name||"Driver")+'</h2></div><div class="driverHeaderEarn">₹'+Number(ds.earned||0).toFixed(0)+' <span>earned</span></div><button id="driverRefresh" class="secondary driverRefreshBtn" type="button">↻ Refresh</button></div>';
+        const refresh=document.getElementById("driverRefresh");
+        if(refresh) refresh.onclick=refreshRoute;
+      }
       const refresh=document.getElementById("driverRefresh");
-      if(refresh){refresh.disabled=!!ds.loading;refresh.textContent=ds.loading?"Refreshing…":"↻ Refresh";refresh.onclick=refreshRoute;}
+      if(refresh){
+        refresh.disabled=!!ds.loading;
+        const label=ds.loading?"Refreshing…":"↻ Refresh";
+        if(refresh.textContent!==label) refresh.textContent=label;
+      }
     }
 
     const oldEarn=document.getElementById("driverEarnings");
@@ -70,8 +148,16 @@
         : busyCount ? "<b>Processing…</b><span>Your action is being saved. Keep this screen open.</span>" : "";
     }
 
-    if(!signed){box.innerHTML="";return;}
-    if(ds.loading && !ds.outlets.length){box.innerHTML=loadingHtml();return;}
+    if(!signed){if(box.innerHTML!=="")box.innerHTML="";return;}
+    if(ds.loading && !ds.outlets.length){
+      const loadingMarkup=loadingHtml();
+      if(box.dataset.loadingMarkup!==loadingMarkup||box.children.length!==1){
+        box.dataset.loadingMarkup=loadingMarkup;
+        box.innerHTML=loadingMarkup;
+      }
+      return;
+    }
+    box.dataset.loadingMarkup="";
 
     const sorted=[...(ds.outlets||[])].sort((a,b)=>(Number(a.outlet_rank)||999999)-(Number(b.outlet_rank)||999999));
     const active=sorted.filter(o=>String(o.delivery?.status||"").toLowerCase()!=="delivered");
@@ -115,7 +201,7 @@
         : postRejectionHtml(o,d,items);
 
       const cardBody='<div class="driverModernCardBody">'
-        +'<div class="driverModernMeta"><span>📦 <b>'+items.length+'</b> Items · <b>'+required+'</b> Pcs</span><span class="'+(d.invoice_path?"metaOk":"metaPending")+'">'+(d.invoice_path?"✓ Invoice uploaded":"Invoice pending")+'</span></div>'
+        +'<div class="driverModernMeta"><span class="'+(d.invoice_path?"metaOk":"metaPending")+'">'+(d.invoice_path?"✓ Invoice uploaded":"Invoice pending")+'</span></div>'
         +'<div class="driverRejectionMount">'+rejection+'</div>'
         +(exceptions.length?'<div class="driverExceptionBox"><b>⚠ Missing / Partial</b><div class="exceptionList">'+exceptions.map(i=>'<div><span>'+esc2(i.product_name)+'</span><strong>'+Number(i.missing_qty||0)+' missing</strong></div>').join("")+'</div></div>':"")
         +'<details class="driverItems"><summary>Item-wise packing'+(exceptions.length?' • '+exceptions.length+' Missing/Partial':"")+'</summary><div class="tableWrap"><table><thead><tr><th>Item</th><th>Req.</th><th>Packed</th><th>Missing</th><th>Status</th></tr></thead><tbody>'+itemRows+'</tbody></table></div></details>'
@@ -125,32 +211,84 @@
           : '<span class="driverWaitingNote">Waiting for packing</span>')
           +'</div></div>';
 
-      return '<details class="driverOutletRow driverModernRow '+(delivered?"driverCompletedRow":"")+(!delivered&&String(o.outlet_id)===nextId?' driverHeroStop':'')+'" data-outlet-id="'+esc2(o.outlet_id)+'" '+(!delivered&&String(o.outlet_id)===nextId?'open':"")+'><summary class="driverModernSummary">'
+      return '<details class="driverOutletRow driverModernRow '+(delivered?"driverCompletedRow":"")+(!delivered&&String(o.outlet_id)===nextId?' driverHeroStop':'')+'" data-outlet-id="'+esc2(o.outlet_id)+'" data-key="row:'+esc2(o.outlet_id)+'"><summary class="driverModernSummary">'
         +'<div class="driverStopNumber">STOP '+sequence+'</div>'
-        +'<div class="driverModernMain"><div class="driverModernTitleLine"><strong>'+esc2(o.outlet_name)+'</strong><span class="modernStatus '+cls+'">'+label+'</span></div><div class="driverQuickMeta">📦 '+items.length+' Items · '+required+' Pcs · '+(d.invoice_path?"Invoice ready":"Invoice pending")+'</div></div>'
+        +'<div class="driverModernMain"><div class="driverModernTitleLine"><strong>'+esc2(o.outlet_name)+'</strong><span class="modernStatus '+cls+'">'+label+'</span></div><div class="driverQuickMeta">📦 '+items.length+' items · '+required+' pcs<span class="driverQuickMetaInvoice">'+(d.invoice_path?" · Invoice ready":" · Invoice pending")+'</span></div></div>'
         +'<div class="driverQuickActions"><a class="driverQuickBtn navigateBtn" target="_blank" rel="noopener" href="'+esc2(map)+'">📍 <span>Navigate</span></a>'+(phone?'<a class="driverQuickIcon callBtn" href="tel:'+esc2(phone)+'" aria-label="Call '+esc2(o.outlet_name)+'">📞</a>':"")+'<span class="driverChevron">›</span></div>'
         +'</summary>'+cardBody+'</details>';
     }
 
     let html="";
     if(ds.routeLoadState==="error" && sorted.length){
-      html+='<section class="driverRouteSection"><div class="driverRouteWarning"><b>Refresh failed</b><p>Showing the last loaded route. Check your connection and tap Refresh to retry.</p></div></section>';
+      html+='<section class="driverRouteSection" data-key="warn"><div class="driverRouteWarning"><b>Refresh failed</b><p>Showing the last loaded route. Check your connection and tap Refresh to retry.</p></div></section>';
     }
     if(active.length){
-      html+='<section class="driverRouteSection"><div class="driverRouteSectionHead"><div><span class="eyebrow">ACTIVE & UPCOMING</span><h3>'+active.length+' stop'+(active.length===1?"":"s")+' remaining</h3></div><span class="routeProgress">'+completed.length+' / '+sorted.length+' complete</span></div><div class="driverRouteProgressTrack" role="progressbar" aria-label="Route progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+progressPct+'"><span style="width:'+progressPct+'%"></span></div>';
-      html+=active.map((o,i)=>card(o,i,false)).join("");
-      html+='</section>';
+      html+='<section class="driverRouteSection" data-key="active" data-rk="1"><div class="driverRouteSectionHead" data-key="active-head"><div><span class="eyebrow">ACTIVE & UPCOMING</span><h3>'+active.length+' stop'+(active.length===1?"":"s")+' remaining</h3></div><span class="routeProgress">'+completed.length+' / '+sorted.length+' complete</span></div><div class="driverRouteProgressTrack" role="progressbar" aria-label="Route progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+progressPct+'" data-key="active-progress"><span style="width:'+progressPct+'%"></span></div>'
+        +active.map((o,i)=>card(o,i,false)).join("")
+        +'</section>';
     }else if(ds.routeLoadState!=="loaded"){
-      html+='<section class="driverAllDone"><div class="driverAllDoneIcon">↻</div><h3>Route unavailable</h3><p>We could not confirm your delivery status. Tap Refresh to try again.</p></section>';
+      html+='<section class="driverAllDone" data-key="done"><div class="driverAllDoneIcon">↻</div><h3>Route unavailable</h3><p>We could not confirm your delivery status. Tap Refresh to try again.</p></section>';
     }else if(sorted.length===0){
-      html+='<section class="driverAllDone"><div class="driverAllDoneIcon">!</div><h3>No outlets loaded</h3><p>No assigned outlets were returned for the current order. Tap Refresh or contact Admin.</p></section>';
+      html+='<section class="driverAllDone" data-key="done"><div class="driverAllDoneIcon">!</div><h3>No outlets loaded</h3><p>No assigned outlets were returned for the current order. Tap Refresh or contact Admin.</p></section>';
     }else{
-      html+='<section class="driverAllDone"><div class="driverAllDoneIcon">✓</div><h3>Route complete</h3><p>All assigned deliveries are completed.</p></section>';
+      html+='<section class="driverAllDone" data-key="done"><div class="driverAllDoneIcon">✓</div><h3>Route complete</h3><p>All assigned deliveries are completed.</p></section>';
     }
     if(completed.length){
-      html+='<details class="driverCompletedDrawer"><summary><span>Completed Deliveries</span><b>'+completed.length+' / '+sorted.length+'</b><span>›</span></summary><div class="driverCompletedList">'+completed.map(o=>card(o,sorted.indexOf(o),true)).join("")+'</div></details>';
+      html+='<details class="driverCompletedDrawer" data-key="completed" data-rk="1"><summary data-key="completed-summary"><span>Completed Deliveries</span><b>'+completed.length+' / '+sorted.length+'</b><span>›</span></summary><div class="driverCompletedList" data-key="completed-list" data-rk="1">'+completed.map(o=>card(o,sorted.indexOf(o),true)).join("")+'</div></details>';
     }
-    box.innerHTML=html;
+
+    // Capture interaction state that a re-render must not destroy.
+    const knownRows=new Set(),openRows=new Set(),heroRows=new Set(),openItems=new Set();
+    box.querySelectorAll(".driverOutletRow").forEach(el=>{
+      const id=String(el.dataset.outletId||"");
+      knownRows.add(id);
+      if(el.open) openRows.add(id);
+      if(el.classList.contains("driverHeroStop")) heroRows.add(id);
+      if(el.querySelector(".driverItems")?.open) openItems.add(id);
+    });
+    const drawerOpen=!!box.querySelector(".driverCompletedDrawer")?.open;
+    const active0=document.activeElement;
+    const focusState=(active0 && box.contains(active0) && /INPUT|SELECT|TEXTAREA|BUTTON/.test(active0.tagName))
+      ? {cls:active0.className,id:active0.id,row:active0.closest(".driverOutletRow")?.dataset.outletId||"",item:active0.dataset?.itemId||"",key:active0.dataset?.key||"",start:active0.selectionStart}
+      : null;
+
+    const anchor=anchorOf(box);
+    const tpl=document.createElement("template");
+    tpl.innerHTML=html;
+    patchChildren(box,tpl.content);
+
+    box.querySelectorAll(".driverOutletRow").forEach(el=>{
+      const id=String(el.dataset.outletId||"");
+      if(knownRows.has(id)) el.open=openRows.has(id);
+      else el.open=el.classList.contains("driverHeroStop");
+    });
+    // A stop that has just become the current/hero stop opens once, so the
+    // driver can act without hunting for it.
+    box.querySelectorAll(".driverHeroStop").forEach(el=>{
+      const id=String(el.dataset.outletId||"");
+      if(!heroRows.has(id)) el.open=true;
+    });
+    box.querySelectorAll(".driverOutletRow").forEach(el=>{
+      const items=el.querySelector(".driverItems");
+      if(items) items.open=openItems.has(String(el.dataset.outletId||""));
+    });
+    const drawer=box.querySelector(".driverCompletedDrawer");
+    if(drawer) drawer.open=drawerOpen;
+
+    if(focusState){
+      const stillThere=document.activeElement && box.contains(document.activeElement) && document.activeElement.tagName!=="BODY";
+      if(!stillThere){
+        const scope=focusState.row?box.querySelector('.driverOutletRow[data-outlet-id="'+CSS.escape(focusState.row)+'"]'):box;
+        let el=null;
+        const parts=String(focusState.cls||"").split(" ").filter(Boolean);
+        if(focusState.id) el=scope?.querySelector("#"+CSS.escape(focusState.id));
+        if(!el && focusState.item) el=scope?.querySelector('[data-item-id="'+CSS.escape(focusState.item)+'"]');
+        if(!el && parts.length) el=scope?.querySelector("."+CSS.escape(parts[0]));
+        try{el?.focus({preventScroll:true});}catch(_){el?.focus?.();}
+        if(el && focusState.start!=null && el.setSelectionRange){try{el.setSelectionRange(focusState.start,focusState.start);}catch(_){}} 
+      }
+    }
+
     if(!box.dataset.completedLockBound){
       box.dataset.completedLockBound="1";
       box.addEventListener("click",e=>{
@@ -177,6 +315,8 @@
     box.querySelectorAll(".photoBtn").forEach(b=>b.onclick=()=>chooseRejectedPhoto(b.dataset.outletId,b.dataset.itemId));
     box.querySelectorAll(".markExceptionPackedBtn").forEach(b=>{b.onclick=()=>markExceptionPacked(b.dataset.outletId,b.dataset.itemId);if(ds.busy["pack:"+String(b.dataset.itemId)])b.disabled=true;});
     box.querySelectorAll(".deliverBtn,.deliverNowBtn").forEach(b=>{b.onclick=()=>markDelivered(b.dataset.id);if(ds.busy[b.dataset.id])b.disabled=true;});
+
+    restoreAnchor(box,anchor);
   }
 
   async function refreshRoute(){
