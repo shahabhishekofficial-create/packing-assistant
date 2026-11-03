@@ -108,3 +108,102 @@
  .driverHeroStop .driverQuickActions{grid-column:1/-1}
  .driverHeroStop .driverModernCardBody{padding-left:12px;padding-right:12px}
 }
+
+/* ---------- 20261103-drv1: scroll stability + phone ergonomics ---------- */
+
+/* Pull-to-refresh at the top of the route reloaded the page and discarded a
+   half-filled delivery check. Keep the bounce, block the reload. */
+body.driverPage{overscroll-behavior-y:contain}
+
+/* The fixed update banner / toast sat on top of the last action button. */
+body.driverPage #driverApp{padding-bottom:max(40px,env(safe-area-inset-bottom))}
+body.driverPage:has(#paUpdateNotice) #driverApp{padding-bottom:190px}
+body.driverPage #driverToast{bottom:max(18px,env(safe-area-inset-bottom))}
+
+/* styles.css carries a generic .driverOutletRow{padding:11px 12px} from the
+   admin outlet grid; it also applied to the driver's <details> stop cards and
+   added 22px of dead space to every one of them. */
+.driverPage .driverOutletRow{padding:0}
+
+/* Same leak: styles.css .driverOutletRow b{display:block} turned "3 items ·
+   33 pcs" into four stacked lines inside the card meta row. */
+.driverModernMeta b{display:inline;font-size:inherit;font-weight:800}
+
+/* Item / pcs / invoice meta used to break one word per line inside the
+   summary and inflate every card. */
+/* Item/pcs live in the stop header; the body meta is only the invoice state. */
+.driverModernMeta{flex-wrap:wrap;row-gap:4px;justify-content:flex-end}
+.driverModernRow[open] .driverQuickMetaInvoice{display:none}
+.driverModernMeta>span{white-space:nowrap}
+
+/* 16px fields stop iOS Safari zooming the page when a field is focused —
+   the zoom pushed the layout sideways while the keyboard was open. */
+.driverPage select,
+.driverPage textarea,
+.driverPage input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+.driverPage .rejectQty,
+.driverPage .rejectReason{font-size:16px}
+
+/* No double-tap zoom when tapping a stop header or a button. */
+.driverPage button,.driverPage summary,.driverPage a{touch-action:manipulation}
+
+@media(min-width:641px){
+  /* 100px was too narrow for the reason dropdown at every width: it read
+     "Reaso" even on a tablet. */
+  .driverPage .driverRejectionRow{grid-template-columns:minmax(0,1fr) 84px minmax(150px,190px) auto;column-gap:10px}
+}
+
+@media(max-width:640px){
+  /* Quantity + reason were squeezed into 72px/100px, so the reason dropdown
+     rendered as "Reaso" and the item name broke to three lines. */
+  .driverPage .driverRejectionSection{padding:12px}
+  .driverPage .driverRejectionRow{grid-template-columns:84px minmax(0,1fr);grid-template-areas:"item item" "qty reason";row-gap:8px;column-gap:8px}
+  .driverPage .driverRejectionItem{grid-area:item}
+  .driverPage .driverRejectionRow .rejectQty{grid-area:qty;width:100%;height:42px}
+  .driverPage .driverRejectionRow .rejectReason{grid-area:reason;width:100%;min-width:0;height:42px}
+  .driverPage .driverRejectionRow .photoBtn{grid-column:1/-1;justify-self:start}
+}
+
+@media(max-width:560px){
+  /* Compact collapsed rows: a 14-stop route now costs ~1,700px of scrolling
+     instead of ~2,400px, with the same tap targets on the primary action. */
+  .driverModernSummary{padding:10px 12px;gap:8px}
+  .driverModernTitleLine strong{font-size:15px;line-height:1.22}
+  .modernStatus{font-size:8px;padding:3px 7px;margin-top:5px}
+  .driverQuickMeta{margin-top:3px;font-size:11px}
+  .driverQuickMetaInvoice{display:none}
+  .driverQuickActions{gap:6px;margin-top:5px}
+  .driverQuickBtn{height:38px;min-height:38px;padding:0 12px;font-size:12.5px}
+  .driverQuickIcon{height:38px;width:38px;min-height:38px;font-size:14px}
+  .driverStopNumber{font-size:9px;letter-spacing:.04em}
+  .driverRouteSectionHead{padding-bottom:8px}
+  /* "4 · Complete" wrapped onto two lines in the 4-step strip. */
+  .driverWizardSteps{gap:5px;flex-wrap:nowrap;overflow-x:auto}
+  .driverWizardStep{font-size:10px;padding:7px 4px;min-width:0;white-space:nowrap}
+  .driverPage .rejectQty::placeholder{font-weight:600;color:#94a3b8}
+  .driverRouteProgressTrack{margin-bottom:12px}
+}
+
+/* Programmatic scroll corrections must be instant: the global
+   html{scroll-behavior:smooth} animated every list correction. */
+html:has(body.driverPage){scroll-behavior:auto}
+
+@media(max-width:400px){
+  /* The 320px header wrapped "Driver Delivery" onto two lines and let the
+     Logout button dominate the bar. */
+  .driverPage .appHeader{gap:8px}
+  .driverPage .brand{min-width:0;gap:8px}
+  .driverPage .brandIcon{width:30px;height:30px;font-size:16px;border-radius:9px}
+  .driverPage .brand h1{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .driverPage .driverHeaderActions{gap:6px}
+  .driverPage #driverLogout{min-height:38px;padding:0 12px;font-size:13px}
+  .driverPage .menuDots{min-height:38px;min-width:40px}
+  .driverPage .driverRouteSectionHead{gap:8px}
+  .driverPage .driverRouteSectionHead h3{font-size:15px}
+  .driverPage .routeProgress{font-size:11px;white-space:nowrap}
+}
+
+/* Our own anchor correction is the single source of truth for scroll
+   position while the route list is patched; Chrome's scroll anchoring was
+   fighting it and moving the page by the height of the delivered stop. */
+html:has(body.driverPage),body.driverPage,#driverOutletCards{overflow-anchor:none}
