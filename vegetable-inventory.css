@@ -51,3 +51,27 @@
   .vegFinish .vegSecondary { width: auto; min-width: 220px; padding: 0 22px; }
   .vegFinish .vegMsg { margin: 0; }
 }
+
+/* export row + connection strip ------------------------------------------- */
+.vegExport{margin-top:10px}
+.vegExport .vegReportButtons{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.vegExport .vegMsg{margin:6px 0 0;color:#b45309;font-weight:800}
+.vegConn{display:flex;align-items:center;gap:10px;flex-wrap:nowrap;margin:10px 0 0;padding:9px 12px;border:1px solid #fcd34d;border-radius:11px;background:#fffbeb;color:#92400e;font-size:11.5px;font-weight:800}
+.vegConn>span{min-width:0;flex:1 1 auto}
+.vegConn.offline{border-color:#fca5a5;background:#fef2f2;color:#991b1b}
+.vegConnRetry{margin-left:auto;min-height:36px;padding:7px 12px;border:1px solid currentColor;border-radius:9px;background:#fff;color:inherit;font-family:inherit;font-size:11px;font-weight:850;cursor:pointer}
+
+/* the export row sits inline on wide screens instead of stretching edge to edge */
+@media (min-width:700px){
+  .vegExport .vegReportButtons{display:flex;gap:10px}
+  .vegExport .vegReportButtons .vegPrimary,
+  .vegExport .vegReportButtons .vegSecondary{width:auto;min-width:200px;padding:0 22px}
+}
+
+/* a long status badge (e.g. "2 items · 2 not synced") pushes the staff name
+   onto two lines on a phone; the badge drops below instead */
+@media (max-width:560px){
+  .vegWelcome{flex-wrap:wrap;align-items:flex-start}
+  .vegWelcome>div:first-child{min-width:0;flex:1 1 160px}
+  .vegStatus{flex-wrap:wrap;width:100%}
+}
