@@ -8,12 +8,34 @@
 
 const { createClient } = supabase;
 const db = createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.key);
+
+/* Every server call gets a deadline. A connection that hangs (one bar of
+   signal, a captive portal) is treated exactly like one that is switched off,
+   so the entry stays pending instead of leaving the screen on "Saving…". */
+function withTimeout(promise, label, ms = RPC_TIMEOUT) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error((label || "request") + " timeout")), ms);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (error) => {
+        clearTimeout(timer);
+        reject(error);
+      }
+    );
+  });
+}
+const rpc = (name, args) => withTimeout(db.rpc(name, args), name);
 const $ = (id) => document.getElementById(id);
 const showEl = (id) => $(id)?.classList.remove("vegHidden");
 const hideEl = (id) => $(id)?.classList.add("vegHidden");
 
 const LEDGER_KEY = "veg_ledger_v2";
 const DRAFT_KEY = "veg_draft_v2";
+const BOOT_KEY = "veg_boot_v1";
+const RPC_TIMEOUT = 8000;
 const GRADES = ["A", "B", "DUMP"];
 
 let token = "";
@@ -29,6 +51,10 @@ let submitted = false;
 let submittedAt = null;
 let editing = null;
 let draftTimer = null;
+let offlineMode = false;
+let baseline = null;
+let removed = [];
+let reconnecting = false;
 
 const T = {
   en: {
@@ -53,6 +79,19 @@ const T = {
     offlineSaved: "Saved on this phone. It syncs when the connection returns.",
     restored: "We restored the entry you had started before the page reloaded.",
     revised: "Revised",
+    offlineMode: "Offline — counts are saved on this phone",
+    waitingSync: "waiting to sync",
+    retryNow: "Retry now",
+    downloadChanges: "PDF of changes",
+    draftNote: "Draft — not yet submitted",
+    changesTitle: "Changes made today",
+    noChanges: "No changes yet.",
+    before: "Before",
+    after: "Now",
+    backOnline: "Back online — syncing.",
+    offlineBoot: "Started offline. Entries are saved here and sync when the connection returns.",
+    reconnecting: "Trying to reconnect…",
+    changesPdfDone: "Changes PDF downloaded.",
   },
   hi: {
     title: "सब्ज़ी स्टॉक गिनती",
@@ -76,6 +115,19 @@ const T = {
     offlineSaved: "फ़ोन में सेव हो गया। कनेक्शन आने पर सिंक होगा।",
     restored: "पेज दोबारा खुलने से पहले की एंट्री बहाल कर दी गई है।",
     revised: "संशोधित",
+    offlineMode: "ऑफ़लाइन — गिनती इस फ़ोन में सेव हो रही है",
+    waitingSync: "सिंक बाकी",
+    retryNow: "फिर कोशिश करें",
+    downloadChanges: "बदलाव की PDF",
+    draftNote: "ड्राफ़्ट — अभी जमा नहीं हुआ",
+    changesTitle: "आज किए गए बदलाव",
+    noChanges: "अभी कोई बदलाव नहीं।",
+    before: "पहले",
+    after: "अब",
+    backOnline: "कनेक्शन आ गया — सिंक हो रहा है।",
+    offlineBoot: "ऑफ़लाइन शुरू हुआ। एंट्री यहाँ सेव हैं और कनेक्शन आने पर सिंक होंगी।",
+    reconnecting: "दोबारा जुड़ने की कोशिश…",
+    changesPdfDone: "बदलाव की PDF डाउनलोड हो गई।",
   },
   gu: {
     title: "શાકભાજી સ્ટોક ગણતરી",
@@ -99,6 +151,19 @@ const T = {
     offlineSaved: "ફોનમાં સેવ થયું. કનેક્શન આવશે ત્યારે સિંક થશે.",
     restored: "પેજ ફરી ખૂલતાં પહેલાંની એન્ટ્રી પાછી લાવવામાં આવી છે.",
     revised: "સુધારેલ",
+    offlineMode: "ઓફલાઇન — ગણતરી આ ફોનમાં સેવ થાય છે",
+    waitingSync: "સિંક બાકી",
+    retryNow: "ફરી પ્રયાસ કરો",
+    downloadChanges: "બદલાવની PDF",
+    draftNote: "ડ્રાફ્ટ — હજી સબમિટ થયું નથી",
+    changesTitle: "આજના બદલાવ",
+    noChanges: "હજી કોઈ બદલાવ નથી.",
+    before: "પહેલાં",
+    after: "હવે",
+    backOnline: "કનેક્શન આવ્યું — સિંક થઈ રહ્યું છે.",
+    offlineBoot: "ઓફલાઇન શરૂ થયું. એન્ટ્રી અહીં સેવ છે અને કનેક્શન આવશે ત્યારે સિંક થશે.",
+    reconnecting: "ફરી જોડાવાનો પ્રયાસ…",
+    changesPdfDone: "બદલાવની PDF ડાઉનલોડ થઈ.",
   },
 };
 
@@ -197,6 +262,8 @@ function saveLedger() {
         staff,
         submitted,
         submittedAt,
+        baseline,
+        removed,
         entries,
       })
     );
@@ -213,6 +280,8 @@ function restoreLedger() {
   /* a submitted session's entries stay with that session once it is closed */
   if (saved.sessionId !== sessionId && saved.submitted) return false;
   entries = Array.isArray(saved.entries) ? saved.entries : [];
+  baseline = saved.baseline && typeof saved.baseline === "object" ? saved.baseline : null;
+  removed = Array.isArray(saved.removed) ? saved.removed : [];
   submitted = !!saved.submitted && saved.sessionId === sessionId;
   submittedAt = submitted ? saved.submittedAt || null : null;
   entries.forEach((e) => {
@@ -239,6 +308,107 @@ function entryPendingGrades(entry) {
 function hasLocalRevision() {
   const submittedMs = submittedAt ? new Date(submittedAt).getTime() : 0;
   return entries.some((e) => e.localOnly || (submittedMs && Number(e.updatedAt || 0) > submittedMs));
+}
+
+/* ---------------------------------------------------------------------------
+   Boot cache — the page can open with no signal
+   --------------------------------------------------------------------------- */
+
+function saveBootCache() {
+  try {
+    localStorage.setItem(
+      BOOT_KEY,
+      JSON.stringify({ token, staff, sessionId, items, date: today(), at: Date.now() })
+    );
+  } catch (e) {
+    /* private mode: everything still lives in memory for this visit */
+  }
+}
+
+function loadBootCache() {
+  try {
+    const cached = JSON.parse(localStorage.getItem(BOOT_KEY) || "null");
+    if (!cached || cached.date !== today()) return null;
+    if (!Array.isArray(cached.items) || !cached.items.length) return null;
+    return cached;
+  } catch (e) {
+    return null;
+  }
+}
+
+function pendingCount() {
+  return entries.filter((e) => entryPendingGrades(e).length).length;
+}
+
+/* the strip under the list says whether anything is waiting for a connection */
+function renderConnStrip() {
+  const strip = $("vegConnStrip");
+  const text = $("vegConnText");
+  if (!strip || !text) return;
+  const pending = pendingCount();
+  const offline = !navigator.onLine || offlineMode;
+  strip.classList.toggle("vegHidden", !offline && !pending);
+  strip.classList.toggle("offline", offline);
+  if (offline) {
+    text.textContent = pending ? t("offlineMode") + " · " + pending + " " + t("waitingSync") : t("offlineMode");
+  } else {
+    text.textContent = pending + " " + t("waitingSync");
+  }
+  if ($("vegConnRetry")) $("vegConnRetry").textContent = t("retryNow");
+}
+
+/* the one place that re-establishes a session: on reconnect, on Retry, and
+   before a flush that was queued while the phone had no signal */
+async function reconnect(opts = {}) {
+  if (reconnecting) return false;
+  reconnecting = true;
+  try {
+    if (!navigator.onLine) throw new Error("offline");
+    if (!token) {
+      const guest = await rpc("inv_inventory_guest_session");
+      if (guest.error) throw guest.error;
+      token = guest.data?.token || "";
+      staff = guest.data?.staff_name || staff || "Warehouse Staff";
+      sessionStorage.setItem("veg_token", token);
+      sessionStorage.setItem("veg_staff", staff);
+    }
+    const started = await rpc("inv_veg_staff_start_session", { p_staff_token: token, p_date: today() });
+    if (started.error) throw started.error;
+    if (started.data && String(started.data) !== String(sessionId)) {
+      sessionId = started.data;
+      /* a new session id means every open amount has to be sent again */
+      entries.forEach((e) => {
+        GRADES.forEach((g) => {
+          if (Number(e.amounts[g] || 0) > 0) e.pending[g] = true;
+        });
+      });
+      saveLedger();
+    }
+    const list = await rpc("inv_veg_staff_get_items", { p_staff_token: token });
+    if (!list.error && Array.isArray(list.data) && list.data.length) {
+      items = list.data;
+      renderItems();
+    }
+    offlineMode = false;
+    hideEl("vegStartupError");
+    if ($("vegStaffTitle") && staff) $("vegStaffTitle").textContent = staff;
+    saveBootCache();
+    await flushPending({ silent: true, skipReconnect: true });
+    renderRecent();
+    if (!opts.silent) {
+      const left = pendingCount();
+      msg(left ? left + " " + t("waitingSync") : t("backOnline"));
+    }
+    return true;
+  } catch (e) {
+    offlineMode = !navigator.onLine || isNetworkError(e);
+    renderConnStrip();
+    if (!opts.silent) msg(t("reconnecting"));
+    return false;
+  } finally {
+    reconnecting = false;
+    scheduleSyncRetry();
+  }
 }
 
 /* ---------------------------------------------------------------------------
@@ -390,6 +560,7 @@ function renderRecent() {
       .join("");
     box.querySelectorAll(".vegEditBtn").forEach((b) => (b.onclick = () => startEdit(b.dataset.id)));
   }
+  updateExportState();
   const badge = $("vegCountedBadge");
   if (badge) {
     const pending = entries.filter((e) => entryPendingGrades(e).length).length;
@@ -536,7 +707,7 @@ async function syncGrade(entry, g, opts = {}) {
   }
   try {
     if (!navigator.onLine) throw Object.assign(new Error("offline"), { offline: true });
-    const { error } = await db.rpc("inv_veg_staff_save_count", {
+    const { error } = await rpc("inv_veg_staff_save_count", {
       p_staff_token: token,
       p_session_id: sessionId,
       p_item_id: entry.item_id,
@@ -579,6 +750,10 @@ async function syncGrade(entry, g, opts = {}) {
 }
 
 async function flushPending(opts = {}) {
+  if (offlineMode && navigator.onLine && !opts.skipReconnect) {
+    const ok = await reconnect({ silent: true });
+    if (!ok) return;
+  }
   const pending = [];
   entries.forEach((e) => entryPendingGrades(e).forEach((g) => pending.push([e, g])));
   if (!pending.length) return;
@@ -602,6 +777,7 @@ async function save() {
   button.textContent = lang === "hi" ? "सेव हो रहा है…" : lang === "gu" ? "સેવ થઈ રહ્યું છે…" : "Saving…";
 
   const entry = upsertEntry(selected);
+  forgetRemoved(entry.item_id);
   const previous = Number(entry.amounts[grade] || 0);
   entry.amounts[grade] = editing ? w : previous + w;
   if (grade === "DUMP") entry.reason = $("vegReason").value.trim();
@@ -633,6 +809,7 @@ async function removeSelected() {
   const entry = entries.find((e) => String(e.item_id) === String(editing.item_id));
   if (!entry) return;
   const previous = { ...entry.amounts };
+  noteRemoved(entry);
   GRADES.forEach((g) => {
     entry.amounts[g] = 0;
     if (Number(previous[g] || 0) > 0) entry.pending[g] = true;
@@ -657,15 +834,15 @@ async function removeSelected() {
    --------------------------------------------------------------------------- */
 
 async function start() {
-  const required = ["vegWorkspace","vegStaffTitle","vegDateLabel","vegSessionBadge","vegSearch","vegItems","vegEntry","vegSelected","vegWeight","vegReason","vegSaveBtn","vegFinishBtn","vegPdfBtn","vegShareBtn","vegClearBtn","vegRecentList","vegCountedBadge","vegSubmittedActions","vegQuickCard","vegRecent","vegFinishMsg","vegSaveMsg"];
+  const required = ["vegWorkspace","vegStaffTitle","vegDateLabel","vegSessionBadge","vegSearch","vegItems","vegEntry","vegSelected","vegWeight","vegReason","vegSaveBtn","vegFinishBtn","vegPdfBtn","vegShareBtn","vegClearBtn","vegRecentList","vegCountedBadge","vegSubmittedActions","vegQuickCard","vegRecent","vegFinishMsg","vegSaveMsg","vegConnStrip","vegConnText","vegConnRetry","vegChangesBtn","vegPdfNote"];
   const missing = required.filter((id) => !$(id));
   if (missing.length) throw new Error("Vegetable Inventory page is incomplete. Missing: " + missing.join(", "));
 
-  const { data, error } = await db.rpc("inv_veg_staff_start_session", { p_staff_token: token, p_date: today() });
+  const { data, error } = await rpc("inv_veg_staff_start_session", { p_staff_token: token, p_date: today() });
   if (error) throw error;
   sessionId = data;
 
-  const r = await db.rpc("inv_veg_staff_get_items", { p_staff_token: token });
+  const r = await rpc("inv_veg_staff_get_items", { p_staff_token: token });
   if (r.error) throw r.error;
   items = r.data || [];
 
@@ -698,10 +875,34 @@ async function start() {
   }
 
   saveLedger();
+  saveBootCache();
+  renderConnStrip();
+  updateExportState();
   if (restoreDraft()) {
     msg(t("restored"));
   }
   void flushPending({ silent: true }).then(scheduleSyncRetry);
+}
+
+/* the offline start: whatever the last successful boot cached, plus the ledger
+   on this phone. Nothing here waits for the network. */
+function startFromCache() {
+  const required = ["vegWorkspace","vegStaffTitle","vegDateLabel","vegSessionBadge","vegSearch","vegItems","vegEntry","vegSelected","vegWeight","vegReason","vegSaveBtn","vegFinishBtn","vegPdfBtn","vegShareBtn","vegClearBtn","vegRecentList","vegCountedBadge","vegQuickCard","vegRecent","vegFinishMsg","vegSaveMsg"];
+  const missing = required.filter((id) => !$(id));
+  if (missing.length) throw new Error("Vegetable Inventory page is incomplete. Missing: " + missing.join(", "));
+
+  restoreLedger();
+  renderItems();
+  renderRecent();
+  $("vegDateLabel").textContent = today();
+  $("vegSessionBadge").textContent = submitted ? "Submitted" : "Session open";
+  $("vegSessionBadge")?.classList.toggle("done", submitted);
+  if (submitted) hideEl("vegFinishBtn");
+  renderConnStrip();
+  updateExportState();
+  if (restoreDraft()) msg(t("restored"));
+  else msg(t("offlineBoot"));
+  scheduleSyncRetry();
 }
 
 /* a submitted session opened on a phone that has no local record shows the
@@ -744,12 +945,12 @@ function markSubmitted(rows) {
   $("vegFinishBtn").disabled = true;
   hideEl("vegFinishBtn");
   showEl("vegSubmittedActions");
-  if ($("vegPdfBtn")) $("vegPdfBtn").textContent = t("downloadPdf");
+  updateExportState();
   saveLedger();
 }
 
 async function loadSubmittedReport() {
-  const { data, error } = await db.rpc("inv_veg_staff_get_submitted_report", { p_staff_token: token, p_session_id: sessionId });
+  const { data, error } = await rpc("inv_veg_staff_get_submitted_report", { p_staff_token: token, p_session_id: sessionId });
   if (error) throw error;
   submittedRows = data || [];
   return submittedRows;
@@ -762,8 +963,9 @@ async function finish() {
     $("vegFinishMsg").textContent = "Some entries are still syncing. Reconnect and try again.";
     return;
   }
-  const { error } = await db.rpc("inv_veg_staff_submit_session", { p_staff_token: token, p_session_id: sessionId });
+  const { error } = await rpc("inv_veg_staff_submit_session", { p_staff_token: token, p_session_id: sessionId });
   if (error) return ($("vegFinishMsg").textContent = error.message);
+  captureBaseline();
   submitted = true;
   submittedAt = Date.now();
   markSubmitted(submittedRows.length ? submittedRows : entries);
@@ -775,6 +977,93 @@ async function finish() {
     /* the local ledger still has everything */
   }
   saveLedger();
+}
+
+/* ---------------------------------------------------------------------------
+   Changes — what this session did to the submitted numbers
+   --------------------------------------------------------------------------- */
+
+function captureBaseline() {
+  const snapshot = {};
+  entries.forEach((e) => {
+    snapshot[String(e.item_id)] = {
+      A: Number(e.amounts?.A || 0),
+      B: Number(e.amounts?.B || 0),
+      DUMP: Number(e.amounts?.DUMP || 0),
+    };
+  });
+  baseline = snapshot;
+  saveLedger();
+}
+
+function noteRemoved(entry) {
+  if (!entry) return;
+  const key = String(entry.item_id);
+  removed = removed.filter((r) => String(r.item_id) !== key);
+  removed.push({
+    item_id: entry.item_id,
+    name_en: entry.name_en,
+    name_hi: entry.name_hi,
+    name_gu: entry.name_gu,
+    amounts: {
+      A: Number(entry.amounts?.A || 0),
+      B: Number(entry.amounts?.B || 0),
+      DUMP: Number(entry.amounts?.DUMP || 0),
+    },
+  });
+}
+
+function forgetRemoved(itemId) {
+  removed = removed.filter((r) => String(r.item_id) !== String(itemId));
+}
+
+/* only rows that actually differ from what was submitted */
+function changeRows() {
+  const rows = [];
+  entries.forEach((e) => {
+    const key = String(e.item_id);
+    const before = baseline ? baseline[key] : e.localOnly ? { A: 0, B: 0, DUMP: 0 } : null;
+    if (!before) return;
+    GRADES.forEach((g) => {
+      const now = Number(e.amounts?.[g] || 0);
+      const was = Number(before[g] || 0);
+      if (Math.abs(now - was) > 0.0005) {
+        rows.push({ name: e.name_en || nameOf(e), grade: g, before: was, after: now });
+      }
+    });
+  });
+  removed.forEach((r) => {
+    GRADES.forEach((g) => {
+      const was = Number(r.amounts?.[g] || 0);
+      if (was > 0) rows.push({ name: r.name_en || r[`name_${lang}`] || "", grade: g, before: was, after: 0 });
+    });
+  });
+  return rows.sort((a, b) => a.name.localeCompare(b.name) || a.grade.localeCompare(b.grade));
+}
+
+/* decides what the export row offers right now */
+function updateExportState() {
+  const hasRows = reportRows().length > 0;
+  const hasChanges = changeRows().length > 0;
+  if ($("vegExport")) $("vegExport").classList.toggle("vegHidden", !hasRows && !hasChanges);
+  if ($("vegPdfBtn")) {
+    $("vegPdfBtn").textContent = t("downloadPdf");
+    $("vegPdfBtn").disabled = !hasRows;
+    $("vegPdfBtn").classList.toggle("vegHidden", !hasRows);
+  }
+  if ($("vegPdfNote")) {
+    $("vegPdfNote").textContent = hasRows && !submitted ? t("draftNote") : "";
+    $("vegPdfNote").classList.toggle("vegHidden", !hasRows || submitted);
+  }
+  if ($("vegChangesBtn")) {
+    $("vegChangesBtn").classList.toggle("vegHidden", !hasChanges);
+    $("vegChangesBtn").textContent = t("downloadChanges");
+  }
+  if ($("vegShareBtn")) {
+    $("vegShareBtn").classList.toggle("vegHidden", !navigator.share || !hasRows);
+    $("vegShareBtn").textContent = t("sharePdf");
+  }
+  renderConnStrip();
 }
 
 /* ---------------------------------------------------------------------------
@@ -793,6 +1082,9 @@ function reportRows() {
         total: entryTotal(e),
       }));
   }
+  /* this device submitted the count, so an empty list means the entries were
+     removed on purpose — never fall back to the older server numbers */
+  if (baseline) return [];
   const grouped = {};
   submittedRows.forEach((r) => {
     const key = String(r.name_en || "");
@@ -816,10 +1108,12 @@ function pdfData() {
   };
 }
 
-function makePdf() {
+function makePdf(mode) {
   const { jsPDF } = window.jspdf || {};
   if (!jsPDF) throw new Error("PDF engine is not loaded. Please refresh and try again.");
   const d = pdfData();
+  const isDraft = mode ? mode === "draft" : !submitted;
+  d.revised = !isDraft && submitted && hasLocalRevision();
   const doc = new jsPDF({ unit: "mm", format: "a4" });
   const now = new Date();
 
@@ -833,15 +1127,15 @@ function makePdf() {
   doc.text("Staff Name: " + d.staff, 14, 37);
   doc.text("Date: " + now.toLocaleDateString("en-IN"), 14, 43);
   doc.text("Time: " + now.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }), 14, 49);
-  if (d.revised) {
+  if (isDraft || d.revised) {
     doc.setTextColor(180, 83, 9);
-    doc.text("Revised copy — reflects the latest saved entries", 14, 55);
+    doc.text(isDraft ? "Draft — not yet submitted" : "Revised copy — reflects the latest saved entries", 14, 55);
     doc.setTextColor(0);
   }
 
   const x = [14, 92, 126, 160, 194];
   const w = [78, 34, 34, 34];
-  let y = d.revised ? 67 : 61;
+  let y = isDraft || d.revised ? 67 : 61;
 
   function tableHeader() {
     doc.setFillColor(239, 243, 248);
@@ -891,33 +1185,115 @@ function makePdf() {
   return doc;
 }
 
-function pdfFilename(ext) {
+function exportTag(mode) {
+  if (mode === "changes") return "changes";
+  if (mode === "draft" || !submitted) return "draft";
+  return hasLocalRevision() ? "revised" : "";
+}
+
+function pdfFilename(ext, tag) {
   const d = pdfData();
   return (
     "vegetable-count-" +
     d.date +
     "-" +
     String(d.staff).replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "").toLowerCase() +
-    (d.revised ? "-revised" : "") +
+    (tag ? "-" + tag : "") +
     "." +
     ext
   );
 }
 
+/* a short record of just what changed, with the number before and after */
+function makeChangesPdf() {
+  const { jsPDF } = window.jspdf || {};
+  if (!jsPDF) throw new Error("PDF engine is not loaded. Please refresh and try again.");
+  const rows = changeRows();
+  if (!rows.length) throw new Error(t("noChanges"));
+  const doc = new jsPDF({ unit: "mm", format: "a4" });
+  const now = new Date();
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(17);
+  doc.text("Bigly Agro Private Limited", 14, 18);
+  doc.setFontSize(13);
+  doc.text("Vegetable Count — Changes", 14, 27);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  doc.text("Staff Name: " + (staff || "Warehouse Staff"), 14, 37);
+  doc.text("Date: " + now.toLocaleDateString("en-IN"), 14, 43);
+  doc.text("Time: " + now.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }), 14, 49);
+  doc.setFont("helvetica", "italic");
+  doc.text("Only the entries added, edited or removed after the count was submitted.", 14, 56);
+  doc.setFont("helvetica", "normal");
+
+  let y = 68;
+  const head = () => {
+    doc.setFillColor(239, 243, 248);
+    doc.rect(14, y - 6, 180, 10, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.text("Item Name", 16, y);
+    doc.text("Grade", 118, y);
+    doc.text("Before", 146, y);
+    doc.text("Now", 174, y);
+    doc.line(14, y + 4, 194, y + 4);
+    doc.setFont("helvetica", "normal");
+    y += 11;
+  };
+  head();
+  rows.forEach((r) => {
+    if (y > 266) {
+      doc.addPage();
+      y = 18;
+      head();
+    }
+    doc.text(String(r.name).slice(0, 36), 16, y);
+    doc.text(shortGrade(r.grade), 118, y);
+    doc.text(r.before ? kg(r.before) : "—", 146, y);
+    doc.text(r.after ? kg(r.after) : "—", 174, y);
+    doc.line(14, y + 4, 194, y + 4);
+    y += 8;
+  });
+  if (y > 268) {
+    doc.addPage();
+    y = 18;
+  }
+  doc.setFont("helvetica", "bold");
+  doc.text(rows.length + (rows.length === 1 ? " change" : " changes"), 16, y);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.setTextColor(100);
+  doc.text("Change record generated on this device.", 14, 289);
+  doc.setTextColor(0);
+  return doc;
+}
+
 async function downloadPdf() {
   try {
-    const doc = makePdf();
-    doc.save(pdfFilename("pdf"));
+    const mode = submitted ? "final" : "draft";
+    const doc = makePdf(mode);
+    doc.save(pdfFilename("pdf", exportTag(mode)));
     $("vegFinishMsg").textContent = "PDF downloaded.";
   } catch (e) {
     $("vegFinishMsg").textContent = e.message || "Could not build the PDF.";
   }
 }
 
+async function downloadChanges() {
+  try {
+    const doc = makeChangesPdf();
+    doc.save(pdfFilename("pdf", "changes"));
+    $("vegFinishMsg").textContent = t("changesPdfDone");
+  } catch (e) {
+    $("vegFinishMsg").textContent = e.message || "Could not build the changes PDF.";
+  }
+}
+
 async function sharePdf() {
   try {
-    const doc = makePdf();
-    const name = pdfFilename("pdf");
+    const doc = makePdf(submitted ? "final" : "draft");
+    const name = pdfFilename("pdf", exportTag(submitted ? "final" : "draft"));
     const blob = doc.output("blob");
     const file = new File([blob], name, { type: "application/pdf" });
     if (navigator.share && (!navigator.canShare || navigator.canShare({ files: [file] }))) {
@@ -952,7 +1328,7 @@ function scheduleSyncRetry() {
 
 async function initGuest() {
   try {
-    const { data, error } = await db.rpc("inv_inventory_guest_session");
+    const { data, error } = await rpc("inv_inventory_guest_session");
     if (error) throw error;
     if (!data?.token) throw new Error("Inventory service returned no session.");
     token = data.token;
@@ -961,9 +1337,25 @@ async function initGuest() {
     sessionStorage.setItem("veg_staff", staff);
     showEl("vegWorkspace");
     $("vegStaffTitle").textContent = staff;
+    offlineMode = false;
     await start();
     hideEl("vegStartupError");
   } catch (e) {
+    const cached = isNetworkError(e) ? loadBootCache() : null;
+    if (cached) {
+      /* no signal at launch: count anyway, send everything when it returns */
+      token = cached.token || "";
+      staff = cached.staff || "Warehouse Staff";
+      sessionId = cached.sessionId || "";
+      items = cached.items;
+      offlineMode = true;
+      showEl("vegWorkspace");
+      hideEl("vegStartupError");
+      $("vegStaffTitle").textContent = staff;
+      startFromCache();
+      scheduleSyncRetry();
+      return;
+    }
     token = "";
     staff = "";
     sessionStorage.removeItem("veg_token");
@@ -992,6 +1384,11 @@ async function boot() {
     $("vegFinishBtn").onclick = finish;
     $("vegPdfBtn").onclick = downloadPdf;
     $("vegShareBtn").onclick = sharePdf;
+    $("vegChangesBtn").onclick = downloadChanges;
+    $("vegConnRetry").onclick = () => {
+      msg(t("reconnecting"));
+      void reconnect().then(() => renderConnStrip());
+    };
     if ($("vegDeleteBtn")) $("vegDeleteBtn").onclick = removeSelected;
     if (navigator.share) showEl("vegShareBtn");
     $("vegSearch").oninput = renderItems;
@@ -1023,7 +1420,20 @@ async function boot() {
   }
 }
 
-window.addEventListener("online", () => void flushPending({ silent: true }).then(scheduleSyncRetry));
+window.addEventListener("online", () => {
+  void reconnect({ silent: true }).then(() => flushPending({ silent: true }).then(scheduleSyncRetry));
+});
+window.addEventListener("offline", () => renderConnStrip());
+
+/* a refresh or a closed tab with something still waiting gets a warning; iOS
+   ignores this dialog, which is why every entry is written to the phone first */
+window.addEventListener("beforeunload", (e) => {
+  const typing = selected && String($("vegWeight")?.value || "").trim() !== "";
+  if (pendingCount() || typing) {
+    e.preventDefault();
+    e.returnValue = "";
+  }
+});
 window.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "visible") void flushPending({ silent: true });
 });
