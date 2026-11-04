@@ -1,0 +1,112 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="color-scheme" content="light">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#f6f8fb"><title>Vegetable Inward — Goods Received</title>
+<link rel="stylesheet" href="tokens.css?v=20261004-tokens1"><link rel="stylesheet" href="components.css?v=20261004-components1"><link rel="stylesheet" href="styles.css?v=20261102-veg1"><link rel="stylesheet" href="vegetable-inventory.css?v=20261102-veg1"><link rel="stylesheet" href="vegetable-inward.css?v=20261104-inward1">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Inward">
+<meta name="format-detection" content="telephone=no">
+<link rel="manifest" href="manifest-vegetable-inward.webmanifest">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/vegetable-180.png">
+<link rel="stylesheet" href="mobile.css?v=20261102-veg1">
+<link rel="stylesheet" href="ui.css?v=20261102-veg1">
+</head><body class="vegetableCountPage vegInwardPage"><main id="viApp">
+
+<header class="vegTopbar"><div><strong>Vegetable Inward</strong><span>Goods received</span></div><div class="vegTopActions"><span class="viBuild" id="viBuild">20261104-inward1</span></div></header>
+
+<div id="viStartup" class="vegStartupError vegHidden" role="status"></div>
+
+<section id="viWorkspace" class="vegHidden">
+
+  <div class="vegWelcome"><div><span class="vegKicker">TODAY</span><h1 id="viStaffTitle">Vegetable inward</h1><p id="viDateLabel"></p></div>
+    <div class="vegStatus"><span id="viSessionBadge" class="b-status b-status--ok">Session open</span><b id="viTodayCount">0 entries</b></div>
+  </div>
+
+  <p id="viRestored" class="viRestored vegHidden" role="status">Restored your unsaved entry</p>
+
+  <section class="vegQuickCard viCard">
+    <div class="vegQuickHead"><div><b>New entry</b><small>Vendor → vegetable → time → total weight.</small></div><span class="vegShortcut">kg</span></div>
+
+    <div class="viField">
+      <label class="viLabel" for="viVendorSearch">Vendor</label>
+      <div id="viVendorChips" class="viChips" role="group" aria-label="Recent vendors"></div>
+      <div class="viRow"><input id="viVendorSearch" class="vegSearch" placeholder="Search vendor…" autocomplete="off" enterkeyhint="search" aria-label="Search vendor"><button type="button" id="viAddVendorBtn" class="viSmallBtn">+ Add vendor</button></div>
+      <div id="viVendorList" class="viPickList vegHidden" role="listbox" aria-label="Vendors"></div>
+      <p id="viVendorPicked" class="viPicked"></p>
+    </div>
+
+    <div class="viField">
+      <label class="viLabel" for="viItemSearch">Vegetable</label>
+      <input id="viItemSearch" class="vegSearch" placeholder="Search vegetable…" autocomplete="off" enterkeyhint="search" aria-label="Search vegetable">
+      <div id="viItemList" class="vegItemList viItemList" role="listbox" aria-label="Vegetables"></div>
+      <p id="viItemPicked" class="viPicked"></p>
+    </div>
+
+    <div class="viField viFieldTime">
+      <label class="viLabel" for="viTime">Time of receiving</label>
+      <input id="viTime" class="viInput" type="datetime-local" step="60">
+    </div>
+
+    <div class="viField">
+      <label class="viLabel" for="viTotal">Total weight (kg)</label>
+      <div class="vegQtyRow viQty"><label for="viTotal">Total</label><input id="viTotal" type="text" inputmode="decimal" autocomplete="off" placeholder="0.000" aria-describedby="viLive"><span>kg</span></div>
+    </div>
+
+    <div class="viSortBlock">
+      <div class="viSortHead"><b>Sorting <span class="viOptional">optional</span></b><small>Leave empty to save as sorting pending.</small></div>
+      <div class="viGradeGrid">
+        <label class="viGrade"><span>A grade</span><input id="viA" type="text" inputmode="decimal" autocomplete="off" placeholder="0.000"></label>
+        <label class="viGrade"><span>B grade</span><input id="viB" type="text" inputmode="decimal" autocomplete="off" placeholder="0.000"></label>
+        <label class="viGrade"><span>Dump</span><input id="viDump" type="text" inputmode="decimal" autocomplete="off" placeholder="0.000"></label>
+      </div>
+      <div id="viLive" class="viLive" role="status" aria-live="polite">Sorted 0 of 0 kg, unaccounted 0 kg</div>
+    </div>
+
+    <label class="viField viNotes"><span class="viLabel">Note (optional)</span><textarea id="viNotes" rows="2" maxlength="500" placeholder="Anything to remember"></textarea></label>
+
+    <div id="viWarn" class="viWarn vegHidden" role="alert"></div>
+    <p id="viMsg" class="vegMsg" role="status" aria-live="polite"></p>
+    <div class="viActions"><button id="viSave" class="vegSave viSave" type="button">Save</button><button id="viSaveAnother" class="vegSecondary viSaveAnother" type="button">Save &amp; add another</button></div>
+  </section>
+
+  <section class="vegRecent viPanel">
+    <div class="vegRecentHead"><b>Sorting pending</b><small id="viPendingCount">0 waiting</small></div>
+    <div id="viPending" class="vegRecentList"><span class="vegEmpty">Nothing waiting for sorting.</span></div>
+  </section>
+
+  <section class="vegRecent viPanel">
+    <div class="vegRecentHead"><b>Today's entries</b><small id="viTodayHelp">Newest first</small></div>
+    <div id="viTodayList" class="vegRecentList"><span class="vegEmpty">No entries yet today.</span></div>
+  </section>
+
+  <p class="viFooterNote">Entries are separate trips. The same vendor and vegetable can come again on the same day.</p>
+</section>
+
+<div id="viSyncBar" class="viSyncBar" role="status" aria-live="polite"><span id="viSyncText">All saved</span><button id="viSyncNow" class="viSyncBtn" type="button">Sync now</button></div>
+</main>
+
+<dialog id="viVendorDialog" class="viDialog"><form method="dialog" id="viVendorForm">
+  <h3>Add vendor</h3>
+  <label class="viLabel" for="viVendorName">Vendor name</label>
+  <input id="viVendorName" class="viInput" type="text" maxlength="60" autocomplete="off" placeholder="Vendor name" required>
+  <p id="viVendorMsg" class="vegMsg"></p>
+  <div class="viDialogActions"><button type="button" id="viVendorCancel" class="vegSecondary">Cancel</button><button type="submit" id="viVendorSave" class="vegPrimary">Save vendor</button></div>
+</form></dialog>
+
+<dialog id="viSortDialog" class="viDialog"><form method="dialog" id="viSortForm">
+  <h3 id="viSortTitle">Add sorting</h3>
+  <p id="viSortMeta" class="viSortMeta"></p>
+  <div class="viGradeGrid">
+    <label class="viGrade"><span>A grade</span><input id="viSortA" type="text" inputmode="decimal" autocomplete="off" placeholder="0.000"></label>
+    <label class="viGrade"><span>B grade</span><input id="viSortB" type="text" inputmode="decimal" autocomplete="off" placeholder="0.000"></label>
+    <label class="viGrade"><span>Dump</span><input id="viSortDump" type="text" inputmode="decimal" autocomplete="off" placeholder="0.000"></label>
+  </div>
+  <div id="viSortLive" class="viLive">Sorted 0 of 0 kg, unaccounted 0 kg</div>
+  <p id="viSortMsg" class="vegMsg"></p>
+  <div class="viDialogActions"><button type="button" id="viSortCancel" class="vegSecondary">Cancel</button><button type="submit" id="viSortSave" class="vegPrimary">Save sorting</button></div>
+</form></dialog>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js?v=20261102-veg1"></script>
+<script src="vegetable-inward.js?v=20261104-inward1"></script>
+</body></html>
