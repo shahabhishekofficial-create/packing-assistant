@@ -1,0 +1,106 @@
+/* Vegetable Inward — staff entry screen.
+   Same tokens, cards and type scale as the vegetable count pages. Only the
+   inward-specific blocks live here. 20261104-inward1 */
+
+.vegInwardPage{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
+.vegInwardPage #viApp{max-width:760px;margin:auto;padding:0 14px 18px}
+
+.viBuild{display:inline-flex;align-items:center;gap:6px;padding:6px 9px;border:1px solid #dbe2ea;border-radius:999px;background:#f8fafc;color:#667085;font:800 10px/1 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:nowrap}
+
+.viCard{padding:14px}
+.viField{display:block;margin:0 0 14px;min-width:0}
+.viField:last-of-type{margin-bottom:6px}
+.viLabel{display:block;margin:0 0 6px;font-size:11px;font-weight:850;color:#475467;letter-spacing:.02em}
+.viRow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center}
+.viSmallBtn{min-height:48px;padding:0 14px;border:1px solid #3155e7;border-radius:12px;background:#eef2ff;color:#1f3bbf;font:800 12px/1 inherit;white-space:nowrap;cursor:pointer}
+.viSmallBtn:active{background:#e0e7ff}
+
+/* vendor chips + pick list ------------------------------------------------ */
+.viChips{display:flex;gap:6px;overflow-x:auto;padding:2px 1px 8px;margin:0 -2px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.viChips::-webkit-scrollbar{display:none}
+.viChip{flex:0 0 auto;min-height:38px;padding:8px 13px;border:1px solid #d5dce6;border-radius:999px;background:#fff;color:#344054;font:800 12px/1 inherit;cursor:pointer;white-space:nowrap}
+.viChip.selected{background:#3155e7;border-color:#3155e7;color:#fff}
+
+.viPickList{display:grid;gap:5px;margin-top:8px;max-height:264px;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:2px}
+.viPick{display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px;width:100%;min-height:46px;padding:9px 11px;border:1px solid #e3e7ed;border-radius:10px;background:#fff;color:#101828;text-align:left;font:inherit;cursor:pointer}
+.viPick b{display:block;font-size:13px;font-weight:800}
+.viPick small{display:block;color:#667085;font-size:10px;margin-top:2px}
+.viPick.selected{border-color:#3155e7;background:#f2f5ff}
+.viPick>span{color:#98a2b3;font-size:18px}
+.viPicked{margin:7px 0 0;min-height:14px;font-size:11.5px;font-weight:800;color:#0b6b3a}
+.viPicked:empty{display:none}
+
+.viInput{width:100%;height:50px;border:2px solid #d6dde7;border-radius:12px;padding:0 13px;background:#fff;color:#101828;font:inherit;font-size:16px;outline:none}
+.viInput:focus,.vegInwardPage .vegSearch:focus,.viGrade input:focus,.viNotes textarea:focus{border-color:#3155e7;box-shadow:0 0 0 3px #3155e71a}
+
+/* weights ----------------------------------------------------------------- */
+.viQty input{font-size:28px}
+.viSortBlock{margin:4px 0 12px;padding:12px;border:1px solid #e7eeea;border-radius:12px;background:#f8fafc}
+.viSortHead{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:9px}
+.viSortHead b{font-size:12.5px}
+.viSortHead small{font-size:10px;color:#667085;text-align:right}
+.viOptional{margin-left:4px;padding:2px 6px;border-radius:999px;background:#eef2f7;color:#667085;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.04em}
+.viGradeGrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.viGrade{display:block;min-width:0}
+.viGrade span{display:block;margin-bottom:5px;font-size:10px;font-weight:850;color:#475467}
+.viGrade input{width:100%;height:52px;border:2px solid #d6dde7;border-radius:11px;padding:0 10px;background:#fff;color:#101828;font:inherit;font-size:16px;font-weight:800;outline:none;text-align:right}
+.viLive{margin-top:9px;padding:9px 11px;border-radius:10px;background:#eef4ff;color:#1d3a8a;font-size:12px;font-weight:800;line-height:1.45}
+.viLive.over{background:#fef2f2;color:#991b1b}
+
+.viNotes textarea{width:100%;border:1px solid #d6dde7;border-radius:10px;padding:10px;background:#fff;font:inherit;font-size:16px;resize:none;outline:none}
+
+.viWarn{margin:10px 0 0;padding:10px 12px;border:1px solid #fcd34d;border-radius:11px;background:#fffbeb;color:#92400e;font-size:12px;font-weight:750;line-height:1.5}
+.viWarn.danger{border-color:#fca5a5;background:#fef2f2;color:#991b1b}
+
+.viActions{display:grid;grid-template-columns:1fr;gap:8px;margin-top:12px}
+.viActions .vegSave{position:static;width:100%;margin:0;height:54px}
+.viActions .viSaveAnother{min-height:48px;background:#f8fafc}
+.viSave:disabled,.viSaveAnother:disabled{opacity:.55;cursor:wait}
+
+/* lists ------------------------------------------------------------------- */
+.viPanel{padding:12px;margin-bottom:10px}
+.viEntry{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:9px;border-radius:10px;background:#f8fafc}
+.viEntryMain{min-width:0}
+.viEntryMain b{display:block;font-size:12.5px;line-height:1.25;overflow-wrap:anywhere}
+.viEntryMain small{display:block;margin-top:3px;color:#667085;font-size:10px;line-height:1.4;overflow-wrap:anywhere}
+.viEntrySide{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex:0 0 auto}
+.viEntryKg{font-size:12.5px;font-weight:900;color:#0b6b3a;white-space:nowrap}
+.viEntryBtn{min-height:34px;padding:6px 11px;border:1px solid #d6dde7;border-radius:9px;background:#fff;color:#3155e7;font:800 11.5px/1 inherit;cursor:pointer}
+.viBadge{display:inline-block;padding:3px 7px;border-radius:999px;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+.viBadge.saved{background:#ecfdf3;color:#067647}
+.viBadge.waiting{background:#fff4dc;color:#92400e}
+.viBadge.failed{background:#fef2f2;color:#b42318}
+.viBadge.pending{background:#eef2f7;color:#475467}
+
+.viRestored{margin:0 0 10px;padding:9px 12px;border:1px solid #b7ebce;border-radius:11px;background:#ecfdf3;color:#067647;font-size:11.5px;font-weight:800}
+
+/* bottom status bar + dialogs -------------------------------------------- */
+.viSyncBar{position:fixed;left:0;right:0;bottom:0;z-index:60;display:flex;align-items:center;gap:10px;padding:10px 14px calc(10px + env(safe-area-inset-bottom));border-top:1px solid #e2e8f0;background:#fff;box-shadow:0 -6px 20px #0f172a14;font-size:12px;font-weight:800;color:#475467}
+.viSyncBar>span{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.viSyncBar.warn{border-top-color:#fcd34d;background:#fffbeb;color:#92400e}
+.viSyncBar.error{border-top-color:#fca5a5;background:#fef2f2;color:#991b1b}
+.viSyncBtn{min-height:40px;padding:0 14px;border:1px solid currentColor;border-radius:10px;background:#fff;color:inherit;font:800 11.5px/1 inherit;cursor:pointer}
+.viSyncBtn:disabled{opacity:.5;cursor:wait}
+
+.viDialog{width:min(94vw,440px);max-width:440px;border:0;border-radius:18px;padding:18px;background:#fff;color:#10203a;box-shadow:0 24px 60px #0f172a33}
+.viDialog::backdrop{background:#0f172a66}
+.viDialog h3{margin:0 0 12px;font-size:17px}
+.viDialog .viGradeGrid{margin-bottom:10px}
+.viDialogActions{display:grid;grid-template-columns:1fr 1.2fr;gap:8px;margin-top:12px}
+.viDialogActions .vegPrimary,.viDialogActions .vegSecondary{min-height:48px}
+.viSortMeta{margin:0 0 10px;color:#475467;font-size:12px;line-height:1.5}
+
+@media (max-width:520px){
+  .vegInwardPage #viApp{padding:0 10px 12px}
+  .viCard{padding:11px}
+  .viRow{grid-template-columns:1fr;gap:6px}
+  .viSmallBtn{min-height:44px}
+  .viGradeGrid{grid-template-columns:1fr 1fr}
+  .viDialog{width:calc(100vw - 20px);padding:15px}
+  .viEntry{gap:8px}
+}
+
+@media (min-width:700px){
+  .viActions{grid-template-columns:1fr 1fr}
+  .viChips{flex-wrap:wrap;overflow:visible}
+}

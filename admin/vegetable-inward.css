@@ -1,0 +1,115 @@
+/* Vegetable Inward — admin dashboard.
+   Same green admin palette as Payments/Expenses. 20261104-inward1 */
+
+:root{color-scheme:light;--viGreen:#176b45;--viDark:#105638;--viBg:#f4f8f5;--viBorder:#dce7df;--viText:#193b2b;--viMuted:#657b6d}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;width:100%;max-width:100%;overflow-x:hidden}
+body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--viBg);color:var(--viText);font-size:15px;padding-bottom:calc(96px + env(safe-area-inset-bottom))}
+[hidden]{display:none!important}
+#viAdminBoot{min-height:100vh;display:grid;place-items:center;padding:24px;color:var(--viDark);font-weight:700}
+
+.viShell{width:min(1180px,100%);margin:0 auto;padding:18px}
+.viHeader{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:10px 2px 16px;flex-wrap:wrap}
+.viHeader small{font-size:10px;letter-spacing:.12em;color:var(--viMuted);font-weight:800}
+.viHeader h1{font-size:24px;margin:4px 0 0}
+.viHeaderActions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.viLink,.viPrimary,.viSecondary{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:9px 13px;border-radius:10px;font:inherit;font-size:13px;font-weight:750;text-decoration:none;cursor:pointer;border:1px solid var(--viBorder);background:#fff;color:var(--viText)}
+.viPrimary{background:var(--viDark);border-color:var(--viDark);color:#fff}
+.viPrimary:disabled,.viSecondary:disabled{opacity:.55;cursor:wait}
+.viBuild{font:800 10px/1 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--viMuted);background:#fff;border:1px solid var(--viBorder);border-radius:999px;padding:7px 10px}
+
+.viPanel{background:#fff;border:1px solid var(--viBorder);border-radius:15px;box-shadow:0 4px 18px #183b2910;padding:16px;margin-bottom:14px;min-width:0}
+.viPanelHead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+.viPanelHead small{font-size:10px;letter-spacing:.12em;color:var(--viMuted);font-weight:800}
+.viPanelHead h2{font-size:18px;margin:4px 0 0}
+.viMuted{color:var(--viMuted);font-size:12px;margin:6px 0 0;line-height:1.5}
+
+.viPresets{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.viPresets button{min-height:36px;padding:7px 12px;border:1px solid var(--viBorder);border-radius:999px;background:#fff;color:var(--viText);font:750 12px/1 inherit;cursor:pointer}
+.viPresets button.active{background:var(--viDark);border-color:var(--viDark);color:#fff}
+.viFilterRow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.viFilterRow label,.viInline{display:grid;gap:5px;font-size:11px;font-weight:750;color:#385745;min-width:0}
+.viFilterRow input,.viFilterRow select,.viInline select,.viDialog input,.viDialog select,.viDialog textarea{width:100%;min-width:0;min-height:42px;padding:9px 10px;border:1px solid #cbd9cf;border-radius:9px;background:#fff;color:var(--viText);font:inherit;font-size:14px}
+.viInline{grid-auto-flow:column;align-items:center;gap:8px}
+.viInline select{width:auto;min-width:180px}
+
+.viCards{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.viCard{background:#fff;border:1px solid var(--viBorder);border-radius:14px;padding:13px;min-width:0}
+.viCard span{display:block;font-size:11px;font-weight:750;color:var(--viMuted)}
+.viCard strong{display:block;margin:7px 0 3px;font-size:clamp(17px,2.4vw,23px);line-height:1.2;overflow-wrap:anywhere}
+.viCard small{font-size:10.5px;color:var(--viMuted)}
+.viCard.viCardWarn{background:#fffbeb;border-color:#fcd34d}
+
+.viTableScroll{overflow-x:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;border:1px solid #eef2f0;border-radius:10px}
+table.viTable{width:100%;border-collapse:collapse;font-size:12px;min-width:820px}
+table.viTable th{background:#f8faf9;color:#64748b;font-size:10px;text-transform:uppercase;letter-spacing:.05em;text-align:right;padding:9px 10px;white-space:nowrap;position:sticky;top:0}
+table.viTable th:first-child,table.viTable td:first-child{text-align:left}
+table.viTable td{padding:9px 10px;border-top:1px solid #eef2f0;text-align:right;white-space:nowrap;color:#334155}
+table.viTable td:first-child{white-space:normal}
+table.viTable tr.viItemRow td{background:#f2f7f4;font-weight:800;color:#0f3d29}
+table.viTable tr.viTotalRow td{background:#e8f2ec;font-weight:900;color:#0b3a26;border-top:2px solid #cfe2d6}
+table.viTable tr.viVendorRow{cursor:pointer}
+table.viTable tr.viVendorRow:hover td{background:#f7fbf8}
+table.viTable .viName{font-weight:750}
+table.viTable .viSub{display:block;font-weight:500;color:#7b8f83;font-size:10.5px;margin-top:2px}
+
+.viBar{display:flex;height:8px;min-width:110px;border-radius:999px;overflow:hidden;background:#edf1ee;margin-top:5px}
+.viBar i{display:block;height:100%}
+.viBar i.a{background:#15803d}
+.viBar i.b{background:#65a30d}
+.viBar i.d{background:#b45309}
+
+.viCompare{display:grid;gap:8px}
+.viCompareRow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px;border:1px solid #eef2f0;border-radius:10px;background:#fbfdfb}
+.viCompareRow b{display:block;font-size:13px}
+.viCompareRow small{display:block;color:var(--viMuted);font-size:11px;margin-top:3px}
+.viComparePct{font-weight:850;font-size:13px;text-align:right;white-space:nowrap}
+
+.viEntryList{display:grid;gap:8px}
+.viEntryRow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:11px;border:1px solid #eef2f0;border-radius:11px;background:#fff}
+.viEntryRow b{display:block;font-size:13px;overflow-wrap:anywhere}
+.viEntryRow small{display:block;color:var(--viMuted);font-size:11px;margin-top:3px;line-height:1.5;overflow-wrap:anywhere}
+.viEntryRow .viRight{display:grid;justify-items:end;gap:6px}
+.viPill{display:inline-block;padding:3px 8px;border-radius:999px;font-size:10px;font-weight:850;text-transform:uppercase;letter-spacing:.04em}
+.viPill.sorted{background:#ecfdf3;color:#067647}
+.viPill.pending{background:#fff7e6;color:#8a4b08}
+.viPill.deleted{background:#fef2f2;color:#b42318}
+.viEntryButtons{display:flex;gap:6px}
+.viEntryButtons button{min-height:34px;padding:6px 10px;font-size:12px}
+.viDanger{color:#9b2828;border-color:#edcaca}
+.viPager{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;flex-wrap:wrap}
+
+.viVendorRowAdmin{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px;border:1px solid #eef2f0;border-radius:10px;background:#fbfdfb;margin-bottom:8px}
+.viVendorRowAdmin.off{background:#fafafa;border-color:#eceaea}
+.viVendorRowAdmin b{font-size:13px}
+.viVendorRowAdmin small{display:block;color:var(--viMuted);font-size:11px;margin-top:2px}
+
+.viDeletedNote{margin:10px 0 0;padding:10px 12px;border:1px solid #fca5a5;border-radius:10px;background:#fef2f2;color:#991b1b;font-size:12.5px;font-weight:750}
+
+.viDialog{width:min(94vw,480px);max-width:480px;max-height:88vh;border:0;border-radius:16px;padding:18px;background:#fff;color:var(--viText);box-shadow:0 24px 60px #183b2926;overflow-y:auto}
+.viDialog::backdrop{background:#0f172a66}
+.viDialog h3{margin:0 0 10px;font-size:17px}
+.viDialog label{display:grid;gap:5px;font-size:11px;font-weight:750;color:#385745;margin-bottom:10px}
+.viDialogGrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.viDialogActions{display:grid;grid-template-columns:1fr 1.2fr;gap:8px;margin-top:14px}
+.viDialogMsg{min-height:16px;margin:6px 0 0;font-size:12px;color:#8b3030;font-weight:650}
+.viExportRow{display:flex;gap:8px;flex-wrap:wrap}
+.viExportMsg{margin:8px 0 0;font-size:12px;color:var(--viMuted);min-height:16px}
+
+#viStatus{position:fixed;left:0;right:0;bottom:0;z-index:9999;margin:0;padding:12px 18px calc(12px + env(safe-area-inset-bottom));background:#fff;border-top:1px solid var(--viBorder);box-shadow:0 -4px 18px #183b2910;font-size:13px;color:var(--viText);overflow-wrap:anywhere}
+#viStatus[hidden]{display:none!important}
+.viFooter{padding:6px 4px 18px;text-align:center;color:var(--viMuted);font-size:11px}
+
+@media(max-width:1024px){.viCards{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:760px){
+  .viShell{padding:12px}
+  .viFilterRow{grid-template-columns:1fr 1fr}
+  .viCards{grid-template-columns:1fr 1fr}
+  .viPanel{padding:13px}
+  .viHeader h1{font-size:20px}
+  .viInline{grid-auto-flow:row}
+  .viInline select{width:100%}
+  .viEntryRow{grid-template-columns:1fr}
+  .viEntryRow .viRight{justify-items:start}
+}
+@media(max-width:420px){.viCards{grid-template-columns:1fr}.viFilterRow{grid-template-columns:1fr}}

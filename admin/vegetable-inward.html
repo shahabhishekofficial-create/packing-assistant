@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="color-scheme" content="light">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#176b45">
+<title>Vegetable Inward | Bigly Agro Admin</title>
+<link rel="stylesheet" href="./vegetable-inward.css?v=20261104-inward1">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Inward">
+<meta name="format-detection" content="telephone=no">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" sizes="180x180" href="../icons/admin-180.png">
+<link rel="stylesheet" href="../mobile.css?v=20261102-veg1">
+<link rel="stylesheet" href="../ui.css?v=20261102-veg1">
+</head><body>
+<div id="viAdminBoot" role="status">Checking secure admin session…</div>
+
+<main id="viAdminApp" class="viShell" hidden>
+  <header class="viHeader">
+    <div><small>ADMIN · VEGETABLES</small><h1>Vegetable Inward</h1></div>
+    <div class="viHeaderActions">
+      <span class="viBuild">20261104-inward1</span>
+      <a class="viLink" href="./vegetable-inventory.html">Vegetable Inventory</a>
+    </div>
+  </header>
+
+  <section class="viPanel">
+    <div class="viPanelHead"><div><small>PERIOD AND FILTERS</small><h2>Inward dashboard</h2></div><button id="viRefresh" class="viSecondary" type="button">Refresh</button></div>
+    <div class="viPresets" id="viPresets" role="group" aria-label="Period">
+      <button type="button" data-preset="today" class="active">Today</button>
+      <button type="button" data-preset="yesterday">Yesterday</button>
+      <button type="button" data-preset="week">This week</button>
+      <button type="button" data-preset="month">This month</button>
+      <button type="button" data-preset="custom">Custom</button>
+    </div>
+    <div class="viFilterRow">
+      <label>From<input type="date" id="viFrom"></label>
+      <label>To<input type="date" id="viTo"></label>
+      <label>Vegetable<select id="viItemFilter"><option value="">All vegetables</option></select></label>
+      <label>Vendor<select id="viVendorFilter"><option value="">All vendors</option></select></label>
+    </div>
+    <p class="viMuted" id="viRangeLabel">Loading…</p>
+  </section>
+
+  <section class="viCards" id="viCards" aria-label="Period totals">
+    <article class="viCard"><span>Total received</span><strong id="viCardTotal">—</strong><small id="viCardTotalSub">All trips in the period</small></article>
+    <article class="viCard"><span>A grade</span><strong id="viCardA">—</strong><small id="viCardASub">—</small></article>
+    <article class="viCard"><span>B grade</span><strong id="viCardB">—</strong><small id="viCardBSub">—</small></article>
+    <article class="viCard"><span>Dump</span><strong id="viCardDump">—</strong><small id="viCardDumpSub">—</small></article>
+    <article class="viCard viCardWarn"><span>Sorting pending</span><strong id="viCardPending">—</strong><small id="viCardPendingSub">Waiting to be sorted</small></article>
+    <article class="viCard"><span>Trips</span><strong id="viCardTrips">—</strong><small id="viCardTripsSub">Separate entries</small></article>
+  </section>
+
+  <section class="viPanel">
+    <div class="viPanelHead"><div><small>GROUPED</small><h2>By vegetable and vendor</h2></div></div>
+    <p class="viMuted">Each vegetable has a subtotal row; every vendor trip group is below it. Percentages are calculated by the database from sorted entries only.</p>
+    <div class="viTableScroll">
+      <table class="viTable" id="viSummaryTable">
+        <thead><tr><th>Vegetable / Vendor</th><th>Trips</th><th>Total</th><th>A kg</th><th>A %</th><th>B kg</th><th>B %</th><th>Dump kg</th><th>Dump %</th><th>Pending</th></tr></thead>
+        <tbody id="viSummaryBody"><tr><td colspan="10">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="viPanel">
+    <div class="viPanelHead"><div><small>ONE VEGETABLE</small><h2>Vendor comparison</h2></div><label class="viInline">Vegetable<select id="viCompareItem"></select></label></div>
+    <div id="viCompare" class="viCompare"><p class="viMuted">Choose a vegetable to compare its vendors by A grade.</p></div>
+  </section>
+
+  <section class="viPanel">
+    <div class="viPanelHead"><div><small>ENTRIES</small><h2>Inward entries</h2></div>
+      <label class="viInline">Show<select id="viStatusFilter"><option value="all">All entries</option><option value="pending">Sorting pending</option><option value="sorted">Sorted</option></select></label>
+    </div>
+    <div id="viEntryList" class="viEntryList"><p class="viMuted">Loading entries…</p></div>
+    <div class="viPager"><span class="viMuted" id="viEntryCount">—</span><span><button id="viPrevPage" class="viSecondary" type="button" disabled>Previous</button> <button id="viNextPage" class="viSecondary" type="button" disabled>Next</button></span></div>
+    <p id="viEntryMessage" class="viDeletedNote" hidden></p>
+  </section>
+
+  <section class="viPanel">
+    <div class="viPanelHead"><div><small>VENDORS</small><h2>Vendors</h2></div><button id="viAddVendorBtn" class="viPrimary" type="button">+ Add vendor</button></div>
+    <p class="viMuted">Vendors are never deleted. Deactivating hides them from the staff screen; old entries stay.</p>
+    <div id="viVendorList"><p class="viMuted">Loading vendors…</p></div>
+  </section>
+
+  <section class="viPanel">
+    <div class="viPanelHead"><div><small>EXPORT</small><h2>Download or share</h2></div></div>
+    <div class="viExportRow">
+      <label class="viInline">Format<select id="viExportFormat"><option value="xlsx">Excel (.xlsx)</option><option value="pdf">PDF (.pdf)</option></select></label>
+      <button id="viExportPrepare" class="viPrimary" type="button">Prepare</button>
+      <button id="viExportDownload" class="viSecondary" type="button" hidden>Download</button>
+      <button id="viExportShare" class="viSecondary" type="button" hidden>Share</button>
+    </div>
+    <p id="viExportMessage" class="viExportMsg">The current period and filters are used. Libraries load only when you tap Prepare.</p>
+  </section>
+
+  <footer class="viFooter">Vegetable inward · build 20261104-inward1 · totals from the database summary</footer>
+</main>
+
+<p id="viStatus" role="status" aria-live="polite" hidden></p>
+
+<dialog id="viVendorDialog" class="viDialog"><form method="dialog" id="viVendorForm">
+  <h3 id="viVendorDialogTitle">Add vendor</h3>
+  <label>Vendor name<input id="viVendorName" type="text" maxlength="60" autocomplete="off" placeholder="Vendor name" required></label>
+  <p class="viDialogMsg" id="viVendorMsg"></p>
+  <div class="viDialogActions"><button type="button" class="viSecondary" id="viVendorCancel">Cancel</button><button type="submit" class="viPrimary" id="viVendorSave">Save vendor</button></div>
+</form></dialog>
+
+<dialog id="viEntryDialog" class="viDialog"><form method="dialog" id="viEntryForm">
+  <h3>Edit inward entry</h3>
+  <p class="viMuted" id="viEntryMeta"></p>
+  <label>Total weight (kg)<input id="viEditTotal" type="text" inputmode="decimal" autocomplete="off"></label>
+  <div class="viDialogGrid">
+    <label>A grade<input id="viEditA" type="text" inputmode="decimal" autocomplete="off" placeholder="0.000"></label>
+    <label>B grade<input id="viEditB" type="text" inputmode="decimal" autocomplete="off" placeholder="0.000"></label>
+    <label>Dump<input id="viEditDump" type="text" inputmode="decimal" autocomplete="off" placeholder="0.000"></label>
+  </div>
+  <label>Note<input id="viEditNotes" type="text" maxlength="500" autocomplete="off"></label>
+  <label>Reason for the change (required)<input id="viEditReason" type="text" maxlength="300" autocomplete="off" placeholder="Why is this being corrected?"></label>
+  <p class="viDialogMsg" id="viEditMsg"></p>
+  <div class="viDialogActions"><button type="button" class="viSecondary" id="viEditCancel">Cancel</button><button type="submit" class="viPrimary" id="viEditSave">Save correction</button></div>
+</form></dialog>
+
+<dialog id="viDeleteDialog" class="viDialog"><form method="dialog" id="viDeleteForm">
+  <h3>Delete inward entry</h3>
+  <p class="viMuted" id="viDeleteMeta"></p>
+  <label>Reason for deleting (required)<input id="viDeleteReason" type="text" maxlength="300" autocomplete="off" placeholder="Why is this entry removed?"></label>
+  <p class="viDialogMsg" id="viDeleteMsg"></p>
+  <div class="viDialogActions"><button type="button" class="viSecondary" id="viDeleteCancel">Cancel</button><button type="submit" class="viPrimary" id="viDeleteConfirm">Delete entry</button></div>
+</form></dialog>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1"></script>
+<script src="../config.js?v=20261102-veg1"></script>
+<script defer src="../vegetable-inward-export.js?v=20261104-inward1"></script>
+<script src="./auth.js?v=20261014-expenses1"></script>
+<script defer src="./vegetable-inward.js?v=20261104-inward1"></script>
+<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js?v=20261102-veg1",{scope:"./",updateViaCache:"none"}).catch(()=>{}));}</script>
+</body></html>
