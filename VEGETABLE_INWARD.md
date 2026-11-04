@@ -73,6 +73,11 @@ Row level security is on for all three tables. `public`, `anon` and
 
 ## 4. API
 
+Entry rows are read as plain rows; vegetable and vendor names are joined inside
+the function from two small lookups (`veg_inward_item_names()` and the vendor
+table). Foreign-key embedding is deliberately not used, so the screen does not
+depend on PostgREST's relationship cache.
+
 Endpoint: `POST /functions/v1/veg-inward-api` (JWT verification off; the session
 gate below is the authority). CORS allows the project site origin only. The
 function logs the action name and the result code, nothing else.
@@ -149,8 +154,9 @@ links can be removed from the two existing pages.
 
 ## 9. Built, tested, untested
 
-**Built:** database objects and helpers (applied), API (deployed as version 2),
-staff screen, admin dashboard, export module, links, this document.
+**Built:** database objects and helpers (applied, including
+`veg_inward_item_names()`), API (deployed as version 3), staff screen, admin
+dashboard, export module, links, this document.
 
 **Tested:**
 
@@ -166,7 +172,8 @@ staff screen, admin dashboard, export module, links, this document.
 * Privileges and row level security read back after applying.
 * Existing table row counts compared before and after the migration: unchanged.
 * The helper functions were called through the connector: an unknown token
-  returns no role, and the item list returns the live vegetable list.
+  returns no role, the item list returns the live vegetable list, and the
+  name list returns every item including inactive ones.
 * Front-end: 31 headless checks against a stubbed data layer, all passing —
   staff boot and build stamp, the live sorted/unaccounted line, an entry saved
   with integer grams and a phone-made id, the second-truck warning and its one
@@ -180,7 +187,9 @@ staff screen, admin dashboard, export module, links, this document.
 
 **Not tested**
 
-* Nothing has been run on a real phone by the user yet.
+* Nothing has been run on a real phone by the user yet. The first phone attempt
+  failed to load the list; the cause and the fix are in `PROJECT_STATUS.md`, and
+  the fixed build has only been checked in a headless browser.
 * The API has not been exercised end to end from a browser in this environment
   (the sandbox cannot reach the project domain, and the function only answers the
   site origin). Server responses in the front-end checks were stubbed.
