@@ -37,6 +37,7 @@
     sortTarget: null,
     draftId: "",
     restoreNotice: false,
+    loadFailed: false,
   };
 
   /* ---------------------------------------------------------------- helpers */
@@ -599,13 +600,15 @@
     const waiting = state.queue.filter((q) => q.state !== "failed").length;
     const failed = state.queue.filter((q) => q.state === "failed").length;
     const offline = !navigator.onLine;
-    bar.classList.toggle("warn", !failed && (waiting > 0 || offline));
+    bar.classList.toggle("warn", !failed && (waiting > 0 || offline || state.loadFailed));
     bar.classList.toggle("error", failed > 0);
     if (failed) text.textContent = `${failed} not saved — tap Sync now, or tell the admin`;
     else if (waiting) text.textContent = `${waiting} waiting to sync`;
     else if (offline) text.textContent = "Offline — entries are kept on this phone";
+    else if (state.loadFailed) text.textContent = "Not loaded from the server — tap Try again";
     else text.textContent = "All saved";
-    $("viSyncNow").disabled = state.syncing || (!waiting && !failed);
+    $("viSyncNow").textContent = state.loadFailed ? "Try again" : "Sync now";
+    $("viSyncNow").disabled = state.syncing || (!state.loadFailed && !waiting && !failed);
   }
 
   /* ------------------------------------------------------------------- save */
@@ -891,7 +894,7 @@
 
   async function boot() {
     $("viDateLabel").textContent = indiaDateLabel();
-    $("viBuild").textContent = "20261104-inward1";
+    $("viBuild").textContent = "20261104-inward2";
     $("viTime").value = nowInputValue();
     restoreDraft();
     updateLive();
@@ -901,6 +904,7 @@
     try {
       await ensureSession(false);
       const out = await api("bootstrap");
+      state.loadFailed = false;
       state.items = Array.isArray(out.items) ? out.items : [];
       state.vendors = Array.isArray(out.vendors) ? out.vendors : [];
       state.entries = Array.isArray(out.entries) ? out.entries : [];
@@ -919,13 +923,18 @@
       }
       void syncQueue(false);
     } catch (e) {
+      state.loadFailed = true;
+      const offline = !!e.network;
       startupNote(
         e.code === "SESSION_EXPIRED"
           ? "Your staff session has expired. Turn the connection on and reload this page — your typed entry stays on this phone."
-          : "Could not reach the server. You can still type an entry: it is kept on this phone and syncs later."
+          : offline
+            ? "Could not reach the server. You can still type an entry: it is kept on this phone and syncs later."
+            : `The server could not send the list${e.code ? " (" + e.code + ")" : ""}. Tap Sync now to try again — nothing you type is lost.`
       );
       show($("viWorkspace"));
-      $("viSessionBadge").textContent = "Offline";
+      $("viSessionBadge").textContent = offline ? "Offline" : "Server error";
+      renderSync();
       renderVendors();
       renderItems();
       renderToday();
@@ -943,7 +952,13 @@
 
   $("viSave").addEventListener("click", () => void save(false));
   $("viSaveAnother").addEventListener("click", () => void save(true));
-  $("viSyncNow").addEventListener("click", () => void syncQueue(true));
+  $("viSyncNow").addEventListener("click", () => {
+    if (state.loadFailed) {
+      void boot();
+      return;
+    }
+    void syncQueue(true);
+  });
 
   $("viAddVendorBtn").addEventListener("click", () => {
     $("viVendorName").value = $("viVendorSearch").value.trim();

@@ -77,9 +77,9 @@ const ERROR_TEXT: Record<string, string> = {
   "22P02": "Some details are invalid. Please check and try again.",
 };
 
-function entryOut(row: any) {
-  const item = row.inv_vegetable_items || null;
-  const vendor = row.veg_inward_vendors || null;
+function entryOut(row: any, items?: Map<string, any>, vendors?: Map<string, any>) {
+  const item = items ? items.get(row.item_id) || null : null;
+  const vendor = vendors ? vendors.get(row.vendor_id) || null : null;
   return {
     id: row.id,
     item_id: row.item_id,
@@ -104,7 +104,9 @@ function entryOut(row: any) {
   };
 }
 
-const ENTRY_SELECT = "*, inv_vegetable_items(name_en,name_hi,name_gu), veg_inward_vendors(name)";
+/* Plain rows only. Names are joined below from the two small lookups, so this
+   function never depends on PostgREST resolving a foreign-key embed. */
+const ENTRY_SELECT = "*";
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
@@ -193,6 +195,27 @@ Deno.serve(async (req: Request) => {
     return { from, to, item, vendor };
   };
 
+  /* Names for the rows, in memory. The lookups are small and fetched once. */
+  let names: { items: Map<string, any>; vendors: Map<string, any> } | null = null;
+  const loadNames = async () => {
+    const [itemRows, vendorRows] = await Promise.all([
+      db.rpc("veg_inward_item_names"),
+      db.from("veg_inward_vendors").select("id,name"),
+    ]);
+    if (itemRows.error) throw itemRows.error;
+    if (vendorRows.error) throw vendorRows.error;
+    const items = new Map<string, any>();
+    (itemRows.data || []).forEach((r: any) => items.set(r.item_id, r));
+    const vendors = new Map<string, any>();
+    (vendorRows.data || []).forEach((r: any) => vendors.set(r.id, r));
+    return { items, vendors };
+  };
+  const out = async (row: any) => {
+    if (!row) return null;
+    if (!names) names = await loadNames();
+    return entryOut(row, names.items, names.vendors);
+  };
+
   const readEntry = async (id: string) => {
     const { data, error } = await db.from("veg_inward_entries").select(ENTRY_SELECT).eq("id", id).maybeSingle();
     if (error) throw error;
@@ -256,7 +279,7 @@ Deno.serve(async (req: Request) => {
           today: todayIndia(),
           items: items.data || [],
           vendors: vendors.data || [],
-          entries: (today.data || []).map(entryOut),
+          entries: await Promise.all((today.data || []).map(out)),
         });
       }
 
@@ -367,13 +390,13 @@ Deno.serve(async (req: Request) => {
         if (error) {
           if (error.code === "23505") {
             const existing = await readEntry(id);
-            if (existing) return json({ ok: true, entry: entryOut(existing), duplicate: true });
+            if (existing) return json({ ok: true, entry: await out(existing), duplicate: true });
           }
           throw error;
         }
         const saved = await readEntry(id);
         await writeAudit(id, "create", null, saved, actor);
-        return json({ ok: true, entry: saved ? entryOut(saved) : null, duplicate: false });
+        return json({ ok: true, entry: saved ? await out(saved) : null, duplicate: false });
       }
 
       /* ---------------------------------------------------------------- */
@@ -391,7 +414,7 @@ Deno.serve(async (req: Request) => {
         }
         if (before.sorted_at !== null) {
           const same = Number(before.a_g) === a && Number(before.b_g) === b && Number(before.dump_g) === dump;
-          if (same) return json({ ok: true, entry: entryOut(before), already: true });
+          if (same) return json({ ok: true, entry: await out(before), already: true });
           console.log(JSON.stringify({ fn: "veg-inward-api", action, code: "ALREADY_SORTED" }));
           return fail("ALREADY_SORTED", "Already sorted. Ask the admin to correct it.", 409);
         }
@@ -403,7 +426,7 @@ Deno.serve(async (req: Request) => {
         if (error) throw error;
         const after = await readEntry(id);
         await writeAudit(id, "sort", before, after, actor);
-        return json({ ok: true, entry: after ? entryOut(after) : null, already: false });
+        return json({ ok: true, entry: after ? await out(after) : null, already: false });
       }
 
       /* ---------------------------------------------------------------- */
@@ -463,7 +486,7 @@ Deno.serve(async (req: Request) => {
         if (error) throw error;
         const after = await readEntry(id);
         await writeAudit(id, "edit", { ...before, reason }, { ...after, reason }, actor);
-        return json({ ok: true, entry: after ? entryOut(after) : null, reason });
+        return json({ ok: true, entry: after ? await out(after) : null, reason });
       }
 
       /* ---------------------------------------------------------------- */
@@ -514,7 +537,7 @@ Deno.serve(async (req: Request) => {
         const total = count ?? 0;
         return json({
           ok: true,
-          entries: (data || []).map(entryOut),
+          entries: await Promise.all((data || []).map(out)),
           offset,
           page_size: PAGE_SIZE,
           total,
@@ -594,7 +617,7 @@ Deno.serve(async (req: Request) => {
         }
         return json({
           ok: true,
-          rows: slice.map(entryOut),
+          rows: await Promise.all(slice.map(out)),
           offset,
           page_size: EXPORT_PAGE,
           done,

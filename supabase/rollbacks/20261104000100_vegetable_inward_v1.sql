@@ -17,6 +17,7 @@ drop table if exists public.veg_inward_entries;
 drop table if exists public.veg_inward_vendors;
 
 drop function if exists public.veg_inward_whoami(text, text);
+drop function if exists public.veg_inward_item_names();
 drop function if exists public.veg_inward_block_hard_delete();
 drop function if exists public.veg_inward_touch_updated_at();
 

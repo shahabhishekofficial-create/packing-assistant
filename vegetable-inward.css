@@ -1,6 +1,6 @@
 /* Vegetable Inward — staff entry screen.
    Same tokens, cards and type scale as the vegetable count pages. Only the
-   inward-specific blocks live here. 20261104-inward1 */
+   inward-specific blocks live here. 20261104-inward2 */
 
 .vegInwardPage{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
 .vegInwardPage #viApp{max-width:760px;margin:auto;padding:0 14px 18px}
